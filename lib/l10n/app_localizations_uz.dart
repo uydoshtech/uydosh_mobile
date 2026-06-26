@@ -1056,19 +1056,6 @@ class AppLocalizationsUz extends AppLocalizations {
   String get listing_detail_nearby_matches => 'Yaqin atrofdagi mos keluvchilar';
 
   @override
-  String get listing_detail_nearby_stores_title => 'Yaqin atrofdagi do‘konlar';
-
-  @override
-  String get listing_detail_nearby_stores_subtitle =>
-      'Bu uyga yaqin oziq-ovqat do‘konlari.';
-
-  @override
-  String get listing_detail_nearby_stores_meters => 'm';
-
-  @override
-  String get listing_detail_nearby_stores_kilometers => 'km';
-
-  @override
   String get coming_soon => 'Tez orada';
 
   @override

@@ -163,6 +163,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int _retryCount = 0;
   int _automaticCameraFinishesToIgnore = 0;
   bool _showListingDetailTooltip = false;
+  UniversityMapMarker? _selectedUniversityMarker;
   bool _isUserLocationLayerVisible = false;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
@@ -184,6 +185,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (oldWidget.showUserLocation != widget.showUserLocation) {
       _syncUserLocationLayer();
     }
+    _syncSelectedUniversityMarker();
     if (!_mapTargetChanged(oldWidget) || !widget.moveCameraOnTargetChange) {
       return;
     }
@@ -335,6 +337,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   listingDetail: widget.listingDetail!,
                   onClose: () => setState(() {
                     _showListingDetailTooltip = false;
+                  }),
+                ),
+              ),
+            if (_selectedUniversityMarker != null)
+              Positioned(
+                left: 8,
+                right: 8,
+                top: 8,
+                child: _UniversityMapTooltip(
+                  marker: _selectedUniversityMarker!,
+                  onClose: () => setState(() {
+                    _selectedUniversityMarker = null;
                   }),
                 ),
               ),
@@ -531,6 +545,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           if (_showListingDetailTooltip) {
             setState(() => _showListingDetailTooltip = false);
           }
+          if (_selectedUniversityMarker != null) {
+            setState(() => _selectedUniversityMarker = null);
+          }
           widget.onMapTap?.call(point);
         },
         onCameraPositionChanged: _handleCameraPositionChanged,
@@ -675,7 +692,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           ),
           zIndex: 5,
           opacity: 1.0,
-          consumeTapEvents: false,
+          consumeTapEvents: true,
           icon: PlacemarkIcon.single(
             PlacemarkIconStyle(
               image: BitmapDescriptor.fromBytes(iconBytes),
@@ -683,17 +700,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               scale: 0.9,
             ),
           ),
-          text: PlacemarkText(
-            text: marker.title,
-            style: const PlacemarkTextStyle(
-              placement: TextStylePlacement.top,
-              offset: 8,
-              size: 10,
-              textOptional: true,
-              color: Colors.black,
-              outlineColor: Colors.white,
-            ),
-          ),
+          onTap: (_, point) {
+            if (_showListingDetailTooltip) {
+              _showListingDetailTooltip = false;
+            }
+            widget.onMapTap?.call(point);
+            setState(() => _selectedUniversityMarker = marker);
+          },
         ),
     ];
   }
@@ -731,7 +744,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 scale: 1.0,
               ),
             ),
-            onTap: (_, __) => widget.onPinTap?.call(pin),
+            onTap: (_, __) {
+              if (_selectedUniversityMarker != null) {
+                setState(() => _selectedUniversityMarker = null);
+              }
+              widget.onPinTap?.call(pin);
+            },
           )
         else
           PlacemarkMapObject(
@@ -747,7 +765,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 scale: 0.9,
               ),
             ),
-            onTap: (_, __) => widget.onPinTap?.call(pin),
+            onTap: (_, __) {
+              if (_selectedUniversityMarker != null) {
+                setState(() => _selectedUniversityMarker = null);
+              }
+              widget.onPinTap?.call(pin);
+            },
           ),
     ];
   }
@@ -994,6 +1017,23 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   bool get _canShowListingDetailTooltip {
     return widget.showListingDetailTooltip && widget.listingDetail != null;
+  }
+
+  void _syncSelectedUniversityMarker() {
+    final selected = _selectedUniversityMarker;
+    if (selected == null) return;
+
+    for (final marker in widget.universityMarkers) {
+      if (marker.id == selected.id &&
+          marker.latitude == selected.latitude &&
+          marker.longitude == selected.longitude &&
+          marker.title == selected.title) {
+        _selectedUniversityMarker = marker;
+        return;
+      }
+    }
+
+    _selectedUniversityMarker = null;
   }
 
   Future<void> _moveInitialCamera(
@@ -1315,6 +1355,79 @@ class _ListingDetailMapTooltip extends StatelessWidget {
     return PriceRangeHelper.formatListingPriceRangeWithCurrencyMarker(
       bounds.min,
       bounds.max,
+    );
+  }
+}
+
+class _UniversityMapTooltip extends StatelessWidget {
+  const _UniversityMapTooltip({
+    required this.marker,
+    required this.onClose,
+  });
+
+  final UniversityMapMarker marker;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const ThemeIcon(
+                    Icons.school_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                    useThemeColor: false,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      marker.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: -10,
+                right: -40,
+                child: IconButton(
+                  onPressed: onClose,
+                  icon: const Icon(Icons.close),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

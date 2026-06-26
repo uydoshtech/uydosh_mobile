@@ -46,6 +46,8 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
           (json['room_scan_north_correction_deg'] as num?)?.toDouble(),
       contactPhone: json['contact_phone'] as String?,
       contactTelegram: json['contact_telegram'] as String?,
+      addressLatitude: (json['address_latitude'] as num?)?.toDouble(),
+      addressLongitude: (json['address_longitude'] as num?)?.toDouble(),
       subwayStation: json['subway_station'] == null
           ? null
           : SubwayStationDetail.fromJson(
@@ -69,6 +71,9 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
           ? null
           : AreaPriceStats.fromJson(
               json['area_price_stats'] as Map<String, dynamic>),
+      nearbyStores: (json['nearby_stores'] as List<dynamic>?)
+          ?.map((e) => ListingNearbyStore.fromJson(e as Map<String, dynamic>))
+          .toList(),
       groupSizeTarget: (json['group_size_target'] as num?)?.toInt(),
       groupFormingStatus: json['group_forming_status'] as String?,
       groupCompatibilityReport: json['group_compatibility_report'] as String?,
@@ -110,6 +115,8 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'room_scan_north_correction_deg': instance.roomScanNorthCorrectionDeg,
       'contact_phone': instance.contactPhone,
       'contact_telegram': instance.contactTelegram,
+      'address_latitude': instance.addressLatitude,
+      'address_longitude': instance.addressLongitude,
       'subway_station': instance.subwayStation,
       'search_subway_stations': instance.searchSubwayStations,
       'location': instance.location,
@@ -117,6 +124,7 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'amenities': instance.amenities,
       'photos': instance.photos,
       'area_price_stats': instance.areaPriceStats,
+      'nearby_stores': instance.nearbyStores,
       'group_size_target': instance.groupSizeTarget,
       'group_forming_status': instance.groupFormingStatus,
       'group_compatibility_report': instance.groupCompatibilityReport,

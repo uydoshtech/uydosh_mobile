@@ -1978,30 +1978,6 @@ abstract class AppLocalizations {
   /// **'Matches nearby'**
   String get listing_detail_nearby_matches;
 
-  /// No description provided for @listing_detail_nearby_stores_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Stores nearby'**
-  String get listing_detail_nearby_stores_title;
-
-  /// No description provided for @listing_detail_nearby_stores_subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Grocery options close to this home.'**
-  String get listing_detail_nearby_stores_subtitle;
-
-  /// No description provided for @listing_detail_nearby_stores_meters.
-  ///
-  /// In en, this message translates to:
-  /// **'m'**
-  String get listing_detail_nearby_stores_meters;
-
-  /// No description provided for @listing_detail_nearby_stores_kilometers.
-  ///
-  /// In en, this message translates to:
-  /// **'km'**
-  String get listing_detail_nearby_stores_kilometers;
-
   /// No description provided for @coming_soon.
   ///
   /// In en, this message translates to:

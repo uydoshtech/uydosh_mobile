@@ -873,6 +873,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       this.roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") this.contactPhone,
       @JsonKey(name: "contact_telegram") this.contactTelegram,
+      @JsonKey(name: "address_latitude") this.addressLatitude,
+      @JsonKey(name: "address_longitude") this.addressLongitude,
       @JsonKey(name: "subway_station") this.subwayStation,
       @JsonKey(name: "search_subway_stations")
       final List<SubwayStationDetail>? searchSubwayStations,
@@ -882,6 +884,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       final List<Amenity>? amenities,
       final List<Photo>? photos,
       @JsonKey(name: "area_price_stats") this.areaPriceStats,
+      @JsonKey(name: "nearby_stores")
+      final List<ListingNearbyStore>? nearbyStores,
       @JsonKey(name: "group_size_target") this.groupSizeTarget,
       @JsonKey(name: "group_forming_status") this.groupFormingStatus,
       @JsonKey(name: "group_compatibility_report")
@@ -890,7 +894,8 @@ class _$ListingDetailImpl implements _ListingDetail {
       : _searchSubwayStations = searchSubwayStations,
         _searchLocations = searchLocations,
         _amenities = amenities,
-        _photos = photos;
+        _photos = photos,
+        _nearbyStores = nearbyStores;
 
   factory _$ListingDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$ListingDetailImplFromJson(json);
@@ -990,6 +995,12 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: "contact_telegram")
   final String? contactTelegram;
   @override
+  @JsonKey(name: "address_latitude")
+  final double? addressLatitude;
+  @override
+  @JsonKey(name: "address_longitude")
+  final double? addressLongitude;
+  @override
   @JsonKey(name: "subway_station")
   final SubwayStationDetail? subwayStation;
   final List<SubwayStationDetail>? _searchSubwayStations;
@@ -1043,6 +1054,17 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   @JsonKey(name: "area_price_stats")
   final AreaPriceStats? areaPriceStats;
+  final List<ListingNearbyStore>? _nearbyStores;
+  @override
+  @JsonKey(name: "nearby_stores")
+  List<ListingNearbyStore>? get nearbyStores {
+    final value = _nearbyStores;
+    if (value == null) return null;
+    if (_nearbyStores is EqualUnmodifiableListView) return _nearbyStores;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   @override
   @JsonKey(name: "group_size_target")
   final int? groupSizeTarget;
@@ -1058,7 +1080,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, addressLatitude: $addressLatitude, addressLongitude: $addressLongitude, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, nearbyStores: $nearbyStores, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
   }
 
   @override
@@ -1127,6 +1149,10 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.contactPhone == contactPhone) &&
             (identical(other.contactTelegram, contactTelegram) ||
                 other.contactTelegram == contactTelegram) &&
+            (identical(other.addressLatitude, addressLatitude) ||
+                other.addressLatitude == addressLatitude) &&
+            (identical(other.addressLongitude, addressLongitude) ||
+                other.addressLongitude == addressLongitude) &&
             (identical(other.subwayStation, subwayStation) ||
                 other.subwayStation == subwayStation) &&
             const DeepCollectionEquality()
@@ -1140,6 +1166,8 @@ class _$ListingDetailImpl implements _ListingDetail {
             const DeepCollectionEquality().equals(other._photos, _photos) &&
             (identical(other.areaPriceStats, areaPriceStats) ||
                 other.areaPriceStats == areaPriceStats) &&
+            const DeepCollectionEquality()
+                .equals(other._nearbyStores, _nearbyStores) &&
             (identical(other.groupSizeTarget, groupSizeTarget) ||
                 other.groupSizeTarget == groupSizeTarget) &&
             (identical(other.groupFormingStatus, groupFormingStatus) ||
@@ -1188,6 +1216,8 @@ class _$ListingDetailImpl implements _ListingDetail {
         roomScanNorthCorrectionDeg,
         contactPhone,
         contactTelegram,
+        addressLatitude,
+        addressLongitude,
         subwayStation,
         const DeepCollectionEquality().hash(_searchSubwayStations),
         location,
@@ -1195,6 +1225,7 @@ class _$ListingDetailImpl implements _ListingDetail {
         const DeepCollectionEquality().hash(_amenities),
         const DeepCollectionEquality().hash(_photos),
         areaPriceStats,
+        const DeepCollectionEquality().hash(_nearbyStores),
         groupSizeTarget,
         groupFormingStatus,
         groupCompatibilityReport,
@@ -1257,6 +1288,8 @@ abstract class _ListingDetail implements ListingDetail {
       final double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") final String? contactPhone,
       @JsonKey(name: "contact_telegram") final String? contactTelegram,
+      @JsonKey(name: "address_latitude") final double? addressLatitude,
+      @JsonKey(name: "address_longitude") final double? addressLongitude,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       final List<SubwayStationDetail>? searchSubwayStations,
@@ -1266,6 +1299,8 @@ abstract class _ListingDetail implements ListingDetail {
       final List<Amenity>? amenities,
       final List<Photo>? photos,
       @JsonKey(name: "area_price_stats") final AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "nearby_stores")
+      final List<ListingNearbyStore>? nearbyStores,
       @JsonKey(name: "group_size_target") final int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") final String? groupFormingStatus,
       @JsonKey(name: "group_compatibility_report")
@@ -1371,6 +1406,12 @@ abstract class _ListingDetail implements ListingDetail {
   @JsonKey(name: "contact_telegram")
   String? get contactTelegram;
   @override
+  @JsonKey(name: "address_latitude")
+  double? get addressLatitude;
+  @override
+  @JsonKey(name: "address_longitude")
+  double? get addressLongitude;
+  @override
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation;
   @override
@@ -1388,6 +1429,9 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "area_price_stats")
   AreaPriceStats? get areaPriceStats;
+  @override
+  @JsonKey(name: "nearby_stores")
+  List<ListingNearbyStore>? get nearbyStores;
   @override
   @JsonKey(name: "group_size_target")
   int? get groupSizeTarget;
