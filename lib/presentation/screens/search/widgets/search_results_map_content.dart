@@ -9,11 +9,14 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.privateRoom,
     required this.withPhoto,
     required this.selectedPin,
+    required this.selectedUniversityMarker,
     required this.universityMarkers,
     required this.onOpenFilters,
     required this.onOpenFeedView,
     required this.onClearSelectedPin,
+    required this.onClearSelectedUniversityMarker,
     required this.onSelectPin,
+    required this.onSelectUniversityMarker,
     required this.onOpenPin,
     this.gender,
     this.locationId,
@@ -34,16 +37,33 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool privateRoom;
   final bool withPhoto;
   final ListingMapPin? selectedPin;
+  final UniversityMapMarker? selectedUniversityMarker;
   final List<UniversityMapMarker> universityMarkers;
   final VoidCallback onOpenFilters;
   final VoidCallback onOpenFeedView;
   final VoidCallback onClearSelectedPin;
+  final VoidCallback onClearSelectedUniversityMarker;
   final ValueChanged<ListingMapPin> onSelectPin;
+  final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
   final ValueChanged<ListingMapPin> onOpenPin;
 
   @override
   Widget build(BuildContext context) {
     final pin = selectedPin;
+    final universityMarker = selectedUniversityMarker;
+    final hasTooltip = pin != null || universityMarker != null;
+    const viewToggleTop = 8.0;
+    const viewToggleHeight = 38.0;
+    const viewToggleGap = 8.0;
+    final feedViewButton = SearchFloatingActionButton(
+      onPressed: onOpenFeedView,
+      iconData: Icons.view_list_rounded,
+      tooltip: L10n.get("open_feed_view"),
+      width: 68,
+      height: viewToggleHeight,
+      foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
+      elevation: ThemeState().isBlueTheme ? null : 8,
+    );
     return Column(
       children: [
         _MapFilterRibbon(
@@ -74,36 +94,47 @@ class _SearchResultsMapContent extends StatelessWidget {
                   height: double.infinity,
                   moveCameraOnTargetChange: result.pins.isNotEmpty,
                   showDefaultPlacemark: false,
+                  showUniversityMarkerTooltip: false,
                   showUserLocation: true,
-                  onMapTap: (_) => onClearSelectedPin(),
+                  onMapTap: (_) {
+                    onClearSelectedPin();
+                    onClearSelectedUniversityMarker();
+                  },
                   onPinTap: onSelectPin,
+                  onUniversityMarkerTap: onSelectUniversityMarker,
                 ),
               ),
-              if (pin != null)
+              if (hasTooltip)
                 Positioned(
                   left: 8,
                   right: 8,
-                  top: 8,
-                  child: _PinSummaryTooltip(
-                    pin: pin,
-                    onClose: onClearSelectedPin,
-                    onOpen: () => onOpenPin(pin),
+                  top: viewToggleTop,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (pin != null)
+                        _PinSummaryTooltip(
+                          pin: pin,
+                          onClose: onClearSelectedPin,
+                          onOpen: () => onOpenPin(pin),
+                        )
+                      else if (universityMarker != null)
+                        UniversityMapTooltip(
+                          marker: universityMarker,
+                          onClose: onClearSelectedUniversityMarker,
+                        ),
+                      const SizedBox(height: viewToggleGap),
+                      feedViewButton,
+                    ],
                   ),
                 ),
-              Positioned(
-                right: 16,
-                top: 4,
-                child: SearchFloatingActionButton(
-                  onPressed: onOpenFeedView,
-                  iconData: Icons.view_list_rounded,
-                  tooltip: L10n.get("open_feed_view"),
-                  width: 68,
-                  height: 46,
-                  foregroundColor:
-                      ThemeState().isBlueTheme ? Colors.black : null,
-                  elevation: ThemeState().isBlueTheme ? null : 8,
+              if (!hasTooltip)
+                Positioned(
+                  right: 16,
+                  top: viewToggleTop,
+                  child: feedViewButton,
                 ),
-              ),
             ],
           ),
         ),

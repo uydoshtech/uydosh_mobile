@@ -9,6 +9,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -52,12 +53,14 @@ class UniversityMapMarker {
     required this.latitude,
     required this.longitude,
     required this.title,
+    required this.fullTitle,
   });
 
   final String id;
   final double latitude;
   final double longitude;
   final String title;
+  final String fullTitle;
 }
 
 class MapPatternPainter extends CustomPainter {
@@ -117,12 +120,14 @@ class YandexMapWidget extends StatefulWidget {
     this.universityMarkers = const [],
     this.selectedListingId,
     this.onPinTap,
+    this.onUniversityMarkerTap,
     this.onMapTap,
     this.onMapCreated,
     this.onCameraPositionChanged,
     this.height = 200,
     this.moveCameraOnTargetChange = true,
     this.showListingDetailTooltip = true,
+    this.showUniversityMarkerTooltip = true,
     this.showDefaultPlacemark = true,
     this.showUserLocation = false,
   });
@@ -137,11 +142,13 @@ class YandexMapWidget extends StatefulWidget {
   final List<UniversityMapMarker> universityMarkers;
   final int? selectedListingId;
   final ValueChanged<ListingMapPin>? onPinTap;
+  final ValueChanged<UniversityMapMarker>? onUniversityMarkerTap;
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
   final CameraPositionCallback? onCameraPositionChanged;
   final bool moveCameraOnTargetChange;
   final bool showListingDetailTooltip;
+  final bool showUniversityMarkerTooltip;
   final bool showDefaultPlacemark;
   final bool showUserLocation;
 
@@ -340,12 +347,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   }),
                 ),
               ),
-            if (_selectedUniversityMarker != null)
+            if (widget.showUniversityMarkerTooltip &&
+                _selectedUniversityMarker != null)
               Positioned(
                 left: 8,
                 right: 8,
                 top: 8,
-                child: _UniversityMapTooltip(
+                child: UniversityMapTooltip(
                   marker: _selectedUniversityMarker!,
                   onClose: () => setState(() {
                     _selectedUniversityMarker = null;
@@ -705,6 +713,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               _showListingDetailTooltip = false;
             }
             widget.onMapTap?.call(point);
+            final onUniversityMarkerTap = widget.onUniversityMarkerTap;
+            if (onUniversityMarkerTap != null) {
+              if (_selectedUniversityMarker != null) {
+                setState(() => _selectedUniversityMarker = null);
+              }
+              onUniversityMarkerTap(marker);
+              return;
+            }
             setState(() => _selectedUniversityMarker = marker);
           },
         ),
@@ -999,7 +1015,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       if (oldMarker.id != newMarker.id ||
           oldMarker.latitude != newMarker.latitude ||
           oldMarker.longitude != newMarker.longitude ||
-          oldMarker.title != newMarker.title) {
+          oldMarker.title != newMarker.title ||
+          oldMarker.fullTitle != newMarker.fullTitle) {
         return true;
       }
     }
@@ -1027,7 +1044,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       if (marker.id == selected.id &&
           marker.latitude == selected.latitude &&
           marker.longitude == selected.longitude &&
-          marker.title == selected.title) {
+          marker.title == selected.title &&
+          marker.fullTitle == selected.fullTitle) {
         _selectedUniversityMarker = marker;
         return;
       }
@@ -1359,10 +1377,11 @@ class _ListingDetailMapTooltip extends StatelessWidget {
   }
 }
 
-class _UniversityMapTooltip extends StatelessWidget {
-  const _UniversityMapTooltip({
+class UniversityMapTooltip extends StatelessWidget {
+  const UniversityMapTooltip({
     required this.marker,
     required this.onClose,
+    super.key,
   });
 
   final UniversityMapMarker marker;
@@ -1372,6 +1391,16 @@ class _UniversityMapTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final iconColor = isBlueTheme ? Colors.white : AppColors.primary;
+    final titleColor = isBlueTheme ? Colors.white : scheme.onSurface;
+    final subtitleColor = isBlueTheme
+        ? Colors.white.withValues(alpha: 0.82)
+        : scheme.onSurfaceVariant;
+    final shortTitle = marker.title == marker.fullTitle
+        ? _toTitleCase(marker.title)
+        : marker.title;
+    final fullTitle = _toTitleCase(marker.fullTitle);
 
     return Material(
       color: Colors.transparent,
@@ -1395,21 +1424,38 @@ class _UniversityMapTooltip extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const ThemeIcon(
+                  ThemeIcon(
                     Icons.school_rounded,
-                    color: AppColors.primary,
+                    color: iconColor,
                     size: 22,
                     useThemeColor: false,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      marker.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          shortTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: titleColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          fullTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: subtitleColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1429,5 +1475,16 @@ class _UniversityMapTooltip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _toTitleCase(String value) {
+    return value.trim().split(RegExp(r"\s+")).map((part) {
+      return part.split("-").map(_capitalizeWord).join("-");
+    }).join(" ");
+  }
+
+  String _capitalizeWord(String word) {
+    if (word.isEmpty) return word;
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
   }
 }

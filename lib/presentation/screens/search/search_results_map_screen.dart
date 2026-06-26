@@ -88,6 +88,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _isLoading = true;
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
+  UniversityMapMarker? _selectedUniversityMarker;
   List<UniversityMapMarker> _universityMarkers = const [];
 
   late int _listingTypeId;
@@ -152,6 +153,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         title: shortName.isNotEmpty
             ? shortName
             : university.getLocalizedName(language),
+        fullTitle: university.getLocalizedName(language),
       );
 
       if (!mounted) return;
@@ -177,6 +179,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _isLoading = true;
         _loadError = null;
         _selectedPin = null;
+        _selectedUniversityMarker = null;
       });
     }
 
@@ -265,6 +268,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _privateRoom = result.privateRoom;
           _withPhoto = result.withPhoto;
           _selectedPin = null;
+          _selectedUniversityMarker = null;
         });
         _loadResults();
       },
@@ -628,11 +632,26 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
+      selectedUniversityMarker: _selectedUniversityMarker,
       universityMarkers: _universityMarkers,
       onOpenFilters: _openFilters,
       onOpenFeedView: _openFeedView,
       onClearSelectedPin: () => setState(() => _selectedPin = null),
-      onSelectPin: (pin) => setState(() => _selectedPin = pin),
+      onClearSelectedUniversityMarker: () {
+        setState(() => _selectedUniversityMarker = null);
+      },
+      onSelectPin: (pin) {
+        setState(() {
+          _selectedPin = pin;
+          _selectedUniversityMarker = null;
+        });
+      },
+      onSelectUniversityMarker: (marker) {
+        setState(() {
+          _selectedPin = null;
+          _selectedUniversityMarker = marker;
+        });
+      },
       onOpenPin: (pin) => context.pushListingDetail(pin.listingId),
     );
   }

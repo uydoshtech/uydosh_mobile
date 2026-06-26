@@ -88,7 +88,7 @@ class _SearchResultsShell extends StatelessWidget {
               iconData: Icons.map_rounded,
               tooltip: L10n.get("open_map_view"),
               width: 68,
-              height: 46,
+              height: 38,
               elevation: ThemeState().isBlueTheme ? null : 8,
             ),
           ),
