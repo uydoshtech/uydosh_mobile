@@ -1878,6 +1878,8 @@ class AppStrings {
       "description_required": "Text is required",
       "description_too_long": "Text must be 500 characters or less",
       "location_required": "Please select a location",
+      "location_metro_required": "Please select a metro station",
+      "location_district_required": "Please select a district",
       "price_required": "Please set a price",
       "listing_price_minimum": "Price must be at least 1 USD per month",
 
@@ -4008,6 +4010,8 @@ class AppStrings {
       "description_required": "Текст обязателен",
       "description_too_long": "Текст должен быть не более 500 символов",
       "location_required": "Пожалуйста, выберите район",
+      "location_metro_required": "Пожалуйста, выберите станцию метро",
+      "location_district_required": "Пожалуйста, выберите район",
       "price_required": "Пожалуйста, укажите цену",
       "listing_price_minimum": "Цена должна быть не менее 1 USD в месяц",
 
@@ -6143,6 +6147,8 @@ class AppStrings {
       "description_required": "Matn talab qilinadi",
       "description_too_long": "Matn 500 belgidan ko'p bo'p bo'lmasligi kerak",
       "location_required": "Iltimos, tuman tanlang",
+      "location_metro_required": "Iltimos, metro bekatini tanlang",
+      "location_district_required": "Iltimos, tuman tanlang",
       "price_required": "Iltimos, narxni belgilang",
       "listing_price_minimum": "Oyiga kamida 1 USD bo'lishi kerak",
 

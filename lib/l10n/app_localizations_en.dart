@@ -2612,6 +2612,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get location_required => 'Please select a location';
 
   @override
+  String get location_metro_required => 'Please select a metro station';
+
+  @override
+  String get location_district_required => 'Please select a district';
+
+  @override
   String get price_required => 'Please set a price';
 
   @override

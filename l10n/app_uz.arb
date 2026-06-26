@@ -1008,6 +1008,8 @@
   "description_required": "Tavsif talab qilinadi",
   "description_too_long": "Tavsif 500 belgidan ko'p bo'p bo'lmasligi kerak",
   "location_required": "Iltimos, tuman tanlang",
+  "location_metro_required": "Iltimos, metro bekatini tanlang",
+  "location_district_required": "Iltimos, tuman tanlang",
   "price_required": "Iltimos, narxni belgilang",
   "listing_price_minimum": "Oyiga kamida 1 USD bo'lishi kerak",
   "auth_required_title": "Autentifikatsiya talab qilinadi",

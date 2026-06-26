@@ -1008,6 +1008,8 @@
   "description_required": "Description is required",
   "description_too_long": "Description must be 500 characters or less",
   "location_required": "Please select a location",
+  "location_metro_required": "Please select a metro station",
+  "location_district_required": "Please select a district",
   "price_required": "Please set a price",
   "listing_price_minimum": "Price must be at least 1 USD per month",
   "auth_required_title": "Authentication required",

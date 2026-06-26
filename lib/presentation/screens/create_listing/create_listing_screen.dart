@@ -1173,28 +1173,28 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         if (_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _selectedSearchStations.isEmpty) {
-          ToastTheme.showError(context, message: L10n.get("location_required"));
+          ToastTheme.showError(context, message: _locationRequiredMessage());
           setState(() => _showLocationError = true);
           return false;
         }
         if (_supportsMultiLocation &&
             _locationSearchMode == _LocationSearchMode.district &&
             _selectedSearchLocations.isEmpty) {
-          ToastTheme.showError(context, message: L10n.get("location_required"));
+          ToastTheme.showError(context, message: _locationRequiredMessage());
           setState(() => _showLocationError = true);
           return false;
         }
         if (!_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _currentSubwayStationId() == null) {
-          ToastTheme.showError(context, message: L10n.get("location_required"));
+          ToastTheme.showError(context, message: _locationRequiredMessage());
           setState(() => _showLocationError = true);
           return false;
         }
         if (!_supportsMultiLocation &&
             _locationSearchMode == _LocationSearchMode.district &&
             _selectedLocationIndex < 0) {
-          ToastTheme.showError(context, message: L10n.get("location_required"));
+          ToastTheme.showError(context, message: _locationRequiredMessage());
           setState(() => _showLocationError = true);
           return false;
         }
@@ -1247,6 +1247,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       default:
         return true;
     }
+  }
+
+  String _locationRequiredMessage() {
+    return switch (_locationSearchMode) {
+      _LocationSearchMode.metro => L10n.get("location_metro_required"),
+      _LocationSearchMode.district => L10n.get("location_district_required"),
+    };
   }
 
   Widget _buildWizard(double topPad) {
@@ -2827,7 +2834,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedSearchStations.isEmpty) {
       ToastTheme.showError(
         context,
-        message: L10n.get("location_required"),
+        message: _locationRequiredMessage(),
       );
       setState(() {
         _showLocationError = true;
@@ -2838,7 +2845,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedSearchLocations.isEmpty) {
       ToastTheme.showError(
         context,
-        message: L10n.get("location_required"),
+        message: _locationRequiredMessage(),
       );
       setState(() {
         _showLocationError = true;
@@ -2849,7 +2856,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _currentSubwayStationId() == null) {
       ToastTheme.showError(
         context,
-        message: L10n.get("location_required"),
+        message: _locationRequiredMessage(),
       );
       setState(() {
         _showLocationError = true;
@@ -2860,7 +2867,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedLocationIndex < 0) {
       ToastTheme.showError(
         context,
-        message: L10n.get("location_required"),
+        message: _locationRequiredMessage(),
       );
       setState(() {
         _showLocationError = true;

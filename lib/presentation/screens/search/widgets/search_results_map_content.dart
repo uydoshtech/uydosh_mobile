@@ -3,6 +3,7 @@ part of "../search_results_map_screen.dart";
 class _SearchResultsMapContent extends StatelessWidget {
   const _SearchResultsMapContent({
     required this.result,
+    required this.isLoading,
     required this.listingTypeId,
     required this.minPrice,
     required this.maxPrice,
@@ -28,6 +29,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   });
 
   final _SearchMapResult result;
+  final bool isLoading;
   final int listingTypeId;
   final int? gender;
   final int? locationId;
@@ -63,8 +65,9 @@ class _SearchResultsMapContent extends StatelessWidget {
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
       tooltip: L10n.get("open_feed_view"),
-      width: 68,
-      height: viewToggleHeight,
+      width: 61.2,
+      height: 34.2,
+      iconSize: 22.5,
       foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
@@ -124,6 +127,23 @@ class _SearchResultsMapContent extends StatelessWidget {
                   },
                   onPinTap: onSelectPin,
                   onUniversityMarkerTap: onSelectUniversityMarker,
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: isLoading
+                        ? const Center(
+                            key: ValueKey("map-results-loading"),
+                            child: HouseLoadingIndicator(size: 44),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey("map-results-idle"),
+                          ),
+                  ),
                 ),
               ),
               Positioned(

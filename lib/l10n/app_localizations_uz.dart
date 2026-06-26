@@ -2657,6 +2657,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get location_required => 'Iltimos, tuman tanlang';
 
   @override
+  String get location_metro_required => 'Iltimos, metro bekatini tanlang';
+
+  @override
+  String get location_district_required => 'Iltimos, tuman tanlang';
+
+  @override
   String get price_required => 'Iltimos, narxni belgilang';
 
   @override

@@ -52,6 +52,8 @@ class UydoshGlassDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final titleTextColor = isDark ? scheme.onSurface : Colors.black;
+    final contentTextColor = isDark ? scheme.onSurfaceVariant : Colors.black;
     final effectsEnabled = LiquidGlassRendering.effectsEnabled(context);
 
     final decoration = BoxDecoration(
@@ -90,12 +92,12 @@ class UydoshGlassDialog extends StatelessWidget {
           child: DefaultTextStyle.merge(
             style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
+                  color: titleTextColor,
                 ) ??
                 TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
+                  color: titleTextColor,
                 ),
             child: titleWidget,
           ),
@@ -114,9 +116,9 @@ class UydoshGlassDialog extends StatelessWidget {
             padding: contentPadding,
             child: DefaultTextStyle.merge(
               style: theme.textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                    color: contentTextColor,
                   ) ??
-                  TextStyle(color: scheme.onSurfaceVariant),
+                  TextStyle(color: contentTextColor),
               child: body,
             ),
           ),

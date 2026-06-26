@@ -1000,6 +1000,8 @@
   "description_required": "Описание обязательно",
   "description_too_long": "Описание должно быть не более 500 символов",
   "location_required": "Пожалуйста, выберите район",
+  "location_metro_required": "Пожалуйста, выберите станцию метро",
+  "location_district_required": "Пожалуйста, выберите район",
   "price_required": "Пожалуйста, укажите цену",
   "listing_price_minimum": "Цена должна быть не менее 1 USD в месяц",
   "auth_required_title": "Требуется аутентификация",

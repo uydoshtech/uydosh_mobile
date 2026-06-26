@@ -622,6 +622,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
     return _SearchResultsMapContent(
       result: result,
+      isLoading: _isLoading,
       listingTypeId: _listingTypeId,
       gender: _gender,
       locationId: _locationId,

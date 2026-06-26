@@ -46,6 +46,10 @@ class _UnsavedChangesDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleTextColor = isDark ? theme.colorScheme.onSurface : Colors.black;
+    final contentTextColor =
+        isDark ? theme.colorScheme.onSurfaceVariant : Colors.black;
     const bullet = "•";
     final baseMessage = L10n.get("unsaved_changes_message");
     final contentText = changedFieldLabels.isEmpty
@@ -59,14 +63,14 @@ class _UnsavedChangesDialog extends StatelessWidget {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: theme.colorScheme.onSurface,
+          color: titleTextColor,
         ),
       ),
       content: Text(
         contentText,
         style: TextStyle(
           fontSize: 16,
-          color: theme.colorScheme.onSurfaceVariant,
+          color: contentTextColor,
         ),
       ),
       actions: [
@@ -84,7 +88,8 @@ class _UnsavedChangesDialog extends StatelessWidget {
             foregroundColor: theme.colorScheme.error,
             textStyle: _actionLabelStyle,
           ),
-          child: Text(L10n.get("leave_without_saving"), style: _actionLabelStyle),
+          child:
+              Text(L10n.get("leave_without_saving"), style: _actionLabelStyle),
         ),
       ],
     );

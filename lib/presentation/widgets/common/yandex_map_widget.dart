@@ -12,7 +12,9 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
@@ -160,6 +162,8 @@ class YandexMapWidget extends StatefulWidget {
 }
 
 class _YandexMapWidgetState extends State<YandexMapWidget> {
+  static const double _minZoom = 3.0;
+  static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
 
   Uint8List? _cachedIconBytes;
@@ -176,12 +180,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   bool _showListingDetailTooltip = false;
   UniversityMapMarker? _selectedUniversityMarker;
   bool _isUserLocationLayerVisible = false;
+  int _zoomSliderRequestId = 0;
+  late double _currentZoom;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
 
   @override
   void initState() {
     super.initState();
+    _currentZoom = _initialZoom();
     _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
     _initializeMapWithDelay();
@@ -1324,7 +1331,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
       final cameraPosition = await controller.getCameraPosition();
       if (cameraPosition.zoom > _maxMultiPinAutoZoom) {
-        await _moveCameraAutomatically(
+        final moved = await _moveCameraAutomatically(
           controller,
           CameraUpdate.newCameraPosition(
             CameraPosition(
@@ -1335,11 +1342,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             ),
           ),
         );
+        if (moved) _setCurrentZoom(_maxMultiPinAutoZoom);
+      } else {
+        _setCurrentZoom(cameraPosition.zoom);
       }
       return;
     }
 
-    await _moveCameraAutomatically(
+    final zoom = _initialZoom();
+    final moved = await _moveCameraAutomatically(
       controller,
       CameraUpdate.newCameraPosition(
         CameraPosition(
@@ -1347,12 +1358,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             latitude: centerPoint["latitude"]!,
             longitude: centerPoint["longitude"]!,
           ),
-          zoom: _initialZoom(),
+          zoom: zoom,
           azimuth: 0.0,
           tilt: 0.0,
         ),
       ),
     );
+    if (moved) _setCurrentZoom(zoom);
   }
 
   Future<bool> _moveCameraAutomatically(
@@ -1372,6 +1384,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     CameraUpdateReason reason,
     bool finished,
   ) {
+    if (finished) {
+      _setCurrentZoom(cameraPosition.zoom);
+    }
     if (_automaticCameraFinishesToIgnore > 0) {
       if (finished) {
         _consumeAutomaticCameraFinish();
@@ -1379,6 +1394,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       return;
     }
     widget.onCameraPositionChanged?.call(cameraPosition, reason, finished);
+  }
+
+  void _setCurrentZoom(double zoom) {
+    final nextZoom = zoom.clamp(_minZoom, _maxZoom).toDouble();
+    if ((nextZoom - _currentZoom).abs() < 0.01) return;
+    if (!mounted) {
+      _currentZoom = nextZoom;
+      return;
+    }
+    setState(() => _currentZoom = nextZoom);
   }
 
   void _consumeAutomaticCameraFinish() {
@@ -1452,68 +1477,90 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Widget _buildZoomControls() {
+    final theme = Theme.of(context);
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final foregroundColor = themeState.isBlueTheme
+        ? Colors.black
+        : theme.colorScheme.onSurface;
+    final borderRadius = BorderRadius.circular(999);
+    const width = 48.0;
+    const height = 176.0;
+    final slider = _buildZoomSlider(foregroundColor);
+
     return Positioned(
       right: 12,
       bottom: 12 + MediaQuery.paddingOf(context).bottom,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildZoomButton(icon: Icons.add, onTap: _zoomIn),
-          const SizedBox(height: 8),
-          _buildZoomButton(icon: Icons.remove, onTap: _zoomOut),
-        ],
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: useLiquidGlass
+            ? LiquidGlassPlate(
+                width: width,
+                height: height,
+                borderRadius: borderRadius,
+                child: slider,
+              )
+            : DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: borderRadius,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    theme.colorScheme.surface,
+                  ),
+                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                ),
+                child: slider,
+              ),
       ),
     );
   }
 
-  Widget _buildZoomButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    const radius = 12.0;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+  Widget _buildZoomSlider(Color foregroundColor) {
+    return RotatedBox(
+      quarterTurns: 3,
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          activeTrackColor: foregroundColor,
+          inactiveTrackColor: foregroundColor.withValues(alpha: 0.26),
+          thumbColor: foregroundColor,
+          overlayColor: foregroundColor.withValues(alpha: 0.12),
+          trackHeight: 4,
+          thumbShape: const RoundSliderThumbShape(
+            enabledThumbRadius: 8,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(radius),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(radius),
-          onTap: onTap,
-          child: SizedBox(
-            width: 44,
-            height: 44,
-            child: ThemeIcon(
-              icon,
-              color: Colors.white,
-              size: 24,
-              useThemeColor: false,
-            ),
+          overlayShape: const RoundSliderOverlayShape(
+            overlayRadius: 16,
           ),
+        ),
+        child: Slider(
+          min: _minZoom,
+          max: _maxZoom,
+          value: _currentZoom,
+          onChanged: _setZoomFromSlider,
         ),
       ),
     );
   }
 
-  void _zoomIn() {
-    if (_mapController != null) {
-      _mapController!.moveCamera(CameraUpdate.zoomIn());
-    }
-  }
+  Future<void> _setZoomFromSlider(double zoom) async {
+    final requestId = ++_zoomSliderRequestId;
+    _setCurrentZoom(zoom);
+    final controller = _mapController;
+    if (controller == null) return;
 
-  void _zoomOut() {
-    if (_mapController != null) {
-      _mapController!.moveCamera(CameraUpdate.zoomOut());
-    }
+    final cameraPosition = await controller.getCameraPosition();
+    if (!mounted || requestId != _zoomSliderRequestId) return;
+    await controller.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: cameraPosition.target,
+          zoom: zoom,
+          azimuth: cameraPosition.azimuth,
+          tilt: cameraPosition.tilt,
+        ),
+      ),
+    );
   }
 }
 

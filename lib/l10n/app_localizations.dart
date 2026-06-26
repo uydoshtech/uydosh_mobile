@@ -4930,6 +4930,18 @@ abstract class AppLocalizations {
   /// **'Please select a location'**
   String get location_required;
 
+  /// No description provided for @location_metro_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a metro station'**
+  String get location_metro_required;
+
+  /// No description provided for @location_district_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a district'**
+  String get location_district_required;
+
   /// No description provided for @price_required.
   ///
   /// In en, this message translates to:

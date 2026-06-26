@@ -2626,6 +2626,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get location_required => 'Пожалуйста, выберите район';
 
   @override
+  String get location_metro_required => 'Пожалуйста, выберите станцию метро';
+
+  @override
+  String get location_district_required => 'Пожалуйста, выберите район';
+
+  @override
   String get price_required => 'Пожалуйста, укажите цену';
 
   @override
