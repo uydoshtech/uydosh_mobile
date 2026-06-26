@@ -156,6 +156,19 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
 
     // Mirrors `_buildInlineFiltersRibbon` on [HomeScreen]: [LiquidGlassPlate] is
     // the glass surface; interaction sits inside it (ribbon uses IconButtons).
+    final liquidContent = _AnimatedFabIcon(
+      iconData: widget.iconData,
+      size: widget.iconSize,
+      color: fg,
+      idleTurns: _idleTurns,
+      wiggle: _lastWiggleEnabled,
+    );
+    final liquidInteractiveChild = widget.backgroundColor == null
+        ? liquidContent
+        : DecoratedBox(
+            decoration: BoxDecoration(color: widget.backgroundColor),
+            child: liquidContent,
+          );
     final Widget liquidBody = SizedBox(
       width: width,
       height: height,
@@ -168,13 +181,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
           onTapUp: (_) => setPressed(false),
           onTapCancel: () => setPressed(false),
           onTap: onFabTap,
-          child: _AnimatedFabIcon(
-            iconData: widget.iconData,
-            size: widget.iconSize,
-            color: fg,
-            idleTurns: _idleTurns,
-            wiggle: _lastWiggleEnabled,
-          ),
+          child: liquidInteractiveChild,
         ),
       ),
     );

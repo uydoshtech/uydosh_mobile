@@ -165,6 +165,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
+  Uint8List? _cachedSelectedUniversityIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   YandexMapController? _mapController;
@@ -251,9 +252,21 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         shadowBlurRadius: 10,
         shadowOffset: const Offset(0, 5),
       );
+      final selectedUniversityIconBytes = await _createIconBytes(
+        Icons.school_rounded,
+        124,
+        backgroundColor: Colors.black,
+        iconColor: Colors.white,
+        outlineColor: Colors.white,
+        outlineWidth: 8,
+        shadowColor: Colors.black.withValues(alpha: 0.38),
+        shadowBlurRadius: 12,
+        shadowOffset: const Offset(0, 6),
+      );
       _cachedIconBytes = iconBytes;
       _cachedSelectedIconBytes = selectedIconBytes;
       _cachedUniversityIconBytes = universityIconBytes;
+      _cachedSelectedUniversityIconBytes = selectedUniversityIconBytes;
       _cachedListingTypeIconBytes
         ..clear()
         ..addAll(listingTypeIconBytes);
@@ -706,7 +719,110 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               district.locationId,
             ).withValues(alpha: 0.22),
           ),
+      ..._createDistrictLabelMapObjects(),
     ];
+  }
+
+  List<MapObject> _createDistrictLabelMapObjects() {
+    final language = Localizations.localeOf(context).languageCode;
+    return [
+      for (final district in TashkentDistrictBoundaryCache.districts)
+        PlacemarkMapObject(
+          mapId: MapObjectId("tashkent_district_${district.locationId}_label"),
+          point: _districtLabelPoint(district),
+          zIndex: 1.0,
+          opacity: 1.0,
+          text: PlacemarkText(
+            text: LocationCache.getLocationShortName(
+              district.locationId,
+              language,
+            ),
+            style: const PlacemarkTextStyle(
+              placement: TextStylePlacement.center,
+              color: Color(0xFF111111),
+              outlineColor: Colors.white,
+              size: 11,
+              textOptional: true,
+            ),
+          ),
+        ),
+    ];
+  }
+
+  Point _districtLabelPoint(TashkentDistrictBoundary district) {
+    final ring = _largestOuterRing(district);
+    if (ring.isEmpty) {
+      final coordinates = LocationCache.getLocationCoordinatesById(
+        district.locationId,
+      );
+      return Point(
+        latitude: coordinates?["latitude"] ?? 41.2995,
+        longitude: coordinates?["longitude"] ?? 69.2401,
+      );
+    }
+
+    final centroid = _ringCentroid(ring);
+    if (centroid != null) return centroid;
+
+    final latitude = ring.fold<double>(
+          0,
+          (sum, point) => sum + point.latitude,
+        ) /
+        ring.length;
+    final longitude = ring.fold<double>(
+          0,
+          (sum, point) => sum + point.longitude,
+        ) /
+        ring.length;
+    return Point(latitude: latitude, longitude: longitude);
+  }
+
+  List<DistrictBoundaryPoint> _largestOuterRing(
+    TashkentDistrictBoundary district,
+  ) {
+    List<DistrictBoundaryPoint> largest = const [];
+    var largestArea = 0.0;
+    for (final polygon in district.polygons) {
+      final area = _ringArea(polygon.outerRing).abs();
+      if (area > largestArea) {
+        largestArea = area;
+        largest = polygon.outerRing;
+      }
+    }
+    return largest;
+  }
+
+  double _ringArea(List<DistrictBoundaryPoint> ring) {
+    if (ring.length < 3) return 0;
+    var area = 0.0;
+    for (var i = 0; i < ring.length; i++) {
+      final current = ring[i];
+      final next = ring[(i + 1) % ring.length];
+      area += current.longitude * next.latitude;
+      area -= next.longitude * current.latitude;
+    }
+    return area / 2;
+  }
+
+  Point? _ringCentroid(List<DistrictBoundaryPoint> ring) {
+    final area = _ringArea(ring);
+    if (area.abs() < 0.000000001) return null;
+
+    var latitude = 0.0;
+    var longitude = 0.0;
+    for (var i = 0; i < ring.length; i++) {
+      final current = ring[i];
+      final next = ring[(i + 1) % ring.length];
+      final factor =
+          current.longitude * next.latitude - next.longitude * current.latitude;
+      longitude += (current.longitude + next.longitude) * factor;
+      latitude += (current.latitude + next.latitude) * factor;
+    }
+
+    return Point(
+      latitude: latitude / (6 * area),
+      longitude: longitude / (6 * area),
+    );
   }
 
   LinearRing _toLinearRing(List<DistrictBoundaryPoint> points) {
@@ -738,47 +854,78 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   List<MapObject> _createUniversityMarkerMapObjects() {
     final iconBytes = _cachedUniversityIconBytes;
+    final selectedIconBytes = _cachedSelectedUniversityIconBytes;
     if (widget.universityMarkers.isEmpty) return [];
-    if (iconBytes == null) {
+    if (iconBytes == null || selectedIconBytes == null) {
       logger.w("📍 University marker icon is not ready yet");
       return [];
     }
 
-    return [
+    final selectedMarkerId = _selectedUniversityMarker?.id;
+    final orderedMarkers = <UniversityMapMarker>[
       for (final marker in widget.universityMarkers)
-        PlacemarkMapObject(
-          mapId: MapObjectId("university_${marker.id}_placemark"),
-          point: Point(
-            latitude: marker.latitude,
-            longitude: marker.longitude,
-          ),
-          zIndex: 5,
-          opacity: 1.0,
-          consumeTapEvents: true,
-          icon: PlacemarkIcon.single(
-            PlacemarkIconStyle(
-              image: BitmapDescriptor.fromBytes(iconBytes),
-              anchor: const Offset(0.5, 0.5),
-              scale: 0.9,
-            ),
-          ),
-          onTap: (_, point) {
-            if (_showListingDetailTooltip) {
-              _showListingDetailTooltip = false;
-            }
-            widget.onMapTap?.call(point);
-            final onUniversityMarkerTap = widget.onUniversityMarkerTap;
-            if (onUniversityMarkerTap != null) {
-              if (_selectedUniversityMarker != null) {
-                setState(() => _selectedUniversityMarker = null);
-              }
-              onUniversityMarkerTap(marker);
-              return;
-            }
-            setState(() => _selectedUniversityMarker = marker);
-          },
-        ),
+        if (marker.id != selectedMarkerId) marker,
+      for (final marker in widget.universityMarkers)
+        if (marker.id == selectedMarkerId) marker,
     ];
+
+    return [
+      for (final marker in orderedMarkers)
+        if (marker.id == selectedMarkerId)
+          PlacemarkMapObject(
+            mapId: MapObjectId("university_${marker.id}_placemark"),
+            point: Point(
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            ),
+            zIndex: 9,
+            opacity: 1.0,
+            consumeTapEvents: true,
+            icon: PlacemarkIcon.single(
+              PlacemarkIconStyle(
+                image: BitmapDescriptor.fromBytes(selectedIconBytes),
+                anchor: const Offset(0.5, 0.5),
+                scale: 1.0,
+              ),
+            ),
+            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
+          )
+        else
+          PlacemarkMapObject(
+            mapId: MapObjectId("university_${marker.id}_placemark"),
+            point: Point(
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            ),
+            zIndex: 5,
+            opacity: 1.0,
+            consumeTapEvents: true,
+            icon: PlacemarkIcon.single(
+              PlacemarkIconStyle(
+                image: BitmapDescriptor.fromBytes(iconBytes),
+                anchor: const Offset(0.5, 0.5),
+                scale: 0.9,
+              ),
+            ),
+            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
+          ),
+    ];
+  }
+
+  void _handleUniversityMarkerTap(UniversityMapMarker marker, Point point) {
+    if (_showListingDetailTooltip) {
+      _showListingDetailTooltip = false;
+    }
+    widget.onMapTap?.call(point);
+    final onUniversityMarkerTap = widget.onUniversityMarkerTap;
+    if (onUniversityMarkerTap != null) {
+      if (_selectedUniversityMarker != null) {
+        setState(() => _selectedUniversityMarker = null);
+      }
+      onUniversityMarkerTap(marker);
+      return;
+    }
+    setState(() => _selectedUniversityMarker = marker);
   }
 
   List<MapObject> _createListingPinMapObjects() {

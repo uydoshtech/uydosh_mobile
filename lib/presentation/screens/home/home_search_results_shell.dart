@@ -81,7 +81,7 @@ class _SearchResultsShell extends StatelessWidget {
           ),
         if (inSearchContext)
           Positioned(
-            right: 16,
+            right: 12,
             top: viewToggleTop,
             child: SearchFloatingActionButton(
               onPressed: onOpenMapView,

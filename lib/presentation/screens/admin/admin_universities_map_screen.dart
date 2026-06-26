@@ -40,6 +40,8 @@ class _AdminUniversitiesMapScreenState
         await UniversityCache.refreshCache();
       } else if (!UniversityCache.isInitialized) {
         await UniversityCache.initialize();
+      } else if (UniversityCache.shouldRefresh()) {
+        await UniversityCache.refreshCache();
       }
 
       final language = L10n.currentLanguage;
@@ -70,7 +72,6 @@ class _AdminUniversitiesMapScreenState
     final latitude = double.tryParse(university.latitude ?? "");
     final longitude = double.tryParse(university.longitude ?? "");
     if (latitude == null || longitude == null) return null;
-    if (_isPlaceholderCoordinate(latitude, longitude)) return null;
 
     final shortName = university.getLocalizedShortName(language);
     final fullName = university.getLocalizedName(language);
@@ -81,11 +82,6 @@ class _AdminUniversitiesMapScreenState
       title: shortName.isNotEmpty ? shortName : fullName,
       fullTitle: fullName,
     );
-  }
-
-  bool _isPlaceholderCoordinate(double latitude, double longitude) {
-    return (latitude - 41.2995).abs() < 0.000001 &&
-        (longitude - 69.2401).abs() < 0.000001;
   }
 
   @override

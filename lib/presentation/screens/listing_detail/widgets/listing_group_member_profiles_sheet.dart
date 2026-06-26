@@ -3,9 +3,7 @@ import "dart:math" as math;
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
-import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
-import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -40,7 +38,7 @@ const _sheetMinimumHeight = 280.0;
 const _sheetHandleHeight = 14.0;
 const _sheetHeaderHeight = 118.0;
 const _sheetFullGroupHeaderExtraHeight = 55.0;
-const _sheetFullGroupShortlistActionHeight = 52.0;
+const _sheetHeaderExtraNameLineHeight = 20.0;
 const _sheetListBottomPadding = 16.0;
 const _sheetCardGap = 10.0;
 const _sheetMeasurementSlack = 8.0;
@@ -440,15 +438,18 @@ class _ListingGroupMemberProfilesSheetState
   double _estimatedSheetHeight({
     required List<ConversationMemberSummary> sortedMembers,
     required bool showPendingRequests,
+    required double sheetWidth,
   }) {
     var height = _sheetHandleHeight +
-        _sheetHeaderHeight +
+        _estimatedHeaderHeight(
+          sortedMembers: sortedMembers,
+          sheetWidth: sheetWidth,
+        ) +
         _sheetListBottomPadding +
         _estimatedMemberCardsHeight(sortedMembers);
 
     if (_isGroupFull) {
-      height += _sheetFullGroupHeaderExtraHeight +
-          _sheetFullGroupShortlistActionHeight;
+      height += _sheetFullGroupHeaderExtraHeight;
     }
 
     if (showPendingRequests) {
@@ -461,6 +462,29 @@ class _ListingGroupMemberProfilesSheetState
     }
 
     return height;
+  }
+
+  double _estimatedHeaderHeight({
+    required List<ConversationMemberSummary> sortedMembers,
+    required double sheetWidth,
+  }) {
+    if (sortedMembers.isEmpty) return _sheetHeaderHeight;
+
+    final visibleAvatars = math.min(sortedMembers.length, 5);
+    final avatarSize = 32 * 1.1;
+    final avatarStep = avatarSize * (1 - 0.22);
+    final hasOverflow = sortedMembers.length > visibleAvatars;
+    final avatarStackWidth = avatarSize +
+        (visibleAvatars - 1) * avatarStep +
+        (hasOverflow ? avatarStep : 0);
+    final namesWidth = math.max(120.0, sheetWidth - 32 - avatarStackWidth - 12);
+    final namesText = sortedMembers.map((member) => member.name).join(", ");
+    final estimatedCharactersPerLine = math.max(1, namesWidth / 8.5).floor();
+    final estimatedLines =
+        (namesText.length / estimatedCharactersPerLine).ceil().clamp(1, 6);
+    final extraLines = math.max(0, estimatedLines - 2);
+
+    return _sheetHeaderHeight + extraLines * _sheetHeaderExtraNameLineHeight;
   }
 
   double _estimatedMemberCardsHeight(
@@ -779,6 +803,7 @@ class _ListingGroupMemberProfilesSheetState
         final estimatedSheetHeight = _estimatedSheetHeight(
           sortedMembers: sortedMembers,
           showPendingRequests: showPendingRequests,
+          sheetWidth: constraints.maxWidth,
         );
         final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
             ? maxSheetHeight
@@ -826,39 +851,6 @@ class _ListingGroupMemberProfilesSheetState
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_isGroupFull) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              OutlinedButton.icon(
-                                onPressed: () async {
-                                  await GroupHousingFlow.openShortlistSheet(
-                                    context: context,
-                                    groupListingId: widget.listingId,
-                                    isOwner: widget.isOwner,
-                                    groupListingDetail:
-                                        widget.groupListingDetail,
-                                    onChanged: widget.onChanged,
-                                  );
-                                },
-                                icon: const Icon(Icons.bookmark_outline),
-                                label: Text(
-                                  GroupHousingFlow.savedListingsLabel(
-                                    widget.groupListingDetail?.groupContext
-                                            ?.groupShortlistCount ??
-                                        GroupShortlistState()
-                                            .shortlistCountForGroup(
-                                          widget.listingId,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Column(
@@ -1011,14 +1003,7 @@ class _MemberProfilesHeader extends StatelessWidget {
   final String? statusLabelKey;
 
   String _memberNamesLabel() {
-    final names = members.map((member) => member.name).toList();
-    if (names.length <= 1) return names.join(", ");
-
-    final splitIndex = (names.length / 2).ceil();
-    return [
-      names.take(splitIndex).join(", "),
-      names.skip(splitIndex).join(", "),
-    ].where((line) => line.isNotEmpty).join("\n");
+    return members.map((member) => member.name).join(", ");
   }
 
   @override
@@ -1104,8 +1089,7 @@ class _MemberProfilesHeader extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     height: 1.25,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  softWrap: true,
                 ),
               ),
             ],
@@ -1215,7 +1199,11 @@ class _MemberProfileCard extends StatelessWidget {
   }
 
   Color _roleColor(ColorScheme scheme) {
-    if (_isLandlord) return ListingDetailThemeHelper.iconColor;
+    if (_isLandlord) {
+      return ThemeState().isLightTheme
+          ? AppColors.warningDark
+          : AppColors.warning;
+    }
     if (_isOwner) return ListingDetailThemeHelper.iconColor;
     if (_isCurrentUser) return AppColors.success;
     if (ThemeState().isLightTheme) return Colors.black;
@@ -1422,6 +1410,7 @@ class _MemberProfileCard extends StatelessWidget {
                       _RoleBadge(
                         label: _roleLabel!,
                         color: roleColor,
+                        isEmphasized: _isLandlord,
                         isFilled: ThemeState().isLightTheme && _isOwner,
                       ),
                     ],
@@ -1728,34 +1717,38 @@ class _RoleBadge extends StatelessWidget {
   const _RoleBadge({
     required this.label,
     required this.color,
+    this.isEmphasized = false,
     this.isFilled = false,
   });
 
   final String label;
   final Color color;
+  final bool isEmphasized;
   final bool isFilled;
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        isFilled ? Colors.black : color.withValues(alpha: 0.12);
+    final backgroundColor = isFilled
+        ? Colors.black
+        : color.withValues(alpha: isEmphasized ? 0.22 : 0.12);
     final foregroundColor = isFilled ? Colors.white : color;
+    final borderColor = isFilled
+        ? Colors.black
+        : color.withValues(alpha: isEmphasized ? 0.55 : 0.28);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: isFilled ? Colors.black : color.withValues(alpha: 0.28),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: foregroundColor,
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: isEmphasized ? FontWeight.w700 : FontWeight.w600,
           height: 1.1,
         ),
       ),

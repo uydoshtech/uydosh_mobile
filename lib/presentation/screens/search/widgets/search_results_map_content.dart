@@ -56,7 +56,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     final pin = selectedPin;
     final universityMarker = selectedUniversityMarker;
     final hasTooltip = pin != null || universityMarker != null;
-    const viewToggleTop = 8.0;
+    const viewToggleTop = 4.0;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
     final feedViewButton = SearchFloatingActionButton(
@@ -127,8 +127,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 8,
-                right: 8,
+                left: 12,
+                right: 12,
                 top: viewToggleTop,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
