@@ -15,10 +15,10 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       await event.map(
         fetchListings: (e) async => _onFetchListings(emit, e),
         loadMore: (e) async => _onLoadMore(emit, e),
-        fetchListingsBySubwayStation:
-            (e) async => _onFetchListingsBySubwayStation(emit, e),
-        fetchListingsByLocation:
-            (e) async => _onFetchListingsByLocation(emit, e),
+        fetchListingsBySubwayStation: (e) async =>
+            _onFetchListingsBySubwayStation(emit, e),
+        fetchListingsByLocation: (e) async =>
+            _onFetchListingsByLocation(emit, e),
         searchListings: (e) async => _onSearchListings(emit, e),
         fetchUserListings: (e) async => _onFetchUserListings(emit, e),
       );
@@ -31,6 +31,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   bool _hasMore = true;
   List<Listing> _currentListings = [];
   int? _totalResults;
+  int _stateRevision = 0;
 
   // Store search context for load more operations
   int? _lastListingTypeId;
@@ -45,6 +46,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   bool? _lastPrivateRoom;
   bool? _lastWithPhoto;
   List<int>? _lastExcludeUserIds;
+
   /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
   bool _stationOnlyMode = false;
 
@@ -52,6 +54,21 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   /// are ignored so a slow unfiltered prefetch cannot overwrite a newer
   /// filtered search (home ribbon bootstrap vs app start).
   int _searchRequestGeneration = 0;
+
+  ListingsState _loadedState({
+    required List<Listing> listings,
+    required bool hasMore,
+    required int currentPage,
+    int? total,
+  }) {
+    return ListingsState.loaded(
+      listings: listings,
+      total: total,
+      hasMore: hasMore,
+      currentPage: currentPage,
+      revision: ++_stateRevision,
+    );
+  }
 
   Future<void> _onFetchListings(
     Emitter<ListingsState> emit,
@@ -104,11 +121,13 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       );
 
       // Service now automatically uses current app language
-      final response = await _listingService.getListings(
-        page: page,
-        limit: limit,
-        isActive: isActive,
-      ).timeout(_requestTimeout);
+      final response = await _listingService
+          .getListings(
+            page: page,
+            limit: limit,
+            isActive: isActive,
+          )
+          .timeout(_requestTimeout);
 
       final newListings = response.data;
       FavoritesState().syncFromListings(newListings);
@@ -122,7 +141,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
 
       emit(
-        ListingsState.loaded(
+        _loadedState(
           listings: _currentListings,
           total: _totalResults,
           hasMore: _hasMore,
@@ -178,15 +197,17 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       // Station-only mode (from metro map): use getListingsBySubwayStation
       if (_stationOnlyMode && _lastSubwayStationId != null) {
-        final listings = await _listingService.getListingsBySubwayStation(
-          _lastSubwayStationId!,
-          page: _currentPage,
-          limit: limit,
-        ).timeout(_requestTimeout);
+        final listings = await _listingService
+            .getListingsBySubwayStation(
+              _lastSubwayStationId!,
+              page: _currentPage,
+              limit: limit,
+            )
+            .timeout(_requestTimeout);
         _hasMore = listings.length >= limit;
         final updatedListings = [...currentListings, ...listings];
         emit(
-          ListingsState.loaded(
+          _loadedState(
             listings: updatedListings,
             total: _totalResults,
             hasMore: _hasMore,
@@ -202,25 +223,29 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
           _lastLocationId != null ||
           _lastSubwayStationId != null ||
-          (_lastSubwayStationIds != null && _lastSubwayStationIds!.isNotEmpty)) {
+          (_lastSubwayStationIds != null &&
+              _lastSubwayStationIds!.isNotEmpty)) {
         // Use search with stored parameters
-        final response = await _listingService.searchListings(
-          page: _currentPage,
-          limit: limit,
-          isActive: isActive,
-          listingTypeId: _lastListingTypeIds != null ? null : _lastListingTypeId,
-          listingTypeIds: _lastListingTypeIds,
-          locationId: _lastLocationId,
-          subwayStationId: _lastSubwayStationId,
-          subwayStationIds: _lastSubwayStationIds,
-          subwayLineId: _lastSubwayLineId,
-          gender: _lastGender,
-          minPrice: _lastMinPrice,
-          maxPrice: _lastMaxPrice,
-          privateRoom: _lastPrivateRoom,
-          withPhoto: _lastWithPhoto,
-          excludeUserIds: _lastExcludeUserIds,
-        ).timeout(_requestTimeout);
+        final response = await _listingService
+            .searchListings(
+              page: _currentPage,
+              limit: limit,
+              isActive: isActive,
+              listingTypeId:
+                  _lastListingTypeIds != null ? null : _lastListingTypeId,
+              listingTypeIds: _lastListingTypeIds,
+              locationId: _lastLocationId,
+              subwayStationId: _lastSubwayStationId,
+              subwayStationIds: _lastSubwayStationIds,
+              subwayLineId: _lastSubwayLineId,
+              gender: _lastGender,
+              minPrice: _lastMinPrice,
+              maxPrice: _lastMaxPrice,
+              privateRoom: _lastPrivateRoom,
+              withPhoto: _lastWithPhoto,
+              excludeUserIds: _lastExcludeUserIds,
+            )
+            .timeout(_requestTimeout);
 
         final newListings = response.data;
         FavoritesState().syncFromListings(newListings);
@@ -231,7 +256,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         final updatedListings = [...currentListings, ...newListings];
 
         emit(
-          ListingsState.loaded(
+          _loadedState(
             listings: updatedListings,
             total: _totalResults,
             hasMore: _hasMore,
@@ -242,11 +267,13 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         _currentPage++;
       } else {
         // Fall back to regular listings
-        final response = await _listingService.getListings(
-          page: _currentPage,
-          limit: limit,
-          isActive: isActive,
-        ).timeout(_requestTimeout);
+        final response = await _listingService
+            .getListings(
+              page: _currentPage,
+              limit: limit,
+              isActive: isActive,
+            )
+            .timeout(_requestTimeout);
 
         final newListings = response.data;
         FavoritesState().syncFromListings(newListings);
@@ -257,7 +284,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         final updatedListings = [...currentListings, ...newListings];
 
         emit(
-          ListingsState.loaded(
+          _loadedState(
             listings: updatedListings,
             total: _totalResults,
             hasMore: _hasMore,
@@ -308,7 +335,8 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     event.map(
       fetchListings: (_) {},
       loadMore: (_) {},
-      fetchListingsBySubwayStation: (e) => _lastSubwayStationId = e.subwayStationId,
+      fetchListingsBySubwayStation: (e) =>
+          _lastSubwayStationId = e.subwayStationId,
       fetchListingsByLocation: (_) {},
       searchListings: (_) {},
       fetchUserListings: (_) {},
@@ -363,11 +391,13 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       );
 
       // Service now automatically uses current app language
-      final listings = await _listingService.getListingsBySubwayStation(
-        subwayStationId,
-        page: page,
-        limit: limit,
-      ).timeout(_requestTimeout);
+      final listings = await _listingService
+          .getListingsBySubwayStation(
+            subwayStationId,
+            page: page,
+            limit: limit,
+          )
+          .timeout(_requestTimeout);
 
       FavoritesState().syncFromListings(listings);
 
@@ -380,7 +410,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _hasMore = listings.length >= limit;
 
       emit(
-        ListingsState.loaded(
+        _loadedState(
           listings: _currentListings,
           total: _totalResults,
           hasMore: _hasMore,
@@ -449,11 +479,13 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         getIt<AppAnalyticsService>().logSearchPerformed(locationId: locationId);
       }
 
-      final listings = await _listingService.getListingsByLocation(
-        locationId,
-        page: page,
-        limit: limit,
-      ).timeout(_requestTimeout);
+      final listings = await _listingService
+          .getListingsByLocation(
+            locationId,
+            page: page,
+            limit: limit,
+          )
+          .timeout(_requestTimeout);
 
       FavoritesState().syncFromListings(listings);
 
@@ -466,7 +498,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _hasMore = listings.length >= limit;
 
       emit(
-        ListingsState.loaded(
+        _loadedState(
           listings: _currentListings,
           total: _totalResults,
           hasMore: _hasMore,
@@ -536,23 +568,22 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       loadMore: (e) => null,
       fetchListingsBySubwayStation: (e) => null,
       fetchListingsByLocation: (e) => null,
-      searchListings:
-          (e) => {
-            "listingTypeId": e.listingTypeId,
-            "listingTypeIds": e.listingTypeIds,
-            "locationId": e.locationId,
-            "subwayStationId": e.subwayStationId,
-            "subwayStationIds": e.subwayStationIds,
-            "subwayLineId": e.subwayLineId,
-            "gender": e.gender,
-            "minPrice": e.minPrice,
-            "maxPrice": e.maxPrice,
-            "privateRoom": e.privateRoom,
-            "withPhoto": e.withPhoto,
-            "excludeUserIds": e.excludeUserIds,
-          },
-        fetchUserListings: (e) => null,
-      );
+      searchListings: (e) => {
+        "listingTypeId": e.listingTypeId,
+        "listingTypeIds": e.listingTypeIds,
+        "locationId": e.locationId,
+        "subwayStationId": e.subwayStationId,
+        "subwayStationIds": e.subwayStationIds,
+        "subwayLineId": e.subwayLineId,
+        "gender": e.gender,
+        "minPrice": e.minPrice,
+        "maxPrice": e.maxPrice,
+        "privateRoom": e.privateRoom,
+        "withPhoto": e.withPhoto,
+        "excludeUserIds": e.excludeUserIds,
+      },
+      fetchUserListings: (e) => null,
+    );
 
     Map<String, dynamic>? pendingSearchParams;
     if (searchParams != null) {
@@ -569,21 +600,20 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         loadMore: (e) => null,
         fetchListingsBySubwayStation: (e) => null,
         fetchListingsByLocation: (e) => null,
-        searchListings:
-            (e) => {
-              "listingTypeId": e.listingTypeId,
-              "listingTypeIds": e.listingTypeIds,
-              "locationId": e.locationId,
-              "subwayStationId": e.subwayStationId,
-              "subwayStationIds": e.subwayStationIds,
-              "subwayLineId": e.subwayLineId,
-              "gender": e.gender,
-              "minPrice": e.minPrice,
-              "maxPrice": e.maxPrice,
-              "privateRoom": e.privateRoom,
-              "withPhoto": e.withPhoto,
-              "excludeUserIds": e.excludeUserIds,
-            },
+        searchListings: (e) => {
+          "listingTypeId": e.listingTypeId,
+          "listingTypeIds": e.listingTypeIds,
+          "locationId": e.locationId,
+          "subwayStationId": e.subwayStationId,
+          "subwayStationIds": e.subwayStationIds,
+          "subwayLineId": e.subwayLineId,
+          "gender": e.gender,
+          "minPrice": e.minPrice,
+          "maxPrice": e.maxPrice,
+          "privateRoom": e.privateRoom,
+          "withPhoto": e.withPhoto,
+          "excludeUserIds": e.excludeUserIds,
+        },
         fetchUserListings: (e) => null,
       );
 
@@ -633,23 +663,25 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       logger.d("==========================================");
 
       // Use the new comprehensive search method that includes ALL parameters
-      final response = await _listingService.searchListings(
-        page: page,
-        limit: limit,
-        isActive: true,
-        listingTypeId: listingTypeIds != null ? null : listingTypeId,
-        listingTypeIds: listingTypeIds,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoom,
-        withPhoto: withPhoto,
-        excludeUserIds: excludeUserIds,
-      ).timeout(_requestTimeout);
+      final response = await _listingService
+          .searchListings(
+            page: page,
+            limit: limit,
+            isActive: true,
+            listingTypeId: listingTypeIds != null ? null : listingTypeId,
+            listingTypeIds: listingTypeIds,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayStationIds: subwayStationIds,
+            subwayLineId: subwayLineId,
+            gender: gender,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            privateRoom: privateRoom,
+            withPhoto: withPhoto,
+            excludeUserIds: excludeUserIds,
+          )
+          .timeout(_requestTimeout);
 
       if (requestGeneration != _searchRequestGeneration) {
         return;
@@ -683,7 +715,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _totalResults = response.total;
 
       emit(
-        ListingsState.loaded(
+        _loadedState(
           listings: _currentListings,
           total: _totalResults,
           hasMore: _hasMore,
@@ -743,10 +775,12 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       );
 
       // Use the new getUserListings method
-      final response = await _listingService.getUserListings(
-        page: page,
-        limit: limit,
-      ).timeout(_requestTimeout);
+      final response = await _listingService
+          .getUserListings(
+            page: page,
+            limit: limit,
+          )
+          .timeout(_requestTimeout);
 
       final listings = response.data;
       _hasMore = (page + 1) <= response.totalPages && listings.isNotEmpty;
@@ -759,7 +793,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
 
       emit(
-        ListingsState.loaded(
+        _loadedState(
           listings: _currentListings,
           total: _totalResults,
           hasMore: _hasMore,

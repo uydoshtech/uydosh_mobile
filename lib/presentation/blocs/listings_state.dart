@@ -11,9 +11,13 @@ class ListingsState with _$ListingsState {
     required List<Listing> listings,
     required bool hasMore,
     required int currentPage,
+
     /// Total results count from API (stable across pagination).
     /// Null when the underlying endpoint doesn't provide totals.
     int? total,
+
+    /// Monotonic marker so refresh completions still emit when data is unchanged.
+    @Default(0) int revision,
   }) = _$LoadedImpl;
   const factory ListingsState.error(String message) = _$ErrorImpl;
 }

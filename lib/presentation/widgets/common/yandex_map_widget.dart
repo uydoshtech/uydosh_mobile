@@ -1490,7 +1490,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
     return Positioned(
       right: 12,
-      bottom: 12 + MediaQuery.paddingOf(context).bottom,
+      bottom: 44 + MediaQuery.paddingOf(context).bottom,
       child: SizedBox(
         width: width,
         height: height,

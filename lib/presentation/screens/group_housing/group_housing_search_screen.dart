@@ -186,8 +186,10 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final state = _bloc.state;
-    final loaded =
-        state.maybeWhen(loaded: (l, h, p, t) => (l, h, p), orElse: () => null);
+    final loaded = state.maybeWhen(
+      loaded: (l, h, p, t, r) => (l, h, p),
+      orElse: () => null,
+    );
     if (loaded == null || !loaded.$2) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 240) {
@@ -317,7 +319,7 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
                     message: message,
                     onRetry: () => _runSearch(refresh: true),
                   ),
-                  loaded: (listings, hasMore, page, total) {
+                  loaded: (listings, hasMore, page, total, revision) {
                     if (listings.isEmpty) {
                       return UydoshEmptyColumn(
                         title: L10n.get("group_housing_search_empty"),
