@@ -102,24 +102,180 @@ class ConversationTile extends StatelessWidget {
     final shouldShowParticipantStack = showParticipantAvatarStack &&
         isListingGroup &&
         conversation.members.isNotEmpty;
-    final avatarLeading = shouldShowParticipantStack
-        ? ChatParticipantAvatarStack(
-            participants: conversation.members,
-            currentUserId: currentUserId,
-            avatarSize: 28,
-            maxVisible: 5,
-          )
-        : UyDoshAvatar(
-            avatarUrl: rawAvatar,
-            size: UyDoshAvatarSize.medium,
-            backgroundColor: avatarColor,
-            foregroundColor: avatarIconColor,
-            fallback: ConversationAvatarContent(
-              conversation: conversation,
-              iconColor: avatarIconColor,
-              userNameOverride: initialsName,
+    final participantAvatarStack = ChatParticipantAvatarStack(
+      participants: conversation.members,
+      currentUserId: currentUserId,
+      avatarSize: 28,
+      maxVisible: 5,
+    );
+    final avatarLeading = UyDoshAvatar(
+      avatarUrl: rawAvatar,
+      size: UyDoshAvatarSize.medium,
+      backgroundColor: avatarColor,
+      foregroundColor: avatarIconColor,
+      fallback: ConversationAvatarContent(
+        conversation: conversation,
+        iconColor: avatarIconColor,
+        userNameOverride: initialsName,
+      ),
+    );
+
+    final title = !isGrouped && !isListingMarketplace
+        ? ConversationListingTitleWithCategoryIcon(
+            conversation: conversation,
+            textStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: textColor,
             ),
+            iconColor: iconColor,
+          )
+        : Text(
+            titleText,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 15,
+                      fontWeight:
+                          unreadBoldName ? FontWeight.bold : FontWeight.w600,
+                      height: 1.15,
+                      color: textColor,
+                    ) ??
+                TextStyle(
+                  fontSize: 15,
+                  fontWeight:
+                      unreadBoldName ? FontWeight.bold : FontWeight.w600,
+                  height: 1.15,
+                  color: textColor,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           );
+    final subtitle = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Listing / preset title row: on grouped inbox cards the parent
+        // header already shows it — omit here to avoid duplication.
+        if (isListingMarketplace && !isGrouped) ...[
+          ConversationListingTitleWithCategoryIcon(
+            conversation: conversation,
+            textStyle: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              color: secondaryTextColor,
+            ),
+            iconColor: iconColor,
+            iconSize: 18,
+          ),
+          const SizedBox(height: 4),
+        ],
+        if (!shouldShowParticipantStack &&
+            conversation.lastMessageContent != null) ...[
+          Text(
+            ListingShareMessageCodec.previewText(
+              conversation.lastMessageContent!,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: secondaryTextColor),
+          ),
+          const SizedBox(height: 4),
+        ],
+        Row(
+          children: [
+            ThemeIcon(
+              Icons.access_time,
+              size: 12,
+              color: secondaryTextColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _formatTime(
+                context,
+                conversation.lastMessageAt ?? conversation.updatedAt,
+                timeOnly: showActivityTimeOnly,
+              ),
+              style: TextStyle(fontSize: 12, color: secondaryTextColor),
+            ),
+          ],
+        ),
+      ],
+    );
+    final trailing = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Unread indicator - only show if there are unread messages AND current user is the addressee (not the sender)
+        if (conversation.unreadCount != null &&
+            conversation.unreadCount! > 0 &&
+            currentUserId != null &&
+            conversation.lastMessageSenderId != currentUserId) ...[
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: Align(
+              // Optical centering: the small badge reads slightly low next
+              // to the 18px count badge because of shadow/gradient.
+              alignment: conversation.unreadCount! > 1
+                  ? Alignment.center
+                  : const Alignment(0, -0.12),
+              child: Container(
+                width: conversation.unreadCount! > 1 ? 18 : 11,
+                height: conversation.unreadCount! > 1 ? 18 : 11,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color.lerp(unreadColor, Colors.white, 0.32) ??
+                          unreadColor,
+                      Color.lerp(unreadColor, Colors.black, 0.22) ??
+                          unreadColor,
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.24),
+                      blurRadius: 6,
+                      offset: const Offset(-2, -2),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.22),
+                      blurRadius: 6,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                  color: conversation.unreadCount! > 1 ? null : unreadColor,
+                ),
+                child: conversation.unreadCount! > 1
+                    ? Center(
+                        child: Text(
+                          "${conversation.unreadCount!}",
+                          style: TextStyle(
+                            color: unreadTextColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        // Arrow icon
+        if (conversation.lastMessageAt != null)
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: Center(
+              child: ThemeIcon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: iconColor,
+              ),
+            ),
+          ),
+      ],
+    );
 
     final listTile = ListTile(
       onTap: onTap,
@@ -132,161 +288,9 @@ class ConversationTile extends StatelessWidget {
           ? const RoundedRectangleBorder(borderRadius: BorderRadius.zero)
           : null,
       leading: avatarLeading,
-      title: !isGrouped && !isListingMarketplace
-          ? ConversationListingTitleWithCategoryIcon(
-              conversation: conversation,
-              textStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-              iconColor: iconColor,
-            )
-          : Text(
-              titleText,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 15,
-                        fontWeight:
-                            unreadBoldName ? FontWeight.bold : FontWeight.w600,
-                        height: 1.15,
-                        color: textColor,
-                      ) ??
-                  TextStyle(
-                    fontSize: 15,
-                    fontWeight:
-                        unreadBoldName ? FontWeight.bold : FontWeight.w600,
-                    height: 1.15,
-                    color: textColor,
-                  ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Listing / preset title row: on grouped inbox cards the parent
-          // header already shows it — omit here to avoid duplication.
-          if (isListingMarketplace && !isGrouped) ...[
-            ConversationListingTitleWithCategoryIcon(
-              conversation: conversation,
-              textStyle: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-                color: secondaryTextColor,
-              ),
-              iconColor: iconColor,
-              iconSize: 18,
-            ),
-            const SizedBox(height: 4),
-          ],
-          if (conversation.lastMessageContent != null) ...[
-            Text(
-              ListingShareMessageCodec.previewText(
-                conversation.lastMessageContent!,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: secondaryTextColor),
-            ),
-            const SizedBox(height: 4),
-          ],
-          Row(
-            children: [
-              ThemeIcon(
-                Icons.access_time,
-                size: 12,
-                color: secondaryTextColor,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _formatTime(
-                  context,
-                  conversation.lastMessageAt ?? conversation.updatedAt,
-                  timeOnly: showActivityTimeOnly,
-                ),
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
-              ),
-            ],
-          ),
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Unread indicator - only show if there are unread messages AND current user is the addressee (not the sender)
-          if (conversation.unreadCount != null &&
-              conversation.unreadCount! > 0 &&
-              currentUserId != null &&
-              conversation.lastMessageSenderId != currentUserId) ...[
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: Align(
-                // Optical centering: the small badge reads slightly low next
-                // to the 18px count badge because of shadow/gradient.
-                alignment: conversation.unreadCount! > 1
-                    ? Alignment.center
-                    : const Alignment(0, -0.12),
-                child: Container(
-                  width: conversation.unreadCount! > 1 ? 18 : 11,
-                  height: conversation.unreadCount! > 1 ? 18 : 11,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color.lerp(unreadColor, Colors.white, 0.32) ??
-                            unreadColor,
-                        Color.lerp(unreadColor, Colors.black, 0.22) ??
-                            unreadColor,
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withValues(alpha: 0.24),
-                        blurRadius: 6,
-                        offset: const Offset(-2, -2),
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.22),
-                        blurRadius: 6,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
-                    color: conversation.unreadCount! > 1 ? null : unreadColor,
-                  ),
-                  child: conversation.unreadCount! > 1
-                      ? Center(
-                          child: Text(
-                            "${conversation.unreadCount!}",
-                            style: TextStyle(
-                              color: unreadTextColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          // Arrow icon
-          if (conversation.lastMessageAt != null)
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: Center(
-                child: ThemeIcon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: iconColor,
-                ),
-              ),
-            ),
-        ],
-      ),
+      title: title,
+      subtitle: subtitle,
+      trailing: trailing,
     );
 
     if (isGrouped) {
@@ -301,6 +305,41 @@ class ConversationTile extends StatelessWidget {
         : const BorderRadius.all(Radius.circular(20));
     final useLiquidGlass = useFeedTileSurface &&
         (themeState.isBlueTheme || themeState.isLightTheme);
+
+    final tileContent = shouldShowParticipantStack
+        ? InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            borderRadius: borderRadius,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  participantAvatarStack,
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            title,
+                            const SizedBox(height: 3),
+                            subtitle,
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      trailing,
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        : listTile;
 
     return ThreeDElevatedSurface(
       baseColor: useFeedTileSurface
@@ -320,7 +359,7 @@ class ConversationTile extends StatelessWidget {
           : useFeedTileSurface && themeState.isBlueTheme
               ? ThreeDSurfaceStyle.elevatedShadows(context)
               : null,
-      child: listTile,
+      child: tileContent,
     );
   }
 

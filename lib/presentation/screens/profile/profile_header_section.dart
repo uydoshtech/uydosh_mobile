@@ -307,8 +307,10 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
+                const SizedBox(height: 10),
+              ] else if (displayName.isNotEmpty) ...[
+                const SizedBox(height: 4),
               ],
-              const SizedBox(height: 10),
               SizedBox(
                 height: _followCountsRowHeight,
                 child: Center(

@@ -9,6 +9,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.privateRoom,
     required this.withPhoto,
     required this.selectedPin,
+    required this.universityMarkers,
     required this.onOpenFilters,
     required this.onOpenFeedView,
     required this.onClearSelectedPin,
@@ -33,6 +34,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool privateRoom;
   final bool withPhoto;
   final ListingMapPin? selectedPin;
+  final List<UniversityMapMarker> universityMarkers;
   final VoidCallback onOpenFilters;
   final VoidCallback onOpenFeedView;
   final VoidCallback onClearSelectedPin;
@@ -66,11 +68,13 @@ class _SearchResultsMapContent extends StatelessWidget {
                 child: YandexMapWidget(
                   apiKey: AppConfig.yandexMapsApiKey,
                   pins: result.pins,
+                  universityMarkers: universityMarkers,
                   selectedListingId: selectedPin?.listingId,
                   title: context.l10n.search_results,
                   height: double.infinity,
                   moveCameraOnTargetChange: result.pins.isNotEmpty,
                   showDefaultPlacemark: false,
+                  showUserLocation: true,
                   onMapTap: (_) => onClearSelectedPin(),
                   onPinTap: onSelectPin,
                 ),

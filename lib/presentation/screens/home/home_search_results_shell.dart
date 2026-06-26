@@ -12,6 +12,8 @@ class _SearchResultsShell extends StatelessWidget {
     required this.inlineRibbonTop,
     required this.mapTopPadding,
     required this.viewToggleTop,
+    required this.initialMapListings,
+    required this.initialMapTotal,
     required this.alertFabBottom,
     required this.searchFiltersState,
     required this.bellHintLayerLink,
@@ -38,6 +40,8 @@ class _SearchResultsShell extends StatelessWidget {
   final double inlineRibbonTop;
   final double mapTopPadding;
   final double viewToggleTop;
+  final List<Listing> initialMapListings;
+  final int? initialMapTotal;
   final double alertFabBottom;
   final SearchFiltersState searchFiltersState;
   final LayerLink bellHintLayerLink;
@@ -123,6 +127,8 @@ class _SearchResultsShell extends StatelessWidget {
       withPhoto: mapResult.withPhoto,
       onOpenFeed: onOpenFeedFromMap,
       embedded: true,
+      initialListings: initialMapListings,
+      initialTotal: initialMapTotal,
     );
 
     if (isSearchMode) return mapView;

@@ -2,16 +2,20 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
+import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
+import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
@@ -50,6 +54,8 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.gender,
     this.onOpenFeed,
     this.embedded = false,
+    this.initialListings = const [],
+    this.initialTotal,
   });
 
   final int listingTypeId;
@@ -67,6 +73,8 @@ class SearchResultsMapScreen extends StatefulWidget {
     SearchBottomSheetResult result,
   )? onOpenFeed;
   final bool embedded;
+  final List<Listing> initialListings;
+  final int? initialTotal;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -80,6 +88,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _isLoading = true;
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
+  List<UniversityMapMarker> _universityMarkers = const [];
 
   late int _listingTypeId;
   int? _locationId;
@@ -105,7 +114,58 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _maxPrice = widget.maxPrice;
     _privateRoom = widget.privateRoom;
     _withPhoto = widget.withPhoto;
+    if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
+      final initialResult = _resultFromListings(
+        widget.initialListings,
+        total: widget.initialTotal ?? widget.initialListings.length,
+      );
+      _result = initialResult;
+      _selectedPin = _autoSelectedPin(initialResult);
+    }
     _loadResults(showLoading: false);
+    _loadCurrentUserUniversityMarker();
+  }
+
+  Future<void> _loadCurrentUserUniversityMarker() async {
+    try {
+      final profile = await SessionManager.getCachedUserProfile();
+      final universityId = profile?.universityId;
+      if (universityId == null) return;
+
+      if (!UniversityCache.isInitialized) {
+        await UniversityCache.initialize();
+      }
+      final university = UniversityCache.getUniversityById(universityId);
+      if (university == null) return;
+
+      final latitude = double.tryParse(university.latitude ?? "");
+      final longitude = double.tryParse(university.longitude ?? "");
+      if (latitude == null || longitude == null) return;
+      if (_isPlaceholderUniversityCoordinate(latitude, longitude)) return;
+
+      final language = LanguageState().currentLanguage;
+      final shortName = university.getLocalizedShortName(language);
+      final marker = UniversityMapMarker(
+        id: university.id.toString(),
+        latitude: latitude,
+        longitude: longitude,
+        title: shortName.isNotEmpty
+            ? shortName
+            : university.getLocalizedName(language),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _universityMarkers = [marker];
+      });
+    } catch (error) {
+      logger.w("Could not load current user's university marker: $error");
+    }
+  }
+
+  bool _isPlaceholderUniversityCoordinate(double latitude, double longitude) {
+    return (latitude - 41.2995).abs() < 0.000001 &&
+        (longitude - 69.2401).abs() < 0.000001;
   }
 
   Future<void> _loadResults({
@@ -154,15 +214,22 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       withPhoto: _withPhoto,
     );
 
+    return _resultFromListings(response.data, total: response.total);
+  }
+
+  _SearchMapResult _resultFromListings(
+    List<Listing> listings, {
+    required int total,
+  }) {
     final pins = <ListingMapPin>[];
-    for (final listing in response.data) {
+    for (final listing in listings) {
       final pin = _pinForListing(listing);
       if (pin == null) continue;
       pins.add(pin);
     }
     return _SearchMapResult(
       pins: pins,
-      total: response.total,
+      total: total,
     );
   }
 
@@ -561,6 +628,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
+      universityMarkers: _universityMarkers,
       onOpenFilters: _openFilters,
       onOpenFeedView: _openFeedView,
       onClearSelectedPin: () => setState(() => _selectedPin = null),

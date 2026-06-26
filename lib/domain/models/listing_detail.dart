@@ -44,6 +44,8 @@ class ListingDetail with _$ListingDetail {
     double? roomScanNorthCorrectionDeg,
     @JsonKey(name: "contact_phone") String? contactPhone,
     @JsonKey(name: "contact_telegram") String? contactTelegram,
+    @JsonKey(name: "address_latitude") double? addressLatitude,
+    @JsonKey(name: "address_longitude") double? addressLongitude,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     @JsonKey(name: "search_subway_stations")
     List<SubwayStationDetail>? searchSubwayStations,
@@ -52,6 +54,7 @@ class ListingDetail with _$ListingDetail {
     List<Amenity>? amenities,
     List<Photo>? photos,
     @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+    @JsonKey(name: "nearby_stores") List<ListingNearbyStore>? nearbyStores,
     @JsonKey(name: "group_size_target") int? groupSizeTarget,
     @JsonKey(name: "group_forming_status") String? groupFormingStatus,
     @JsonKey(name: "group_compatibility_report")
@@ -62,6 +65,44 @@ class ListingDetail with _$ListingDetail {
 
   factory ListingDetail.fromJson(Map<String, dynamic> json) =>
       _$ListingDetailFromJson(json);
+}
+
+class ListingNearbyStore {
+  const ListingNearbyStore({
+    required this.id,
+    required this.name,
+    required this.latitude,
+    required this.longitude,
+    required this.distanceM,
+    this.address,
+  });
+
+  factory ListingNearbyStore.fromJson(Map<String, dynamic> json) {
+    return ListingNearbyStore(
+      id: json["id"] as String,
+      name: json["name"] as String,
+      address: json["address"] as String?,
+      latitude: (json["latitude"] as num).toDouble(),
+      longitude: (json["longitude"] as num).toDouble(),
+      distanceM: (json["distance_m"] as num).toInt(),
+    );
+  }
+
+  final String id;
+  final String name;
+  final String? address;
+  final double latitude;
+  final double longitude;
+  final int distanceM;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "id": id,
+        "name": name,
+        "address": address,
+        "latitude": latitude,
+        "longitude": longitude,
+        "distance_m": distanceM,
+      };
 }
 
 @freezed

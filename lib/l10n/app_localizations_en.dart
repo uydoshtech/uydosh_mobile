@@ -1040,6 +1040,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listing_detail_nearby_matches => 'Matches nearby';
 
   @override
+  String get listing_detail_nearby_stores_title => 'Stores nearby';
+
+  @override
+  String get listing_detail_nearby_stores_subtitle =>
+      'Grocery options close to this home.';
+
+  @override
+  String get listing_detail_nearby_stores_meters => 'm';
+
+  @override
+  String get listing_detail_nearby_stores_kilometers => 'km';
+
+  @override
   String get coming_soon => 'Coming soon';
 
   @override

@@ -2,6 +2,7 @@ import "dart:typed_data";
 import "dart:ui" as ui;
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
@@ -43,6 +44,20 @@ class ListingMapPin {
   final String? listingTypeCode;
   final int? gender;
   final String? photoUrl;
+}
+
+class UniversityMapMarker {
+  const UniversityMapMarker({
+    required this.id,
+    required this.latitude,
+    required this.longitude,
+    required this.title,
+  });
+
+  final String id;
+  final double latitude;
+  final double longitude;
+  final String title;
 }
 
 class MapPatternPainter extends CustomPainter {
@@ -99,6 +114,7 @@ class YandexMapWidget extends StatefulWidget {
     this.title,
     this.listingDetail,
     this.pins = const [],
+    this.universityMarkers = const [],
     this.selectedListingId,
     this.onPinTap,
     this.onMapTap,
@@ -108,6 +124,7 @@ class YandexMapWidget extends StatefulWidget {
     this.moveCameraOnTargetChange = true,
     this.showListingDetailTooltip = true,
     this.showDefaultPlacemark = true,
+    this.showUserLocation = false,
   });
 
   final double? latitude;
@@ -117,6 +134,7 @@ class YandexMapWidget extends StatefulWidget {
   final String apiKey;
   final ListingDetail? listingDetail;
   final List<ListingMapPin> pins;
+  final List<UniversityMapMarker> universityMarkers;
   final int? selectedListingId;
   final ValueChanged<ListingMapPin>? onPinTap;
   final ValueChanged<Point>? onMapTap;
@@ -125,6 +143,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool moveCameraOnTargetChange;
   final bool showListingDetailTooltip;
   final bool showDefaultPlacemark;
+  final bool showUserLocation;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -135,6 +154,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
+  Uint8List? _cachedUniversityIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   YandexMapController? _mapController;
@@ -143,6 +163,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int _retryCount = 0;
   int _automaticCameraFinishesToIgnore = 0;
   bool _showListingDetailTooltip = false;
+  bool _isUserLocationLayerVisible = false;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
 
@@ -159,6 +180,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.listingDetail?.id != widget.listingDetail?.id) {
       _showListingDetailTooltip = _canShowListingDetailTooltip;
+    }
+    if (oldWidget.showUserLocation != widget.showUserLocation) {
+      _syncUserLocationLayer();
     }
     if (!_mapTargetChanged(oldWidget) || !widget.moveCameraOnTargetChange) {
       return;
@@ -205,8 +229,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           shadowOffset: const Offset(0, 5),
         );
       }
+      final universityIconBytes = await _createIconBytes(
+        Icons.school_rounded,
+        112,
+        backgroundColor: AppColors.primary,
+        outlineColor: Colors.white,
+        outlineWidth: 7,
+        shadowColor: Colors.black.withValues(alpha: 0.32),
+        shadowBlurRadius: 10,
+        shadowOffset: const Offset(0, 5),
+      );
       _cachedIconBytes = iconBytes;
       _cachedSelectedIconBytes = selectedIconBytes;
+      _cachedUniversityIconBytes = universityIconBytes;
       _cachedListingTypeIconBytes
         ..clear()
         ..addAll(listingTypeIconBytes);
@@ -469,6 +504,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           // Store controller for zoom controls
           _mapController = controller;
           widget.onMapCreated?.call(controller);
+          _syncUserLocationLayer();
 
           // Map created successfully
           logger.d(
@@ -498,6 +534,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           widget.onMapTap?.call(point);
         },
         onCameraPositionChanged: _handleCameraPositionChanged,
+        onUserLocationAdded: _customizeUserLocationView,
         mapObjects: mapObjects,
       );
     } catch (e) {
@@ -518,9 +555,57 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
+  Future<void> _syncUserLocationLayer() async {
+    final controller = _mapController;
+    if (controller == null || kIsWeb) return;
+
+    if (!widget.showUserLocation) {
+      if (!_isUserLocationLayerVisible) return;
+      try {
+        await controller.toggleUserLayer(visible: false);
+        _isUserLocationLayerVisible = false;
+      } catch (error) {
+        logger.w("Could not hide user location layer: $error");
+      }
+      return;
+    }
+
+    final status = await Permission.location.request();
+    if (!mounted || !status.isGranted) return;
+
+    try {
+      await controller.toggleUserLayer(
+        visible: true,
+        autoZoomEnabled: false,
+      );
+      _isUserLocationLayerVisible = true;
+    } catch (error) {
+      logger.w("Could not show user location layer: $error");
+    }
+  }
+
+  Future<UserLocationView> _customizeUserLocationView(
+    UserLocationView view,
+  ) async {
+    return view.copyWith(
+      accuracyCircle: view.accuracyCircle.copyWith(
+        fillColor: AppColors.primary.withValues(alpha: 0.16),
+        strokeColor: AppColors.primary.withValues(alpha: 0.35),
+        strokeWidth: 2,
+      ),
+    );
+  }
+
   List<MapObject> _createMapObjects() {
+    final universityMarkerObjects = _createUniversityMarkerMapObjects();
     if (widget.pins.isNotEmpty) {
-      return _createListingPinMapObjects();
+      return [
+        ..._createListingPinMapObjects(),
+        ...universityMarkerObjects,
+      ];
+    }
+    if (universityMarkerObjects.isNotEmpty) {
+      return universityMarkerObjects;
     }
     if (!widget.showDefaultPlacemark) {
       return [];
@@ -570,6 +655,47 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
     );
     return [placemark];
+  }
+
+  List<MapObject> _createUniversityMarkerMapObjects() {
+    final iconBytes = _cachedUniversityIconBytes;
+    if (widget.universityMarkers.isEmpty) return [];
+    if (iconBytes == null) {
+      logger.w("📍 University marker icon is not ready yet");
+      return [];
+    }
+
+    return [
+      for (final marker in widget.universityMarkers)
+        PlacemarkMapObject(
+          mapId: MapObjectId("university_${marker.id}_placemark"),
+          point: Point(
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+          ),
+          zIndex: 5,
+          opacity: 1.0,
+          consumeTapEvents: false,
+          icon: PlacemarkIcon.single(
+            PlacemarkIconStyle(
+              image: BitmapDescriptor.fromBytes(iconBytes),
+              anchor: const Offset(0.5, 0.5),
+              scale: 0.9,
+            ),
+          ),
+          text: PlacemarkText(
+            text: marker.title,
+            style: const PlacemarkTextStyle(
+              placement: TextStylePlacement.top,
+              offset: 8,
+              size: 10,
+              textOptional: true,
+              color: Colors.black,
+              outlineColor: Colors.white,
+            ),
+          ),
+        ),
+    ];
   }
 
   List<MapObject> _createListingPinMapObjects() {
@@ -767,18 +893,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Map<String, double> _getCenterPoint() {
-    if (widget.pins.isNotEmpty) {
-      final latSum = widget.pins.fold<double>(
+    final targetPoints = _targetPoints();
+    if (targetPoints.isNotEmpty) {
+      final latSum = targetPoints.fold<double>(
         0,
-        (sum, pin) => sum + pin.latitude,
+        (sum, point) => sum + point.latitude,
       );
-      final lonSum = widget.pins.fold<double>(
+      final lonSum = targetPoints.fold<double>(
         0,
-        (sum, pin) => sum + pin.longitude,
+        (sum, point) => sum + point.longitude,
       );
       return {
-        "latitude": latSum / widget.pins.length,
-        "longitude": lonSum / widget.pins.length,
+        "latitude": latSum / targetPoints.length,
+        "longitude": lonSum / targetPoints.length,
       };
     }
 
@@ -799,7 +926,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   double _initialZoom() {
-    return widget.pins.length == 1 ? 16.0 : 14.25;
+    return _targetPoints().length == 1 ? 16.0 : 14.25;
   }
 
   Future<void> _moveCameraToCurrentTarget() async {
@@ -810,6 +937,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   bool _mapTargetChanged(YandexMapWidget oldWidget) {
     if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
+    if (_universityMarkersChanged(
+      oldWidget.universityMarkers,
+      widget.universityMarkers,
+    )) {
+      return true;
+    }
     return oldWidget.latitude != widget.latitude ||
         oldWidget.longitude != widget.longitude ||
         oldWidget.listingDetail?.id != widget.listingDetail?.id;
@@ -832,6 +965,33 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return false;
   }
 
+  bool _universityMarkersChanged(
+    List<UniversityMapMarker> oldMarkers,
+    List<UniversityMapMarker> newMarkers,
+  ) {
+    if (oldMarkers.length != newMarkers.length) return true;
+    for (var i = 0; i < oldMarkers.length; i++) {
+      final oldMarker = oldMarkers[i];
+      final newMarker = newMarkers[i];
+      if (oldMarker.id != newMarker.id ||
+          oldMarker.latitude != newMarker.latitude ||
+          oldMarker.longitude != newMarker.longitude ||
+          oldMarker.title != newMarker.title) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  List<Point> _targetPoints() {
+    return [
+      for (final pin in widget.pins)
+        Point(latitude: pin.latitude, longitude: pin.longitude),
+      for (final marker in widget.universityMarkers)
+        Point(latitude: marker.latitude, longitude: marker.longitude),
+    ];
+  }
+
   bool get _canShowListingDetailTooltip {
     return widget.showListingDetailTooltip && widget.listingDetail != null;
   }
@@ -840,17 +1000,17 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     YandexMapController controller,
     Map<String, double> centerPoint,
   ) async {
-    final pins = widget.pins;
-    if (pins.length > 1) {
-      var minLat = pins.first.latitude;
-      var maxLat = pins.first.latitude;
-      var minLon = pins.first.longitude;
-      var maxLon = pins.first.longitude;
-      for (final pin in pins.skip(1)) {
-        minLat = pin.latitude < minLat ? pin.latitude : minLat;
-        maxLat = pin.latitude > maxLat ? pin.latitude : maxLat;
-        minLon = pin.longitude < minLon ? pin.longitude : minLon;
-        maxLon = pin.longitude > maxLon ? pin.longitude : maxLon;
+    final targetPoints = _targetPoints();
+    if (targetPoints.length > 1) {
+      var minLat = targetPoints.first.latitude;
+      var maxLat = targetPoints.first.latitude;
+      var minLon = targetPoints.first.longitude;
+      var maxLon = targetPoints.first.longitude;
+      for (final point in targetPoints.skip(1)) {
+        minLat = point.latitude < minLat ? point.latitude : minLat;
+        maxLat = point.latitude > maxLat ? point.latitude : maxLat;
+        minLon = point.longitude < minLon ? point.longitude : minLon;
+        maxLon = point.longitude > maxLon ? point.longitude : maxLon;
       }
 
       final latPadding = ((maxLat - minLat).abs() * 0.18).clamp(0.008, 0.06);

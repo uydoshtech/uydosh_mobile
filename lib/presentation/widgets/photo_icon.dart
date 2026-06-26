@@ -31,7 +31,7 @@ class PhotoIcon extends StatelessWidget {
 
   Color _photoIconColor() {
     if (ThemeState().isBlueTheme) {
-      return Colors.white; // White icon for blue theme
+      return Colors.black; // Keep the icon visible on blue-theme surfaces
     } else if (ThemeState().isLightTheme) {
       return Colors.black; // Black icon for light theme
     } else {

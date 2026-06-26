@@ -96,6 +96,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_complaints_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_listing_owner_messages_card.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_nearby_stores_card.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_contact_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_forming_action_bar.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_group_join_requests_sheet.dart";
@@ -2489,7 +2490,29 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     }
   }
 
+  Future<void> _openStoreInYandexMaps(ListingNearbyStore store) async {
+    final yandexMapsUrl =
+        "https://yandex.com/maps/?pt=${store.longitude},${store.latitude}&z=17&l=map";
+    final uri = Uri.parse(yandexMapsUrl);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    ToastReporting.errorKey(context, "error_loading_listing_details");
+  }
+
   Map<String, double>? _getCoordinatesFromListing(ListingDetail listingDetail) {
+    final addressLatitude = listingDetail.addressLatitude;
+    final addressLongitude = listingDetail.addressLongitude;
+    if (addressLatitude != null && addressLongitude != null) {
+      return {
+        "latitude": addressLatitude,
+        "longitude": addressLongitude,
+      };
+    }
+
     // Try to get coordinates from metro station first (highest priority)
     if (listingDetail.subwayStation != null) {
       // Try to get coordinates by station ID first
@@ -3161,6 +3184,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     );
   }
 
+  Widget _nearbyStoresCard(ListingDetail listingDetail) {
+    final stores = listingDetail.nearbyStores ?? const <ListingNearbyStore>[];
+    return ListingDetailNearbyStoresCard(
+      stores: stores,
+      onStoreTap: (store) {
+        HapticFeedbackUtils.impact();
+        _openStoreInYandexMaps(store);
+      },
+    );
+  }
+
   Widget _buildLoadedState(
     ListingDetail listingDetail,
     ListingDetailPageState pageState,
@@ -3247,6 +3281,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
           ),
+          if (listingDetail.listingType.code == "roommate_needed" &&
+              (listingDetail.nearbyStores?.isNotEmpty ?? false))
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _nearbyStoresCard(listingDetail),
+            ),
           if (compatibilitySection != null)
             Padding(
               padding: const EdgeInsets.only(top: 4),

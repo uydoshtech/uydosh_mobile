@@ -98,12 +98,14 @@ class _HomeScreenData {
     required this.errorMessage,
     required this.listings,
     required this.hasMore,
+    required this.total,
   });
   final bool isLoading;
   final bool hasError;
   final String errorMessage;
   final List<Listing> listings;
   final bool hasMore;
+  final int? total;
 
   static bool _listingsIdsEqual(List<Listing> a, List<Listing> b) {
     if (a.length != b.length) return false;
@@ -129,7 +131,8 @@ class _HomeScreenData {
         other.hasError == hasError &&
         other.errorMessage == errorMessage &&
         _listingsIdsEqual(other.listings, listings) &&
-        other.hasMore == hasMore;
+        other.hasMore == hasMore &&
+        other.total == total;
   }
 
   @override
@@ -138,7 +141,7 @@ class _HomeScreenData {
       isLoading,
       Object.hash(hasError, errorMessage),
       _listingsIdsHash(listings),
-      hasMore,
+      Object.hash(hasMore, total),
     );
   }
 }
@@ -985,6 +988,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             errorMessage: "",
             listings: const [],
             hasMore: false,
+            total: null,
           ),
           loading: (_) => const _HomeScreenData(
             isLoading: true,
@@ -992,6 +996,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             errorMessage: "",
             listings: [],
             hasMore: false,
+            total: null,
           ),
           loaded: (loadedState) => _HomeScreenData(
             isLoading: false,
@@ -999,6 +1004,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             errorMessage: "",
             listings: loadedState.listings,
             hasMore: loadedState.hasMore,
+            total: loadedState.total,
           ),
           error: (errorState) => _HomeScreenData(
             isLoading: false,
@@ -1006,6 +1012,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             errorMessage: errorState.message,
             listings: [],
             hasMore: false,
+            total: null,
           ),
         ),
         builder: (context, data) {
@@ -1056,6 +1063,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final inSearchContext = widget.isSearchMode || _inlineSearchActive;
     final mapResult =
         _mapViewSearchResult ?? _currentSearchResultForViewToggle();
+    final initialMapListings = context.select<ListingsBloc, List<Listing>>(
+      (bloc) => bloc.state.maybeMap(
+        loaded: (state) => state.listings,
+        orElse: () => const <Listing>[],
+      ),
+    );
+    final initialMapTotal = context.select<ListingsBloc, int?>(
+      (bloc) => bloc.state.maybeMap(
+        loaded: (state) => state.total,
+        orElse: () => null,
+      ),
+    );
     final body = _SearchResultsShell(
       listContent: listContent,
       inSearchContext: inSearchContext,
@@ -1069,6 +1088,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       viewToggleTop: _viewToggleFabTop(
         searchRibbonHeight: searchRibbonHeight,
       ),
+      initialMapListings: initialMapListings,
+      initialMapTotal: initialMapTotal,
       alertFabBottom: _searchAlertFabStackBottom(context),
       searchFiltersState: _searchFiltersState,
       bellHintLayerLink: _bellHintLayerLink,

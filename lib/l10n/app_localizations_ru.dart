@@ -1040,6 +1040,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get listing_detail_nearby_matches => 'Подходящие рядом';
 
   @override
+  String get listing_detail_nearby_stores_title => 'Магазины рядом';
+
+  @override
+  String get listing_detail_nearby_stores_subtitle =>
+      'Продуктовые магазины рядом с этим жильём.';
+
+  @override
+  String get listing_detail_nearby_stores_meters => 'м';
+
+  @override
+  String get listing_detail_nearby_stores_kilometers => 'км';
+
+  @override
   String get coming_soon => 'Скоро будет';
 
   @override

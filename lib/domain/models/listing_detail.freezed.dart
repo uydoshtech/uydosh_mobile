@@ -82,6 +82,10 @@ mixin _$ListingDetail {
   String? get contactPhone => throw _privateConstructorUsedError;
   @JsonKey(name: "contact_telegram")
   String? get contactTelegram => throw _privateConstructorUsedError;
+  @JsonKey(name: "address_latitude")
+  double? get addressLatitude => throw _privateConstructorUsedError;
+  @JsonKey(name: "address_longitude")
+  double? get addressLongitude => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
   @JsonKey(name: "search_subway_stations")
@@ -95,6 +99,9 @@ mixin _$ListingDetail {
   List<Photo>? get photos => throw _privateConstructorUsedError;
   @JsonKey(name: "area_price_stats")
   AreaPriceStats? get areaPriceStats => throw _privateConstructorUsedError;
+  @JsonKey(name: "nearby_stores")
+  List<ListingNearbyStore>? get nearbyStores =>
+      throw _privateConstructorUsedError;
   @JsonKey(name: "group_size_target")
   int? get groupSizeTarget => throw _privateConstructorUsedError;
   @JsonKey(name: "group_forming_status")
@@ -156,6 +163,8 @@ abstract class $ListingDetailCopyWith<$Res> {
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
+      @JsonKey(name: "address_latitude") double? addressLatitude,
+      @JsonKey(name: "address_longitude") double? addressLongitude,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       List<SubwayStationDetail>? searchSubwayStations,
@@ -164,6 +173,7 @@ abstract class $ListingDetailCopyWith<$Res> {
       List<Amenity>? amenities,
       List<Photo>? photos,
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "nearby_stores") List<ListingNearbyStore>? nearbyStores,
       @JsonKey(name: "group_size_target") int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") String? groupFormingStatus,
       @JsonKey(name: "group_compatibility_report")
@@ -226,6 +236,8 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? roomScanNorthCorrectionDeg = freezed,
     Object? contactPhone = freezed,
     Object? contactTelegram = freezed,
+    Object? addressLatitude = freezed,
+    Object? addressLongitude = freezed,
     Object? subwayStation = freezed,
     Object? searchSubwayStations = freezed,
     Object? location = freezed,
@@ -233,6 +245,7 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
+    Object? nearbyStores = freezed,
     Object? groupSizeTarget = freezed,
     Object? groupFormingStatus = freezed,
     Object? groupCompatibilityReport = freezed,
@@ -371,6 +384,14 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.contactTelegram
           : contactTelegram // ignore: cast_nullable_to_non_nullable
               as String?,
+      addressLatitude: freezed == addressLatitude
+          ? _value.addressLatitude
+          : addressLatitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      addressLongitude: freezed == addressLongitude
+          ? _value.addressLongitude
+          : addressLongitude // ignore: cast_nullable_to_non_nullable
+              as double?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
@@ -399,6 +420,10 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
           ? _value.areaPriceStats
           : areaPriceStats // ignore: cast_nullable_to_non_nullable
               as AreaPriceStats?,
+      nearbyStores: freezed == nearbyStores
+          ? _value.nearbyStores
+          : nearbyStores // ignore: cast_nullable_to_non_nullable
+              as List<ListingNearbyStore>?,
       groupSizeTarget: freezed == groupSizeTarget
           ? _value.groupSizeTarget
           : groupSizeTarget // ignore: cast_nullable_to_non_nullable
@@ -525,6 +550,8 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
+      @JsonKey(name: "address_latitude") double? addressLatitude,
+      @JsonKey(name: "address_longitude") double? addressLongitude,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       List<SubwayStationDetail>? searchSubwayStations,
@@ -533,6 +560,7 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       List<Amenity>? amenities,
       List<Photo>? photos,
       @JsonKey(name: "area_price_stats") AreaPriceStats? areaPriceStats,
+      @JsonKey(name: "nearby_stores") List<ListingNearbyStore>? nearbyStores,
       @JsonKey(name: "group_size_target") int? groupSizeTarget,
       @JsonKey(name: "group_forming_status") String? groupFormingStatus,
       @JsonKey(name: "group_compatibility_report")
@@ -598,6 +626,8 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? roomScanNorthCorrectionDeg = freezed,
     Object? contactPhone = freezed,
     Object? contactTelegram = freezed,
+    Object? addressLatitude = freezed,
+    Object? addressLongitude = freezed,
     Object? subwayStation = freezed,
     Object? searchSubwayStations = freezed,
     Object? location = freezed,
@@ -605,6 +635,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? amenities = freezed,
     Object? photos = freezed,
     Object? areaPriceStats = freezed,
+    Object? nearbyStores = freezed,
     Object? groupSizeTarget = freezed,
     Object? groupFormingStatus = freezed,
     Object? groupCompatibilityReport = freezed,
@@ -743,6 +774,14 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.contactTelegram
           : contactTelegram // ignore: cast_nullable_to_non_nullable
               as String?,
+      addressLatitude: freezed == addressLatitude
+          ? _value.addressLatitude
+          : addressLatitude // ignore: cast_nullable_to_non_nullable
+              as double?,
+      addressLongitude: freezed == addressLongitude
+          ? _value.addressLongitude
+          : addressLongitude // ignore: cast_nullable_to_non_nullable
+              as double?,
       subwayStation: freezed == subwayStation
           ? _value.subwayStation
           : subwayStation // ignore: cast_nullable_to_non_nullable
@@ -771,6 +810,10 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.areaPriceStats
           : areaPriceStats // ignore: cast_nullable_to_non_nullable
               as AreaPriceStats?,
+      nearbyStores: freezed == nearbyStores
+          ? _value.nearbyStores
+          : nearbyStores // ignore: cast_nullable_to_non_nullable
+              as List<ListingNearbyStore>?,
       groupSizeTarget: freezed == groupSizeTarget
           ? _value.groupSizeTarget
           : groupSizeTarget // ignore: cast_nullable_to_non_nullable
