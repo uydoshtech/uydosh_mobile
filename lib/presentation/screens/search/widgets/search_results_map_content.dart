@@ -16,12 +16,15 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.universityMarkers,
     required this.showDistrictLayer,
     required this.showMetroStationsLayer,
+    required this.showLocationPrompt,
+    required this.userLocationRequestToken,
     required this.placeViewToggleAtBottom,
     required this.searchButtonBottom,
     required this.viewToggleBottom,
     required this.onOpenFilters,
     required this.onOpenEmbeddedSearch,
     required this.onOpenFeedView,
+    required this.onRequestUserLocation,
     required this.onToggleDistrictLayer,
     required this.onToggleMetroStationsLayer,
     required this.onClearSelectedPin,
@@ -57,12 +60,15 @@ class _SearchResultsMapContent extends StatelessWidget {
   final List<UniversityMapMarker> universityMarkers;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final bool showLocationPrompt;
+  final int userLocationRequestToken;
   final bool placeViewToggleAtBottom;
   final double searchButtonBottom;
   final double viewToggleBottom;
   final VoidCallback onOpenFilters;
   final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onOpenFeedView;
+  final VoidCallback onRequestUserLocation;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleMetroStationsLayer;
   final VoidCallback onClearSelectedPin;
@@ -152,6 +158,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                     showDistrictLayer: showDistrictLayer,
                     showMetroStationsLayer: showMetroStationsLayer,
                   ),
+                  userLocationRequestToken: userLocationRequestToken,
                   showLoadingPlaceholderContent: false,
                   zoomControlsOptions: YandexMapZoomControlsOptions(
                     right: placeViewToggleAtBottom
@@ -178,11 +185,14 @@ class _SearchResultsMapContent extends StatelessWidget {
                     switchInCurve: Curves.easeOut,
                     switchOutCurve: Curves.easeIn,
                     child: isLoading
-                        ? const Center(
-                            key: ValueKey("map-results-loading"),
-                            child: HouseLoadingIndicator(
-                              size: 44,
-                              color: Colors.black,
+                        ? Center(
+                            key: const ValueKey("map-results-loading"),
+                            child: Transform.translate(
+                              offset: const Offset(0, -50),
+                              child: const HouseLoadingIndicator(
+                                size: 44,
+                                color: Colors.black,
+                              ),
                             ),
                           )
                         : const SizedBox.shrink(
@@ -279,10 +289,110 @@ class _SearchResultsMapContent extends StatelessWidget {
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
                 ),
+              if (showLocationPrompt)
+                Positioned(
+                  left: 12,
+                  right: 88,
+                  bottom: searchButtonBottom,
+                  child: _MapLocationPromptCard(
+                    onPressed: onRequestUserLocation,
+                  ),
+                ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MapLocationPromptCard extends StatelessWidget {
+  const _MapLocationPromptCard({
+    required this.onPressed,
+  });
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: LiquidGlassPlate(
+        borderRadius: BorderRadius.circular(18),
+        sigma: 18,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Row(
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: ThemeState().isBlueTheme
+                    ? BlueThemeColors.primary
+                    : scheme.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.16),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: ThemeIcon(
+                  Icons.my_location_rounded,
+                  color: Colors.white,
+                  size: 18,
+                  useThemeColor: false,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    L10n.get("map_location_prompt_title"),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: scheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    L10n.get("map_location_prompt_body"),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      height: 1.15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            SearchFloatingActionButton(
+              onPressed: onPressed,
+              iconData: Icons.near_me_rounded,
+              tooltip: L10n.get("map_location_prompt_action"),
+              width: 42,
+              height: 38,
+              iconSize: 19,
+              foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
+              elevation: ThemeState().isBlueTheme ? null : 6,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -11,6 +11,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.searchRibbonHeight,
     required this.inlineRibbonTop,
     required this.mapTopPadding,
+    required this.canOpenMapView,
     required this.initialMapListings,
     required this.initialMapTotal,
     required this.alertFabBottom,
@@ -32,6 +33,7 @@ class _SearchResultsShell extends StatefulWidget {
   final double searchRibbonHeight;
   final double inlineRibbonTop;
   final double mapTopPadding;
+  final bool canOpenMapView;
   final List<Listing> initialMapListings;
   final int? initialMapTotal;
   final double alertFabBottom;
@@ -109,7 +111,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             searchButtonTutorialKey: widget.searchButtonTutorialKey,
             isHomeTabActive: widget.isHomeTabActive,
             isSearchMode: widget.isSearchMode,
-            showViewToggle: true,
+            showViewToggle: widget.canOpenMapView,
             onOpenMapView: widget.onOpenMapView,
             onOpenInlineSearch: widget.onOpenInlineSearch,
           ),
@@ -136,6 +138,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(
         widget.alertFabBottom,
       ),
+      onOpenEmbeddedSearch: widget.onOpenInlineSearch,
     );
 
     final paddedMapView = widget.isSearchMode
@@ -162,7 +165,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
           searchButtonTutorialKey: widget.searchButtonTutorialKey,
           isHomeTabActive: widget.isHomeTabActive,
           isSearchMode: widget.isSearchMode,
-          showViewToggle: !isShowingMap,
+          showViewToggle: widget.canOpenMapView && !isShowingMap,
           onOpenMapView: widget.onOpenMapView,
           onOpenInlineSearch: widget.onOpenInlineSearch,
         ),
@@ -239,10 +242,10 @@ class _SearchResultsFabStack extends StatelessWidget {
                       iconData: Icons.search,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
-                      foregroundColor: ThemeState().isBlueTheme &&
-                              showViewToggle
-                          ? Colors.white
-                          : null,
+                      foregroundColor:
+                          ThemeState().isBlueTheme && showViewToggle
+                              ? Colors.white
+                              : null,
                       elevation: ThemeState().isBlueTheme ? null : 8,
                     ),
                   );

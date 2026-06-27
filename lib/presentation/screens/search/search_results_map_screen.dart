@@ -1,5 +1,9 @@
+import "dart:async" show unawaited;
+
 import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
@@ -103,6 +107,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   List<UniversityMapMarker> _universityMarkers = const [];
   bool _showDistrictLayer = false;
   bool _showMetroStationsLayer = false;
+  bool _showLocationPrompt = false;
+  int _userLocationRequestToken = 0;
 
   late int _listingTypeId;
   int? _locationId;
@@ -129,6 +135,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     }
     _loadResults(showLoading: false);
     _loadCurrentUserUniversityMarker();
+    unawaited(_refreshLocationPromptVisibility());
   }
 
   @override
@@ -228,6 +235,26 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     } catch (error) {
       logger.w("Could not load current user's university marker: $error");
     }
+  }
+
+  Future<void> _refreshLocationPromptVisibility() async {
+    if (widget.embedded == false || kIsWeb) return;
+    final status = await Permission.location.status;
+    if (!mounted) return;
+    setState(() {
+      _showLocationPrompt = !status.isGranted && !status.isPermanentlyDenied;
+    });
+  }
+
+  Future<void> _requestUserLocation() async {
+    final status = await Permission.location.request();
+    if (!mounted) return;
+    setState(() {
+      _showLocationPrompt = false;
+      if (status.isGranted) {
+        _userLocationRequestToken++;
+      }
+    });
   }
 
   bool _isPlaceholderUniversityCoordinate(double latitude, double longitude) {
@@ -713,12 +740,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       universityMarkers: _universityMarkers,
       showDistrictLayer: _showDistrictLayer,
       showMetroStationsLayer: _showMetroStationsLayer,
+      showLocationPrompt: _showLocationPrompt,
+      userLocationRequestToken: _userLocationRequestToken,
       placeViewToggleAtBottom: widget.embedded,
       searchButtonBottom: widget.embeddedSearchButtonBottom,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       onOpenFilters: _openFilters,
       onOpenEmbeddedSearch: widget.onOpenEmbeddedSearch,
       onOpenFeedView: _openFeedView,
+      onRequestUserLocation: _requestUserLocation,
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
       },

@@ -4,6 +4,7 @@ import "dart:math" as math;
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
@@ -201,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   bool _searchCountReady = false;
   bool _searchResultsReady = false;
   bool _searchRefreshInFlight = false;
+  bool _locationPermissionGranted = false;
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
   // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
@@ -244,9 +246,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    _searchResultsView = widget.showMapInitially
-        ? _SearchResultsView.map
-        : _SearchResultsView.list;
+    _searchResultsView = _SearchResultsView.list;
+    if (widget.showMapInitially) {
+      unawaited(_activateInitialMapIfLocationGranted());
+    }
 
     // Create optimized scroll listener with throttling and reset capability
     final scrollListenerData =
@@ -349,6 +352,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
     _activateInlineSearch(persistActiveFlag: true);
+  }
+
+  Future<void> _activateInitialMapIfLocationGranted() async {
+    final canShowMap = await _canShowMapView();
+    if (!mounted || !canShowMap) return;
+    setState(() {
+      _locationPermissionGranted = true;
+      _searchResultsView = _SearchResultsView.map;
+    });
+  }
+
+  Future<bool> _canShowMapView() async {
+    final status = await Permission.location.status;
+    return status.isGranted;
   }
 
   /// Re-runs the auth-dependent portion of the bootstrap after the user signs
@@ -1025,6 +1042,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       searchRibbonHeight: searchRibbonHeight,
       inlineRibbonTop: ThemeState().mainShellGlassExtraTopInset(context),
       mapTopPadding: ThemeState().mainShellGlassExtraTopInset(context),
+      canOpenMapView: _locationPermissionGranted,
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
       alertFabBottom: _searchAlertFabStackBottom(context),
@@ -1032,8 +1050,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       searchButtonTutorialKey: _searchButtonTutorialKey,
       searchModeFiltersRibbonBuilder: (_) => _buildSearchModeFiltersRibbon(),
       inlineFiltersRibbonBuilder: (_) => _buildInlineFiltersRibbonAnimated(),
-      onOpenMapView: () => _openSearchResultsMap(
-        _currentSearchResultForViewToggle(),
+      onOpenMapView: () => unawaited(
+        _openSearchResultsMap(_currentSearchResultForViewToggle()),
       ),
       onOpenInlineSearch: _openInlineSearchFromFab,
       onOpenFeedFromMap: _returnToFeedFromMap,
@@ -1952,8 +1970,30 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     await _persistSearchResultFilters(result);
 
     if (result.action == SearchBottomSheetAction.map) {
+      if (!await _canShowMapView()) {
+        if (!mounted) return;
+        setState(() {
+          _locationPermissionGranted = false;
+          _inlineSearchActive = true;
+          _inlineSearchClosing = false;
+          _inlineSearchSpacerExpanded = true;
+          _mapViewSearchResult = result;
+          _searchResultsView = _SearchResultsView.list;
+        });
+        HomeInlineSearchState().setActive(true);
+        unawaited(() async {
+          await HomeInlineSearchState().setRibbonDismissedByUser(false);
+          try {
+            final p = await SharedPreferences.getInstance();
+            await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+          } catch (_) {}
+        }());
+        _performSearch(keepStaleWhileRibbonAnimates: true);
+        return;
+      }
       if (!mounted) return;
       setState(() {
+        _locationPermissionGranted = true;
         _inlineSearchActive = true;
         _inlineSearchClosing = false;
         _inlineSearchSpacerExpanded = true;
@@ -2201,7 +2241,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
-      _openSearchResultsMap(result);
+      if (!await _canShowMapView()) {
+        if (!mounted) return;
+        setState(() {
+          _locationPermissionGranted = false;
+          _searchResultsView = _SearchResultsView.list;
+        });
+        _performSearch();
+        return;
+      }
+      await _openSearchResultsMap(result);
       return;
     }
 
@@ -2243,8 +2292,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  void _openSearchResultsMap(SearchBottomSheetResult result) {
+  Future<void> _openSearchResultsMap(SearchBottomSheetResult result) async {
+    if (!await _canShowMapView()) {
+      if (!mounted) return;
+      setState(() {
+        _locationPermissionGranted = false;
+        _searchResultsView = _SearchResultsView.list;
+      });
+      return;
+    }
+    if (!mounted) return;
     setState(() {
+      _locationPermissionGranted = true;
       _mapViewSearchResult = result;
       _searchResultsView = _SearchResultsView.map;
     });

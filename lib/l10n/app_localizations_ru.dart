@@ -209,6 +209,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_feed_view => 'Открыть ленту';
 
   @override
+  String get map_location_prompt_title => 'Показать мою геопозицию';
+
+  @override
+  String get map_location_prompt_body =>
+      'Посмотрите, где вы находитесь относительно объявлений рядом.';
+
+  @override
+  String get map_location_prompt_action => 'Использовать геопозицию';
+
+  @override
   String get show_district_layer => 'Показать слой районов';
 
   @override
@@ -2501,7 +2511,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get my_hub_tab_groups => 'Группы';
 
   @override
-  String get my_hub_tab_bookmarks => 'Мои закладки';
+  String get my_hub_tab_bookmarks => 'Варианты жилья';
 
   @override
   String get my_hub_tab_alerts => 'Мои оповещения';

@@ -209,6 +209,16 @@ class AppLocalizationsUz extends AppLocalizations {
   String get open_feed_view => 'Lentani ochish';
 
   @override
+  String get map_location_prompt_title => 'Joylashuvimni ko‘rsatish';
+
+  @override
+  String get map_location_prompt_body =>
+      'Yaqindagi e\'lonlarga nisbatan qayerda ekaningizni ko‘ring.';
+
+  @override
+  String get map_location_prompt_action => 'Joylashuvdan foydalanish';
+
+  @override
   String get show_district_layer => 'Tumanlar qatlamini ko‘rsatish';
 
   @override
@@ -2530,7 +2540,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get my_hub_tab_groups => 'Guruhlar';
 
   @override
-  String get my_hub_tab_bookmarks => 'Mening xatcho\'plarim';
+  String get my_hub_tab_bookmarks => 'Uy-joy variantlari';
 
   @override
   String get my_hub_tab_alerts => 'Mening ogohlantirishlarim';

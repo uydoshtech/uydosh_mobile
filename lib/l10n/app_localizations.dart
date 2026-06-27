@@ -478,6 +478,24 @@ abstract class AppLocalizations {
   /// **'Open feed view'**
   String get open_feed_view;
 
+  /// No description provided for @map_location_prompt_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my location'**
+  String get map_location_prompt_title;
+
+  /// No description provided for @map_location_prompt_body.
+  ///
+  /// In en, this message translates to:
+  /// **'See where you are relative to nearby listings.'**
+  String get map_location_prompt_body;
+
+  /// No description provided for @map_location_prompt_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Use location'**
+  String get map_location_prompt_action;
+
   /// No description provided for @show_district_layer.
   ///
   /// In en, this message translates to:
@@ -4693,7 +4711,7 @@ abstract class AppLocalizations {
   /// No description provided for @my_hub_tab_bookmarks.
   ///
   /// In en, this message translates to:
-  /// **'My Bookmarks'**
+  /// **'Housing options'**
   String get my_hub_tab_bookmarks;
 
   /// No description provided for @my_hub_tab_alerts.

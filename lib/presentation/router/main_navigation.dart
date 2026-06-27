@@ -661,7 +661,10 @@ class MainNavigationState extends State<MainNavigation>
     final screens = <Widget>[
       // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
       // the shell AppBar count and the feed stay on the same bloc instance.
-      HomeScreen(isHomeTabActive: _currentIndex == 0),
+      HomeScreen(
+        isHomeTabActive: _currentIndex == 0,
+        showMapInitially: true,
+      ),
       AppConfig.servicesFeatureEnabled
           ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)
           : MyHubScreen(embedded: true, tabVisible: _currentIndex == 1),

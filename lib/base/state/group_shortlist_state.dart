@@ -20,6 +20,11 @@ class GroupShortlistState extends ChangeNotifier {
   int shortlistCountForGroup(int groupListingId) =>
       _countByGroupListingId[groupListingId] ?? 0;
 
+  int get totalShortlistCount => _countByGroupListingId.values.fold(
+        0,
+        (sum, count) => sum + count,
+      );
+
   void setShortlistCountForGroup(int groupListingId, int count) {
     if (_countByGroupListingId[groupListingId] == count) return;
     _countByGroupListingId[groupListingId] = count;
@@ -88,8 +93,7 @@ class GroupShortlistState extends ChangeNotifier {
 
   void _adjustCount(int groupListingId, {required int delta}) {
     final current = _countByGroupListingId[groupListingId] ?? 0;
-    _countByGroupListingId[groupListingId] =
-        (current + delta).clamp(0, 9999);
+    _countByGroupListingId[groupListingId] = (current + delta).clamp(0, 9999);
   }
 
   Future<void> refreshCount(int groupListingId) async {

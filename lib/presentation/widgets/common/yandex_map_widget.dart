@@ -198,6 +198,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showDefaultPlacemark = true,
     this.showLoadingPlaceholderContent = true,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
+    this.userLocationRequestToken = 0,
     this.onMetroStationTooltipChanged,
   });
 
@@ -223,6 +224,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showDefaultPlacemark;
   final bool showLoadingPlaceholderContent;
   final YandexMapZoomControlsOptions zoomControlsOptions;
+  final int userLocationRequestToken;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
 
   @override
@@ -234,6 +236,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
   static const double _minDistrictLabelZoom = 11.5;
+  static const double _brandMarkSize = 42.0;
+  static const double _brandMarkInset = 10.0;
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
@@ -286,6 +290,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (oldWidget.layerOptions.showUserLocation !=
         widget.layerOptions.showUserLocation) {
       _syncUserLocationLayer();
+    }
+    if (oldWidget.userLocationRequestToken != widget.userLocationRequestToken) {
+      _syncUserLocationLayer(requestPermission: true);
     }
     if (oldWidget.layerOptions.showMetroStationsLayer &&
         !widget.layerOptions.showMetroStationsLayer) {
@@ -412,16 +419,48 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                     )
                   : _buildMobileMap(context, centerPoint, mapObjects),
             Positioned(
-              left: 8,
+              left: _brandMarkInset + _brandMarkSize + 8,
               right: 8,
               top: 8,
               child: MapTooltipFadeTransition(
                 child: _activeMapTooltip(),
               ),
             ),
+            _buildMapBrandMark(),
             // Zoom controls (only when map is ready)
             if (!kIsWeb && _isMapReady) _buildZoomControls(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapBrandMark() {
+    return Positioned(
+      left: _brandMarkInset,
+      top: _brandMarkInset,
+      child: IgnorePointer(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: BlueThemeColors.primary,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Image.asset(
+              "assets/icon/components/brand_mark.png",
+              width: _brandMarkSize,
+              height: _brandMarkSize,
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
       ),
     );
@@ -644,7 +683,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
-  Future<void> _syncUserLocationLayer() async {
+  Future<void> _syncUserLocationLayer({bool requestPermission = false}) async {
     final controller = _mapController;
     if (controller == null || kIsWeb) return;
 
@@ -659,7 +698,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       return;
     }
 
-    final status = await Permission.location.request();
+    var status = await Permission.location.status;
+    if (!status.isGranted && requestPermission) {
+      status = await Permission.location.request();
+    }
     if (!mounted || !status.isGranted) return;
 
     try {

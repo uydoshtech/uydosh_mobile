@@ -1,10 +1,16 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
+import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/my_group_bookmarks_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
@@ -31,25 +37,110 @@ class MyHubScreen extends StatefulWidget {
 
 class _MyHubScreenState extends State<MyHubScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+  static const int _conversationLimit = 100;
+
+  late TabController _tabController;
+  bool _hasGroupBookmarks = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: _visibleTabs.length, vsync: this);
     _tabController.addListener(_handleTabChanged);
+    GroupShortlistState().addListener(_handleShortlistChanged);
+    unawaited(_refreshGroupBookmarkAvailability());
   }
 
   @override
   void dispose() {
+    GroupShortlistState().removeListener(_handleShortlistChanged);
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     super.dispose();
   }
 
+  List<_MyHubTabSpec> get _visibleTabs =>
+      _MyHubTabSpec.visibleTabs(hasGroupBookmarks: _hasGroupBookmarks);
+
+  Future<void> _refreshGroupBookmarkAvailability() async {
+    try {
+      final conversations = await getIt<IMessagingService>().getConversations(
+        limit: _conversationLimit,
+      );
+      final groupListingIds = conversations.data
+          .where((c) => c.contextType?.trim().toLowerCase() == "listing_group")
+          .map((c) => c.listingId)
+          .whereType<int>()
+          .toSet();
+
+      var total = 0;
+      for (final groupListingId in groupListingIds) {
+        final count = await getIt<IListingGroupService>().getShortlistCount(
+          groupListingId: groupListingId,
+        );
+        total += count;
+        GroupShortlistState().setShortlistCountForGroup(groupListingId, count);
+      }
+
+      if (!mounted) return;
+      _setGroupBookmarksVisible(total > 0);
+    } catch (_) {
+      if (!mounted) return;
+      _setGroupBookmarksVisible(false);
+    }
+  }
+
+  void _handleShortlistChanged() {
+    _setGroupBookmarksVisible(GroupShortlistState().totalShortlistCount > 0);
+  }
+
+  void _setGroupBookmarksVisible(bool visible) {
+    if (visible == _hasGroupBookmarks) return;
+    final previousTabs = _visibleTabs;
+    final selectedTab =
+        previousTabs[_tabController.index.clamp(0, previousTabs.length - 1)].id;
+
+    setState(() {
+      _hasGroupBookmarks = visible;
+      _replaceTabController(selectedTab: selectedTab);
+    });
+  }
+
+  void _replaceTabController({required _MyHubTabId selectedTab}) {
+    final nextTabs = _visibleTabs;
+    final nextIndex = nextTabs.indexWhere((tab) => tab.id == selectedTab);
+    final oldController = _tabController;
+    oldController.removeListener(_handleTabChanged);
+    _tabController = TabController(
+      length: nextTabs.length,
+      initialIndex: nextIndex < 0 ? 0 : nextIndex,
+      vsync: this,
+    );
+    _tabController.addListener(_handleTabChanged);
+    oldController.dispose();
+  }
+
   void _handleTabChanged() {
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Widget _buildTabView(_MyHubTabSpec tab, int index) {
+    switch (tab.id) {
+      case _MyHubTabId.groups:
+        return const MyGroupsScreen(embedded: true);
+      case _MyHubTabId.groupBookmarks:
+        return const MyGroupBookmarksScreen(embedded: true);
+      case _MyHubTabId.listings:
+        return const UserListingsScreen(embedded: true);
+      case _MyHubTabId.favorites:
+        return FavoritesScreen(
+          embedded: true,
+          tabVisible: widget.tabVisible && _tabController.index == index,
+        );
+      case _MyHubTabId.alerts:
+        return const NotificationsScreen(embedded: true);
     }
   }
 
@@ -80,7 +171,10 @@ class _MyHubScreenState extends State<MyHubScreen>
                   return AnimatedBuilder(
                     animation: _tabController,
                     builder: (context, _) {
-                      return _MyHubTabRibbon(tabController: _tabController);
+                      return _MyHubTabRibbon(
+                        tabController: _tabController,
+                        tabs: _visibleTabs,
+                      );
                     },
                   );
                 },
@@ -90,15 +184,8 @@ class _MyHubScreenState extends State<MyHubScreen>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    const MyGroupsScreen(embedded: true),
-                    const UserListingsScreen(embedded: true),
-                    const MyGroupBookmarksScreen(embedded: true),
-                    FavoritesScreen(
-                      embedded: true,
-                      tabVisible:
-                          widget.tabVisible && _tabController.index == 3,
-                    ),
-                    const NotificationsScreen(embedded: true),
+                    for (final (index, tab) in _visibleTabs.indexed)
+                      _buildTabView(tab, index),
                   ],
                 ),
               ),
@@ -110,61 +197,79 @@ class _MyHubScreenState extends State<MyHubScreen>
   }
 }
 
+enum _MyHubTabId { groups, groupBookmarks, listings, favorites, alerts }
+
 class _MyHubTabSpec {
   const _MyHubTabSpec({
+    required this.id,
     required this.icon,
     required this.labelKey,
-    this.iconBadgeDimension = 28.6,
-    this.iconBorderColor,
-    this.iconSize = 20,
     this.useIconBadge = true,
   });
 
+  final _MyHubTabId id;
   final IconData icon;
   final String labelKey;
-  final double iconBadgeDimension;
-  final Color? iconBorderColor;
-  final double iconSize;
   final bool useIconBadge;
+
+  static List<_MyHubTabSpec> visibleTabs({
+    required bool hasGroupBookmarks,
+  }) {
+    return [
+      const _MyHubTabSpec(
+        id: _MyHubTabId.groups,
+        icon: Icons.groups_outlined,
+        labelKey: "my_hub_tab_groups",
+        useIconBadge: false,
+      ),
+      if (hasGroupBookmarks)
+        const _MyHubTabSpec(
+          id: _MyHubTabId.groupBookmarks,
+          icon: Icons.bookmark_border,
+          labelKey: "my_hub_tab_bookmarks",
+        ),
+      const _MyHubTabSpec(
+        id: _MyHubTabId.listings,
+        icon: Icons.list_alt,
+        labelKey: "menu_my_listings",
+      ),
+      const _MyHubTabSpec(
+        id: _MyHubTabId.favorites,
+        icon: Icons.favorite_border,
+        labelKey: "menu_favorites",
+      ),
+      const _MyHubTabSpec(
+        id: _MyHubTabId.alerts,
+        icon: Icons.notifications_none,
+        labelKey: "my_hub_tab_alerts",
+      ),
+    ];
+  }
 }
 
 class _MyHubTabRibbon extends StatefulWidget {
-  const _MyHubTabRibbon({required this.tabController});
+  const _MyHubTabRibbon({
+    required this.tabController,
+    required this.tabs,
+  });
 
   final TabController tabController;
+  final List<_MyHubTabSpec> tabs;
 
   @override
   State<_MyHubTabRibbon> createState() => _MyHubTabRibbonState();
 }
 
 class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
-  late final List<GlobalKey> _itemKeys;
+  late List<GlobalKey> _itemKeys;
   late int _lastIndex;
 
   static const double _ribbonHeight = 44;
   static const double _chipPadTop = 8;
   static const double _chipPadBottom = 4;
 
-  static const _tabs = <_MyHubTabSpec>[
-    _MyHubTabSpec(
-      icon: Icons.groups_outlined,
-      labelKey: "my_hub_tab_groups",
-      useIconBadge: false,
-    ),
-    _MyHubTabSpec(icon: Icons.list_alt, labelKey: "menu_my_listings"),
-    _MyHubTabSpec(
-      icon: Icons.bookmark_border,
-      labelKey: "my_hub_tab_bookmarks",
-    ),
-    _MyHubTabSpec(icon: Icons.favorite_border, labelKey: "menu_favorites"),
-    _MyHubTabSpec(
-      icon: Icons.notifications_none,
-      labelKey: "my_hub_tab_alerts",
-    ),
-  ];
-
   int get _selectedIndex =>
-      widget.tabController.index.clamp(0, _tabs.length - 1);
+      widget.tabController.index.clamp(0, widget.tabs.length - 1);
 
   void _scrollSelectionToCenter() {
     if (!mounted) return;
@@ -192,7 +297,10 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
   @override
   void initState() {
     super.initState();
-    _itemKeys = List<GlobalKey>.generate(_tabs.length, (_) => GlobalKey());
+    _itemKeys = List<GlobalKey>.generate(
+      widget.tabs.length,
+      (_) => GlobalKey(),
+    );
     _lastIndex = _selectedIndex;
     widget.tabController.addListener(_handleTabControllerChanged);
     WidgetsBinding.instance
@@ -202,6 +310,12 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
   @override
   void didUpdateWidget(covariant _MyHubTabRibbon oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.tabs.length != oldWidget.tabs.length) {
+      _itemKeys = List<GlobalKey>.generate(
+        widget.tabs.length,
+        (_) => GlobalKey(),
+      );
+    }
     if (widget.tabController == oldWidget.tabController) return;
     oldWidget.tabController.removeListener(_handleTabControllerChanged);
     _lastIndex = _selectedIndex;
@@ -239,16 +353,15 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (var i = 0; i < _tabs.length; i++) ...[
+                    for (var i = 0; i < widget.tabs.length; i++) ...[
                       if (i > 0) const SizedBox(width: 8),
                       _MyHubPillTabChip(
                         key: _itemKeys[i],
-                        icon: _tabs[i].icon,
-                        label: L10n.get(_tabs[i].labelKey),
-                        iconBadgeDimension: _tabs[i].iconBadgeDimension,
-                        iconBorderColor: _tabs[i].iconBorderColor,
-                        iconSize: _tabs[i].iconSize,
-                        useIconBadge: _tabs[i].useIconBadge,
+                        icon: widget.tabs[i].icon,
+                        label: L10n.get(widget.tabs[i].labelKey),
+                        iconBadgeDimension: 28.6,
+                        iconSize: 20,
+                        useIconBadge: widget.tabs[i].useIconBadge,
                         isSelected: idx == i,
                         onTap: () {
                           if (widget.tabController.index != i) {
@@ -277,14 +390,12 @@ class _MyHubPillTabChip extends StatelessWidget {
     required this.useIconBadge,
     required this.isSelected,
     required this.onTap,
-    this.iconBorderColor,
     super.key,
   });
 
   final IconData icon;
   final String label;
   final double iconBadgeDimension;
-  final Color? iconBorderColor;
   final double iconSize;
   final bool useIconBadge;
   final bool isSelected;
@@ -346,8 +457,7 @@ class _MyHubPillTabChip extends StatelessWidget {
                     badgeBackgroundColor: isSelected
                         ? selectedIconBadgeBg
                         : inactiveFg.withValues(alpha: 0.12),
-                    borderColor: iconBorderColor,
-                    borderWidth: iconBorderColor == null ? 0 : 1.4,
+                    borderWidth: 0,
                     dimension: iconBadgeDimension,
                     iconSize: iconSize,
                   )

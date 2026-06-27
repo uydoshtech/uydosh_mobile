@@ -208,6 +208,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_feed_view => 'Open feed view';
 
   @override
+  String get map_location_prompt_title => 'Show my location';
+
+  @override
+  String get map_location_prompt_body =>
+      'See where you are relative to nearby listings.';
+
+  @override
+  String get map_location_prompt_action => 'Use location';
+
+  @override
   String get show_district_layer => 'Show districts layer';
 
   @override
@@ -2489,7 +2499,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get my_hub_tab_groups => 'Groups';
 
   @override
-  String get my_hub_tab_bookmarks => 'My Bookmarks';
+  String get my_hub_tab_bookmarks => 'Housing options';
 
   @override
   String get my_hub_tab_alerts => 'My Alerts';
