@@ -11,7 +11,6 @@ class _SearchResultsShell extends StatefulWidget {
     required this.searchRibbonHeight,
     required this.inlineRibbonTop,
     required this.mapTopPadding,
-    required this.canOpenMapView,
     required this.initialMapListings,
     required this.initialMapTotal,
     required this.alertFabBottom,
@@ -33,7 +32,6 @@ class _SearchResultsShell extends StatefulWidget {
   final double searchRibbonHeight;
   final double inlineRibbonTop;
   final double mapTopPadding;
-  final bool canOpenMapView;
   final List<Listing> initialMapListings;
   final int? initialMapTotal;
   final double alertFabBottom;
@@ -111,7 +109,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             searchButtonTutorialKey: widget.searchButtonTutorialKey,
             isHomeTabActive: widget.isHomeTabActive,
             isSearchMode: widget.isSearchMode,
-            showViewToggle: widget.canOpenMapView,
+            showViewToggle: true,
             onOpenMapView: widget.onOpenMapView,
             onOpenInlineSearch: widget.onOpenInlineSearch,
           ),
@@ -165,7 +163,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
           searchButtonTutorialKey: widget.searchButtonTutorialKey,
           isHomeTabActive: widget.isHomeTabActive,
           isSearchMode: widget.isSearchMode,
-          showViewToggle: widget.canOpenMapView && !isShowingMap,
+          showViewToggle: !isShowingMap,
           onOpenMapView: widget.onOpenMapView,
           onOpenInlineSearch: widget.onOpenInlineSearch,
         ),
@@ -188,6 +186,9 @@ class _SearchResultsFabStack extends StatelessWidget {
   });
 
   static const double _viewToggleGap = 12.0;
+  static const double compactButtonWidth = 61.2;
+  static const double compactButtonHeight = 34.2;
+  static const double compactButtonIconSize = 22.5;
 
   final bool inSearchContext;
   final double bottom;
@@ -200,9 +201,7 @@ class _SearchResultsFabStack extends StatelessWidget {
   final VoidCallback onOpenInlineSearch;
 
   static double viewToggleBottomFor(double searchFabBottom) {
-    return searchFabBottom +
-        SearchFloatingActionButton.fabSize +
-        _viewToggleGap;
+    return searchFabBottom + compactButtonHeight + _viewToggleGap;
   }
 
   @override
@@ -210,7 +209,7 @@ class _SearchResultsFabStack extends StatelessWidget {
     return Positioned.fill(
       child: Stack(
         children: [
-          if (inSearchContext && showViewToggle)
+          if (showViewToggle)
             Positioned(
               right: 16,
               bottom: viewToggleBottomFor(bottom),
@@ -218,9 +217,9 @@ class _SearchResultsFabStack extends StatelessWidget {
                 onPressed: onOpenMapView,
                 iconData: Icons.map_rounded,
                 tooltip: L10n.get("open_map_view"),
-                width: 61.2,
-                height: 34.2,
-                iconSize: 22.5,
+                width: compactButtonWidth,
+                height: compactButtonHeight,
+                iconSize: compactButtonIconSize,
                 foregroundColor: ThemeState().isBlueTheme ? Colors.white : null,
                 elevation: ThemeState().isBlueTheme ? null : 8,
               ),
@@ -240,6 +239,9 @@ class _SearchResultsFabStack extends StatelessWidget {
                       searchFiltersState: searchFiltersState,
                       onPressed: isSearchMode ? null : onOpenInlineSearch,
                       iconData: Icons.search,
+                      width: compactButtonWidth,
+                      height: compactButtonHeight,
+                      iconSize: compactButtonIconSize,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
                       foregroundColor:

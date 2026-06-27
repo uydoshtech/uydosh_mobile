@@ -219,6 +219,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get map_location_prompt_action => 'Использовать геопозицию';
 
   @override
+  String get permission_location_title => 'Смотреть объявления на карте';
+
+  @override
+  String get permission_location_body =>
+      'Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.';
+
+  @override
+  String get permission_location_cta => 'Разрешить геопозицию';
+
+  @override
+  String get permission_location_denied_body =>
+      'Доступ к геопозиции отключён в настройках. Откройте настройки, чтобы включить карту.';
+
+  @override
   String get show_district_layer => 'Показать слой районов';
 
   @override

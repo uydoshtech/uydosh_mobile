@@ -219,6 +219,20 @@ class AppLocalizationsUz extends AppLocalizations {
   String get map_location_prompt_action => 'Joylashuvdan foydalanish';
 
   @override
+  String get permission_location_title => 'E\'lonlarni xaritada ko‘ring';
+
+  @override
+  String get permission_location_body =>
+      'UyDosh xarita tajribasini ochishi va yaqin e\'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.';
+
+  @override
+  String get permission_location_cta => 'Joylashuvga ruxsat berish';
+
+  @override
+  String get permission_location_denied_body =>
+      'Joylashuvga kirish Sozlamalarda o‘chirilgan. Xaritani yoqish uchun Sozlamalarni oching.';
+
+  @override
   String get show_district_layer => 'Tumanlar qatlamini ko‘rsatish';
 
   @override

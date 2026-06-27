@@ -218,6 +218,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map_location_prompt_action => 'Use location';
 
   @override
+  String get permission_location_title => 'See listings on the map';
+
+  @override
+  String get permission_location_body =>
+      'Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.';
+
+  @override
+  String get permission_location_cta => 'Allow location access';
+
+  @override
+  String get permission_location_denied_body =>
+      'Location access is turned off in Settings. Open Settings to enable the map experience.';
+
+  @override
   String get show_district_layer => 'Show districts layer';
 
   @override

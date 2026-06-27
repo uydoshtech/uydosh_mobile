@@ -496,6 +496,30 @@ abstract class AppLocalizations {
   /// **'Use location'**
   String get map_location_prompt_action;
 
+  /// No description provided for @permission_location_title.
+  ///
+  /// In en, this message translates to:
+  /// **'See listings on the map'**
+  String get permission_location_title;
+
+  /// No description provided for @permission_location_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.'**
+  String get permission_location_body;
+
+  /// No description provided for @permission_location_cta.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location access'**
+  String get permission_location_cta;
+
+  /// No description provided for @permission_location_denied_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Location access is turned off in Settings. Open Settings to enable the map experience.'**
+  String get permission_location_denied_body;
+
   /// No description provided for @show_district_layer.
   ///
   /// In en, this message translates to:

@@ -72,6 +72,8 @@ import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/router/app_router.dart"
+    show mainNavigationKey;
 import "package:uy_dosh/presentation/screens/admin/admin_listing_owner_conversations_screen.dart";
 import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
@@ -367,11 +369,11 @@ class _FloatingGroupParticipantsButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       side: isDark
           ? (isBlueTheme
-              ? const BorderSide(color: Colors.white, width: 1)
-              : BorderSide(
-                  color: accentColor.withValues(alpha: 0.58),
-                  width: 1,
-                ))
+                ? const BorderSide(color: Colors.white, width: 1)
+                : BorderSide(
+                    color: accentColor.withValues(alpha: 0.58),
+                    width: 1,
+                  ))
           : BorderSide.none,
     );
 
@@ -612,8 +614,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   void _reloadListingDetail() {
     context.read<ListingDetailBloc>().add(
-          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-        );
+      ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+    );
   }
 
   double _listingDetailPullRefreshEdgeOffset(BuildContext context) {
@@ -673,14 +675,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
 
     try {
-      final profile =
-          await getIt<IUserProfileService>().getCurrentUserProfile();
+      final profile = await getIt<IUserProfileService>()
+          .getCurrentUserProfile();
       await SessionManager.storeUserProfile(profile);
       ProfileCompletionState().updateFromProfile(profile);
       return profile;
     } catch (e) {
-      final cached =
-          preferCache ? null : await SessionManager.getCachedUserProfile();
+      final cached = preferCache
+          ? null
+          : await SessionManager.getCachedUserProfile();
       if (cached != null) return cached;
       if (mounted)
         ToastReporting.errorMessage(context, throwableUserMessage(e));
@@ -739,10 +742,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       if (allowProfileRetry && _isProfileRequiredForGroupJoinMessage(message)) {
         final isReady = await _ensureProfileReadyForGroupJoin();
         if (isReady && mounted) {
-          await _requestToJoinGroup(
-            listingDetail,
-            allowProfileRetry: false,
-          );
+          await _requestToJoinGroup(listingDetail, allowProfileRetry: false);
         }
         return;
       }
@@ -780,8 +780,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     required bool isOwner,
   }) async {
     var pageState = context.read<ListingDetailPageBloc>().state;
-    var members =
-        groupMembers.isNotEmpty ? groupMembers : pageState.groupMembers;
+    var members = groupMembers.isNotEmpty
+        ? groupMembers
+        : pageState.groupMembers;
     if (members.isEmpty) {
       await _loadCompatibility(listingDetail);
       if (!mounted) return;
@@ -900,7 +901,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       housingMaxPrice: housingListing.maxPrice,
       housingListingTypeCode: housingListing.listingType.code,
     );
-    final groupSize = groupDetail.groupContext?.groupSizeTarget ??
+    final groupSize =
+        groupDetail.groupContext?.groupSizeTarget ??
         groupDetail.groupSizeTarget;
 
     return Padding(
@@ -925,8 +927,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   /// In-app chat CTA for guests (login prompt) or signed-in non-owners only.
   bool _canShowInAppListingChat(ListingDetail listingDetail) {
-    if (PeerInteractionEligibility
-        .isInternalListingChatDisabledForPublisherEmail(
+    if (PeerInteractionEligibility.isInternalListingChatDisabledForPublisherEmail(
       listingDetail.user.email,
     )) {
       return false;
@@ -968,8 +969,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     // Fetch listing details
     context.read<ListingDetailBloc>().add(
-          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-        );
+      ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+    );
     unawaited(_loadGroupListingDetailForHousing());
   }
 
@@ -1037,10 +1038,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
               );
 
               context.read<ListingDetailBloc>().add(
-                    ListingDetailEvent.updateListingDetail(
-                      listingDetail: updatedListing,
-                    ),
-                  );
+                ListingDetailEvent.updateListingDetail(
+                  listingDetail: updatedListing,
+                ),
+              );
 
               logger.d("✅ Listing status updated in BLoC state");
             },
@@ -1182,9 +1183,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     context
         .read<ListingDetailPageBloc>()
-        .invalidateStaleListingOwnerPresentation(
-          listingDetail.user.id,
-        );
+        .invalidateStaleListingOwnerPresentation(listingDetail.user.id);
 
     final isOwner = _isListingOwner(listingDetail.user.id);
     if (isOwner) {
@@ -1243,15 +1242,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     try {
       final metrics =
           await RoomScanMetricsHydrationService.computeFromRemoteUrl(
-        absoluteUrl: _buildPhotoUrl(raw),
-        listingId: listingDetail.id,
-      );
+            absoluteUrl: _buildPhotoUrl(raw),
+            listingId: listingDetail.id,
+          );
       if (!mounted || metrics == null) return;
       context.read<ListingDetailBloc>().add(
-            ListingDetailEvent.updateListingDetail(
-              listingDetail: listingDetail.withRoomScanMetrics(metrics),
-            ),
-          );
+        ListingDetailEvent.updateListingDetail(
+          listingDetail: listingDetail.withRoomScanMetrics(metrics),
+        ),
+      );
       await UserListingState().initialize();
       if (!mounted) return;
       final role = (await SessionManager.getUserRole())?.toLowerCase().trim();
@@ -1308,7 +1307,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       // If `total > 1` there's guaranteed to be at least one listing other
       // than the current one. Otherwise inspect the (small) page payload to
       // see whether the single match (if any) is the current listing itself.
-      final hasOther = response.total > 1 ||
+      final hasOther =
+          response.total > 1 ||
           response.data.any((l) => l.id != listingDetail.id);
       final otherCount = hasOther ? 1 : 0;
 
@@ -1336,8 +1336,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     pageBloc.setLoadingNearbyMatchesCount(listingDetail.id);
 
     try {
-      final filters =
-          ListingDetailNearbyMatchesHelper.searchFilters(listingDetail);
+      final filters = ListingDetailNearbyMatchesHelper.searchFilters(
+        listingDetail,
+      );
 
       final response = await getIt<IListingService>().getListings(
         page: 1,
@@ -1376,8 +1377,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
     if (!AuthenticationState().isAuthenticated) return;
     try {
-      final profile =
-          await getIt<IUserProfileService>().getUserProfile(listingUserId);
+      final profile = await getIt<IUserProfileService>().getUserProfile(
+        listingUserId,
+      );
       if (!mounted) return;
       if (_getCurrentListingUserId() != listingUserId) return;
       pageBloc.setOwnerName(
@@ -1423,8 +1425,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         return;
       }
 
-      final ownerProfile =
-          await userProfileService.getUserProfile(listingUserId);
+      final ownerProfile = await userProfileService.getUserProfile(
+        listingUserId,
+      );
       final result = ListingDetailCompatibilityHelper.calculate(
         currentProfile,
         ownerProfile,
@@ -1442,8 +1445,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         totalFieldCount: result.totalFieldCount,
         ownerName: _listingAuthorNameFromProfile(ownerProfile),
         ownerAvatarUrl: _listingAuthorAvatarUrlFromProfile(ownerProfile),
-        currentUserAvatarUrl:
-            _listingAuthorAvatarUrlFromProfile(currentProfile),
+        currentUserAvatarUrl: _listingAuthorAvatarUrlFromProfile(
+          currentProfile,
+        ),
       );
     } catch (e) {
       logger.d("Error loading compatibility: $e");
@@ -1459,13 +1463,14 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     required ListingDetailPageBloc pageBloc,
     required IUserProfileService userProfileService,
   }) async {
-    final members = await getIt<IListingGroupService>()
-        .listMembers(listingId: listingDetail.id);
+    final members = await getIt<IListingGroupService>().listMembers(
+      listingId: listingDetail.id,
+    );
 
     final memberUserIds = members.map((m) => m.userId).toSet();
     final canViewGroupCompatibilityDetails =
         memberUserIds.contains(currentProfile.userId) ||
-            (members.isEmpty && listingUserId == currentProfile.userId);
+        (members.isEmpty && listingUserId == currentProfile.userId);
     final profiles = <UserProfile>[];
     final groupMembers = <ConversationMemberSummary>[];
 
@@ -1520,8 +1525,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       groupMembers: groupMembers,
     );
 
-    final groupResult =
-        ListingDetailGroupCompatibilityHelper.calculate(profiles);
+    final groupResult = ListingDetailGroupCompatibilityHelper.calculate(
+      profiles,
+    );
 
     final profileByUserId = {
       for (final profile in profiles) profile.userId: profile,
@@ -1532,8 +1538,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         .toList(growable: false);
     final groupPreferenceMatrix =
         ListingDetailGroupCompatibilityHelper.buildPreferenceMatrix(
-      matrixProfiles,
-    );
+          matrixProfiles,
+        );
     final groupMemberCompatibility = <int, GroupMemberCompatibilitySummary>{};
     if (canViewGroupCompatibilityDetails) {
       for (final member in groupMembers) {
@@ -1542,9 +1548,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         if (memberProfile == null) continue;
         groupMemberCompatibility[member.userId] =
             GroupMemberCompatibilityHelper.summarize(
-          currentProfile,
-          memberProfile,
-        );
+              currentProfile,
+              memberProfile,
+            );
       }
     }
 
@@ -1662,10 +1668,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       return "$base ...";
     }
     if (complaintsCount != null) {
-      final countText = L10n.plural(
-        "complaints_count_short",
-        complaintsCount,
-      );
+      final countText = L10n.plural("complaints_count_short", complaintsCount);
       return "$base • $countText";
     }
     return base;
@@ -1696,23 +1699,12 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial: (_) => _showShareError(
-        L10n.get(
-          "error_listing_not_loaded",
-        ),
-      ),
-      loading: (_) => _showShareError(
-        L10n.get(
-          "error_listing_still_loading",
-        ),
-      ),
+      initial: (_) => _showShareError(L10n.get("error_listing_not_loaded")),
+      loading: (_) => _showShareError(L10n.get("error_listing_still_loading")),
       loaded: (loadedState) =>
           _performShare(loadedState.listingDetail, context),
-      error: (errorState) => _showShareError(
-        L10n.get(
-          "error_loading_listing_details",
-        ),
-      ),
+      error: (errorState) =>
+          _showShareError(L10n.get("error_loading_listing_details")),
     );
   }
 
@@ -1748,29 +1740,26 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (!context.mounted) return;
     final achievement = await getIt<IGamificationService>().recordShare();
     if (context.mounted && achievement != null) {
-      AchievementUnlockBottomSheet.show(
-        context,
-        achievement: achievement,
-      );
+      AchievementUnlockBottomSheet.show(context, achievement: achievement);
     }
   }
 
   String _buildShareText(ListingDetail listingDetail, String language) {
     final title =
         ListingUtils.usesPresetListingTitle(listingDetail.listingTypeId)
-            ? L10n.getForLanguage(
-                ListingUtils.presetListingTitleL10nKey(
-                  listingTypeId: listingDetail.listingTypeId,
-                  gender: listingDetail.gender,
-                ),
-                language,
-              )
-            : _getLocalizedName(
-                nameUz: listingDetail.title,
-                nameRu: listingDetail.title,
-                nameEn: listingDetail.title,
-                language: language,
-              );
+        ? L10n.getForLanguage(
+            ListingUtils.presetListingTitleL10nKey(
+              listingTypeId: listingDetail.listingTypeId,
+              gender: listingDetail.gender,
+            ),
+            language,
+          )
+        : _getLocalizedName(
+            nameUz: listingDetail.title,
+            nameRu: listingDetail.title,
+            nameEn: listingDetail.title,
+            language: language,
+          );
 
     final description = ListingContactRedaction.stripForPublicDisplay(
       listingDetail.description ?? "",
@@ -1815,12 +1804,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
     return """$title$typeInfo$locationInfo$subwayInfo
 
-${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatStoredListingPrice(
-      storedPrice: price,
-      listingTypeCode: listingDetail.listingType.code,
-      minPrice: listingDetail.minPrice,
-      maxPrice: listingDetail.maxPrice,
-    )}
+${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatStoredListingPrice(storedPrice: price, listingTypeCode: listingDetail.listingType.code, minPrice: listingDetail.minPrice, maxPrice: listingDetail.maxPrice)}
 
 📱 ${L10n.get("check_out_listing_on_uydosh")}
 
@@ -1894,12 +1878,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         await Future<void>.delayed(const Duration(milliseconds: 280));
         if (!mounted) return;
         try {
-          final fresh =
-              await getIt<IListingService>().getListingDetail(listingDetail.id);
+          final fresh = await getIt<IListingService>().getListingDetail(
+            listingDetail.id,
+          );
           if (!mounted) return;
           context.read<ListingDetailBloc>().add(
-                ListingDetailEvent.updateListingDetail(listingDetail: fresh),
-              );
+            ListingDetailEvent.updateListingDetail(listingDetail: fresh),
+          );
         } catch (e, st) {
           logger.d("Listing refresh after 3D viewer failed: $e\n$st");
         }
@@ -1961,8 +1946,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             MaterialPageRoute(
               builder: (context) => FullScreenPhotoViewer(
                 photoUrls: photoUrls,
-                initialIndex:
-                    orderedInitialIndex >= 0 ? orderedInitialIndex : 0,
+                initialIndex: orderedInitialIndex >= 0
+                    ? orderedInitialIndex
+                    : 0,
                 baseUrl: EnvironmentUtil.basePath,
               ),
             ),
@@ -2014,22 +2000,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial: (_) => _showEditError(
-        L10n.get(
-          "error_listing_not_loaded",
-        ),
-      ),
-      loading: (_) => _showEditError(
-        L10n.get(
-          "error_listing_still_loading",
-        ),
-      ),
+      initial: (_) => _showEditError(L10n.get("error_listing_not_loaded")),
+      loading: (_) => _showEditError(L10n.get("error_listing_still_loading")),
       loaded: (loadedState) => _navigateToEdit(loadedState.listingDetail),
-      error: (errorState) => _showEditError(
-        L10n.get(
-          "error_loading_listing_details",
-        ),
-      ),
+      error: (errorState) =>
+          _showEditError(L10n.get("error_loading_listing_details")),
     );
   }
 
@@ -2056,8 +2031,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
       // Fetch fresh data from server (bloc emits loading then loaded)
       context.read<ListingDetailBloc>().add(
-            ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-          );
+        ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+      );
     }
   }
 
@@ -2070,22 +2045,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     final currentState = context.read<ListingDetailBloc>().state;
 
     currentState.map(
-      initial: (_) => _showFeatureError(
-        L10n.get(
-          "error_listing_not_loaded",
-        ),
-      ),
-      loading: (_) => _showFeatureError(
-        L10n.get(
-          "error_listing_still_loading",
-        ),
-      ),
+      initial: (_) => _showFeatureError(L10n.get("error_listing_not_loaded")),
+      loading: (_) =>
+          _showFeatureError(L10n.get("error_listing_still_loading")),
       loaded: (loadedState) => _performToggleFeature(loadedState.listingDetail),
-      error: (errorState) => _showFeatureError(
-        L10n.get(
-          "error_loading_listing_details",
-        ),
-      ),
+      error: (errorState) =>
+          _showFeatureError(L10n.get("error_loading_listing_details")),
     );
   }
 
@@ -2115,16 +2080,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
   Future<void> _performToggleFeature(ListingDetail listingDetail) async {
     try {
-      final isPromoting =
-          !ListingUtils.isCurrentlyFeaturedDetail(listingDetail);
+      final isPromoting = !ListingUtils.isCurrentlyFeaturedDetail(
+        listingDetail,
+      );
       if (isPromoting) {
         final canPromote = await _canPromoteListing();
         if (!canPromote) {
-          _showFeatureError(
-            L10n.get(
-              "error_promotion_once_per_week",
-            ),
-          );
+          _showFeatureError(L10n.get("error_promotion_once_per_week"));
           return;
         }
       }
@@ -2158,25 +2120,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
         // Update the bloc state
         context.read<ListingDetailBloc>().add(
-              ListingDetailEvent.updateListingDetail(
-                listingDetail: updatedListingDetail,
-              ),
-            );
+          ListingDetailEvent.updateListingDetail(
+            listingDetail: updatedListingDetail,
+          ),
+        );
 
         // Mark home screen for refresh since listing featured state changed
         HomeRefreshState().markForRefresh();
       } else {
-        _showFeatureError(
-          L10n.get(
-            "feature_listing_error",
-          ),
-        );
+        _showFeatureError(L10n.get("feature_listing_error"));
       }
     } catch (e) {
       logger.e("Error toggling feature listing: $e");
-      _showFeatureError(
-        L10n.get("feature_listing_error"),
-      );
+      _showFeatureError(L10n.get("feature_listing_error"));
     } finally {
       if (mounted) {
         context.read<ListingDetailPageBloc>().setToggling(false);
@@ -2212,11 +2168,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         await favoritesState.toggleFavorite(widget.listingId);
 
         if (wasFavorite) {
-          getIt<AppAnalyticsService>()
-              .logFavoriteRemoved(listingId: widget.listingId);
+          getIt<AppAnalyticsService>().logFavoriteRemoved(
+            listingId: widget.listingId,
+          );
         } else {
-          getIt<AppAnalyticsService>()
-              .logFavoriteAdded(listingId: widget.listingId);
+          getIt<AppAnalyticsService>().logFavoriteAdded(
+            listingId: widget.listingId,
+          );
         }
 
         // Show success message
@@ -2463,14 +2421,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     );
     if (!ok || !mounted) return;
     context.read<ListingDetailBloc>().add(
-          ListingDetailEvent.fetchListingDetail(id: widget.listingId),
-        );
+      ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+    );
   }
 
   Future<void> _startConversation(ListingDetail listingDetail) async {
     final pageState = context.read<ListingDetailPageBloc>().state;
-    final displayName =
-        _resolvedListingOwnerDisplayLabel(listingDetail, pageState);
+    final displayName = _resolvedListingOwnerDisplayLabel(
+      listingDetail,
+      pageState,
+    );
 
     await ConversationEntryFlow.openListingThread(
       context: context,
@@ -2485,8 +2445,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             listingId: widget.listingId,
             listingTypeId: listingDetail.listingTypeId,
             listingOwnerUserId: listingDetail.user.id,
-            listingTitle:
-                resolvedListingChatTitleFromListingDetail(listingDetail),
+            listingTitle: resolvedListingChatTitleFromListingDetail(
+              listingDetail,
+            ),
             otherUserInitials: StringUtils.extractInitials(displayName),
             otherUserName: displayName.isNotEmpty ? displayName : null,
             otherUserId: listingDetail.user.id,
@@ -2502,8 +2463,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             listingId: widget.listingId,
             listingTypeId: existingConversation.listingTypeId,
             listingOwnerUserId: existingConversation.participantId,
-            listingTitle:
-                resolvedConversationListingTitle(existingConversation),
+            listingTitle: resolvedConversationListingTitle(
+              existingConversation,
+            ),
             otherUserInitials: StringUtils.extractInitials(
               existingConversation.otherUserName,
             ),
@@ -2518,46 +2480,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     );
   }
 
-  Future<void> _confirmOpenInYandexMaps(ListingDetail listingDetail) async {
-    final shouldOpen = await CommonConfirmationDialogs.showGenericConfirmation(
-      context: context,
-      titleKey: "open_in_yandex_maps",
-      messageKey: "open_in_yandex_maps_confirmation",
-      confirmButtonKey: "confirm",
-    );
-
-    if (shouldOpen ?? false) {
-      await _openInYandexMaps(listingDetail);
+  Future<void> _openHomeMapView() async {
+    final navigationState = mainNavigationKey.currentState;
+    if (navigationState != null) {
+      await navigationState.openHomeMapView();
     }
-  }
-
-  Future<void> _openInYandexMaps(ListingDetail listingDetail) async {
-    try {
-      // Get coordinates from the listing detail
-      final coordinates = _getCoordinatesFromListing(listingDetail);
-      if (coordinates == null) {
-        ToastReporting.errorKey(context, "error_loading_listing_details");
-        return;
-      }
-
-      final latitude = coordinates["latitude"]!;
-      final longitude = coordinates["longitude"]!;
-
-      // Create Yandex Maps URL
-      final yandexMapsUrl =
-          "https://yandex.com/maps/?pt=$longitude,$latitude&z=16&l=map";
-
-      final uri = Uri.parse(yandexMapsUrl);
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        ToastReporting.errorMessage(context, "Could not open Yandex Maps");
-      }
-    } catch (e) {
-      logger.e("Error opening Yandex Maps: $e");
-      ToastReporting.errorMessage(context, "Error opening Yandex Maps");
-    }
+    if (!mounted) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   Future<void> _openStoreInYandexMaps(ListingNearbyStore store) async {
@@ -2571,69 +2500,6 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     }
 
     ToastReporting.errorKey(context, "error_loading_listing_details");
-  }
-
-  Map<String, double>? _getCoordinatesFromListing(ListingDetail listingDetail) {
-    final addressLatitude = listingDetail.addressLatitude;
-    final addressLongitude = listingDetail.addressLongitude;
-    if (addressLatitude != null && addressLongitude != null) {
-      return {
-        "latitude": addressLatitude,
-        "longitude": addressLongitude,
-      };
-    }
-
-    // Try to get coordinates from metro station first (highest priority)
-    if (listingDetail.subwayStation != null) {
-      // Try to get coordinates by station ID first
-      final coordsById = MetroCache.getMetroStationCoordinatesById(
-        listingDetail.subwayStation!.id,
-      );
-      if (coordsById != null) {
-        return coordsById;
-      }
-
-      // Fallback to name-based lookup
-      final stationName = listingDetail.subwayStation?.nameEn ??
-          listingDetail.subwayStation?.nameRu ??
-          listingDetail.subwayStation?.nameUz;
-
-      if (stationName != null && stationName.isNotEmpty) {
-        final coordsByName = MetroCache.getMetroStationCoordinatesByName(
-          stationName,
-        );
-        if (coordsByName != null) {
-          return coordsByName;
-        }
-      }
-    }
-
-    // Try to get coordinates from location (lower priority)
-    if (listingDetail.location != null) {
-      // Try to get coordinates by location ID first
-      final coordsById = LocationCache.getLocationCoordinatesById(
-        listingDetail.location!.id,
-      );
-      if (coordsById != null) {
-        return coordsById;
-      }
-
-      // Fallback to name-based lookup
-      final locationName = listingDetail.location?.nameEn ??
-          listingDetail.location?.nameRu ??
-          listingDetail.location?.nameUz;
-
-      if (locationName != null && locationName.isNotEmpty) {
-        final coordsByName = LocationCache.getLocationCoordinatesByName(
-          locationName,
-        );
-        if (coordsByName != null) {
-          return coordsByName;
-        }
-      }
-    }
-
-    return null;
   }
 
   @override
@@ -2702,8 +2568,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               ),
               actionsPadding: const EdgeInsets.only(right: 8),
               actions: [
-                BlocSelector<ListingDetailBloc, ListingDetailState,
-                    _ListingDetailIconsData>(
+                BlocSelector<
+                  ListingDetailBloc,
+                  ListingDetailState,
+                  _ListingDetailIconsData
+                >(
                   selector: (state) => state.map(
                     initial: (_) => const _ListingDetailIconsData(
                       isLoading: true,
@@ -2758,8 +2627,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                                   final role = snapshot.data;
                                   final isListingStaff =
                                       ModerationStaffUtils.isModerationStaff(
-                                    role,
-                                  );
+                                        role,
+                                      );
                                   final isStrictAdmin = role == "admin";
                                   return ActionDropdownMenu(
                                     items: _buildActionMenuItems(
@@ -2781,61 +2650,67 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               ],
               automaticallyImplyLeading: false,
             ),
-            body: BlocSelector<ListingDetailBloc, ListingDetailState,
-                _ListingDetailBodyData>(
-              selector: (state) => state.map(
-                initial: (_) => const _ListingDetailBodyData(
-                  isLoading: true,
-                  hasError: false,
-                  errorMessage: "",
-                  listingDetail: null,
-                ),
-                loading: (_) => const _ListingDetailBodyData(
-                  isLoading: true,
-                  hasError: false,
-                  errorMessage: "",
-                  listingDetail: null,
-                ),
-                loaded: (loadedState) => _ListingDetailBodyData(
-                  isLoading: false,
-                  hasError: false,
-                  errorMessage: "",
-                  listingDetail: loadedState.listingDetail,
-                ),
-                error: (errorState) => _ListingDetailBodyData(
-                  isLoading: false,
-                  hasError: true,
-                  errorMessage: errorState.message,
-                  listingDetail: null,
-                ),
-              ),
-              builder: (context, data) {
-                if (data.isLoading) {
-                  return data.listingDetail == null
-                      ? _buildInitialState()
-                      : _buildLoadingState();
-                }
-                if (data.hasError) {
-                  return _buildErrorState(data.errorMessage);
-                }
-                // Only rebuild the big static body when a field it directly uses
-                // changes. The 3 hot sub-sections below (owner toolbar,
-                // compatibility, complaints) have their own BlocSelectors that
-                // rebuild surgically on the relevant fields only, so we exclude
-                // those from the outer buildWhen.
-                return BlocBuilder<ListingDetailPageBloc,
-                    ListingDetailPageState>(
-                  buildWhen: (prev, curr) =>
-                      prev.ownerName != curr.ownerName ||
-                      prev.ownerAvatarUrl != curr.ownerAvatarUrl,
-                  builder: (context, pageState) =>
-                      _buildLoadedStateWithFloatingGroupChat(
-                    data.listingDetail!,
-                    pageState,
+            body:
+                BlocSelector<
+                  ListingDetailBloc,
+                  ListingDetailState,
+                  _ListingDetailBodyData
+                >(
+                  selector: (state) => state.map(
+                    initial: (_) => const _ListingDetailBodyData(
+                      isLoading: true,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: null,
+                    ),
+                    loading: (_) => const _ListingDetailBodyData(
+                      isLoading: true,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: null,
+                    ),
+                    loaded: (loadedState) => _ListingDetailBodyData(
+                      isLoading: false,
+                      hasError: false,
+                      errorMessage: "",
+                      listingDetail: loadedState.listingDetail,
+                    ),
+                    error: (errorState) => _ListingDetailBodyData(
+                      isLoading: false,
+                      hasError: true,
+                      errorMessage: errorState.message,
+                      listingDetail: null,
+                    ),
                   ),
-                );
-              },
-            ),
+                  builder: (context, data) {
+                    if (data.isLoading) {
+                      return data.listingDetail == null
+                          ? _buildInitialState()
+                          : _buildLoadingState();
+                    }
+                    if (data.hasError) {
+                      return _buildErrorState(data.errorMessage);
+                    }
+                    // Only rebuild the big static body when a field it directly uses
+                    // changes. The 3 hot sub-sections below (owner toolbar,
+                    // compatibility, complaints) have their own BlocSelectors that
+                    // rebuild surgically on the relevant fields only, so we exclude
+                    // those from the outer buildWhen.
+                    return BlocBuilder<
+                      ListingDetailPageBloc,
+                      ListingDetailPageState
+                    >(
+                      buildWhen: (prev, curr) =>
+                          prev.ownerName != curr.ownerName ||
+                          prev.ownerAvatarUrl != curr.ownerAvatarUrl,
+                      builder: (context, pageState) =>
+                          _buildLoadedStateWithFloatingGroupChat(
+                            data.listingDetail!,
+                            pageState,
+                          ),
+                    );
+                  },
+                ),
             bottomNavigationBar: _buildContactActionBar(),
           );
         },
@@ -2855,8 +2730,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
     final showShortlist = _canShowGroupShortlistPill(listingDetail);
     final showChat = _canShowFloatingGroupChatButton(listingDetail);
-    final showParticipants =
-        _canShowFloatingGroupParticipantsButton(listingDetail);
+    final showParticipants = _canShowFloatingGroupParticipantsButton(
+      listingDetail,
+    );
     final groupProgress = ListingGroupProgress.fromListingDetail(listingDetail);
     final pendingRequestsCount =
         listingDetail.groupContext?.pendingJoinRequestCount ?? 0;
@@ -2875,7 +2751,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         Positioned.fill(child: content),
         Positioned(
           right: _floatingGroupActionsBottomInset,
-          bottom: _floatingGroupActionsBottomInset +
+          bottom:
+              _floatingGroupActionsBottomInset +
               MediaQuery.paddingOf(context).bottom,
           child: IntrinsicWidth(
             child: Column(
@@ -2939,8 +2816,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
   /// contacting the listing owner is always one tap away, independent of
   /// whether the compatibility section is expanded/collapsed.
   Widget? _buildContactActionBar() {
-    return BlocSelector<ListingDetailBloc, ListingDetailState,
-        _ListingDetailBodyData>(
+    return BlocSelector<
+      ListingDetailBloc,
+      ListingDetailState,
+      _ListingDetailBodyData
+    >(
       selector: (state) => state.map(
         initial: (_) => const _ListingDetailBodyData(
           isLoading: true,
@@ -3007,15 +2887,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                   );
                 }
 
-                return BlocSelector<ListingDetailPageBloc,
-                    ListingDetailPageState, String>(
+                return BlocSelector<
+                  ListingDetailPageBloc,
+                  ListingDetailPageState,
+                  String
+                >(
                   selector: (pageState) => _resolvedListingOwnerDisplayLabel(
                     listingDetail,
                     pageState,
                   ),
                   builder: (context, ownerResolved) {
-                    final showInAppChat =
-                        _canShowInAppListingChat(listingDetail);
+                    final showInAppChat = _canShowInAppListingChat(
+                      listingDetail,
+                    );
                     if (!showInAppChat && onTelegram == null) {
                       return const SizedBox.shrink();
                     }
@@ -3054,9 +2938,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     );
   }
 
-  Widget? _buildCompatibilitySection(
-    ListingDetail listingDetail,
-  ) {
+  Widget? _buildCompatibilitySection(ListingDetail listingDetail) {
     final isOwner = _isListingOwner(listingDetail.user.id);
     // One-on-one compatibility is viewer vs owner; hide for owners. Group
     // compatibility is about the whole forming group — owners need it too.
@@ -3070,28 +2952,29 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     // Scoped to the compatibility fields of pageState so async compatibility
     // calculation emissions only rebuild this section.
     return BlocSelector<
-        ListingDetailPageBloc,
-        ListingDetailPageState,
-        ({
-          int? compatibilityPercent,
-          bool isLoadingCompatibility,
-          String? compatibilityError,
-          List<CompatibilityMatch> matches,
-          List<CompatibilityDifference> differences,
-          List<CompatibilityDifference> dealbreakers,
-          int compatibilityScoredFieldCount,
-          int compatibilityTotalFieldCount,
-          String? ownerAvatarUrl,
-          String? currentUserAvatarUrl,
-          bool isGroupCompatibility,
-          List<ConversationMemberSummary> groupMembers,
-          List<GroupCompatibilityFullMatch> groupFullMatches,
-          List<GroupCompatibilityPartialMatch> groupPartialMatches,
-          List<GroupCompatibilityDiscussItem> groupDiscussItems,
-          List<GroupPreferenceMatrixRow> groupPreferenceMatrix,
-          Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility,
-          bool canViewGroupCompatibilityDetails,
-        })>(
+      ListingDetailPageBloc,
+      ListingDetailPageState,
+      ({
+        int? compatibilityPercent,
+        bool isLoadingCompatibility,
+        String? compatibilityError,
+        List<CompatibilityMatch> matches,
+        List<CompatibilityDifference> differences,
+        List<CompatibilityDifference> dealbreakers,
+        int compatibilityScoredFieldCount,
+        int compatibilityTotalFieldCount,
+        String? ownerAvatarUrl,
+        String? currentUserAvatarUrl,
+        bool isGroupCompatibility,
+        List<ConversationMemberSummary> groupMembers,
+        List<GroupCompatibilityFullMatch> groupFullMatches,
+        List<GroupCompatibilityPartialMatch> groupPartialMatches,
+        List<GroupCompatibilityDiscussItem> groupDiscussItems,
+        List<GroupPreferenceMatrixRow> groupPreferenceMatrix,
+        Map<int, GroupMemberCompatibilitySummary> groupMemberCompatibility,
+        bool canViewGroupCompatibilityDetails,
+      })
+    >(
       selector: (s) => (
         compatibilityPercent: s.compatibilityPercent,
         isLoadingCompatibility: s.isLoadingCompatibility,
@@ -3187,8 +3070,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
   }
 
   void _openNearbyMatches(ListingDetail listingDetail) {
-    final filters =
-        ListingDetailNearbyMatchesHelper.searchFilters(listingDetail);
+    final filters = ListingDetailNearbyMatchesHelper.searchFilters(
+      listingDetail,
+    );
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -3276,7 +3160,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         final compatibilitySection = _buildCompatibilitySection(listingDetail);
 
         // Pre-compute outside build: dates (avoids DateTime.parse in content card)
-        final formattedMoveIn = listingDetail.moveInDate != null &&
+        final formattedMoveIn =
+            listingDetail.moveInDate != null &&
                 listingDetail.moveInDate!.isNotEmpty
             ? ListingDetailDateUtils.formatMoveInDate(
                 listingDetail.moveInDate!,
@@ -3297,15 +3182,20 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         final isOwner = _isListingOwner(listingDetail.user.id);
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
-        final show3d = (kIsWeb || isIOSDevice) &&
+        final show3d =
+            (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
-        final groupFormingBottomPad =
-            _groupFormingFloatingActionsBottomPad(listingDetail);
+        final groupFormingBottomPad = _groupFormingFloatingActionsBottomPad(
+          listingDetail,
+        );
 
         final sections = <Widget>[
           if (isOwner)
-            BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-                ({int? viewCount, bool isLoadingViewCount, bool isToggling})>(
+            BlocSelector<
+              ListingDetailPageBloc,
+              ListingDetailPageState,
+              ({int? viewCount, bool isLoadingViewCount, bool isToggling})
+            >(
               selector: (s) => (
                 viewCount: s.viewCount,
                 isLoadingViewCount: s.isLoadingViewCount,
@@ -3325,8 +3215,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           if (hasPhotos)
             ListingDetailPhotoSection(
               photos: listingDetail.photos!,
-              orderedPhotos:
-                  _getOrderedPhotos(listingDetail.photos!).cast<Photo>(),
+              orderedPhotos: _getOrderedPhotos(
+                listingDetail.photos!,
+              ).cast<Photo>(),
               pageController: _pageController,
               buildPhotoUrl: _buildPhotoUrl,
               onPhotoTap: _openFullScreenPhotoViewer,
@@ -3348,7 +3239,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             getLocalizedName: _getLocalizedName,
             ownerName: pageState.ownerName,
             ownerAvatarUrl: pageState.ownerAvatarUrl,
-            onOpenInYandexMaps: () => _confirmOpenInYandexMaps(listingDetail),
+            onOpenInYandexMaps: _openHomeMapView,
             onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
           ),
           if (listingDetail.listingType.code == "roommate_needed" &&
@@ -3363,8 +3254,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               child: compatibilitySection,
             ),
           if (ListingDetailNearbyMatchesHelper.canShowForListing(listingDetail))
-            BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-                ({int? count, int? listingId})>(
+            BlocSelector<
+              ListingDetailPageBloc,
+              ListingDetailPageState,
+              ({int? count, int? listingId})
+            >(
               selector: (s) => (
                 count: s.nearbyMatchesCount,
                 listingId: s.nearbyMatchesCountListingId,
@@ -3380,8 +3274,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                 );
               },
             ),
-          BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-              ({int? count, int? listingId})>(
+          BlocSelector<
+            ListingDetailPageBloc,
+            ListingDetailPageState,
+            ({int? count, int? listingId})
+          >(
             selector: (s) => (
               count: s.similarListingsCount,
               listingId: s.similarListingsCountListingId,
@@ -3401,8 +3298,11 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               );
             },
           ),
-          BlocSelector<ListingDetailPageBloc, ListingDetailPageState,
-              ({int? count, bool isLoading})>(
+          BlocSelector<
+            ListingDetailPageBloc,
+            ListingDetailPageState,
+            ({int? count, bool isLoading})
+          >(
             selector: (s) => (
               count: s.complaintsCount,
               isLoading: s.isLoadingComplaintsCount,
@@ -3484,8 +3384,10 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             ColoredBox(
               color: Theme.of(context).scaffoldBackgroundColor,
               child: Padding(
-                padding:
-                    EdgeInsets.only(top: 16, bottom: groupFormingBottomPad),
+                padding: EdgeInsets.only(
+                  top: 16,
+                  bottom: groupFormingBottomPad,
+                ),
                 child: _buildGroupFormingActionBar(
                   listingDetail,
                   isOwner: isOwner,
@@ -3541,10 +3443,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             child: ListingDetailFetchErrorBody(
               onRetry: () {
                 context.read<ListingDetailBloc>().add(
-                      ListingDetailEvent.fetchListingDetail(
-                        id: widget.listingId,
-                      ),
-                    );
+                  ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+                );
               },
             ),
           ),
@@ -3611,8 +3511,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       error: (_) => false,
     );
 
-    final titleKey =
-        isCurrentlyActive ? "deactivate_listing" : "activate_listing";
+    final titleKey = isCurrentlyActive
+        ? "deactivate_listing"
+        : "activate_listing";
     final messageKey = isCurrentlyActive
         ? "deactivate_listing_confirmation"
         : "activate_listing_confirmation";

@@ -5,7 +5,6 @@ import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:permission_handler/permission_handler.dart";
-import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -30,7 +29,6 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/models/search_alert.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -41,7 +39,6 @@ import "package:uy_dosh/presentation/blocs/listings_state.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
-import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
@@ -62,6 +59,7 @@ import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.da
 import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
 
 part "home_search_results_shell.dart";
+part "home_map_view_state.dart";
 
 /// Matches empty-search Ghost + Primary CTAs (30px bell stack + 14px vertical padding).
 const double _kEmptySearchCtaButtonHeight = 58;
@@ -191,10 +189,10 @@ class HomeScreen extends StatefulWidget {
   final bool isHomeTabActive;
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with RouteAware {
+class HomeScreenState extends State<HomeScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   List<Listing>? _cachedFeedListingsRef;
   List<HomeFeedEntry>? _cachedFeedEntries;
@@ -202,14 +200,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   bool _searchCountReady = false;
   bool _searchResultsReady = false;
   bool _searchRefreshInFlight = false;
-  bool _locationPermissionGranted = false;
+  final _HomeMapViewState _mapViewState = _HomeMapViewState();
   // Celebration for the header bell is driven by `ActiveSearchAlertsState()`
   // so it also triggers when alerts are created from other screens.
   bool _inlineSearchActive = false;
   bool _inlineSearchClosing = false;
   bool _inlineSearchSpacerExpanded = false;
-  late _SearchResultsView _searchResultsView;
-  SearchBottomSheetResult? _mapViewSearchResult;
   int _inlineSearchExitRefreshToken = 0;
   SearchFiltersSnapshot? _lastDispatchedSearchFilters;
   // Window during which a SearchFiltersState change after a fresh login is
@@ -246,7 +242,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    _searchResultsView = _SearchResultsView.list;
     if (widget.showMapInitially) {
       unawaited(_activateInitialMapIfLocationGranted());
     }
@@ -355,17 +350,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _activateInitialMapIfLocationGranted() async {
-    final canShowMap = await _canShowMapView();
-    if (!mounted || !canShowMap) return;
-    setState(() {
-      _locationPermissionGranted = true;
-      _searchResultsView = _SearchResultsView.map;
-    });
+    final changed = await _mapViewState.activateInitialMapIfAllowed(
+      showMapInitially: widget.showMapInitially,
+    );
+    if (!mounted || !changed) return;
+    setState(() {});
   }
 
-  Future<bool> _canShowMapView() async {
-    final status = await Permission.location.status;
-    return status.isGranted;
+  Future<bool> openCurrentMapViewFromExternalRequest() async {
+    setState(() {
+      _mapViewState.openMap(_currentSearchResultForViewToggle());
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+    });
+    HomeInlineSearchState().setActive(true);
+    unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
+    return true;
   }
 
   /// Re-runs the auth-dependent portion of the bootstrap after the user signs
@@ -512,8 +513,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       if (!wasBefore) {
         // Real flip — open the window and force a rebuild so the auth
         // gate in [_buildInlineFiltersRibbonAnimated] re-evaluates.
-        _postLoginActivationDeadline =
-            DateTime.now().add(const Duration(seconds: 20));
+        _postLoginActivationDeadline = DateTime.now().add(
+          const Duration(seconds: 20),
+        );
         _postLoginRibbonDismissHydrating = true;
         setState(() {});
         unawaited(() async {
@@ -1019,7 +1021,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     final inSearchContext = widget.isSearchMode || _inlineSearchActive;
     final mapResult =
-        _mapViewSearchResult ?? _currentSearchResultForViewToggle();
+        _mapViewState.result ?? _currentSearchResultForViewToggle();
     final initialMapListings = context.select<ListingsBloc, List<Listing>>(
       (bloc) => bloc.state.maybeMap(
         loaded: (state) => state.listings,
@@ -1037,12 +1039,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       inSearchContext: inSearchContext,
       isSearchMode: widget.isSearchMode,
       isHomeTabActive: widget.isHomeTabActive,
-      searchResultsView: _searchResultsView,
+      searchResultsView: _mapViewState.view,
       mapResult: mapResult,
       searchRibbonHeight: searchRibbonHeight,
       inlineRibbonTop: ThemeState().mainShellGlassExtraTopInset(context),
       mapTopPadding: ThemeState().mainShellGlassExtraTopInset(context),
-      canOpenMapView: _locationPermissionGranted,
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
       alertFabBottom: _searchAlertFabStackBottom(context),
@@ -1050,9 +1051,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       searchButtonTutorialKey: _searchButtonTutorialKey,
       searchModeFiltersRibbonBuilder: (_) => _buildSearchModeFiltersRibbon(),
       inlineFiltersRibbonBuilder: (_) => _buildInlineFiltersRibbonAnimated(),
-      onOpenMapView: () => unawaited(
-        _openSearchResultsMap(_currentSearchResultForViewToggle()),
-      ),
+      onOpenMapView: () =>
+          unawaited(_openSearchResultsMap(_currentSearchResultForViewToggle())),
       onOpenInlineSearch: _openInlineSearchFromFab,
       onOpenFeedFromMap: _returnToFeedFromMap,
     );
@@ -1226,8 +1226,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     //
     // We compensate by subtracting the spacing that will be added after this
     // spacer, so the resulting "visual gap" equals [_inlineSearchRibbonToListGap].
-    final targetHeight =
-        _feedTopSpacerVisualHeight(trailingSpacing: trailingSpacing);
+    final targetHeight = _feedTopSpacerVisualHeight(
+      trailingSpacing: trailingSpacing,
+    );
     return AnimatedContainer(
       duration: _homeRibbonAnimationDuration(context),
       curve: Curves.easeOutCubic,
@@ -1316,8 +1317,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         // scrollables during rebuild can trigger a mouse_tracker assertion.
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final topSpacerHeight =
-                _feedTopSpacerVisualHeight(trailingSpacing: 0);
+            final topSpacerHeight = _feedTopSpacerVisualHeight(
+              trailingSpacing: 0,
+            );
             final bottomPadding =
                 _feedListBottomPadding(context) + extraBottomPadding;
             return ListView(
@@ -1369,8 +1371,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           )
         : BoxDecoration(
             shape: BoxShape.circle,
-            gradient:
-                ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              scheme.surface,
+            ),
             boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
@@ -1563,10 +1567,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             alertStationIds.isNotEmpty ||
             (filters.subwayStationId != null && filters.subwayStationId! > 0);
     if (!hasAnyLocationConstraint) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("search_alert_too_wide"),
-      );
+      ToastTheme.showError(context, message: L10n.get("search_alert_too_wide"));
       return;
     }
 
@@ -1631,223 +1632,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         }
       }
 
-      ToastTheme.showSuccess(context,
-          message: L10n.get("search_alert_created"));
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.get("search_alert_created"),
+      );
     } finally {
       if (mounted) {
         setState(() => _isCreatingSearchAlert = false);
       }
-    }
-  }
-
-  Future<void> _showCreateSearchAlertSheet() async {
-    if (!mounted) return;
-
-    // Fast-path: if this exact alert (or a broader one that already covers it)
-    // is on file, don't open the sheet. Users shouldn't have to go through the
-    // CTA just to be told "already added".
-    if (AuthenticationState().isAuthenticated) {
-      final alreadyExists = await _doesCurrentSearchAlertAlreadyExist();
-      if (!mounted) return;
-      if (alreadyExists) {
-        ToastTheme.showWarning(
-          context,
-          message: L10n.get("search_alert_already_exists"),
-          leadingIcon: Icons.notifications_active_outlined,
-        );
-        return;
-      }
-    }
-
-    final filters = _resolveSearchFilters(
-      includeSafeFallbacks: false,
-      explicitNullFallsBackToState: true,
-    );
-
-    await showAppBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        final theme = Theme.of(context);
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: LiquidGlassPlate(
-            borderRadius: BorderRadius.circular(20),
-            sigma: 18,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-            child: Material(
-              color: Colors.transparent,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          L10n.get("search_alert_cta_title"),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      ThreeDAppBarIconButton(
-                        iconData: Icons.close,
-                        onPressed: () => Navigator.of(context).pop(),
-                        semanticsLabel: MaterialLocalizations.of(context)
-                            .closeButtonTooltip,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(999)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  AppliedSearchFiltersBar(
-                    onPressed: () {},
-                    listingTypeId: filters.listingTypeId ??
-                        _searchFiltersState.searchListingTypeId,
-                    listingTypeIds: filters.listingTypeIds ??
-                        _searchFiltersState.searchListingTypeIds,
-                    gender: filters.gender,
-                    locationId:
-                        (filters.locationId != null && filters.locationId! > 0)
-                            ? filters.locationId
-                            : null,
-                    subwayStationId: (filters.subwayStationId != null &&
-                            filters.subwayStationId! > 0)
-                        ? filters.subwayStationId
-                        : null,
-                    subwayStationIds: filters.subwayStationIds,
-                    subwayLineId: (filters.subwayLineId != null &&
-                            filters.subwayLineId! > 0)
-                        ? filters.subwayLineId
-                        : null,
-                    minPrice: filters.minPrice,
-                    maxPrice: filters.maxPrice,
-                    privateRoom: filters.privateRoom,
-                    withPhoto: filters.withPhoto,
-                    total: null,
-                    showLabel: false,
-                    alignRight: false,
-                    height: 46,
-                    chipSize: 34,
-                  ),
-                  const SizedBox(height: 14),
-                  PrimaryButton(
-                    onPressed: _isCreatingSearchAlert
-                        ? null
-                        : () async {
-                            Navigator.of(context).pop();
-                            await _subscribeToSearchAlerts();
-                          },
-                    height: 52,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Text(L10n.get("search_alert_cta_create")),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<bool> _doesCurrentSearchAlertAlreadyExist() async {
-    final filters = _resolveSearchFilters(
-      includeSafeFallbacks: true,
-      explicitNullFallsBackToState: true,
-    );
-
-    int? normalizeId(int? v) => (v != null && v > 0) ? v : null;
-    int? normalizeGender(int? v) => (v != null && v > 0) ? v : null;
-    bool normalizeBool(bool? v) => v ?? false;
-
-    // Keep these defaults in sync with `_subscribeToSearchAlerts()`.
-    final listingTypeId =
-        filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId;
-    final locationId = normalizeId(filters.locationId);
-    final subwayStationId = normalizeId(filters.subwayStationId);
-    final subwayLineId = normalizeId(filters.subwayLineId);
-    final gender = normalizeGender(filters.gender);
-    final minPrice = filters.minPrice ?? 0.0;
-    final maxPrice = filters.maxPrice ?? 1000.0;
-    final privateRoomOnly = normalizeBool(filters.privateRoom);
-    final withPhotoOnly = normalizeBool(filters.withPhoto);
-
-    try {
-      final cachedAlerts = ActiveSearchAlertsState().cachedAlerts;
-      final alerts =
-          cachedAlerts ?? await getIt<ISearchAlertService>().listAlerts();
-
-      bool sameDouble(double? a, double b) =>
-          a != null && (a - b).abs() < 0.0001;
-
-      // Line that the currently-selected station belongs to (if any). Used to
-      // detect that a broader "entire line" alert already covers this station.
-      final currentStationLineId = (subwayStationId != null)
-          ? MetroCache.getStationById(subwayStationId)?.line
-          : null;
-
-      bool stationCoveredByAlert(SearchAlert a) {
-        if (subwayStationId == null) return false;
-
-        // Multi-station alerts: treat as a match if the current station is one
-        // of the alert's targets. The backend stores `subway_station_id = NULL`
-        // when `subway_station_ids` is set, so a strict id-equality check
-        // would otherwise miss this case.
-        final ids = a.subwayStationIds;
-        if (ids != null && ids.contains(subwayStationId)) return true;
-
-        if (currentStationLineId == null) return false;
-
-        // "Entire line" alert: targets the line, no specific station, and
-        // doesn't carry a single-station id either.
-        final isLineAlert = a.subwayLineId != null &&
-            a.subwayLineId == currentStationLineId &&
-            (a.subwayStationId == null || a.subwayStationId! <= 0) &&
-            (ids == null || ids.length > 1);
-        return isLineAlert;
-      }
-
-      return alerts.any((a) {
-        // Treat nulls in API as "false"/"any" where applicable so we can match
-        // alerts created via sparse request payloads.
-        final aListingTypeId = normalizeId(a.listingTypeId) ?? listingTypeId;
-        final aLocationId = normalizeId(a.locationId);
-        final aSubwayStationId = normalizeId(a.subwayStationId);
-        final aSubwayLineId = normalizeId(a.subwayLineId);
-        final aGender = normalizeGender(a.gender);
-        final aPrivateRoomOnly = normalizeBool(a.privateRoom);
-        final aWithPhotoOnly = normalizeBool(a.withPhoto);
-
-        // Non-location criteria must always agree.
-        final nonLocationMatch = aListingTypeId == listingTypeId &&
-            aGender == gender &&
-            sameDouble(a.minPrice, minPrice) &&
-            sameDouble(a.maxPrice, maxPrice) &&
-            aPrivateRoomOnly == privateRoomOnly &&
-            aWithPhotoOnly == withPhotoOnly;
-        if (!nonLocationMatch) return false;
-
-        // Exact location/metro tuple match (mirrors backend duplicate check).
-        final exactLocationMatch = aLocationId == locationId &&
-            aSubwayStationId == subwayStationId &&
-            aSubwayLineId == subwayLineId;
-        if (exactLocationMatch) return true;
-
-        // Coverage: an existing alert that already covers the current station
-        // (multi-station list or "entire line") should also block re-adding,
-        // matching the behavior of `_subscribeToSearchAlerts`.
-        if (locationId == null && stationCoveredByAlert(a)) return true;
-
-        return false;
-      });
-    } catch (_) {
-      // If we can't check quickly, fall back to showing the CTA sheet.
-      return false;
     }
   }
 
@@ -1970,35 +1762,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     await _persistSearchResultFilters(result);
 
     if (result.action == SearchBottomSheetAction.map) {
-      if (!await _canShowMapView()) {
-        if (!mounted) return;
-        setState(() {
-          _locationPermissionGranted = false;
-          _inlineSearchActive = true;
-          _inlineSearchClosing = false;
-          _inlineSearchSpacerExpanded = true;
-          _mapViewSearchResult = result;
-          _searchResultsView = _SearchResultsView.list;
-        });
-        HomeInlineSearchState().setActive(true);
-        unawaited(() async {
-          await HomeInlineSearchState().setRibbonDismissedByUser(false);
-          try {
-            final p = await SharedPreferences.getInstance();
-            await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-          } catch (_) {}
-        }());
-        _performSearch(keepStaleWhileRibbonAnimates: true);
-        return;
-      }
       if (!mounted) return;
       setState(() {
-        _locationPermissionGranted = true;
+        _mapViewState.openMap(result);
         _inlineSearchActive = true;
         _inlineSearchClosing = false;
         _inlineSearchSpacerExpanded = true;
-        _mapViewSearchResult = result;
-        _searchResultsView = _SearchResultsView.map;
       });
       HomeInlineSearchState().setActive(true);
       unawaited(() async {
@@ -2016,7 +1785,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
       _inlineSearchSpacerExpanded = true;
-      _mapViewSearchResult = result;
+      _mapViewState.openFeed(result);
     });
     HomeInlineSearchState().setActive(true);
     // Dispatch immediately so the feed cannot sit on a stale unfiltered page
@@ -2053,8 +1822,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         _inlineSearchClosing = animated;
         // Collapse spacer immediately so listings move up during ribbon slide-out.
         _inlineSearchSpacerExpanded = false;
-        _searchResultsView = _SearchResultsView.list;
-        _mapViewSearchResult = null;
+        _mapViewState.resetToList();
       });
     }
     HomeInlineSearchState().setActive(false);
@@ -2117,10 +1885,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildErrorState(String message) {
-    return HomeFeedErrorPanel(
-      message: message,
-      onRetry: _dispatchFeedRefresh,
-    );
+    return HomeFeedErrorPanel(message: message, onRetry: _dispatchFeedRefresh);
   }
 
   Color _getHomeIconColor() {
@@ -2159,8 +1924,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               : null;
           final titleText =
               (count == null || count <= 0) ? baseTitle : "$baseTitle ($count)";
-          return Text(titleText,
-              style: Theme.of(context).appBarTheme.titleTextStyle);
+          return Text(
+            titleText,
+            style: Theme.of(context).appBarTheme.titleTextStyle,
+          );
         },
       ),
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
@@ -2241,16 +2008,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
-      if (!await _canShowMapView()) {
-        if (!mounted) return;
-        setState(() {
-          _locationPermissionGranted = false;
-          _searchResultsView = _SearchResultsView.list;
-        });
-        _performSearch();
-        return;
-      }
-      await _openSearchResultsMap(result);
+      setState(() {
+        _mapViewState.openMap(result);
+      });
       return;
     }
 
@@ -2260,7 +2020,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _persistSearchResultFilters(
-      SearchBottomSheetResult result) async {
+    SearchBottomSheetResult result,
+  ) async {
     await _searchFiltersState.setListingTypeId(result.listingTypeId);
     await _searchFiltersState.setGender(result.gender ?? 0);
     await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
@@ -2293,20 +2054,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _openSearchResultsMap(SearchBottomSheetResult result) async {
-    if (!await _canShowMapView()) {
-      if (!mounted) return;
-      setState(() {
-        _locationPermissionGranted = false;
-        _searchResultsView = _SearchResultsView.list;
-      });
-      return;
-    }
     if (!mounted) return;
     setState(() {
-      _locationPermissionGranted = true;
-      _mapViewSearchResult = result;
-      _searchResultsView = _SearchResultsView.map;
+      _mapViewState.openMap(result);
+      if (!widget.isSearchMode) {
+        _inlineSearchActive = true;
+        _inlineSearchClosing = false;
+        _inlineSearchSpacerExpanded = true;
+      }
     });
+    if (!widget.isSearchMode) {
+      HomeInlineSearchState().setActive(true);
+      unawaited(() async {
+        await HomeInlineSearchState().setRibbonDismissedByUser(false);
+        try {
+          final p = await SharedPreferences.getInstance();
+          await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+        } catch (_) {}
+      }());
+    }
   }
 
   Future<void> _returnToFeedFromMap(
@@ -2320,8 +2086,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
     if (!mounted) return;
     setState(() {
-      _mapViewSearchResult = result;
-      _searchResultsView = _SearchResultsView.list;
+      _mapViewState.openFeed(result);
     });
   }
 
@@ -2395,8 +2160,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       );
     }
 
-    _lastDispatchedSearchFilters =
-        SearchFiltersSnapshot.capture(_searchFiltersState);
+    _lastDispatchedSearchFilters = SearchFiltersSnapshot.capture(
+      _searchFiltersState,
+    );
 
     listingsBloc.add(
       ListingsEvent.searchListings(

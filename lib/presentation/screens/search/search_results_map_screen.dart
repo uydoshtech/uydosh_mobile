@@ -105,7 +105,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   UniversityMapMarker? _selectedUniversityMarker;
   bool _hasSelectedMetroStation = false;
   List<UniversityMapMarker> _universityMarkers = const [];
-  bool _showDistrictLayer = false;
+  bool _showDistrictLayer = true;
   bool _showMetroStationsLayer = false;
   bool _showLocationPrompt = false;
   int _userLocationRequestToken = 0;

@@ -65,6 +65,7 @@ import "package:uy_dosh/presentation/blocs/messaging_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
 import "package:uy_dosh/presentation/screens/onboarding/onboarding_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
+import "package:uy_dosh/presentation/screens/permissions/location_permission_gate.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
 import "package:uy_dosh/presentation/widgets/achievement_unlock_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/animated_svg_logo.dart";
@@ -79,6 +80,9 @@ bool get kSkipSplashScreen => kIsWeb;
 
 // TEMP (for testing): make home disappear and show the 3D scan welcome page.
 const bool kShowRoomPlanWelcomeInsteadOfHome = false;
+
+// TEMP (for testing): show the location permission flow before anything else.
+const bool kShowLocationPermissionFirst = false;
 
 Future<void> _bootstrapSearchFiltersColdStart() async {
   // Load the user's "Restore filters on app start" preference before
@@ -498,6 +502,13 @@ class _MyAppState extends State<MyApp> {
       return const RoomPlanScanScreen(listingId: 0);
     }
     final onboardingState = OnboardingState();
+    final normalInitialScreen = onboardingState.showOnboarding &&
+            !onboardingState.hasSeenOnboardingScreens
+        ? const OnboardingScreen()
+        : AppRouter.initialRoute;
+    if (kShowLocationPermissionFirst) {
+      return _LocationPermissionStartupPreview(nextScreen: normalInitialScreen);
+    }
     if (onboardingState.showOnboarding &&
         !onboardingState.hasSeenOnboardingScreens) {
       return const OnboardingScreen();
@@ -549,11 +560,13 @@ class _MyAppState extends State<MyApp> {
             ],
             supportedLocales: supportedLocales,
             locale: Locale(LanguageState().currentLanguage, ""),
-            home: kSkipSplashScreen
+            home: kShowLocationPermissionFirst
                 ? _getInitialScreen()
-                : (AppLaunchState().shouldShowFullSplash
-                    ? const SplashScreen()
-                    : const QuickSplashScreen()),
+                : kSkipSplashScreen
+                    ? _getInitialScreen()
+                    : (AppLaunchState().shouldShowFullSplash
+                        ? const SplashScreen()
+                        : const QuickSplashScreen()),
             builder: (context, child) {
               Widget subtree = _AchievementUnlockListener(
                 navigatorKey: widget.navigatorKey,
@@ -583,6 +596,46 @@ class _MyAppState extends State<MyApp> {
           );
         },
       ),
+    );
+  }
+}
+
+class _LocationPermissionStartupPreview extends StatefulWidget {
+  const _LocationPermissionStartupPreview({
+    required this.nextScreen,
+  });
+
+  final Widget nextScreen;
+
+  @override
+  State<_LocationPermissionStartupPreview> createState() =>
+      _LocationPermissionStartupPreviewState();
+}
+
+class _LocationPermissionStartupPreviewState
+    extends State<_LocationPermissionStartupPreview> {
+  bool _completed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_runGate());
+    });
+  }
+
+  Future<void> _runGate() async {
+    await LocationPermissionGate.ensure(context);
+    if (!mounted) return;
+    setState(() => _completed = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_completed) return widget.nextScreen;
+    return const Scaffold(
+      backgroundColor: BlueThemeColors.primary,
+      body: SizedBox.expand(),
     );
   }
 }

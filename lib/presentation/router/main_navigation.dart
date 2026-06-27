@@ -65,6 +65,8 @@ class MainNavigationState extends State<MainNavigation>
   late int _currentIndex;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+  final GlobalKey<HomeScreenState> _homeScreenKey =
+      GlobalKey<HomeScreenState>();
 
   bool _isAuthenticated = false;
   int _incomingMessageTravelDotTrigger = 0;
@@ -204,8 +206,9 @@ class MainNavigationState extends State<MainNavigation>
     getIt<IPushNotificationService>().markNavigationShellNotReady();
     AuthenticationState().removeListener(_authStateListener);
     UnreadMessagesState().removeListener(_unreadMessagesListener);
-    ActiveSearchAlertsState()
-        .removeListener(_maybeShowNotificationsBellTutorial);
+    ActiveSearchAlertsState().removeListener(
+      _maybeShowNotificationsBellTutorial,
+    );
     TutorialState().removeListener(_maybeShowNotificationsBellTutorial);
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
@@ -291,9 +294,8 @@ class MainNavigationState extends State<MainNavigation>
           _maybeShowProfileCompletionPrompt();
           unawaited(
             SearchFiltersState().hydrateFromBackendForCurrentUser().then(
-                  (_) =>
-                      SearchFiltersState().ensureDefaultFiltersBuiltAndSaved(),
-                ),
+              (_) => SearchFiltersState().ensureDefaultFiltersBuiltAndSaved(),
+            ),
           );
           unawaited(
             PriceDisplaySettingsState().hydrateFromBackendForCurrentUser(),
@@ -343,8 +345,9 @@ class MainNavigationState extends State<MainNavigation>
         );
       }
 
-      final completionPercent =
-          ProfileCompletionState.completionPercent(profile);
+      final completionPercent = ProfileCompletionState.completionPercent(
+        profile,
+      );
       if (completionPercent >= 100) return;
 
       _profileCompletionPromptShown = true;
@@ -393,8 +396,10 @@ class MainNavigationState extends State<MainNavigation>
       hiddenCount = lifestyleKeys.length;
     } else {
       primaryLabels = labelsFor(lifestyleKeys.take(lifestylePreviewCap));
-      hiddenCount = (lifestyleKeys.length - lifestylePreviewCap)
-          .clamp(0, lifestyleKeys.length);
+      hiddenCount = (lifestyleKeys.length - lifestylePreviewCap).clamp(
+        0,
+        lifestyleKeys.length,
+      );
     }
     final hasAnyMissing = primaryLabels.isNotEmpty || hiddenCount > 0;
 
@@ -403,8 +408,9 @@ class MainNavigationState extends State<MainNavigation>
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
         final isLightTheme = theme.brightness == Brightness.light;
-        final promptPrimaryTextColor =
-            isLightTheme ? Colors.black : theme.colorScheme.onSurface;
+        final promptPrimaryTextColor = isLightTheme
+            ? Colors.black
+            : theme.colorScheme.onSurface;
         final promptSecondaryTextColor = isLightTheme
             ? Colors.black.withValues(alpha: 0.78)
             : theme.colorScheme.onSurfaceVariant;
@@ -477,8 +483,9 @@ class MainNavigationState extends State<MainNavigation>
                       child: LinearProgressIndicator(
                         value: completionPercent / 100,
                         minHeight: 8,
-                        backgroundColor:
-                            promptSecondaryTextColor.withValues(alpha: 0.2),
+                        backgroundColor: promptSecondaryTextColor.withValues(
+                          alpha: 0.2,
+                        ),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           ThemeState().isBlueTheme
                               ? Colors.white
@@ -551,13 +558,13 @@ class MainNavigationState extends State<MainNavigation>
                               final profile =
                                   await SessionManager.getCachedUserProfile();
                               if (profile == null || !mounted) return;
-                              final result =
-                                  await Navigator.of(context).push<bool>(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      EditProfileScreen(profile: profile),
-                                ),
-                              );
+                              final result = await Navigator.of(context)
+                                  .push<bool>(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          EditProfileScreen(profile: profile),
+                                    ),
+                                  );
                               if ((result ?? false) && mounted) {
                                 setState(() {});
                               }
@@ -662,6 +669,7 @@ class MainNavigationState extends State<MainNavigation>
       // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
       // the shell AppBar count and the feed stay on the same bloc instance.
       HomeScreen(
+        key: _homeScreenKey,
         isHomeTabActive: _currentIndex == 0,
         showMapInitially: true,
       ),
@@ -721,12 +729,21 @@ class MainNavigationState extends State<MainNavigation>
     );
   }
 
+  Future<bool> openHomeMapView() async {
+    navigateToIndex(0);
+    await Future<void>.delayed(Duration.zero);
+    return _homeScreenKey.currentState
+            ?.openCurrentMapViewFromExternalRequest() ??
+        false;
+  }
+
   // Get the appropriate title for the current screen
   Widget _getAppBarTitle() {
-    final titleStyle = Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ) ??
+    final titleStyle =
+        Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ) ??
         TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -873,8 +890,9 @@ class MainNavigationState extends State<MainNavigation>
                 child: _threeDAppBarIconButton(
                   iconData: Icons.menu,
                   onPressed: _openDrawer,
-                  semanticsLabel:
-                      MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  semanticsLabel: MaterialLocalizations.of(
+                    context,
+                  ).openAppDrawerTooltip,
                 ),
               ),
             ),
@@ -897,8 +915,9 @@ class MainNavigationState extends State<MainNavigation>
                     child: TutorialTargetWrapper(
                       key: notificationsBellTutorialKey,
                       child: _threeDAppBarIconButton(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(999)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(999),
+                        ),
                         // iconData isn't used when iconWidget is provided; keep a stable default.
                         iconData: Icons.notifications_none_outlined,
                         iconWidget: NotificationsBellIcon(
@@ -930,8 +949,9 @@ class MainNavigationState extends State<MainNavigation>
                       // Show themed circle when user is not authenticated
                       if (!isAuthenticated) {
                         return _threeDAppBarIconButton(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(999)),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(999),
+                          ),
                           iconData: Icons.person_outline,
                           onPressed: () {
                             context.pushReplaceAuthWizard().then((_) {
@@ -956,7 +976,8 @@ class MainNavigationState extends State<MainNavigation>
                         builder: (context, child) {
                           final needsCompletion =
                               ProfileCompletionState().needsProfileCompletion;
-                          final hasAvatar = resolveAvatarUrl(
+                          final hasAvatar =
+                              resolveAvatarUrl(
                                 ProfileCompletionState().effectiveAvatarUrl,
                               ) !=
                               null;
@@ -975,11 +996,13 @@ class MainNavigationState extends State<MainNavigation>
                                 padding: hasAvatar
                                     ? EdgeInsets.zero
                                     : const EdgeInsets.all(6),
-                                contentSlotSize:
-                                    hasAvatar ? kAppBarAvatarContentSize : 28,
+                                contentSlotSize: hasAvatar
+                                    ? kAppBarAvatarContentSize
+                                    : 28,
                                 iconWidget: AppBarProfileIcon(
-                                  iconSize:
-                                      hasAvatar ? kAppBarAvatarContentSize : 28,
+                                  iconSize: hasAvatar
+                                      ? kAppBarAvatarContentSize
+                                      : 28,
                                   iconColor: ThemeState().isBlueTheme
                                       ? Colors.white
                                       : Colors.black,
@@ -996,7 +1019,8 @@ class MainNavigationState extends State<MainNavigation>
                                       color: AppColors.success,
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Theme.of(context).brightness ==
+                                        color:
+                                            Theme.of(context).brightness ==
                                                 Brightness.dark
                                             ? Colors.white
                                             : Colors.grey.shade300,

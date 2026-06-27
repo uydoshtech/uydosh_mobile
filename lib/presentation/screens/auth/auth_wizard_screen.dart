@@ -45,6 +45,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_terms_finish_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/auth/phone_sign_in_sheet.dart";
+import "package:uy_dosh/presentation/screens/permissions/location_permission_gate.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -159,6 +160,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Auth state
   bool _isAuthenticating = false;
+  bool _isFinishingCreateAccountFlow = false;
   bool _isGoogleSignedIn = false;
   bool _profileCreated = false;
   User? _currentUser;
@@ -398,6 +400,18 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   void _finishCreateAccountFlow() {
     HapticFeedbackUtils.impact();
+    if (_isFinishingCreateAccountFlow) return;
+    unawaited(_finishCreateAccountFlowAsync());
+  }
+
+  Future<void> _finishCreateAccountFlowAsync() async {
+    setStateIfMounted(() => _isFinishingCreateAccountFlow = true);
+    await LocationPermissionGate.ensure(
+      context,
+      allowSkipPersistsAcrossLaunches: true,
+    );
+    if (!mounted) return;
+    setStateIfMounted(() => _isFinishingCreateAccountFlow = false);
     _navigateToMainNavigation();
   }
 
@@ -2778,7 +2792,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   VoidCallback? _getNextButtonAction() {
     // Disable all actions when authenticating
-    if (_isAuthenticating) return null;
+    if (_isAuthenticating || _isFinishingCreateAccountFlow) return null;
 
     switch (_currentPage) {
       case 0:

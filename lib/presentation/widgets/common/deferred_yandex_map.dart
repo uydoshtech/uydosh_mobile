@@ -33,6 +33,8 @@ class DeferredYandexMap extends StatefulWidget {
     this.listingDetail,
     this.height = 200,
     this.autoLoad = false,
+    this.showBrandMark = true,
+    this.showZoomControls = true,
   });
 
   final String apiKey;
@@ -44,6 +46,8 @@ class DeferredYandexMap extends StatefulWidget {
 
   /// When `true`, mounts the live map without waiting for a tap.
   final bool autoLoad;
+  final bool showBrandMark;
+  final bool showZoomControls;
 
   @override
   State<DeferredYandexMap> createState() => _DeferredYandexMapState();
@@ -79,6 +83,8 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
         title: widget.title,
         listingDetail: widget.listingDetail,
         height: widget.height,
+        showBrandMark: widget.showBrandMark,
+        showZoomControls: widget.showZoomControls,
       );
     }
 
@@ -87,7 +93,9 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
     // In the blue theme `primary` is a dark navy that is almost identical to
     // the placeholder background, leaving the map icon invisible. Fall back to
     // the lighter teal accent there so the icon reads clearly.
-    final accentColor = ThemeState().isBlueTheme ? scheme.secondary : scheme.primary;
+    final accentColor = ThemeState().isBlueTheme
+        ? scheme.secondary
+        : scheme.primary;
     return SizedBox(
       height: widget.height,
       width: double.infinity,
@@ -133,11 +141,7 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ThemeIcon(
-                      Icons.map_outlined,
-                      size: 48,
-                      color: accentColor,
-                    ),
+                    ThemeIcon(Icons.map_outlined, size: 48, color: accentColor),
                     const SizedBox(height: 10),
                     Text(
                       context.l10n.show_map,

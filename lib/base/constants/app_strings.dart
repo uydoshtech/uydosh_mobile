@@ -1012,6 +1012,12 @@ class AppStrings {
       "permission_notifications_cta": "Turn on notifications",
       "permission_notifications_denied_body":
           "Notifications are turned off in iOS Settings. Open Settings to turn them on so search alerts can reach you.",
+      "permission_location_title": "See listings on the map",
+      "permission_location_body":
+          "Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.",
+      "permission_location_cta": "Allow location access",
+      "permission_location_denied_body":
+          "Location access is turned off in Settings. Open Settings to enable the map experience.",
       "permission_not_now": "Not now",
       "permission_skip": "Skip",
       "crop_undo": "Undo",
@@ -3130,6 +3136,12 @@ class AppStrings {
       "permission_notifications_cta": "Включить уведомления",
       "permission_notifications_denied_body":
           "Уведомления отключены в настройках iOS. Откройте Настройки, чтобы включить их, и тогда уведомления о новых объявлениях смогут до вас доходить.",
+      "permission_location_title": "Смотреть объявления на карте",
+      "permission_location_body":
+          "Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.",
+      "permission_location_cta": "Разрешить геопозицию",
+      "permission_location_denied_body":
+          "Доступ к геопозиции отключён в настройках. Откройте настройки, чтобы включить карту.",
       "permission_not_now": "Не сейчас",
       "permission_skip": "Пропустить",
       "crop_undo": "Отменить",
@@ -5283,6 +5295,12 @@ class AppStrings {
       "permission_notifications_cta": "Bildirishnomalarni yoqish",
       "permission_notifications_denied_body":
           "Bildirishnomalar iOS sozlamalarida o'chirilgan. Yoqish uchun Sozlamalarni oching, shunda qidiruv bildirishnomalari sizga yetib borishi mumkin.",
+      "permission_location_title": "E'lonlarni xaritada ko‘ring",
+      "permission_location_body":
+          "UyDosh xarita tajribasini ochishi va yaqin e'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.",
+      "permission_location_cta": "Joylashuvga ruxsat berish",
+      "permission_location_denied_body":
+          "Joylashuvga kirish Sozlamalarda o‘chirilgan. Xaritani yoqish uchun Sozlamalarni oching.",
       "permission_not_now": "Hozir emas",
       "permission_skip": "O'tkazib yuborish",
       "crop_undo": "Bekor qilish",

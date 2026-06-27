@@ -105,10 +105,7 @@ class YandexMapTooltipOptions {
 }
 
 class YandexMapZoomControlsOptions {
-  const YandexMapZoomControlsOptions({
-    this.right,
-    this.bottom,
-  });
+  const YandexMapZoomControlsOptions({this.right, this.bottom});
 
   final double? right;
   final double? bottom;
@@ -197,6 +194,8 @@ class YandexMapWidget extends StatefulWidget {
     this.tooltipOptions = const YandexMapTooltipOptions(),
     this.showDefaultPlacemark = true,
     this.showLoadingPlaceholderContent = true,
+    this.showBrandMark = true,
+    this.showZoomControls = true,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.userLocationRequestToken = 0,
     this.onMetroStationTooltipChanged,
@@ -223,6 +222,8 @@ class YandexMapWidget extends StatefulWidget {
   final YandexMapTooltipOptions tooltipOptions;
   final bool showDefaultPlacemark;
   final bool showLoadingPlaceholderContent;
+  final bool showBrandMark;
+  final bool showZoomControls;
   final YandexMapZoomControlsOptions zoomControlsOptions;
   final int userLocationRequestToken;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
@@ -419,16 +420,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                     )
                   : _buildMobileMap(context, centerPoint, mapObjects),
             Positioned(
-              left: _brandMarkInset + _brandMarkSize + 8,
+              left: 8,
               right: 8,
               top: 8,
-              child: MapTooltipFadeTransition(
-                child: _activeMapTooltip(),
-              ),
+              child: MapTooltipFadeTransition(child: _activeMapTooltip()),
             ),
-            _buildMapBrandMark(),
+            if (widget.showBrandMark) _buildMapBrandMark(),
             // Zoom controls (only when map is ready)
-            if (!kIsWeb && _isMapReady) _buildZoomControls(),
+            if (widget.showZoomControls && !kIsWeb && _isMapReady)
+              _buildZoomControls(),
           ],
         ),
       ),
@@ -436,9 +436,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Widget _buildMapBrandMark() {
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
     return Positioned(
       left: _brandMarkInset,
-      top: _brandMarkInset,
+      bottom: _brandMarkInset + bottomPadding,
       child: IgnorePointer(
         child: DecoratedBox(
           decoration: BoxDecoration(
@@ -705,10 +706,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (!mounted || !status.isGranted) return;
 
     try {
-      await controller.toggleUserLayer(
-        visible: true,
-        autoZoomEnabled: false,
-      );
+      await controller.toggleUserLayer(visible: true, autoZoomEnabled: false);
       _isUserLocationLayerVisible = true;
     } catch (error) {
       logger.w("Could not show user location layer: $error");
@@ -1232,12 +1230,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           thumbColor: foregroundColor,
           overlayColor: foregroundColor.withValues(alpha: 0.12),
           trackHeight: 4,
-          thumbShape: const RoundSliderThumbShape(
-            enabledThumbRadius: 8,
-          ),
-          overlayShape: const RoundSliderOverlayShape(
-            overlayRadius: 16,
-          ),
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
         ),
         child: Slider(
           min: _minZoom,

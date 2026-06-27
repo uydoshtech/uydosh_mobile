@@ -32,7 +32,8 @@ class ListingDetailMapSection extends StatefulWidget {
     String? nameUz,
     String? nameRu,
     String? nameEn,
-  }) getLocalizedName;
+  })
+  getLocalizedName;
   final VoidCallback onOpenInYandexMaps;
 
   @override
@@ -198,9 +199,7 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (hasSubway)
-          _buildSubwayStationDisplay(
-            widget.listingDetail.subwayStation!,
-          ),
+          _buildSubwayStationDisplay(widget.listingDetail.subwayStation!),
         if (hasSubway && hasLocation) const SizedBox(height: 8),
         if (hasLocation)
           Row(
@@ -259,11 +258,13 @@ class _ListingDetailMapSectionState extends State<ListingDetailMapSection> {
                 height: 250,
                 listingDetail: widget.listingDetail,
                 autoLoad: _mapAutoLoad,
+                showBrandMark: false,
+                showZoomControls: false,
               ),
               const SizedBox(height: 16),
               Center(
                 child: UydoshLinkButton(
-                  text: L10n.get("open_in_yandex_maps"),
+                  text: L10n.get("open_map_view"),
                   onPressed: widget.onOpenInYandexMaps,
                   color: ListingDetailThemeHelper.yandexButtonColor,
                   fontSize: 16,

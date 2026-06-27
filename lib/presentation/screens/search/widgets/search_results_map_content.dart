@@ -285,6 +285,9 @@ class _SearchResultsMapContent extends StatelessWidget {
                   child: SearchFloatingActionButton(
                     onPressed: onOpenEmbeddedSearch,
                     iconData: Icons.search,
+                    width: viewToggleWidth,
+                    height: feedViewButtonHeight,
+                    iconSize: 22.5,
                     foregroundColor: Colors.black,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),

@@ -56,13 +56,14 @@ class ListingDetailContentCard extends StatefulWidget {
   /// Pre-built amenity chips (avoids .map().toList() in build).
   final List<Widget>? amenityChips;
   final String Function(BuildContext context, String moveInDate)?
-      formatMoveInDate;
+  formatMoveInDate;
   final String Function({
     required String language,
     String? nameUz,
     String? nameRu,
     String? nameEn,
-  }) getLocalizedName;
+  })
+  getLocalizedName;
 
   @override
   State<ListingDetailContentCard> createState() =>
@@ -219,27 +220,28 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: removeOnce,
-          ),
+          GestureDetector(behavior: HitTestBehavior.opaque, onTap: removeOnce),
           Positioned(
-            left: globalPosition.dx
-                .clamp(12.0, MediaQuery.sizeOf(context).width - 150),
+            left: globalPosition.dx.clamp(
+              12.0,
+              MediaQuery.sizeOf(context).width - 150,
+            ),
             top: globalPosition.dy - 48,
             child: GestureDetector(
               onTap: removeOnce,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: ThemeState().isLightTheme
                         ? Colors.black
                         : (ThemeState().isBlueTheme
-                            ? Colors.white
-                            : Theme.of(context).colorScheme.inverseSurface),
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.inverseSurface),
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -256,8 +258,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                       color: ThemeState().isLightTheme
                           ? Colors.white
                           : (ThemeState().isBlueTheme
-                              ? Colors.black
-                              : Theme.of(context).colorScheme.onInverseSurface),
+                                ? Colors.black
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onInverseSurface),
                     ),
                   ),
                 ),
@@ -273,11 +277,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
 
   Widget _buildAmenityChip(BuildContext context, Amenity amenity) {
     return GestureDetector(
-      onTapDown: (details) => _showAmenityBubble(
-        context,
-        amenity,
-        details.globalPosition,
-      ),
+      onTapDown: (details) =>
+          _showAmenityBubble(context, amenity, details.globalPosition),
       child: Container(
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
         decoration: BoxDecoration(
@@ -398,8 +399,9 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
     final locationIds = <int>{};
     final locations = <LocationDetail>[];
     for (final stationDetail in displayStations) {
-      final locationId =
-          MetroCache.getStationById(stationDetail.id)?.locationId;
+      final locationId = MetroCache.getStationById(
+        stationDetail.id,
+      )?.locationId;
       if (locationId == null || !locationIds.add(locationId)) continue;
       final location = LocationCache.getLocationById(locationId);
       if (location == null) continue;
@@ -602,12 +604,14 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 height: 250,
                 listingDetail: widget.listingDetail,
                 autoLoad: _mapAutoLoad,
+                showBrandMark: false,
+                showZoomControls: false,
               ),
             if (canOpen) ...[
               const SizedBox(height: 16),
               Center(
                 child: UydoshLinkButton(
-                  text: L10n.get("open_in_yandex_maps"),
+                  text: L10n.get("open_map_view"),
                   onPressed: () => widget.onOpenInYandexMaps?.call(),
                   color: ListingDetailThemeHelper.yandexButtonColor,
                   fontSize: 16,
@@ -639,8 +643,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isEmpty)
               Text(
                 ListingUtils.usesPresetListingTitle(
-                  widget.listingDetail.listingTypeId,
-                )
+                      widget.listingDetail.listingTypeId,
+                    )
                     ? L10n.get(
                         ListingUtils.presetListingTitleL10nKey(
                           listingTypeId: widget.listingDetail.listingTypeId,
@@ -657,9 +661,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                 widget.listingDetail.description!.isNotEmpty)
               ListingDescriptionTranslation(
                 listingId: widget.listingDetail.id,
-                listingTitle: ListingUtils.usesPresetListingTitle(
-                  widget.listingDetail.listingTypeId,
-                )
+                listingTitle:
+                    ListingUtils.usesPresetListingTitle(
+                      widget.listingDetail.listingTypeId,
+                    )
                     ? L10n.get(
                         ListingUtils.presetListingTitleL10nKey(
                           listingTypeId: widget.listingDetail.listingTypeId,
@@ -712,12 +717,14 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: widget.amenityChips ??
+                    children:
+                        widget.amenityChips ??
                         _sortedAmenitiesForDetails(
-                          widget.listingDetail.amenities ?? <Amenity>[],
-                        )
-                            .map((amenity) =>
-                                _buildAmenityChip(context, amenity))
+                              widget.listingDetail.amenities ?? <Amenity>[],
+                            )
+                            .map(
+                              (amenity) => _buildAmenityChip(context, amenity),
+                            )
                             .toList(),
                   ),
                   const SizedBox(height: 24),
@@ -750,7 +757,8 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                                 ),
                               ),
                               TextSpan(
-                                text: widget.formattedMoveInDate ??
+                                text:
+                                    widget.formattedMoveInDate ??
                                     (widget.formatMoveInDate != null
                                         ? widget.formatMoveInDate!(
                                             context,
