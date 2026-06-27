@@ -15,103 +15,170 @@ class _PinSummaryTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Material(
-      color: Colors.transparent,
+    final borderRadius = BorderRadius.circular(18);
+    return _MapListingTileSurface(
+      borderRadius: borderRadius,
       child: InkWell(
         onTap: onOpen,
-        borderRadius: BorderRadius.circular(18),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: 0.96),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 52, 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _PinSummaryMediaColumn(
-                      pin: pin,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              if (pin.listingTypeCode?.isNotEmpty == true ||
-                                  pin.gender != null) ...[
-                                _PinSummaryBadges(
-                                  listingTypeCode: pin.listingTypeCode,
-                                  gender: pin.gender,
-                                  compact: true,
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              Expanded(
-                                child: Text(
-                                  pin.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
+        borderRadius: borderRadius,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 52, 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _PinSummaryMediaColumn(
+                    pin: pin,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (pin.listingTypeCode?.isNotEmpty == true ||
+                                pin.gender != null) ...[
+                              _PinSummaryBadges(
+                                listingTypeCode: pin.listingTypeCode,
+                                gender: pin.gender,
+                                compact: true,
                               ),
+                              const SizedBox(width: 8),
                             ],
-                          ),
-                          if (pin.subtitle?.isNotEmpty == true) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              pin.subtitle!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w800,
+                            Expanded(
+                              child: Text(
+                                pin.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color:
+                                      _MapListingTileStyle.titleColor(context),
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                             ),
                           ],
-                          if (pin.locationLabel?.isNotEmpty == true ||
-                              pin.stationLabel?.isNotEmpty == true) ...[
-                            const SizedBox(height: 6),
-                            _PinGeoLabelsRow(
-                              locationLabel: pin.locationLabel,
-                              stationLabel: pin.stationLabel,
-                              lineIds: pin.subwayLineIds,
+                        ),
+                        if (pin.subtitle?.isNotEmpty == true) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            pin.subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: _MapListingTileStyle.priceColor(context),
+                              fontWeight: FontWeight.w800,
                             ),
-                          ],
+                          ),
                         ],
-                      ),
+                        if (pin.locationLabel?.isNotEmpty == true ||
+                            pin.stationLabel?.isNotEmpty == true) ...[
+                          const SizedBox(height: 6),
+                          _PinGeoLabelsRow(
+                            locationLabel: pin.locationLabel,
+                            stationLabel: pin.stationLabel,
+                            lineIds: pin.subwayLineIds,
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                onPressed: onClose,
+                icon: Icon(
+                  Icons.close,
+                  color: _MapListingTileStyle.titleColor(context),
                 ),
+                visualDensity: VisualDensity.compact,
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _MapListingTileStyle {
+  const _MapListingTileStyle._();
+
+  static const Color _blueThemeSecondary = Color(0xFFB3C0CC);
+  static const Color _accentGreen = Color(0xFF35C26B);
+  static const Color _accentGreenLightTheme = Color(0xFF25884B);
+
+  static Color titleColor(BuildContext context) {
+    if (ThemeState().isBlueTheme) return AppColors.textLight;
+    return AppColors.textDark87;
+  }
+
+  static Color metaColor(BuildContext context) {
+    if (ThemeState().isBlueTheme) return _blueThemeSecondary;
+    return Colors.black;
+  }
+
+  static Color priceColor(BuildContext context) {
+    return ThemeState().isLightTheme ? _accentGreenLightTheme : _accentGreen;
+  }
+}
+
+class _MapListingTileSurface extends StatelessWidget {
+  const _MapListingTileSurface({
+    required this.child,
+    required this.borderRadius,
+  });
+
+  final Widget child;
+  final BorderRadius borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final themeState = ThemeState();
+    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    if (useLiquidGlass) {
+      return ThreeDElevatedSurface(
+        baseColor: themeState.primaryColor,
+        useLiquidGlass: true,
+        borderRadius: borderRadius,
+        child: child,
+      );
+    }
+
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bg = scheme.surface;
+    final isDark = theme.brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(
+              bg,
+              scheme.onSurface,
+              isDark ? 0.06 : 0.03,
+            )!,
+            bg,
+          ],
+        ),
+        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: borderRadius,
+        clipBehavior: Clip.antiAlias,
+        child: child,
       ),
     );
   }
@@ -132,89 +199,78 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final placeLabel = _placeLabel;
     final placeStationLineIds = _placeStationLineIds;
     final countLabel = L10n.plural("listings_count", pins.length);
-    return Material(
-      color: Colors.transparent,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 44),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _PinGroupPlaceTitle(
-                          label: placeLabel ?? countLabel,
-                          stationLineIds: placeStationLineIds,
-                        ),
-                        if (placeLabel != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            countLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
-                            ),
+    return _MapListingTileSurface(
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 44),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _PinGroupPlaceTitle(
+                        label: placeLabel ?? countLabel,
+                        stationLineIds: placeStationLineIds,
+                      ),
+                      if (placeLabel != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          countLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: _MapListingTileStyle.metaColor(context),
+                            fontWeight: FontWeight.w700,
                           ),
-                        ],
+                        ),
                       ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 148,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: pins.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        final pin = pins[index];
-                        return _PinGroupListingCard(
-                          pin: pin,
-                          onTap: () => onOpenPin(pin),
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 148,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: pins.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final pin = pins[index];
+                      return _PinGroupListingCard(
+                        pin: pin,
+                        onTap: () => onOpenPin(pin),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: IconButton(
-                onPressed: onClose,
-                icon: const Icon(Icons.close),
-                visualDensity: VisualDensity.compact,
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: IconButton(
+              onPressed: onClose,
+              icon: Icon(
+                Icons.close,
+                color: _MapListingTileStyle.titleColor(context),
               ),
+              visualDensity: VisualDensity.compact,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -259,6 +315,7 @@ class _PinGroupPlaceTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final style = theme.textTheme.titleSmall?.copyWith(
+      color: _MapListingTileStyle.titleColor(context),
       fontWeight: FontWeight.w900,
     );
 
@@ -307,21 +364,14 @@ class _PinGroupListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          width: 286,
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest.withValues(alpha: 0.56),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.55),
-            ),
-          ),
+    final borderRadius = BorderRadius.circular(14);
+    return SizedBox(
+      width: 286,
+      child: _MapListingTileSurface(
+        borderRadius: borderRadius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: borderRadius,
           child: Padding(
             padding: const EdgeInsets.all(10),
             child: Row(
@@ -351,6 +401,7 @@ class _PinGroupListingCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
+                          color: _MapListingTileStyle.titleColor(context),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -361,7 +412,7 @@ class _PinGroupListingCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.green,
+                            color: _MapListingTileStyle.priceColor(context),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -497,9 +548,6 @@ class _PinMetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final labelColor = ThemeState().isLightTheme
-        ? Colors.black
-        : theme.colorScheme.onSurfaceVariant;
     return Row(
       children: [
         ThemeIcon(icon, color: iconColor, size: 18, useThemeColor: false),
@@ -510,7 +558,7 @@ class _PinMetaRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: labelColor,
+              color: _MapListingTileStyle.metaColor(context),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -529,9 +577,6 @@ class _PinMetroRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final labelColor = ThemeState().isLightTheme
-        ? Colors.black
-        : theme.colorScheme.onSurfaceVariant;
     final visibleLineIds = lineIds.isEmpty ? const [1] : lineIds;
     return Row(
       children: [
@@ -550,7 +595,7 @@ class _PinMetroRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: labelColor,
+              color: _MapListingTileStyle.metaColor(context),
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -218,6 +218,7 @@ class _SearchResultsFabStack extends StatelessWidget {
                 width: 61.2,
                 height: 34.2,
                 iconSize: 22.5,
+                foregroundColor: ThemeState().isBlueTheme ? Colors.white : null,
                 elevation: ThemeState().isBlueTheme ? null : 8,
               ),
             ),
@@ -238,6 +239,8 @@ class _SearchResultsFabStack extends StatelessWidget {
                       iconData: Icons.search,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
+                      foregroundColor:
+                          ThemeState().isBlueTheme ? Colors.white : null,
                       elevation: ThemeState().isBlueTheme ? null : 8,
                     ),
                   );

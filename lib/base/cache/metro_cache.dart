@@ -23,8 +23,8 @@ class MetroCache {
         nameUz: "Chinor",
         nameRu: "Чинор",
         nameEn: "Chinor",
-        latitude: 41.20601,
-        longitude: 69.21950,
+        latitude: 41.20669650,
+        longitude: 69.21895750,
         locationId: 5,
       ),
       SubwayStation(
@@ -34,8 +34,8 @@ class MetroCache {
         nameUz: "Yangikhayot",
         nameRu: "Янгихаёт",
         nameEn: "Yangikhayot",
-        latitude: 41.2126,
-        longitude: 69.21467,
+        latitude: 41.21350990,
+        longitude: 69.21401500,
         locationId: 5,
       ),
       SubwayStation(
@@ -45,8 +45,8 @@ class MetroCache {
         nameUz: "Sergeli",
         nameRu: "Сергели",
         nameEn: "Sergeli",
-        latitude: 41.22065,
-        longitude: 69.20887,
+        latitude: 41.22064000,
+        longitude: 69.20884500,
         locationId: 5,
       ),
       SubwayStation(
@@ -56,8 +56,8 @@ class MetroCache {
         nameUz: "Uzgarish",
         nameRu: "Узгариш",
         nameEn: "Uzgarish",
-        latitude: 41.22727,
-        longitude: 69.20404,
+        latitude: 41.22733640,
+        longitude: 69.20397140,
         locationId: 5,
       ),
       SubwayStation(
@@ -67,8 +67,8 @@ class MetroCache {
         nameUz: "Chashtepa",
         nameRu: "Чаштепа",
         nameEn: "Chashtepa",
-        latitude: 41.23805,
-        longitude: 69.19623,
+        latitude: 41.23824960,
+        longitude: 69.19603450,
         locationId: 5,
       ),
       SubwayStation(
@@ -78,8 +78,8 @@ class MetroCache {
         nameUz: "Almazar",
         nameRu: "Алмазар",
         nameEn: "Almazar",
-        latitude: 41.255611,
-        longitude: 69.196014,
+        latitude: 41.25667240,
+        longitude: 69.19610450,
         locationId: 7,
       ),
       SubwayStation(
@@ -89,8 +89,8 @@ class MetroCache {
         nameUz: "Chilanzar",
         nameRu: "Чиланзар",
         nameEn: "Chilanzar",
-        latitude: 41.274547,
-        longitude: 69.204739,
+        latitude: 41.27435900,
+        longitude: 69.20497350,
         locationId: 7,
       ),
       SubwayStation(
@@ -100,8 +100,8 @@ class MetroCache {
         nameUz: "Mirzo Ulugbek",
         nameRu: "Мирзо Улугбек",
         nameEn: "Mirzo Ulugbek",
-        latitude: 41.282081,
-        longitude: 69.212453,
+        latitude: 41.28203420,
+        longitude: 69.21258340,
         locationId: 7,
       ),
       SubwayStation(
@@ -111,8 +111,8 @@ class MetroCache {
         nameUz: "Novza",
         nameRu: "Новза",
         nameEn: "Novza",
-        latitude: 41.292028,
-        longitude: 69.223342,
+        latitude: 41.29187220,
+        longitude: 69.22361650,
         locationId: 7,
       ),
       SubwayStation(
@@ -122,8 +122,8 @@ class MetroCache {
         nameUz: "Milliy bog",
         nameRu: "Нац. Парк",
         nameEn: "National Park",
-        latitude: 41.304281,
-        longitude: 69.235414,
+        latitude: 41.30339440,
+        longitude: 69.23566630,
         locationId: 8,
       ),
       SubwayStation(
@@ -133,8 +133,8 @@ class MetroCache {
         nameUz: "Xalqlar doʻstligi",
         nameRu: "Дружба народов",
         nameEn: "Friendship of Nations",
-        latitude: 41.311881,
-        longitude: 69.241392,
+        latitude: 41.31189870,
+        longitude: 69.24309590,
         locationId: 8,
       ),
       SubwayStation(
@@ -144,8 +144,8 @@ class MetroCache {
         nameUz: "Paxtakor",
         nameRu: "Пахтакор",
         nameEn: "Pakhtakor",
-        latitude: 41.321264,
-        longitude: 69.254325,
+        latitude: 41.31779140,
+        longitude: 69.25508820,
         locationId: 8,
       ),
       SubwayStation(
@@ -155,8 +155,8 @@ class MetroCache {
         nameUz: "Mustaqil. Maydoni",
         nameRu: "Пл. Независимости",
         nameEn: "Indep. Square",
-        latitude: 41.318925,
-        longitude: 69.271292,
+        latitude: 41.31494530,
+        longitude: 69.27106460,
         locationId: 9,
       ),
       SubwayStation(
@@ -166,8 +166,8 @@ class MetroCache {
         nameUz: "A. Temur Xiyoboni",
         nameRu: "Сквер А. Темура",
         nameEn: "A. Temur Square",
-        latitude: 41.312164,
-        longitude: 69.28145,
+        latitude: 41.31267380,
+        longitude: 69.28326910,
         locationId: 9,
       ),
       SubwayStation(
@@ -177,8 +177,8 @@ class MetroCache {
         nameUz: "Hamid Olimjon",
         nameRu: "Хамид Алимджан",
         nameEn: "Hamid Olimjon",
-        latitude: 41.317769,
-        longitude: 69.294878,
+        latitude: 41.31816440,
+        longitude: 69.29574190,
         locationId: 3,
       ),
       SubwayStation(
@@ -188,8 +188,8 @@ class MetroCache {
         nameUz: "Pushkin",
         nameRu: "Пушкин",
         nameEn: "Pushkin",
-        latitude: 41.321708,
-        longitude: 69.311244,
+        latitude: 41.32194810,
+        longitude: 69.31110200,
         locationId: 3,
       ),
       SubwayStation(
@@ -199,8 +199,8 @@ class MetroCache {
         nameUz: "Buyuk Ipak Yoli",
         nameRu: "Вел. Шелковый Путь",
         nameEn: "Great Silk Road",
-        latitude: 41.326344,
-        longitude: 69.327769,
+        latitude: 41.32610540,
+        longitude: 69.32855980,
         locationId: 3,
       ),
     ],
@@ -213,8 +213,8 @@ class MetroCache {
         nameUz: "Beruniy",
         nameRu: "Беруни",
         nameEn: "Beruniy",
-        latitude: 41.345428,
-        longitude: 69.206767,
+        latitude: 41.34461520,
+        longitude: 69.20620460,
         locationId: 6,
       ),
       SubwayStation(
@@ -224,8 +224,8 @@ class MetroCache {
         nameUz: "Tinchlik",
         nameRu: "Тинчлик",
         nameEn: "Tinchlik",
-        latitude: 41.331861,
-        longitude: 69.219925,
+        latitude: 41.33230140,
+        longitude: 69.21911550,
         locationId: 6,
       ),
       SubwayStation(
@@ -235,8 +235,8 @@ class MetroCache {
         nameUz: "Chorsu",
         nameRu: "Чорсу",
         nameEn: "Chorsu",
-        latitude: 41.325239,
-        longitude: 69.232064,
+        latitude: 41.32586490,
+        longitude: 69.23681520,
         locationId: 8,
       ),
       SubwayStation(
@@ -246,8 +246,8 @@ class MetroCache {
         nameUz: "Gafur Gulom",
         nameRu: "Гафур Гулям",
         nameEn: "Gafur Gulom",
-        latitude: 41.327831,
-        longitude: 69.246981,
+        latitude: 41.32788280,
+        longitude: 69.24583420,
         locationId: 8,
       ),
       SubwayStation(
@@ -257,8 +257,8 @@ class MetroCache {
         nameUz: "Alisher Navoiy",
         nameRu: "Алишер Навои",
         nameEn: "Alisher Navoi",
-        latitude: 41.321125,
-        longitude: 69.254714,
+        latitude: 41.31892180,
+        longitude: 69.25429730,
         locationId: 8,
       ),
       SubwayStation(
@@ -268,8 +268,8 @@ class MetroCache {
         nameUz: "Oʻzbekiston",
         nameRu: "Узбекистан",
         nameEn: "Uzbekistan",
-        latitude: 41.311397,
-        longitude: 69.253408,
+        latitude: 41.31194370,
+        longitude: 69.25340570,
         locationId: 10,
       ),
       SubwayStation(
@@ -279,8 +279,8 @@ class MetroCache {
         nameUz: "Kosmonavtlar",
         nameRu: "Космонавты",
         nameEn: "Cosmonauts",
-        latitude: 41.305022,
-        longitude: 69.265344,
+        latitude: 41.30516180,
+        longitude: 69.26472070,
         locationId: 10,
       ),
       SubwayStation(
@@ -290,8 +290,8 @@ class MetroCache {
         nameUz: "Oybek",
         nameRu: "Ойбек",
         nameEn: "Oybek",
-        latitude: 41.298686,
-        longitude: 69.273333,
+        latitude: 41.29801280,
+        longitude: 69.27405010,
         locationId: 4,
       ),
       SubwayStation(
@@ -301,8 +301,8 @@ class MetroCache {
         nameUz: "Toshkent",
         nameRu: "Ташкент",
         nameEn: "Tashkent",
-        latitude: 41.292136,
-        longitude: 69.28615,
+        latitude: 41.29328860,
+        longitude: 69.28772120,
         locationId: 4,
       ),
       SubwayStation(
@@ -312,8 +312,8 @@ class MetroCache {
         nameUz: "Mashinasozlar",
         nameRu: "Машиностроители",
         nameEn: "Machine Builders",
-        latitude: 41.299439,
-        longitude: 69.303947,
+        latitude: 41.29898470,
+        longitude: 69.30512760,
         locationId: 11,
       ),
       SubwayStation(
@@ -323,8 +323,8 @@ class MetroCache {
         nameUz: "Doʻstlik",
         nameRu: "Дустлик",
         nameEn: "Dustlik",
-        latitude: 41.293539,
-        longitude: 69.322686,
+        latitude: 41.29364010,
+        longitude: 69.32224450,
         locationId: 11,
       ),
     ],
@@ -337,8 +337,8 @@ class MetroCache {
         nameUz: "Mingurik",
         nameRu: "Мингурик",
         nameEn: "Mingurik",
-        latitude: 41.298992,
-        longitude: 69.273019,
+        latitude: 41.29966100,
+        longitude: 69.27441020,
         locationId: 4,
       ),
       SubwayStation(
@@ -348,8 +348,8 @@ class MetroCache {
         nameUz: "Yunus Rajabiy",
         nameRu: "Юнус Раджаби",
         nameEn: "Yunus Rajabiy",
-        latitude: 41.312311,
-        longitude: 69.281042,
+        latitude: 41.31388710,
+        longitude: 69.28350770,
         locationId: 9,
       ),
       SubwayStation(
@@ -359,68 +359,63 @@ class MetroCache {
         nameUz: "Abdulla Qodiriy",
         nameRu: "Абдулла Кадыри",
         nameEn: "Abdulla Qodiriy",
-        latitude: 41.319411,
-        longitude: 69.282458,
+        latitude: 41.32019240,
+        longitude: 69.28175900,
         locationId: 9,
       ),
       SubwayStation(
-        //41.328094°N 69.283661°E
         id: 32,
         line: 3,
         ordinal: 32,
         nameUz: "Minor",
         nameRu: "Минор",
         nameEn: "Minor",
-        latitude: 41.328094,
-        longitude: 69.283661,
+        latitude: 41.32689230,
+        longitude: 69.28341630,
         locationId: 9,
       ),
       SubwayStation(
-        //41.3462°N 69.28595°E
         id: 33,
         line: 3,
         ordinal: 33,
         nameUz: "Bodomzor",
         nameRu: "Бодомзор",
         nameEn: "Bodomzor",
-        latitude: 41.3462,
-        longitude: 69.28595,
+        latitude: 41.33717010,
+        longitude: 69.28456970,
         locationId: 9,
       ),
       SubwayStation(
-        //41.353836°N 69.288197°E
         id: 34,
         line: 3,
         ordinal: 34,
         nameUz: "Shahriston",
         nameRu: "Шахристан",
         nameEn: "Shahriston",
-        latitude: 41.353836,
-        longitude: 69.288197,
+        latitude: 41.35311850,
+        longitude: 69.28810690,
         locationId: 9,
       ),
       SubwayStation(
-        //41°21′59.9″N 69°17′31.6″E
         id: 35,
         line: 3,
         ordinal: 35,
         nameUz: "Yunusobod",
         nameRu: "Юнусабад",
         nameEn: "Yunusabad",
-        latitude: 41.366639,
-        longitude: 69.292111,
+        latitude: 41.36684110,
+        longitude: 69.29230030,
         locationId: 9,
       ),
       SubwayStation(
-        //41°22′39″N 69°17′45.7″E
         id: 36,
         line: 3,
         ordinal: 36,
         nameUz: "Turkiston",
         nameRu: "Туркистан",
         nameEn: "Turkiston",
-        latitude: 41.3775,
-        longitude: 69.296028,
+        latitude: 41.37752170,
+        longitude: 69.29601510,
         locationId: 9,
       ),
     ],
@@ -433,8 +428,8 @@ class MetroCache {
         nameUz: "Texnopark",
         nameRu: "Технопарк",
         nameEn: "Technopark",
-        latitude: 41.294528,
-        longitude: 69.322889,
+        latitude: 41.29462800,
+        longitude: 69.32318670,
         locationId: 11,
       ),
       SubwayStation(
@@ -444,8 +439,8 @@ class MetroCache {
         nameUz: "Yashnobod",
         nameRu: "Яшнабад",
         nameEn: "Yashnobod",
-        latitude: 41.297583,
-        longitude: 69.349917,
+        latitude: 41.29758590,
+        longitude: 69.34978310,
         locationId: 11,
       ),
       SubwayStation(
@@ -455,8 +450,8 @@ class MetroCache {
         nameUz: "Tuzel",
         nameRu: "Тузель",
         nameEn: "Tuzel",
-        latitude: 41.292056,
-        longitude: 69.356167,
+        latitude: 41.29201250,
+        longitude: 69.35618440,
         locationId: 11,
       ),
       SubwayStation(
@@ -466,8 +461,8 @@ class MetroCache {
         nameUz: "Olmos",
         nameRu: "Алмаз",
         nameEn: "Olmos",
-        latitude: 41.281972,
-        longitude: 69.360306,
+        latitude: 41.28170500,
+        longitude: 69.36033380,
         locationId: 11,
       ),
       SubwayStation(
@@ -477,8 +472,8 @@ class MetroCache {
         nameUz: "Rohat",
         nameRu: "Рохат",
         nameEn: "Rohat",
-        latitude: 41.265528,
-        longitude: 69.364917,
+        latitude: 41.26529070,
+        longitude: 69.36475170,
         locationId: 11,
       ),
       SubwayStation(
@@ -488,8 +483,8 @@ class MetroCache {
         nameUz: "Yangiobod",
         nameRu: "Янгиабад",
         nameEn: "Yangiobod",
-        latitude: 41.255472,
-        longitude: 69.358083,
+        latitude: 41.25650750,
+        longitude: 69.35872420,
         locationId: 11,
       ),
       SubwayStation(
@@ -499,8 +494,8 @@ class MetroCache {
         nameUz: "Quyliuq",
         nameRu: "Куйлюк",
         nameEn: "Quyliuq",
-        latitude: 41.237417,
-        longitude: 69.327444,
+        latitude: 41.23745790,
+        longitude: 69.32700010,
         locationId: 4,
       ),
       SubwayStation(
@@ -510,8 +505,8 @@ class MetroCache {
         nameUz: "Matonat",
         nameRu: "Матонат",
         nameEn: "Matonat",
-        latitude: 41.24444,
-        longitude: 69.30833,
+        latitude: 41.24447130,
+        longitude: 69.30832290,
         locationId: 5,
       ),
       SubwayStation(
@@ -521,8 +516,8 @@ class MetroCache {
         nameUz: "Qiyot",
         nameRu: "Киёт",
         nameEn: "Qiyot",
-        latitude: 41.24444,
-        longitude: 69.29972,
+        latitude: 41.24447960,
+        longitude: 69.29972800,
         locationId: 5,
       ),
       SubwayStation(
@@ -532,8 +527,8 @@ class MetroCache {
         nameUz: "Tolarik",
         nameRu: "Толарик",
         nameEn: "Tolarik",
-        latitude: 41.244472,
-        longitude: 69.285033,
+        latitude: 41.24451390,
+        longitude: 69.28495680,
         locationId: 5,
       ),
       SubwayStation(
@@ -543,8 +538,8 @@ class MetroCache {
         nameUz: "Xonabod",
         nameRu: "Ханабад",
         nameEn: "Xonabod",
-        latitude: 41.23,
-        longitude: 69.27028,
+        latitude: 41.23001030,
+        longitude: 69.27043530,
         locationId: 5,
       ),
       SubwayStation(
@@ -554,8 +549,8 @@ class MetroCache {
         nameUz: "Quruvchilar",
         nameRu: "Курувчилар",
         nameEn: "Quruvchilar",
-        latitude: 41.22139,
-        longitude: 69.25972,
+        latitude: 41.22163670,
+        longitude: 69.26050330,
         locationId: 5,
       ),
       SubwayStation(
@@ -565,8 +560,8 @@ class MetroCache {
         nameUz: "Turon",
         nameRu: "Турон",
         nameEn: "Turon",
-        latitude: 41.21083,
-        longitude: 69.23417,
+        latitude: 41.21068130,
+        longitude: 69.23415400,
         locationId: 5,
       ),
       SubwayStation(
@@ -576,8 +571,8 @@ class MetroCache {
         nameUz: "Qipchoq",
         nameRu: "Кипчок",
         nameEn: "Qipchoq",
-        latitude: 41.20556,
-        longitude: 69.22139,
+        latitude: 41.20542290,
+        longitude: 69.22141120,
         locationId: 5,
       ),
     ],
@@ -585,11 +580,11 @@ class MetroCache {
 
   static final Map<int, SubwayStation> _stationById = {
     for (final stations in metroStations.values)
-      for (final station in stations)
-        station.id: station,
+      for (final station in stations) station.id: station,
   };
 
-  static final List<SubwayStation> _allStations = List<SubwayStation>.unmodifiable([
+  static final List<SubwayStation> _allStations =
+      List<SubwayStation>.unmodifiable([
     for (final stations in metroStations.values) ...stations,
   ]);
 
@@ -647,7 +642,8 @@ class MetroCache {
 
   /// Station display name with type suffix (e.g. "Чиланзар ст.").
   static String getStationLabel(int stationId, String language) {
-    return formatStationLabel(getStationDisplayName(stationId, language), language);
+    return formatStationLabel(
+        getStationDisplayName(stationId, language), language);
   }
 
   /// Station label from a [SubwayStation] instance.

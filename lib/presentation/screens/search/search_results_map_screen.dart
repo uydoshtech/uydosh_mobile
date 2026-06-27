@@ -12,6 +12,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -23,6 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.d
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -313,6 +315,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       currentListingTypeId: _listingTypeId,
       currentLocationId: _locationId,
       currentSubwayStationId: _subwayStationId,
+      currentSubwayStationIds: _subwayStationIds,
       currentSubwayLineId: _subwayLineId,
       currentGender: _gender,
       currentMinPrice: _minPrice,

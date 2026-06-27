@@ -135,8 +135,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final width = widget.width ?? SearchFloatingActionButton.fabSize;
     final height = widget.height ?? SearchFloatingActionButton.fabSize;
     final radius = const BorderRadius.all(Radius.circular(999));
-    final fg = widget.foregroundColor ??
-        (ThemeState().isBlueTheme ? Colors.white : Colors.black);
+    final fg = widget.foregroundColor ?? Colors.black;
 
     final themeState = ThemeState();
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;

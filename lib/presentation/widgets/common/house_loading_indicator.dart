@@ -108,7 +108,12 @@ class _HouseLoadingIndicatorState extends State<HouseLoadingIndicator>
       builder: (context, child) {
         return Transform.rotate(
           angle: _rotationAnimation.value * 2 * 3.14159, // Full 360° rotation
-          child: ThemeIcon(Icons.home, size: effectiveSize, color: effectiveColor),
+          child: ThemeIcon(
+            Icons.home,
+            size: effectiveSize,
+            color: effectiveColor,
+            useThemeColor: widget.color == null,
+          ),
         );
       },
     );

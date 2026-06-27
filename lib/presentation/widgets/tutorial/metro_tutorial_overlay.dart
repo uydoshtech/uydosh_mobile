@@ -215,6 +215,8 @@ class _MetroTutorialOverlayContentState
               ValueListenableBuilder<bool>(
                 valueListenable: widget.isStationPhase,
                 builder: (context, isStation, _) => _TutorialHintText(
+                  metroLineKey: widget.metroLineKey,
+                  metroStationKey: widget.metroStationKey,
                   animationValue: _animation.value,
                   hintText: isStation
                       ? L10n.get("metro_tutorial_station_hint")
@@ -237,33 +239,91 @@ Rect? _getRectForKey(GlobalKey<TutorialTargetWrapperState> key) {
 
 class _TutorialHintText extends StatelessWidget {
   const _TutorialHintText({
+    required this.metroLineKey,
+    required this.metroStationKey,
     required this.animationValue,
     required this.hintText,
   });
 
+  final GlobalKey<TutorialTargetWrapperState> metroLineKey;
+  final GlobalKey<TutorialTargetWrapperState> metroStationKey;
   final double animationValue;
   final String hintText;
 
-  /// Alignment y: -0.5 = ~25% from top - above bottom sheet, not at very top
-  static const _verticalPosition = -0.2;
+  static const _horizontalPadding = 24.0;
+  static const _spotlightTopPadding = 8.0;
+  static const _spotlightGap = 16.0;
+  static const _fallbackTop = 280.0;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Align(
-          alignment: const Alignment(0, _verticalPosition),
-          child: Opacity(
-            opacity: animationValue,
-            child: TutorialOverlayText(
-              hintText,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+    return Positioned.fill(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final safeTop = MediaQuery.of(context).padding.top;
+          final spotlightTop = _getSpotlightTop() ?? _fallbackTop;
+          final maxTextWidth = constraints.maxWidth - (_horizontalPadding * 2);
+          final estimatedTextHeight =
+              _estimateTextHeight(context, maxTextWidth);
+          final minTop = safeTop + 16;
+          final maxTop = constraints.maxHeight - estimatedTextHeight;
+          final top = (spotlightTop -
+                  _spotlightTopPadding -
+                  _spotlightGap -
+                  estimatedTextHeight)
+              .clamp(minTop, maxTop < minTop ? minTop : maxTop);
+
+          return Stack(
+            children: [
+              Positioned(
+                top: top,
+                left: _horizontalPadding,
+                right: _horizontalPadding,
+                child: Opacity(
+                  opacity: animationValue,
+                  child: TutorialOverlayText(
+                    hintText,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  double? _getSpotlightTop() {
+    final lineRect = _getRectForKey(metroLineKey);
+    final stationRect = _getRectForKey(metroStationKey);
+
+    if (lineRect != null && stationRect != null) {
+      return lineRect.top < stationRect.top ? lineRect.top : stationRect.top;
+    }
+    return lineRect?.top ?? stationRect?.top;
+  }
+
+  double _estimateTextHeight(BuildContext context, double maxWidth) {
+    final base = Theme.of(context).textTheme.titleLarge;
+    final style = base?.copyWith(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          height: 1.22,
+        ) ??
+        const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          height: 1.22,
+        );
+
+    final painter = TextPainter(
+      text: TextSpan(text: hintText, style: style),
+      textAlign: TextAlign.center,
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: maxWidth);
+
+    return painter.height;
   }
 }
 

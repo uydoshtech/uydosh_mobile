@@ -153,6 +153,9 @@ class YandexMapWidget extends StatefulWidget {
     this.showUserLocation = false,
     this.showDistrictLayer = false,
     this.showMetroStationsLayer = false,
+    this.showLoadingPlaceholderContent = true,
+    this.zoomControlsRight,
+    this.zoomControlsBottom,
     this.onMetroStationTooltipChanged,
   });
 
@@ -180,6 +183,9 @@ class YandexMapWidget extends StatefulWidget {
   final bool showUserLocation;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final bool showLoadingPlaceholderContent;
+  final double? zoomControlsRight;
+  final double? zoomControlsBottom;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
 
   @override
@@ -453,57 +459,62 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           // Map-like background pattern
           CustomPaint(painter: MapPatternPainter(), size: Size.infinite),
           // Loading indicator and location info
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Loading indicator
-                const SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Location pin
-                const ThemeIcon(Icons.location_on, color: Colors.red, size: 48),
-                const SizedBox(height: 8),
-                Text(
-                  widget.title ?? context.l10n.loading_map,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "${centerPoint["latitude"]!.toStringAsFixed(4)}, ${centerPoint["longitude"]!.toStringAsFixed(4)}",
-                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-                const SizedBox(height: 16),
-                // Retry button if initialization failed
-                if (_retryCount > 0 && _retryCount < _maxRetries)
-                  PrimaryButtonFactory.iconText(
-                    onPressed: () {
-                      _retryMapInitialization();
-                    },
-                    icon: Icons.refresh,
-                    text: context.l10n.retry,
-                    surfaceGradientBase: Colors.red,
-                    textColor: Colors.white,
-                    iconSize: 16,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+          if (widget.showLoadingPlaceholderContent)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Loading indicator
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                     ),
                   ),
-              ],
+                  const SizedBox(height: 16),
+                  // Location pin
+                  const ThemeIcon(
+                    Icons.location_on,
+                    color: Colors.red,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.title ?? context.l10n.loading_map,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${centerPoint["latitude"]!.toStringAsFixed(4)}, ${centerPoint["longitude"]!.toStringAsFixed(4)}",
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 16),
+                  // Retry button if initialization failed
+                  if (_retryCount > 0 && _retryCount < _maxRetries)
+                    PrimaryButtonFactory.iconText(
+                      onPressed: () {
+                        _retryMapInitialization();
+                      },
+                      icon: Icons.refresh,
+                      text: context.l10n.retry,
+                      surfaceGradientBase: Colors.red,
+                      textColor: Colors.white,
+                      iconSize: 16,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -978,14 +989,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       latitude: station.latitude!,
       longitude: station.longitude!,
     );
+    final selected = _selectedMetroStation?.id == station.id;
     final iconBytes = _cachedMetroStationIconBytes[station.line];
     if (iconBytes == null) {
       return CircleMapObject(
         mapId: MapObjectId("tashkent_metro_station_${station.id}_circle"),
-        circle: Circle(center: point, radius: 180),
-        zIndex: 1.15,
+        circle: Circle(center: point, radius: selected ? 270 : 180),
+        zIndex: selected ? 1.35 : 1.15,
         consumeTapEvents: true,
-        strokeWidth: 3.0,
+        strokeWidth: selected ? 4.5 : 3.0,
         strokeColor: Colors.white.withValues(alpha: 0.95),
         fillColor: _metroLineColor(station.line).withValues(alpha: 0.9),
         onTap: (_, point) => _handleMetroStationTap(station, point),
@@ -995,14 +1007,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return PlacemarkMapObject(
       mapId: MapObjectId("tashkent_metro_station_${station.id}_placemark"),
       point: point,
-      zIndex: 1.2,
+      zIndex: selected ? 1.35 : 1.2,
       opacity: 1.0,
       consumeTapEvents: true,
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
           image: BitmapDescriptor.fromBytes(iconBytes),
           anchor: const Offset(0.5, 0.5),
-          scale: 0.62,
+          scale: selected ? 0.93 : 0.62,
         ),
       ),
       onTap: (_, point) => _handleMetroStationTap(station, point),
@@ -1968,10 +1980,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     const width = 48.0;
     const height = 176.0;
     final slider = _buildZoomSlider(foregroundColor);
+    final right = widget.zoomControlsRight;
+    final bottom = widget.zoomControlsBottom;
 
     return Positioned(
-      left: safeAreaPadding.left + 8,
-      bottom: 44 + safeAreaPadding.bottom,
+      left: right == null ? safeAreaPadding.left + 8 : null,
+      right: right == null ? null : safeAreaPadding.right + right,
+      bottom: bottom == null
+          ? 44 + safeAreaPadding.bottom
+          : safeAreaPadding.bottom + bottom,
       child: SizedBox(
         width: width,
         height: height,

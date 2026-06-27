@@ -86,8 +86,11 @@ class _SearchResultsMapContent extends StatelessWidget {
         showNoResultsTile;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.2;
+    const feedViewButtonHeight = 34.2;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
+    const zoomControlsWidth = 48.0;
+    const metroTooltipReservedHeight = 64.0;
     const layerButtonIconSize = 18.0;
     const layerButtonBorder = BorderSide(color: Colors.black, width: 1);
     final feedViewButton = SearchFloatingActionButton(
@@ -95,15 +98,14 @@ class _SearchResultsMapContent extends StatelessWidget {
       iconData: Icons.view_list_rounded,
       tooltip: L10n.get("open_feed_view"),
       width: viewToggleWidth,
-      height: 34.2,
+      height: feedViewButtonHeight,
       iconSize: 22.5,
       foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     final districtLayerButton = SearchFloatingActionButton(
       onPressed: onToggleDistrictLayer,
-      iconData:
-          showDistrictLayer ? Icons.layers_clear_rounded : Icons.layers_rounded,
+      iconData: Icons.layers_rounded,
       tooltip: showDistrictLayer
           ? context.l10n.hide_district_layer
           : context.l10n.show_district_layer,
@@ -167,6 +169,13 @@ class _SearchResultsMapContent extends StatelessWidget {
                   showUserLocation: true,
                   showDistrictLayer: showDistrictLayer,
                   showMetroStationsLayer: showMetroStationsLayer,
+                  showLoadingPlaceholderContent: false,
+                  zoomControlsRight: placeViewToggleAtBottom
+                      ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                      : null,
+                  zoomControlsBottom: placeViewToggleAtBottom
+                      ? viewToggleBottom + feedViewButtonHeight + viewToggleGap
+                      : null,
                   onMetroStationTooltipChanged: onMetroStationTooltipChanged,
                   onMapTap: (_) {
                     onClearSelectedPin();
@@ -235,7 +244,16 @@ class _SearchResultsMapContent extends StatelessWidget {
                                           key: const ValueKey("no-map-results"),
                                           label: L10n.get("no_results"),
                                         )
-                                      : null,
+                                      : hasSelectedMetroStation
+                                          ? const SizedBox(
+                                              key: ValueKey(
+                                                "metro-station-tooltip-space",
+                                              ),
+                                              width: double.infinity,
+                                              height:
+                                                  metroTooltipReservedHeight,
+                                            )
+                                          : null,
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),

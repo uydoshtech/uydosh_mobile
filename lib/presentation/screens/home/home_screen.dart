@@ -1934,6 +1934,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       currentListingTypeId: _searchFiltersState.selectedListingTypeId,
       currentLocationId: _searchFiltersState.selectedLocationIndex,
       currentSubwayStationId: _searchFiltersState.selectedStationId,
+      currentSubwayStationIds: _searchFiltersState.selectedStationIdsList,
       currentSubwayLineId: _searchFiltersState.selectedSubwayLine,
       currentGender: _searchFiltersState.selectedGender,
       currentMinPrice: _searchFiltersState.minPrice,
@@ -1975,6 +1976,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
       _inlineSearchSpacerExpanded = true;
+      _mapViewSearchResult = result;
     });
     HomeInlineSearchState().setActive(true);
     // Dispatch immediately so the feed cannot sit on a stale unfiltered page
