@@ -268,6 +268,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int? _cachedMapObjectsKey;
   List<MapObject>? _cachedMapObjects;
   int _zoomSliderRequestId = 0;
+  int _mapOperationGeneration = 0;
   late double _currentZoom;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
@@ -320,7 +321,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   @override
   void dispose() {
+    _mapOperationGeneration++;
+    _zoomSliderRequestId++;
     _mapController = null;
+    _cachedMapObjects = null;
+    _cachedMapObjectsKey = null;
     super.dispose();
   }
 
@@ -627,6 +632,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           if (!mounted) return;
           // Store controller for zoom controls
           _mapController = controller;
+          _mapOperationGeneration++;
           widget.onMapCreated?.call(controller);
           _syncUserLocationLayer();
 
@@ -687,11 +693,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Future<void> _syncUserLocationLayer({bool requestPermission = false}) async {
     final controller = _mapController;
     if (controller == null || kIsWeb) return;
+    final generation = _mapOperationGeneration;
 
     if (!widget.layerOptions.showUserLocation) {
       if (!_isUserLocationLayerVisible) return;
       try {
         await controller.toggleUserLayer(visible: false);
+        if (!_isCurrentMapOperation(controller, generation)) return;
         _isUserLocationLayerVisible = false;
       } catch (error) {
         logger.w("Could not hide user location layer: $error");
@@ -707,6 +715,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
     try {
       await controller.toggleUserLayer(visible: true, autoZoomEnabled: false);
+      if (!_isCurrentMapOperation(controller, generation)) return;
       _isUserLocationLayerVisible = true;
     } catch (error) {
       logger.w("Could not show user location layer: $error");
@@ -902,6 +911,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     await _moveInitialCamera(controller, _getCenterPoint());
   }
 
+  bool _isCurrentMapOperation(
+    YandexMapController controller,
+    int generation,
+  ) {
+    return mounted &&
+        generation == _mapOperationGeneration &&
+        identical(_mapController, controller);
+  }
+
   bool _mapTargetChanged(YandexMapWidget oldWidget) {
     if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
     if (widget.cameraOptions.includeUniversityMarkersInCamera &&
@@ -1040,6 +1058,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     YandexMapController controller,
     Map<String, double> centerPoint,
   ) async {
+    final generation = _mapOperationGeneration;
     final targetPoints = _targetPoints();
     if (targetPoints.length > 1) {
       var minLat = targetPoints.first.latitude;
@@ -1075,9 +1094,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         controller,
         CameraUpdate.newGeometry(geometry),
       );
-      if (!moved) return;
+      if (!moved || !_isCurrentMapOperation(controller, generation)) return;
 
       final cameraPosition = await controller.getCameraPosition();
+      if (!_isCurrentMapOperation(controller, generation)) return;
       if (cameraPosition.zoom > _maxMultiPinAutoZoom) {
         final moved = await _moveCameraAutomatically(
           controller,
@@ -1112,15 +1132,22 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ),
       ),
     );
-    if (moved) _setCurrentZoom(zoom);
+    if (moved && _isCurrentMapOperation(controller, generation)) {
+      _setCurrentZoom(zoom);
+    }
   }
 
   Future<bool> _moveCameraAutomatically(
     YandexMapController controller,
     CameraUpdate cameraUpdate,
   ) async {
+    final generation = _mapOperationGeneration;
     _automaticCameraFinishesToIgnore++;
     final moved = await controller.moveCamera(cameraUpdate);
+    if (!_isCurrentMapOperation(controller, generation)) {
+      _consumeAutomaticCameraFinish();
+      return false;
+    }
     if (!moved) {
       _consumeAutomaticCameraFinish();
     }
@@ -1248,9 +1275,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _setCurrentZoom(zoom);
     final controller = _mapController;
     if (controller == null) return;
+    final generation = _mapOperationGeneration;
 
     final cameraPosition = await controller.getCameraPosition();
-    if (!mounted || requestId != _zoomSliderRequestId) return;
+    if (requestId != _zoomSliderRequestId ||
+        !_isCurrentMapOperation(controller, generation)) {
+      return;
+    }
     await controller.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(

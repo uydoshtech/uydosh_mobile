@@ -183,10 +183,17 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     textPainter.paint(canvas, offset);
 
     final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(size, size);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    return byteData!.buffer.asUint8List();
+    try {
+      final image = await picture.toImage(size, size);
+      try {
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        return byteData!.buffer.asUint8List();
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      picture.dispose();
+    }
   }
 
   Future<Uint8List> _listingClusterIconBytes(int count) {
@@ -253,9 +260,17 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
 
     final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(size, size);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
+    try {
+      final image = await picture.toImage(size, size);
+      try {
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        return byteData!.buffer.asUint8List();
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      picture.dispose();
+    }
   }
 
   void _syncListingGroupIconBytes() {
@@ -313,6 +328,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
     future.then((bytes) {
       _pendingListingGroupIconKeys.remove(key);
+      if (!mounted) return;
       _cachedListingGroupIconBytes[key] = bytes;
       _requestMapRebuild();
     }).catchError((error) {
@@ -423,8 +439,16 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
 
     final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(width, height);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
+    try {
+      final image = await picture.toImage(width, height);
+      try {
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        return byteData!.buffer.asUint8List();
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      picture.dispose();
+    }
   }
 }
