@@ -12,6 +12,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.selectedPin,
     required this.selectedPinGroup,
     required this.selectedUniversityMarker,
+    required this.hasSelectedMetroStation,
     required this.universityMarkers,
     required this.showDistrictLayer,
     required this.showMetroStationsLayer,
@@ -28,6 +29,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onSelectPin,
     required this.onSelectPinGroup,
     required this.onSelectUniversityMarker,
+    required this.onMetroStationTooltipChanged,
     required this.onOpenPin,
     this.gender,
     this.locationId,
@@ -51,6 +53,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final ListingMapPin? selectedPin;
   final List<ListingMapPin> selectedPinGroup;
   final UniversityMapMarker? selectedUniversityMarker;
+  final bool hasSelectedMetroStation;
   final List<UniversityMapMarker> universityMarkers;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
@@ -67,6 +70,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final ValueChanged<ListingMapPin> onSelectPin;
   final ValueChanged<List<ListingMapPin>> onSelectPinGroup;
   final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
+  final ValueChanged<bool> onMetroStationTooltipChanged;
   final ValueChanged<ListingMapPin> onOpenPin;
 
   @override
@@ -78,6 +82,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
+        hasSelectedMetroStation ||
         showNoResultsTile;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.2;
@@ -162,6 +167,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                   showUserLocation: true,
                   showDistrictLayer: showDistrictLayer,
                   showMetroStationsLayer: showMetroStationsLayer,
+                  onMetroStationTooltipChanged: onMetroStationTooltipChanged,
                   onMapTap: (_) {
                     onClearSelectedPin();
                     onClearSelectedUniversityMarker();
@@ -264,6 +270,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                   child: SearchFloatingActionButton(
                     onPressed: onOpenEmbeddedSearch,
                     iconData: Icons.search,
+                    foregroundColor: Colors.black,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
                 ),

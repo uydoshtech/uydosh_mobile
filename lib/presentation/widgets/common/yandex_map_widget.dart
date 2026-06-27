@@ -153,6 +153,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showUserLocation = false,
     this.showDistrictLayer = false,
     this.showMetroStationsLayer = false,
+    this.onMetroStationTooltipChanged,
   });
 
   final double? latitude;
@@ -179,6 +180,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showUserLocation;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final ValueChanged<bool>? onMetroStationTooltipChanged;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -237,7 +239,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _syncUserLocationLayer();
     }
     if (oldWidget.showMetroStationsLayer && !widget.showMetroStationsLayer) {
-      _selectedMetroStation = null;
+      _setSelectedMetroStation(null, notify: true);
     }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
         !_intListsEqual(
@@ -622,14 +624,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           if (_selectedUniversityMarker != null) {
             setState(() => _selectedUniversityMarker = null);
           }
-          if (_selectedMetroStation != null) {
-            setState(() => _selectedMetroStation = null);
-          }
+          _setSelectedMetroStation(null, notify: true);
           widget.onMapTap?.call(point);
         },
         onCameraPositionChanged: _handleCameraPositionChanged,
         onUserLocationAdded: _customizeUserLocationView,
         mapObjects: mapObjects,
+        poiLimit: widget.pins.isNotEmpty ? 0 : null,
       );
     } catch (e) {
       logger.e("❌ Yandex Map creation failed: $e");
@@ -703,9 +704,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     ];
     final universityMarkerObjects = _createUniversityMarkerMapObjects();
     if (widget.pins.isNotEmpty) {
+      final listingPinObjects = _createListingPinMapObjects();
       return [
         ...areaLayerObjects,
-        ..._createListingPinMapObjects(),
+        if (listingPinObjects.isNotEmpty)
+          MapObjectCollection(
+            mapId: const MapObjectId("listing_pin_layer"),
+            mapObjects: listingPinObjects,
+            zIndex: _listingPinZIndex,
+          ),
         ...universityMarkerObjects,
       ];
     }
@@ -1010,7 +1017,21 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _selectedUniversityMarker = null;
     }
     widget.onMapTap?.call(point);
+    _setSelectedMetroStation(station, notify: true);
+  }
+
+  void _setSelectedMetroStation(
+    SubwayStation? station, {
+    required bool notify,
+  }) {
+    final wasVisible = _selectedMetroStation != null;
+    final isVisible = station != null;
+    if (_selectedMetroStation?.id == station?.id) return;
+
     setState(() => _selectedMetroStation = station);
+    if (notify && wasVisible != isVisible) {
+      widget.onMetroStationTooltipChanged?.call(isVisible);
+    }
   }
 
   Color _metroLineColor(int line) {
@@ -1087,6 +1108,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
     }
+    _setSelectedMetroStation(null, notify: true);
     widget.onMapTap?.call(point);
     final onUniversityMarkerTap = widget.onUniversityMarkerTap;
     if (onUniversityMarkerTap != null) {
@@ -1158,6 +1180,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               if (_selectedUniversityMarker != null) {
                 setState(() => _selectedUniversityMarker = null);
               }
+              _setSelectedMetroStation(null, notify: true);
               widget.onPinTap?.call(group.pins.first);
             },
           )
@@ -1184,6 +1207,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               if (_selectedUniversityMarker != null) {
                 setState(() => _selectedUniversityMarker = null);
               }
+              _setSelectedMetroStation(null, notify: true);
               widget.onPinTap?.call(group.pins.first);
             },
           ),
@@ -1231,6 +1255,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         if (_selectedUniversityMarker != null) {
           setState(() => _selectedUniversityMarker = null);
         }
+        _setSelectedMetroStation(null, notify: true);
         final onPinGroupTap = widget.onPinGroupTap;
         if (onPinGroupTap != null) {
           onPinGroupTap(group.pins);
@@ -1554,9 +1579,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         key: ValueKey("metro-station-${metroStation.id}"),
         station: metroStation,
         lineColor: _metroLineColor(metroStation.line),
-        onClose: () => setState(() {
-          _selectedMetroStation = null;
-        }),
+        onClose: () => _setSelectedMetroStation(null, notify: true),
       );
     }
 

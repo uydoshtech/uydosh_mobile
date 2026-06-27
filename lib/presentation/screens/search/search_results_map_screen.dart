@@ -96,6 +96,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   ListingMapPin? _selectedPin;
   List<ListingMapPin> _selectedPinGroup = const [];
   UniversityMapMarker? _selectedUniversityMarker;
+  bool _hasSelectedMetroStation = false;
   List<UniversityMapMarker> _universityMarkers = const [];
   bool _showDistrictLayer = false;
   bool _showMetroStationsLayer = false;
@@ -136,6 +137,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedPin = null;
     _selectedPinGroup = const [];
     _selectedUniversityMarker = null;
+    _hasSelectedMetroStation = false;
     _loadResults();
   }
 
@@ -241,6 +243,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _selectedPin = null;
         _selectedPinGroup = const [];
         _selectedUniversityMarker = null;
+        _hasSelectedMetroStation = false;
       });
     }
 
@@ -253,6 +256,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _isLoading = false;
         _selectedPin = _autoSelectedPin(result);
         _selectedPinGroup = const [];
+        _hasSelectedMetroStation = false;
       });
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
@@ -334,6 +338,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _selectedPin = null;
           _selectedPinGroup = const [];
           _selectedUniversityMarker = null;
+          _hasSelectedMetroStation = false;
         });
         _loadResults();
       },
@@ -700,6 +705,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedPin: _selectedPin,
       selectedPinGroup: _selectedPinGroup,
       selectedUniversityMarker: _selectedUniversityMarker,
+      hasSelectedMetroStation: _hasSelectedMetroStation,
       universityMarkers: _universityMarkers,
       showDistrictLayer: _showDistrictLayer,
       showMetroStationsLayer: _showMetroStationsLayer,
@@ -713,7 +719,16 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
       },
       onToggleMetroStationsLayer: () {
-        setState(() => _showMetroStationsLayer = !_showMetroStationsLayer);
+        setState(() {
+          _showMetroStationsLayer = !_showMetroStationsLayer;
+          if (!_showMetroStationsLayer) {
+            _hasSelectedMetroStation = false;
+          }
+        });
+      },
+      onMetroStationTooltipChanged: (visible) {
+        if (_hasSelectedMetroStation == visible) return;
+        setState(() => _hasSelectedMetroStation = visible);
       },
       onClearSelectedPin: () {
         setState(() {
