@@ -1054,6 +1054,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       onOpenMapView: () =>
           unawaited(_openSearchResultsMap(_currentSearchResultForViewToggle())),
       onOpenInlineSearch: _openInlineSearchFromFab,
+      onOpenMapSearch: _openSearchFromEmbeddedMap,
       onOpenFeedFromMap: _returnToFeedFromMap,
     );
 
@@ -1754,6 +1755,31 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       onApply: (result) {
         // Persist filter writes deterministically (important for web reloads).
         _applyInlineSearchResult(result);
+      },
+    );
+  }
+
+  void _openSearchFromEmbeddedMap() {
+    SearchBottomSheetWidget.show(
+      context,
+      openedFromHomeScreen: widget.isHomeTabActive,
+      currentListingTypeId: _searchFiltersState.selectedListingTypeId,
+      currentLocationId: _searchFiltersState.selectedLocationIndex,
+      currentSubwayStationId: _searchFiltersState.selectedStationId,
+      currentSubwayStationIds: _searchFiltersState.selectedStationIdsList,
+      currentSubwayLineId: _searchFiltersState.selectedSubwayLine,
+      currentGender: _searchFiltersState.selectedGender,
+      currentMinPrice: _searchFiltersState.minPrice,
+      currentMaxPrice: _searchFiltersState.maxPrice,
+      currentPrivateRoom: _searchFiltersState.privateRoom,
+      currentWithPhoto: _searchFiltersState.withPhoto,
+      primaryAction: SearchBottomSheetAction.map,
+      onApply: (result) async {
+        if (widget.isSearchMode) {
+          await _applySearchModeResult(result);
+        } else {
+          await _applyInlineSearchResult(result);
+        }
       },
     );
   }

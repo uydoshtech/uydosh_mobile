@@ -730,7 +730,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       _searchFiltersState.setWithPhoto(value);
                       setState(() {});
                     },
-                    onPrimaryPressed: _performSearch,
+                    onPrimaryPressed: () => _performSearch(
+                      action: widget.primaryAction,
+                    ),
                     primaryLabelKey: widget.primaryLabelKey,
                     primaryIcon: widget.primaryIcon,
                   ),

@@ -20,6 +20,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.inlineFiltersRibbonBuilder,
     required this.onOpenMapView,
     required this.onOpenInlineSearch,
+    required this.onOpenMapSearch,
     required this.onOpenFeedFromMap,
   });
 
@@ -41,6 +42,7 @@ class _SearchResultsShell extends StatefulWidget {
   final WidgetBuilder inlineFiltersRibbonBuilder;
   final VoidCallback onOpenMapView;
   final VoidCallback onOpenInlineSearch;
+  final VoidCallback onOpenMapSearch;
   final void Function(BuildContext context, SearchBottomSheetResult result)
       onOpenFeedFromMap;
 
@@ -136,7 +138,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(
         widget.alertFabBottom,
       ),
-      onOpenEmbeddedSearch: widget.onOpenInlineSearch,
+      onOpenEmbeddedSearch: widget.onOpenMapSearch,
     );
 
     final paddedMapView = widget.isSearchMode
@@ -156,17 +158,18 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             paddedMapView,
           ],
         ),
-        _SearchResultsFabStack(
-          inSearchContext: widget.inSearchContext,
-          bottom: widget.alertFabBottom,
-          searchFiltersState: widget.searchFiltersState,
-          searchButtonTutorialKey: widget.searchButtonTutorialKey,
-          isHomeTabActive: widget.isHomeTabActive,
-          isSearchMode: widget.isSearchMode,
-          showViewToggle: !isShowingMap,
-          onOpenMapView: widget.onOpenMapView,
-          onOpenInlineSearch: widget.onOpenInlineSearch,
-        ),
+        if (!isShowingMap)
+          _SearchResultsFabStack(
+            inSearchContext: widget.inSearchContext,
+            bottom: widget.alertFabBottom,
+            searchFiltersState: widget.searchFiltersState,
+            searchButtonTutorialKey: widget.searchButtonTutorialKey,
+            isHomeTabActive: widget.isHomeTabActive,
+            isSearchMode: widget.isSearchMode,
+            showViewToggle: true,
+            onOpenMapView: widget.onOpenMapView,
+            onOpenInlineSearch: widget.onOpenInlineSearch,
+          ),
       ],
     );
   }

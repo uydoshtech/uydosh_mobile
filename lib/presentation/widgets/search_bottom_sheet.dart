@@ -103,6 +103,7 @@ class SearchBottomSheetWidget {
     void Function(SearchBottomSheetResult result)? onApply,
     String primaryLabelKey = "search",
     IconData primaryIcon = Icons.search,
+    SearchBottomSheetAction primaryAction = SearchBottomSheetAction.feed,
   }) async {
     // Ensure first-time users see sensible defaults (role + gender) without
     // overwriting any explicit saved search preferences.
@@ -211,6 +212,7 @@ class SearchBottomSheetWidget {
             onCommit: markCommitted,
             primaryLabelKey: primaryLabelKey,
             primaryIcon: primaryIcon,
+            primaryAction: primaryAction,
           ),
         ),
       );
@@ -250,6 +252,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.onCommit,
     this.primaryLabelKey = "search",
     this.primaryIcon = Icons.search,
+    this.primaryAction = SearchBottomSheetAction.feed,
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
@@ -272,6 +275,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final VoidCallback? onCommit;
   final String primaryLabelKey;
   final IconData primaryIcon;
+  final SearchBottomSheetAction primaryAction;
 
   @override
   State<_SearchBottomSheetContent> createState() =>

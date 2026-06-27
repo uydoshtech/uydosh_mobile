@@ -352,6 +352,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       currentWithPhoto: _withPhoto,
       primaryLabelKey: "apply",
       primaryIcon: Icons.check,
+      primaryAction: SearchBottomSheetAction.map,
       onApply: (result) {
         if (_matchesCurrentFilters(result)) return;
 
