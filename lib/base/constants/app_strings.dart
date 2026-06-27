@@ -70,6 +70,8 @@ class AppStrings {
       "group_members_needed_other": "Need {count} more people",
       "group_join_request_message_hint": "Introduce yourself (optional)",
       "group_join_request_success": "Join request sent",
+      "group_join_requires_profile":
+          "Complete your profile before joining this group.",
       "group_join_request_withdrawn": "Request withdrawn",
       "group_join_request_approved": "Member added to the group",
       "group_join_request_rejected": "Request rejected",
@@ -255,7 +257,7 @@ class AppStrings {
       "group_landlord_invite_chat_card_body":
           "The group owner invited you to discuss this listing with their group. You will only see messages sent after you join.",
       "group_landlord_invite_one_at_a_time":
-          "This group already has a landlord invite or landlord in the chat. Remove or resolve it before inviting another.",
+          "A landlord is already connected to this group chat, or an invite is still pending. Revoke the current invite or finish that discussion before inviting another landlord.",
       "group_shortlist_remove_title": "Remove from saved list?",
       "group_shortlist_remove_message":
           "{title} will be removed from the group saved list.",
@@ -691,6 +693,7 @@ class AppStrings {
       "no_locations_available": "No locations available",
 
       "no_universities_available": "No universities available",
+      "no_results": "No results",
       "no_search_results": "No results...",
 
       // ===== SELECTION & PROMPTS =====
@@ -928,6 +931,8 @@ class AppStrings {
           "Looking for a male roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
       "listing_description_template_roommate_needed_female":
           "Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).",
+      "listing_description_template_group_forming":
+          "Forming a group to rent together.\nLooking for: (1–2 people, gender/age).\nBudget per person: (amount).\nArea/metro: (where to search).\nFormat: (private/shared rooms).\nMove-in: (date + duration).\nImportant: (cleanliness/quiet/guests/pets).",
 
       "listing_type_roommate_needed": "Looking for a Roommate",
       "listing_type_roommate_needed_female": "Need Roommate",
@@ -1190,11 +1195,15 @@ class AppStrings {
       "menu_language": "Language",
 
       "menu_favorites": "Favorites",
+      "nav_my": "My",
       "menu_history": "History",
       "menu_contact_support": "Contact Support",
       "menu_add_listing": "Add Listing",
       "menu_my_listings": "My Listings",
       "menu_my_groups": "My Groups",
+      "my_hub_tab_groups": "Groups",
+      "my_hub_tab_bookmarks": "My Bookmarks",
+      "my_hub_tab_alerts": "My Alerts",
       "my_groups_empty_subtitle": "Groups you own or joined will appear here.",
       "menu_gigs": "Services",
 
@@ -2160,6 +2169,8 @@ class AppStrings {
       "group_members_needed_many": "Нужно ещё {count} участников",
       "group_join_request_message_hint": "Коротко о себе (необязательно)",
       "group_join_request_success": "Заявка отправлена",
+      "group_join_requires_profile":
+          "Заполните профиль, чтобы вступить в эту группу.",
       "group_join_request_withdrawn": "Заявка отозвана",
       "group_join_request_approved": "Участник добавлен в группу",
       "group_join_request_rejected": "Заявка отклонена",
@@ -2347,7 +2358,7 @@ class AppStrings {
       "group_landlord_invite_chat_card_body":
           "Организатор группы пригласил вас обсудить это объявление с группой. Вы увидите только сообщения, отправленные после входа.",
       "group_landlord_invite_one_at_a_time":
-          "У этой группы уже есть приглашение арендодателю или арендодатель в чате. Удалите или завершите его, прежде чем приглашать другого.",
+          "Арендодатель уже подключён к этому групповому чату или приглашение ещё ожидает ответа. Отзовите текущее приглашение или завершите обсуждение, прежде чем приглашать другого арендодателя.",
       "group_shortlist_remove_title": "Удалить из сохранённых?",
       "group_shortlist_remove_message":
           "«{title}» будет удалено из списка сохранённых группы.",
@@ -2789,6 +2800,7 @@ class AppStrings {
       "no_locations_available": "Районы недоступны",
 
       "no_universities_available": "Университеты недоступны",
+      "no_results": "Нет результатов",
       "no_search_results": "Нет результатов...",
 
       // ===== SELECTION & PROMPTS =====
@@ -3033,6 +3045,8 @@ class AppStrings {
           "Ищу соседа.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
       "listing_description_template_roommate_needed_female":
           "Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).",
+      "listing_description_template_group_forming":
+          "Собираем группу для совместной аренды.\nКого ищем: (1–2 человека, пол/возраст).\nБюджет на человека: (сумма).\nРайон/метро: (где ищем).\nФормат: (отдельные/общие комнаты).\nЗаезд: (дата + срок).\nВажно: (чистота/тишина/гости/животные).",
 
       "listing_type_roommate_needed": "Ищу Соседа",
       "listing_type_roommate_needed_female": "Ищу соседку",
@@ -3298,11 +3312,15 @@ class AppStrings {
       "menu_language": "Язык",
 
       "menu_favorites": "Избранное",
+      "nav_my": "Моё",
       "menu_history": "История",
       "menu_contact_support": "Связаться с поддержкой",
       "menu_add_listing": "Добавить объявление",
       "menu_my_listings": "Мои объявления",
       "menu_my_groups": "Мои группы",
+      "my_hub_tab_groups": "Группы",
+      "my_hub_tab_bookmarks": "Мои закладки",
+      "my_hub_tab_alerts": "Мои оповещения",
       "my_groups_empty_subtitle":
           "Группы, которыми вы управляете или к которым присоединились, появятся здесь.",
       "menu_gigs": "Услуги",
@@ -4295,6 +4313,8 @@ class AppStrings {
       "group_members_needed_other": "Yana {count} ishtirokchi kerak",
       "group_join_request_message_hint": "O'zingiz haqingizda (ixtiyoriy)",
       "group_join_request_success": "So'rov yuborildi",
+      "group_join_requires_profile":
+          "Bu guruhga qo'shilishdan oldin profilingizni to'ldiring.",
       "group_join_request_withdrawn": "So'rov bekor qilindi",
       "group_join_request_approved": "A'zo guruhga qo'shildi",
       "group_join_request_rejected": "So'rov rad etildi",
@@ -4482,7 +4502,7 @@ class AppStrings {
       "group_landlord_invite_chat_card_body":
           "Guruh egasi sizni bu e'lonni guruh bilan muhokama qilishga taklif qildi. Faqat qo'shilganingizdan keyingi xabarlarni ko'rasiz.",
       "group_landlord_invite_one_at_a_time":
-          "Bu guruhda allaqachon ijara beruvchiga taklif yoki chatda ijara beruvchi bor. Boshqasini taklif qilishdan oldin uni olib tashlang yoki yakunlang.",
+          "Bu guruh chatiga ijara beruvchi allaqachon ulangan yoki taklif hali javob kutmoqda. Boshqa ijara beruvchini taklif qilishdan oldin joriy taklifni bekor qiling yoki muhokamani yakunlang.",
       "group_shortlist_remove_title":
           "Saqlanganlar ro'yxatidan olib tashlansinmi?",
       "group_shortlist_remove_message":
@@ -4935,6 +4955,7 @@ class AppStrings {
       "no_locations_available": "Tumanlar mavjud emas",
 
       "no_universities_available": "Universitetlar mavjud emas",
+      "no_results": "Natija topilmadi",
       "no_search_results": "Natija topilmadi...",
 
       // ===== SELECTION & PROMPTS =====
@@ -5172,6 +5193,8 @@ class AppStrings {
           "Qo‘shni yigit qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
       "listing_description_template_roommate_needed_female":
           "Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).",
+      "listing_description_template_group_forming":
+          "Guruh bo‘lib ijara olish uchun odam yig‘yapmiz.\nKim kerak: (1–2 kishi, jins/yosh).\nHar kishi budjeti: (summa).\nHudud/metro: (qayerdan qidiramiz).\nFormat: (alohida/umumiy xonalar).\nKirish: (sana + muddat).\nMuhim: (tozalik/tinchlik/mehmon/uy hayvoni).",
 
       "listing_type_roommate_needed": "Xonadosh qidiryapman",
       "listing_type_roommate_needed_female": "Xonadosh qidiraman",
@@ -5439,11 +5462,15 @@ class AppStrings {
       "menu_language": "Til",
 
       "menu_favorites": "Sevimlilar",
+      "nav_my": "Mening",
       "menu_history": "Tarix",
       "menu_contact_support": "Qo'llab-quvvatlash bilan bog'lanish",
       "menu_add_listing": "E'lon qo'shish",
       "menu_my_listings": "Mening e'lonlarim",
       "menu_my_groups": "Mening guruhlarim",
+      "my_hub_tab_groups": "Guruhlar",
+      "my_hub_tab_bookmarks": "Mening xatcho'plarim",
+      "my_hub_tab_alerts": "Mening ogohlantirishlarim",
       "my_groups_empty_subtitle":
           "Siz boshqaradigan yoki qo'shilgan guruhlar shu yerda ko'rinadi.",
       "menu_gigs": "Xizmatlar",

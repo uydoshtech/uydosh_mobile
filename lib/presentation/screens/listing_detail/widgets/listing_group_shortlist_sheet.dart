@@ -515,12 +515,15 @@ class _ListingGroupShortlistSheetState
     if (error is DioException) {
       final data = error.response?.data;
       final serverError = data is Map
-          ? data["error"]?.toString()
+          ? (data["error"] ?? data["message"])?.toString()
           : data is String
               ? data
-              : null;
+              : error.message;
       if (serverError == "GROUP_LANDLORD_ALREADY_ACTIVE" ||
           serverError == "GROUP_LANDLORD_INVITE_ALREADY_PENDING") {
+        return L10n.get("group_landlord_invite_one_at_a_time");
+      }
+      if (error.response?.statusCode == 409) {
         return L10n.get("group_landlord_invite_one_at_a_time");
       }
     }

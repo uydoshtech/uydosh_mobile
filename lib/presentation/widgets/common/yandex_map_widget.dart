@@ -66,6 +66,20 @@ class UniversityMapMarker {
   final String fullTitle;
 }
 
+class _ListingPinGroup {
+  const _ListingPinGroup({
+    required this.key,
+    required this.latitude,
+    required this.longitude,
+    required this.pins,
+  });
+
+  final String key;
+  final double latitude;
+  final double longitude;
+  final List<ListingMapPin> pins;
+}
+
 class MapPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -122,13 +136,16 @@ class YandexMapWidget extends StatefulWidget {
     this.pins = const [],
     this.universityMarkers = const [],
     this.selectedListingId,
+    this.selectedListingGroupIds = const [],
     this.onPinTap,
+    this.onPinGroupTap,
     this.onUniversityMarkerTap,
     this.onMapTap,
     this.onMapCreated,
     this.onCameraPositionChanged,
     this.height = 200,
     this.moveCameraOnTargetChange = true,
+    this.includeUniversityMarkersInCamera = true,
     this.showListingDetailTooltip = true,
     this.showUniversityMarkerTooltip = true,
     this.showDefaultPlacemark = true,
@@ -145,12 +162,15 @@ class YandexMapWidget extends StatefulWidget {
   final List<ListingMapPin> pins;
   final List<UniversityMapMarker> universityMarkers;
   final int? selectedListingId;
+  final List<int> selectedListingGroupIds;
   final ValueChanged<ListingMapPin>? onPinTap;
+  final ValueChanged<List<ListingMapPin>>? onPinGroupTap;
   final ValueChanged<UniversityMapMarker>? onUniversityMarkerTap;
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
   final CameraPositionCallback? onCameraPositionChanged;
   final bool moveCameraOnTargetChange;
+  final bool includeUniversityMarkersInCamera;
   final bool showListingDetailTooltip;
   final bool showUniversityMarkerTooltip;
   final bool showDefaultPlacemark;
@@ -165,6 +185,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _minZoom = 3.0;
   static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
+  static const double _minDistrictLabelZoom = 11.5;
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
@@ -172,6 +193,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedSelectedUniversityIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
+  final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
+  final Set<String> _pendingListingGroupIconKeys = {};
   YandexMapController? _mapController;
   bool _isMapReady = false;
   bool _isInitializing = false;
@@ -191,6 +214,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _currentZoom = _initialZoom();
     _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
+    _syncListingGroupIconBytes();
     _initializeMapWithDelay();
   }
 
@@ -202,6 +226,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
     if (oldWidget.showUserLocation != widget.showUserLocation) {
       _syncUserLocationLayer();
+    }
+    if (_pinsChanged(oldWidget.pins, widget.pins) ||
+        !_intListsEqual(
+          oldWidget.selectedListingGroupIds,
+          widget.selectedListingGroupIds,
+        )) {
+      _syncListingGroupIconBytes();
     }
     _syncSelectedUniversityMarker();
     if (!_mapTargetChanged(oldWidget) || !widget.moveCameraOnTargetChange) {
@@ -280,6 +311,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedSelectedListingTypeIconBytes
         ..clear()
         ..addAll(selectedListingTypeIconBytes);
+      _syncListingGroupIconBytes();
       logger.d("✅ Map listing type icons created successfully");
       if (mounted) {
         setState(() {});
@@ -726,7 +758,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               district.locationId,
             ).withValues(alpha: 0.22),
           ),
-      ..._createDistrictLabelMapObjects(),
+      if (_currentZoom >= _minDistrictLabelZoom)
+        ..._createDistrictLabelMapObjects(),
     ];
   }
 
@@ -944,26 +977,47 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       logger.w("📍 Listing pin icon is not ready yet");
       return [];
     }
-    final selectedListingId = widget.selectedListingId;
-    final orderedPins = <ListingMapPin>[
-      for (final pin in widget.pins)
-        if (pin.listingId != selectedListingId) pin,
-      for (final pin in widget.pins)
-        if (pin.listingId == selectedListingId) pin,
+    final selectedListingIds = <int>{
+      if (widget.selectedListingId != null) widget.selectedListingId!,
+      ...widget.selectedListingGroupIds,
+    };
+    final groups = _groupListingPins(widget.pins);
+    final orderedGroups = <_ListingPinGroup>[
+      for (final group in groups)
+        if (!group.pins
+            .any((pin) => selectedListingIds.contains(pin.listingId)))
+          group,
+      for (final group in groups)
+        if (group.pins.any((pin) => selectedListingIds.contains(pin.listingId)))
+          group,
     ];
 
     return [
-      for (final pin in orderedPins)
-        if (pin.listingId == selectedListingId)
+      for (final group in orderedGroups)
+        if (group.pins.length > 1)
+          _createListingGroupPlacemark(
+            group,
+            selected: group.pins.any(
+              (pin) => selectedListingIds.contains(pin.listingId),
+            ),
+          )
+        else if (selectedListingIds.contains(group.pins.first.listingId))
           PlacemarkMapObject(
-            mapId: MapObjectId("listing_${pin.listingId}_placemark"),
-            point: Point(latitude: pin.latitude, longitude: pin.longitude),
+            mapId:
+                MapObjectId("listing_${group.pins.first.listingId}_placemark"),
+            point: Point(
+              latitude: group.pins.first.latitude,
+              longitude: group.pins.first.longitude,
+            ),
             zIndex: 8,
             opacity: 1.0,
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: _listingPinIconDescriptor(pin, selected: true),
+                image: _listingPinIconDescriptor(
+                  group.pins.first,
+                  selected: true,
+                ),
                 anchor: const Offset(0.5, 0.5),
                 scale: 1.0,
               ),
@@ -972,19 +1026,23 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               if (_selectedUniversityMarker != null) {
                 setState(() => _selectedUniversityMarker = null);
               }
-              widget.onPinTap?.call(pin);
+              widget.onPinTap?.call(group.pins.first);
             },
           )
         else
           PlacemarkMapObject(
-            mapId: MapObjectId("listing_${pin.listingId}_placemark"),
-            point: Point(latitude: pin.latitude, longitude: pin.longitude),
+            mapId:
+                MapObjectId("listing_${group.pins.first.listingId}_placemark"),
+            point: Point(
+              latitude: group.pins.first.latitude,
+              longitude: group.pins.first.longitude,
+            ),
             zIndex: 2,
             opacity: 1.0,
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: _listingPinIconDescriptor(pin),
+                image: _listingPinIconDescriptor(group.pins.first),
                 anchor: const Offset(0.5, 0.5),
                 scale: 0.9,
               ),
@@ -993,10 +1051,60 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               if (_selectedUniversityMarker != null) {
                 setState(() => _selectedUniversityMarker = null);
               }
-              widget.onPinTap?.call(pin);
+              widget.onPinTap?.call(group.pins.first);
             },
           ),
     ];
+  }
+
+  PlacemarkMapObject _createListingGroupPlacemark(
+    _ListingPinGroup group, {
+    required bool selected,
+  }) {
+    final count = group.pins.length;
+    final listingTypeCode = _listingGroupTypeCode(group.pins);
+    _ensureListingGroupIconBytes(
+      count,
+      listingTypeCode: listingTypeCode,
+      selected: selected,
+    );
+    final groupIconBytes = _cachedListingGroupIconBytes[_listingGroupIconKey(
+      count,
+      listingTypeCode: listingTypeCode,
+      selected: selected,
+    )];
+    return PlacemarkMapObject(
+      mapId: MapObjectId("listing_group_${group.key}_placemark"),
+      point: Point(
+        latitude: group.latitude,
+        longitude: group.longitude,
+      ),
+      zIndex: selected ? 8 : 3,
+      opacity: 1.0,
+      consumeTapEvents: true,
+      icon: PlacemarkIcon.single(
+        PlacemarkIconStyle(
+          image: groupIconBytes == null
+              ? BitmapDescriptor.fromBytes(
+                  selected ? _cachedSelectedIconBytes! : _cachedIconBytes!,
+                )
+              : BitmapDescriptor.fromBytes(groupIconBytes),
+          anchor: const Offset(0.5, 0.5),
+          scale: selected ? 1.0 : 0.95,
+        ),
+      ),
+      onTap: (_, __) {
+        if (_selectedUniversityMarker != null) {
+          setState(() => _selectedUniversityMarker = null);
+        }
+        final onPinGroupTap = widget.onPinGroupTap;
+        if (onPinGroupTap != null) {
+          onPinGroupTap(group.pins);
+          return;
+        }
+        widget.onPinTap?.call(group.pins.first);
+      },
+    );
   }
 
   BitmapDescriptor _listingPinIconDescriptor(
@@ -1045,6 +1153,20 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return ListingTypeHelper.getAllCodes().contains(codeFromId)
         ? codeFromId
         : null;
+  }
+
+  String? _listingGroupTypeCode(List<ListingMapPin> pins) {
+    String? groupCode;
+    for (final pin in pins) {
+      final code = _resolveListingTypeCode(
+        listingTypeCode: pin.listingTypeCode,
+        listingTypeId: pin.listingTypeId,
+      );
+      if (code == null) return null;
+      groupCode ??= code;
+      if (groupCode != code) return null;
+    }
+    return groupCode;
   }
 
   Map<String, double>? _getCoordinates() {
@@ -1184,10 +1306,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   bool _mapTargetChanged(YandexMapWidget oldWidget) {
     if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
-    if (_universityMarkersChanged(
-      oldWidget.universityMarkers,
-      widget.universityMarkers,
-    )) {
+    if (widget.includeUniversityMarkersInCamera &&
+        _universityMarkersChanged(
+          oldWidget.universityMarkers,
+          widget.universityMarkers,
+        )) {
+      return true;
+    }
+    if (oldWidget.includeUniversityMarkersInCamera !=
+        widget.includeUniversityMarkersInCamera) {
       return true;
     }
     return oldWidget.latitude != widget.latitude ||
@@ -1210,6 +1337,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
     }
     return false;
+  }
+
+  bool _intListsEqual(List<int> a, List<int> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   bool _universityMarkersChanged(
@@ -1235,9 +1371,31 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return [
       for (final pin in widget.pins)
         Point(latitude: pin.latitude, longitude: pin.longitude),
-      for (final marker in widget.universityMarkers)
-        Point(latitude: marker.latitude, longitude: marker.longitude),
+      if (widget.includeUniversityMarkersInCamera)
+        for (final marker in widget.universityMarkers)
+          Point(latitude: marker.latitude, longitude: marker.longitude),
     ];
+  }
+
+  List<_ListingPinGroup> _groupListingPins(List<ListingMapPin> pins) {
+    final pinsByCoordinate = <String, List<ListingMapPin>>{};
+    for (final pin in pins) {
+      final key = _listingPinCoordinateKey(pin.latitude, pin.longitude);
+      pinsByCoordinate.putIfAbsent(key, () => <ListingMapPin>[]).add(pin);
+    }
+    return [
+      for (final entry in pinsByCoordinate.entries)
+        _ListingPinGroup(
+          key: entry.key,
+          latitude: entry.value.first.latitude,
+          longitude: entry.value.first.longitude,
+          pins: List<ListingMapPin>.unmodifiable(entry.value),
+        ),
+    ];
+  }
+
+  String _listingPinCoordinateKey(double latitude, double longitude) {
+    return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
   }
 
   bool get _canShowListingDetailTooltip {
@@ -1476,21 +1634,159 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return byteData!.buffer.asUint8List();
   }
 
+  void _syncListingGroupIconBytes() {
+    for (final group in _groupListingPins(widget.pins)) {
+      if (group.pins.length < 2) continue;
+      final listingTypeCode = _listingGroupTypeCode(group.pins);
+      _ensureListingGroupIconBytes(
+        group.pins.length,
+        listingTypeCode: listingTypeCode,
+      );
+      _ensureListingGroupIconBytes(
+        group.pins.length,
+        listingTypeCode: listingTypeCode,
+        selected: true,
+      );
+    }
+  }
+
+  void _ensureListingGroupIconBytes(
+    int count, {
+    String? listingTypeCode,
+    bool selected = false,
+  }) {
+    if (_cachedIconBytes == null || _cachedSelectedIconBytes == null) return;
+    final key = _listingGroupIconKey(
+      count,
+      listingTypeCode: listingTypeCode,
+      selected: selected,
+    );
+    if (_cachedListingGroupIconBytes.containsKey(key) ||
+        _pendingListingGroupIconKeys.contains(key)) {
+      return;
+    }
+
+    _pendingListingGroupIconKeys.add(key);
+    _createListingGroupIconBytes(
+      count,
+      listingTypeCode: listingTypeCode,
+      selected: selected,
+    ).then((bytes) {
+      _pendingListingGroupIconKeys.remove(key);
+      _cachedListingGroupIconBytes[key] = bytes;
+      if (mounted) setState(() {});
+    }).catchError((error) {
+      _pendingListingGroupIconKeys.remove(key);
+      logger.w("Could not create grouped listing pin icon: $error");
+    });
+  }
+
+  String _listingGroupIconKey(
+    int count, {
+    required String? listingTypeCode,
+    required bool selected,
+  }) {
+    return "${selected ? "selected" : "default"}_${listingTypeCode ?? "mixed"}_$count";
+  }
+
+  Future<Uint8List> _createListingGroupIconBytes(
+    int count, {
+    required bool selected,
+    String? listingTypeCode,
+  }) async {
+    const size = 112;
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    const center = Offset(size / 2, size / 2);
+    final radius = selected ? size * 0.39 : size * 0.36;
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: selected ? 0.35 : 0.24)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center + const Offset(0, 5), radius, shadowPaint);
+
+    final outlinePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius + (selected ? 8 : 6), outlinePaint);
+
+    final circlePaint = Paint()
+      ..color = selected ? AppColors.primary : Colors.black
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, circlePaint);
+
+    final label = count > 99 ? "99+" : count.toString();
+    final iconData = listingTypeCode == null
+        ? Icons.home_work_outlined
+        : ListingTypeHelper.getIcon(listingTypeCode);
+    final iconPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(iconData.codePoint),
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: label.length > 2 ? 34.5 : 42,
+          fontFamily: iconData.fontFamily,
+          package: iconData.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: label.length > 2 ? 27 : 34,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    const gap = 4.0;
+    final contentWidth = iconPainter.width + gap + textPainter.width;
+    final contentHeight = iconPainter.height > textPainter.height
+        ? iconPainter.height
+        : textPainter.height;
+    final contentLeft = (size - contentWidth) / 2;
+    final contentTop = (size - contentHeight) / 2;
+    iconPainter.paint(
+      canvas,
+      Offset(
+        contentLeft,
+        contentTop + (contentHeight - iconPainter.height) / 2,
+      ),
+    );
+    textPainter.paint(
+      canvas,
+      Offset(
+        contentLeft + iconPainter.width + gap,
+        contentTop + (contentHeight - textPainter.height) / 2,
+      ),
+    );
+
+    final picture = pictureRecorder.endRecording();
+    final image = await picture.toImage(size, size);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
   Widget _buildZoomControls() {
     final theme = Theme.of(context);
     final themeState = ThemeState();
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final foregroundColor = themeState.isBlueTheme
-        ? Colors.black
-        : theme.colorScheme.onSurface;
+    final foregroundColor =
+        themeState.isBlueTheme ? Colors.black : theme.colorScheme.onSurface;
     final borderRadius = BorderRadius.circular(999);
+    final safeAreaPadding = MediaQuery.paddingOf(context);
     const width = 48.0;
     const height = 176.0;
     final slider = _buildZoomSlider(foregroundColor);
 
     return Positioned(
-      right: 12,
-      bottom: 44 + MediaQuery.paddingOf(context).bottom,
+      left: safeAreaPadding.left + 8,
+      bottom: 44 + safeAreaPadding.bottom,
       child: SizedBox(
         width: width,
         height: height,

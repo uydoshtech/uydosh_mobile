@@ -1041,6 +1041,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                         ),
                         controller: _titleController,
                         textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.sentences,
                         maxLength: _titleMaxLength,
                         maxLines: 1,
                         onChanged: (_) {
@@ -1097,6 +1098,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
                             _descriptionController.text != _baselineDescription,
                           ),
                           controller: _descriptionController,
+                          textCapitalization: TextCapitalization.sentences,
                           minLines: _descriptionBaseLines +
                               (_isDescriptionExpanded
                                   ? _descriptionExpandedExtraLines

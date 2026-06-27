@@ -262,6 +262,12 @@ abstract class AppLocalizations {
   /// **'Later'**
   String get complete_profile_prompt_later;
 
+  /// No description provided for @group_join_requires_profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile before joining this group.'**
+  String get group_join_requires_profile;
+
   /// No description provided for @compatibility_title.
   ///
   /// In en, this message translates to:
@@ -2043,6 +2049,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).'**
   String get listing_description_template_roommate_needed_female;
+
+  /// No description provided for @listing_description_template_group_forming.
+  ///
+  /// In en, this message translates to:
+  /// **'Forming a group to rent together.\nLooking for: (1–2 people, gender/age).\nBudget per person: (amount).\nArea/metro: (where to search).\nFormat: (private/shared rooms).\nMove-in: (date + duration).\nImportant: (cleanliness/quiet/guests/pets).'**
+  String get listing_description_template_group_forming;
 
   /// No description provided for @listing_type_roommate_needed.
   ///
@@ -4653,6 +4665,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account has been restricted. You cannot delete your account while it is blocked. Please contact support.'**
   String get delete_account_blocked;
+
+  /// No description provided for @nav_my.
+  ///
+  /// In en, this message translates to:
+  /// **'My'**
+  String get nav_my;
+
+  /// No description provided for @my_hub_tab_groups.
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get my_hub_tab_groups;
+
+  /// No description provided for @my_hub_tab_bookmarks.
+  ///
+  /// In en, this message translates to:
+  /// **'My Bookmarks'**
+  String get my_hub_tab_bookmarks;
+
+  /// No description provided for @my_hub_tab_alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'My Alerts'**
+  String get my_hub_tab_alerts;
 
   /// No description provided for @favorites_title.
   ///

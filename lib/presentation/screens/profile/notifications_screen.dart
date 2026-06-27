@@ -58,7 +58,9 @@ import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_settings_c
 const bool _forceShowPushEnableCard = kIsWeb;
 
 class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+  const NotificationsScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -1191,12 +1193,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         !pushIsAuthorized;
 
     final topInset = MediaQuery.of(context).padding.top;
-    final contentTopPadding =
-        useLiquidGlassAppBar ? (topInset + kToolbarHeight + 8) : 8.0;
+    final contentTopPadding = widget.embedded
+        ? 8.0
+        : useLiquidGlassAppBar
+            ? (topInset + kToolbarHeight + 8)
+            : 8.0;
 
     return Scaffold(
-      extendBodyBehindAppBar: useLiquidGlassAppBar,
-      appBar: _buildAppBar(useLiquidGlassAppBar),
+      extendBodyBehindAppBar: !widget.embedded && useLiquidGlassAppBar,
+      appBar: widget.embedded ? null : _buildAppBar(useLiquidGlassAppBar),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1304,165 +1309,148 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                           _openAlertResults(a);
                                         },
                                   child: Padding(
-                                        padding: const EdgeInsets.all(14),
-                                        child: Stack(
-                                          clipBehavior: Clip.none,
+                                    padding: const EdgeInsets.all(14),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           children: [
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Tooltip(
-                                                  message: a.enabled
-                                                      ? L10n.get("disable")
-                                                      : L10n.get("enable"),
-                                                  child: InkResponse(
-                                                    radius: 22,
-                                                    onTap: _bulkWorking
-                                                        ? null
-                                                        : () {
-                                                            HapticFeedbackUtils
-                                                                .impact();
-                                                            _toggleEnabled(
-                                                              a,
-                                                              !a.enabled,
-                                                            );
-                                                          },
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              4),
-                                                      child: ThemeIcon(
-                                                        a.enabled
-                                                            ? Icons
-                                                                .notifications
-                                                            : Icons
-                                                                .notifications_off_outlined,
-                                                        color: ThemeState()
-                                                                .isBlueTheme
-                                                            ? (a.enabled
-                                                                ? Colors.white
-                                                                : Colors.white
-                                                                    .withValues(
-                                                                    alpha: 0.45,
-                                                                  ))
-                                                            : (a.enabled
-                                                                ? theme
-                                                                    .colorScheme
-                                                                    .primary
-                                                                : theme
-                                                                    .colorScheme
-                                                                    .onSurfaceVariant
-                                                                    .withValues(
-                                                                    alpha: 0.55,
-                                                                  )),
-                                                      ),
-                                                    ),
+                                            Tooltip(
+                                              message: a.enabled
+                                                  ? L10n.get("disable")
+                                                  : L10n.get("enable"),
+                                              child: InkResponse(
+                                                radius: 22,
+                                                onTap: _bulkWorking
+                                                    ? null
+                                                    : () {
+                                                        HapticFeedbackUtils
+                                                            .impact();
+                                                        _toggleEnabled(
+                                                          a,
+                                                          !a.enabled,
+                                                        );
+                                                      },
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(4),
+                                                  child: ThemeIcon(
+                                                    a.enabled
+                                                        ? Icons.notifications
+                                                        : Icons
+                                                            .notifications_off_outlined,
+                                                    color: ThemeState()
+                                                            .isBlueTheme
+                                                        ? (a.enabled
+                                                            ? Colors.white
+                                                            : Colors.white
+                                                                .withValues(
+                                                                alpha: 0.45,
+                                                              ))
+                                                        : (a.enabled
+                                                            ? theme.colorScheme
+                                                                .primary
+                                                            : theme.colorScheme
+                                                                .onSurfaceVariant
+                                                                .withValues(
+                                                                alpha: 0.55,
+                                                              )),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(
-                                                      0,
-                                                      4,
-                                                      48,
-                                                      4,
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          a.enabled
-                                                              ? L10n.get(
-                                                                  "notifications_alert_match_header",
-                                                                )
-                                                              : L10n.get(
-                                                                  "notifications_alert_match_header_paused",
-                                                                ),
-                                                          style: TextStyle(
-                                                            fontSize: 14.5,
-                                                            height: 1.2,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            letterSpacing: 0.1,
-                                                            color: theme
-                                                                .colorScheme
-                                                                .onSurfaceVariant,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 14),
-                                                        _summaryWidget(
-                                                            a, theme),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                                              ),
                                             ),
-                                            Positioned(
-                                              top: 0,
-                                              right: 0,
-                                              child:
-                                                  TheDotDropMenuButton<String>(
-                                                enabled: !_bulkWorking,
-                                                padding: EdgeInsets.zero,
-                                                visualScale: 0.8,
-                                                onSelected: (value) {
-                                                  if (value == "toggle") {
-                                                    _toggleEnabled(
-                                                        a, !a.enabled);
-                                                  } else if (value ==
-                                                      "delete") {
-                                                    _deleteAlertAnimated(
-                                                      a,
-                                                      index: alertIndex,
-                                                    );
-                                                  }
-                                                },
-                                                itemBuilder: (menuContext) {
-                                                  final isEnabled = a.enabled;
-                                                  return [
-                                                    PopupMenuItem(
-                                                      value: "toggle",
-                                                      child:
-                                                          UydoshPopupMenuItemRow(
-                                                        icon: isEnabled
-                                                            ? Icons
-                                                                .notifications_off_outlined
-                                                            : Icons
-                                                                .notifications_active_outlined,
-                                                        text: isEnabled
-                                                            ? L10n.get(
-                                                                "disable")
-                                                            : L10n.get(
-                                                                "enable"),
-                                                        enabled: true,
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                  0,
+                                                  4,
+                                                  48,
+                                                  4,
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      a.enabled
+                                                          ? L10n.get(
+                                                              "notifications_alert_match_header",
+                                                            )
+                                                          : L10n.get(
+                                                              "notifications_alert_match_header_paused",
+                                                            ),
+                                                      style: TextStyle(
+                                                        fontSize: 14.5,
+                                                        height: 1.2,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        letterSpacing: 0.1,
+                                                        color: theme.colorScheme
+                                                            .onSurfaceVariant,
                                                       ),
                                                     ),
-                                                    PopupMenuItem(
-                                                      value: "delete",
-                                                      child:
-                                                          UydoshPopupMenuItemRow(
-                                                        icon: Icons
-                                                            .delete_outline,
-                                                        text:
-                                                            L10n.get("delete"),
-                                                        enabled: true,
-                                                        destructive: true,
-                                                      ),
-                                                    ),
-                                                  ];
-                                                },
+                                                    const SizedBox(height: 14),
+                                                    _summaryWidget(a, theme),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: TheDotDropMenuButton<String>(
+                                            enabled: !_bulkWorking,
+                                            padding: EdgeInsets.zero,
+                                            visualScale: 0.8,
+                                            onSelected: (value) {
+                                              if (value == "toggle") {
+                                                _toggleEnabled(a, !a.enabled);
+                                              } else if (value == "delete") {
+                                                _deleteAlertAnimated(
+                                                  a,
+                                                  index: alertIndex,
+                                                );
+                                              }
+                                            },
+                                            itemBuilder: (menuContext) {
+                                              final isEnabled = a.enabled;
+                                              return [
+                                                PopupMenuItem(
+                                                  value: "toggle",
+                                                  child: UydoshPopupMenuItemRow(
+                                                    icon: isEnabled
+                                                        ? Icons
+                                                            .notifications_off_outlined
+                                                        : Icons
+                                                            .notifications_active_outlined,
+                                                    text: isEnabled
+                                                        ? L10n.get("disable")
+                                                        : L10n.get("enable"),
+                                                    enabled: true,
+                                                  ),
+                                                ),
+                                                PopupMenuItem(
+                                                  value: "delete",
+                                                  child: UydoshPopupMenuItemRow(
+                                                    icon: Icons.delete_outline,
+                                                    text: L10n.get("delete"),
+                                                    enabled: true,
+                                                    destructive: true,
+                                                  ),
+                                                ),
+                                              ];
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               );
 

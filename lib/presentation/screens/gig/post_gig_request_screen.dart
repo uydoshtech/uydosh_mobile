@@ -137,6 +137,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                     showErrorBorder: _showTitleError,
                     controller: _titleController,
                     textInputAction: TextInputAction.next,
+                    textCapitalization: TextCapitalization.sentences,
                     style: _fieldTextStyle(context),
                     decoration: UydoshPlateFieldDecoration.gigPostField(
                       context,
@@ -153,6 +154,7 @@ class _PostGigRequestScreenState extends State<PostGigRequestScreen> {
                   UydoshPlateTextFormField(
                     hintText: "",
                     controller: _descriptionController,
+                    textCapitalization: TextCapitalization.sentences,
                     maxLines: 5,
                     minLines: 4,
                     style: _fieldTextStyle(context),

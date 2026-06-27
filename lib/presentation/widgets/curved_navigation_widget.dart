@@ -240,7 +240,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
 
   // Build navigation items. Layout:
   //   0 = Housing
-  //   1 = Favorites while Services is hidden; Services when re-enabled
+  //   1 = My hub while Services is hidden; Services when re-enabled
   //   2 = Messages (auth required tab)
   //   3 = "+" launcher (never a selected tab; overlay handles taps)
   List<Widget> _buildNavigationItems(
@@ -254,8 +254,8 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
         palette,
         AppConfig.servicesFeatureEnabled
             ? Icons.handyman_outlined
-            : CupertinoIcons.suit_heart,
-        AppConfig.servicesFeatureEnabled ? "menu_gigs" : "menu_favorites",
+            : Icons.people_alt_outlined,
+        AppConfig.servicesFeatureEnabled ? "menu_gigs" : "nav_my",
         widget.currentIndex == 1,
       ),
       _buildConversationsItem(palette, themeState),
@@ -317,7 +317,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }
 
   /// Handle a tap on a bar position (when not caught by the "+" overlay).
-  ///   0 = Housing, 1 = Favorites/Services, 2 = Messages, 3 = "+" create launcher.
+  ///   0 = Housing, 1 = My/Services, 2 = Messages, 3 = "+" create launcher.
   void _handleNavigationTap(int barIndex, bool isAuthenticated) {
     switch (barIndex) {
       case 0:

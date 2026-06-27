@@ -11,7 +11,8 @@ class ProfileCompletionState extends ChangeNotifier {
   static final ProfileCompletionState _instance =
       ProfileCompletionState._internal();
 
-  bool _isProfileComplete = true; // Default to true to avoid showing badge initially
+  bool _isProfileComplete =
+      true; // Default to true to avoid showing badge initially
   bool _hasEssentialInfo = true;
   bool _isInitialized = false;
 
@@ -71,6 +72,11 @@ class ProfileCompletionState extends ChangeNotifier {
     return _calculateProfileCompletionPercent(profile);
   }
 
+  /// Whether all profile fields used by roommate/group matching are present.
+  static bool hasCompleteProfile(UserProfile profile) {
+    return _calculateProfileCompletionPercent(profile) >= 100;
+  }
+
   /// Update from user profile. Call when profile is loaded or updated.
   void updateFromProfile(UserProfile? profile) {
     if (profile == null) {
@@ -116,8 +122,7 @@ class ProfileCompletionState extends ChangeNotifier {
   /// Cache the Google OAuth photo URL used by [effectiveAvatarUrl].
   void updateGooglePhotoUrl(String? url) {
     final trimmed = url?.trim();
-    final normalized =
-        trimmed == null || trimmed.isEmpty ? null : trimmed;
+    final normalized = trimmed == null || trimmed.isEmpty ? null : trimmed;
     if (_cachedGooglePhotoUrl == normalized) return;
     _cachedGooglePhotoUrl = normalized;
     notifyListeners();

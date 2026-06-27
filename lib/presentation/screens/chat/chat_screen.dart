@@ -2673,7 +2673,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!isTarget && !isHighlighted) return child;
 
     Widget result = child;
-    if (isHighlighted) {
+    final isListingShare =
+        ListingShareMessageCodec.parse(message.content) != null;
+    if (isHighlighted && !isListingShare) {
       result = DecoratedBox(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),

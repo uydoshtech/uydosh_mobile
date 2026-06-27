@@ -94,6 +94,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get complete_profile_prompt_later => 'Keyinroq';
 
   @override
+  String get group_join_requires_profile =>
+      'Bu guruhga qo\'shilishdan oldin profilingizni to\'ldiring.';
+
+  @override
   String get compatibility_title => 'Siz bilan moslik:';
 
   @override
@@ -1091,6 +1095,10 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get listing_description_template_roommate_needed_female =>
       'Qo‘shni qiz qidiryapman.\nFormat: (xonada 1–2).\nKim yashaydi: (necha kishi).\nSharoit: (xo‘jayinsiz/xo‘jayinli), (alohida/umumiy xona).\nMuddat: (kirish) + (qancha).';
+
+  @override
+  String get listing_description_template_group_forming =>
+      'Guruh bo‘lib ijara olish uchun odam yig‘yapmiz.\nKim kerak: (1–2 kishi, jins/yosh).\nHar kishi budjeti: (summa).\nHudud/metro: (qayerdan qidiramiz).\nFormat: (alohida/umumiy xonalar).\nKirish: (sana + muddat).\nMuhim: (tozalik/tinchlik/mehmon/uy hayvoni).';
 
   @override
   String get listing_type_roommate_needed => 'Xonadosh qidiraman';
@@ -2508,6 +2516,18 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get delete_account_blocked =>
       'Hisobingiz cheklangan. Bloklangan paytda hisobni o\'chirish mumkin emas. Qo\'llab-quvvatlash xizmatiga murojaat qiling.';
+
+  @override
+  String get nav_my => 'Mening';
+
+  @override
+  String get my_hub_tab_groups => 'Guruhlar';
+
+  @override
+  String get my_hub_tab_bookmarks => 'Mening xatcho\'plarim';
+
+  @override
+  String get my_hub_tab_alerts => 'Mening ogohlantirishlarim';
 
   @override
   String get favorites_title => 'Sevimlilar';

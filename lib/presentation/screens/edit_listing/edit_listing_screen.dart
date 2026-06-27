@@ -1694,6 +1694,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                             maxLength: _titleMaxLength,
                             maxLines: 1,
                             textInputAction: TextInputAction.next,
+                            textCapitalization: TextCapitalization.sentences,
                             buildCounter: _buildTitleCounter,
                           ),
                         ),
@@ -1714,6 +1715,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                               hintText: L10n.get("listing_description_hint"),
                               showErrorBorder: _showDescriptionError,
                               controller: _descriptionController,
+                              textCapitalization: TextCapitalization.sentences,
                               decoration: UydoshPlateFieldDecoration.forHint(
                                 context,
                                 hintText: L10n.get(

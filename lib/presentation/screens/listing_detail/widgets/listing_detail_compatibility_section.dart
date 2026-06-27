@@ -1206,6 +1206,7 @@ class _ListingDetailCompatibilitySectionState
     if (report == null || report.isEmpty) {
       return const SizedBox.shrink();
     }
+    final readableReport = _formatReportForReadability(report);
 
     final accent = ListingDetailThemeHelper.locationTextColor;
     return Container(
@@ -1246,7 +1247,7 @@ class _ListingDetailCompatibilitySectionState
           Text.rich(
             TextSpan(
               children: _buildReportSpans(
-                report,
+                readableReport,
                 TextStyle(
                   fontSize: 13,
                   height: 1.4,
@@ -1258,6 +1259,58 @@ class _ListingDetailCompatibilitySectionState
         ],
       ),
     );
+  }
+
+  String _formatReportForReadability(String text) {
+    final normalized = text
+        .replaceAll(RegExp(r"\r\n?"), "\n")
+        .replaceAll(RegExp(r"[ \t]+\n"), "\n")
+        .replaceAll(RegExp(r"\n[ \t]+"), "\n")
+        .replaceAll(RegExp(r"\n{3,}"), "\n\n")
+        .trim();
+    if (normalized.contains(RegExp(r"\n\s*\n"))) {
+      return normalized;
+    }
+
+    final sentences = _splitReportSentences(normalized);
+    if (sentences.length <= 1) {
+      return normalized;
+    }
+    return sentences.join("\n\n");
+  }
+
+  List<String> _splitReportSentences(String text) {
+    final sentences = <String>[];
+    var start = 0;
+
+    for (var i = 0; i < text.length; i++) {
+      final char = text[i];
+      if (char != "." && char != "!" && char != "?") {
+        continue;
+      }
+
+      final next = i + 1;
+      if (next < text.length && text[next].trim().isNotEmpty) {
+        continue;
+      }
+
+      final sentence = text.substring(start, next).trim();
+      if (sentence.isNotEmpty) {
+        sentences.add(sentence);
+      }
+
+      start = next;
+      while (start < text.length && text[start].trim().isEmpty) {
+        start++;
+      }
+      i = start - 1;
+    }
+
+    final trailing = text.substring(start).trim();
+    if (trailing.isNotEmpty) {
+      sentences.add(trailing);
+    }
+    return sentences;
   }
 
   /// Splits a report into spans, rendering names the backend wrapped in

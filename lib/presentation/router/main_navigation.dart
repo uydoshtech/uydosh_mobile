@@ -21,9 +21,6 @@ import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
-import "package:uy_dosh/base/utils/gig_navigation.dart";
-import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
-    show GigPublishMode;
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -32,11 +29,12 @@ import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
+import "package:uy_dosh/presentation/router/create_choice_sheet.dart";
 import "package:uy_dosh/presentation/router/main_navigation_widgets.dart";
-import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
+import "package:uy_dosh/presentation/screens/my/my_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
@@ -307,7 +305,7 @@ class MainNavigationState extends State<MainNavigation>
 
       // Auth-gate the protected tabs. Logical indices:
       //   0 = Housing
-      //   1 = Favorites while Services is hidden; Services when re-enabled
+      //   1 = My hub while Services is hidden; Services when re-enabled
       //   2 = Messages (auth required)
       if (!_isAuthenticated && mounted && _currentIndex == 2) {
         debugPrint(
@@ -655,7 +653,7 @@ class MainNavigationState extends State<MainNavigation>
   //     once, but data-heavy tabs receive a visibility flag so they can defer
   //     their initial fetch while IndexedStack keeps them mounted off-screen.
   //
-  // Logical indices: 0=Housing, 1=Favorites/Services, 2=Messages.
+  // Logical indices: 0=Housing, 1=My/Services, 2=Messages.
   // Create flows are pushed routes via "+" / drawer, not tabs.
   // ---------------------------------------------------------------------------
 
@@ -666,7 +664,7 @@ class MainNavigationState extends State<MainNavigation>
       HomeScreen(isHomeTabActive: _currentIndex == 0),
       AppConfig.servicesFeatureEnabled
           ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)
-          : FavoritesScreen(embedded: true, tabVisible: _currentIndex == 1),
+          : MyHubScreen(embedded: true, tabVisible: _currentIndex == 1),
       MessagesInboxScreen(
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
@@ -692,113 +690,7 @@ class MainNavigationState extends State<MainNavigation>
       _redirectToAuthWizard();
       return;
     }
-    showAppBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        final theme = Theme.of(sheetContext);
-        final bottomInset = MediaQuery.paddingOf(sheetContext).bottom;
-        return GlassBottomSheetSurface(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, bottomInset + 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.18,
-                        ),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Text(
-                      L10n.get("create_choice_title"),
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  CreateChoiceTile(
-                    emoji: "👥",
-                    iconColor: const Color(0xFFF4C9CF),
-                    title: L10n.get("listing_type_roommate_needed"),
-                    subtitle: L10n.get(
-                      "create_choice_roommate_needed_subtitle",
-                    ),
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(sheetContext).pop();
-                      if (!mounted) return;
-                      context.pushCreateListing(listingTypeId: 2);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  CreateChoiceTile(
-                    emoji: "🤝",
-                    iconColor: const Color(0xFFF6C966),
-                    title: L10n.get("create_choice_group_forming"),
-                    subtitle: L10n.get(
-                      "create_choice_group_forming_subtitle",
-                    ),
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(sheetContext).pop();
-                      if (!mounted) return;
-                      context.pushCreateGroup();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  CreateChoiceTile(
-                    emoji: "🏠",
-                    iconColor: const Color(0xFFB9DCEC),
-                    title: L10n.get("listing_type_room_needed"),
-                    subtitle: L10n.get(
-                      "create_choice_room_needed_subtitle",
-                    ),
-                    onTap: () {
-                      HapticFeedbackUtils.impact();
-                      Navigator.of(sheetContext).pop();
-                      if (!mounted) return;
-                      context.pushCreateListing(listingTypeId: 1);
-                    },
-                  ),
-                  if (AppConfig.servicesFeatureEnabled) ...[
-                    const SizedBox(height: 12),
-                    CreateChoiceTile(
-                      emoji: "🛠",
-                      iconColor: const Color(0xFFC6D8C2),
-                      title: L10n.get("create_choice_service"),
-                      subtitle: L10n.get("create_choice_service_subtitle"),
-                      onTap: () {
-                        HapticFeedbackUtils.impact();
-                        Navigator.of(sheetContext).pop();
-                        if (!mounted) return;
-                        context.pushPublishGig(
-                          initialMode: GigPublishMode.service,
-                        );
-                      },
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    unawaited(showCreateChoiceSheet(context));
   }
 
   /// Method to navigate to a specific index (can be called from outside).
@@ -842,7 +734,7 @@ class MainNavigationState extends State<MainNavigation>
         return HomeListingsAppBarTitle(titleStyle: titleStyle);
       case 1:
         return L10n.text(
-          AppConfig.servicesFeatureEnabled ? "menu_gigs" : "favorites_title",
+          AppConfig.servicesFeatureEnabled ? "menu_gigs" : "nav_my",
           style: titleStyle,
         );
       case 2:

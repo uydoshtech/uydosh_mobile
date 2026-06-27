@@ -14,7 +14,6 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/gig_navigation.dart";
-import "package:uy_dosh/base/utils/listing_navigation.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/domain/models/gig/gig_request.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -25,7 +24,7 @@ import "package:uy_dosh/presentation/blocs/gig/gig_requests_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_event.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
-import "package:uy_dosh/presentation/screens/favorites/favorites_tab_ribbon.dart";
+import "package:uy_dosh/presentation/router/create_choice_sheet.dart";
 import "package:uy_dosh/presentation/screens/gig/publish_gig_screen.dart"
     show GigPublishMode;
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
@@ -41,11 +40,12 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
-import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class UserListingsScreen extends StatelessWidget {
-  const UserListingsScreen({super.key});
+  const UserListingsScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class UserListingsScreen extends StatelessWidget {
         BlocProvider(create: (_) => GigOffersBloc(getIt<IGigService>())),
         BlocProvider(create: (_) => GigRequestsBloc(getIt<IGigService>())),
       ],
-      child: const _UserListingsScreenBody(),
+      child: _UserListingsScreenBody(embedded: embedded),
     );
   }
 }
@@ -100,7 +100,9 @@ class _UserListingsData {
 }
 
 class _UserListingsScreenBody extends StatefulWidget {
-  const _UserListingsScreenBody();
+  const _UserListingsScreenBody({required this.embedded});
+
+  final bool embedded;
 
   @override
   State<_UserListingsScreenBody> createState() =>
@@ -134,10 +136,10 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
 
     final scrollListenerData =
         ScrollUtils.createThrottledScrollListenerWithReset(
-          scrollController: _listingsScrollController,
-          onLoadMore: _loadMoreListings,
-          shouldLoadMore: _shouldLoadMoreListings,
-        );
+      scrollController: _listingsScrollController,
+      onLoadMore: _loadMoreListings,
+      shouldLoadMore: _shouldLoadMoreListings,
+    );
     _throttledListingsScrollListener = scrollListenerData.listener;
     _resetListingsScrollLoadingState = scrollListenerData.resetLoadingState;
     _listingsScrollController.addListener(_throttledListingsScrollListener);
@@ -188,13 +190,13 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
     final signal = getIt<GigHubFeedsRefreshNotifier>().lastSignal;
     if (signal.refreshServices) {
       context.read<GigOffersBloc>().add(
-        FetchGigOffers(refresh: true, providerUserId: userId),
-      );
+            FetchGigOffers(refresh: true, providerUserId: userId),
+          );
     }
     if (signal.refreshTasks) {
       context.read<GigRequestsBloc>().add(
-        FetchGigRequests(refresh: true, clientUserId: userId),
-      );
+            FetchGigRequests(refresh: true, clientUserId: userId),
+          );
     }
   }
 
@@ -230,14 +232,14 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
 
   void _loadMoreListings() {
     context.read<ListingsBloc>().add(
-      const ListingsEvent.fetchUserListings(isRefresh: false),
-    );
+          const ListingsEvent.fetchUserListings(isRefresh: false),
+        );
   }
 
   Future<void> _refreshListings() async {
     context.read<ListingsBloc>().add(
-      const ListingsEvent.fetchUserListings(isRefresh: true),
-    );
+          const ListingsEvent.fetchUserListings(isRefresh: true),
+        );
   }
 
   Future<void> _refreshServices() async {
@@ -300,10 +302,10 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
     final nextIndex = hasListings
         ? 0
         : hasServices
-        ? 1
-        : hasTasks
-        ? 2
-        : 0;
+            ? 1
+            : hasTasks
+                ? 2
+                : 0;
     if (nextIndex != _tabController.index) {
       _tabController.index = nextIndex;
       setState(() {});
@@ -312,102 +314,103 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
 
   @override
   Widget build(BuildContext context) {
+    final body = MultiBlocListener(
+      listeners: [
+        BlocListener<ListingsBloc, ListingsState>(
+          listener: (_, __) {
+            _resetListingsScrollLoadingState();
+            _tryAutoSelectInitialTab();
+          },
+        ),
+        BlocListener<GigOffersBloc, GigOffersState>(
+          listener: (_, __) => _tryAutoSelectInitialTab(),
+        ),
+        BlocListener<GigRequestsBloc, GigRequestsState>(
+          listener: (_, __) => _tryAutoSelectInitialTab(),
+        ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Services/tasks are temporarily removed from this screen.
+          // ListenableBuilder(
+          //   listenable: LanguageState(),
+          //   builder: (context, _) {
+          //     return AnimatedBuilder(
+          //       animation: _tabController,
+          //       builder: (context, _) {
+          //         return FavoritesTabRibbon(
+          //           tabController: _tabController,
+          //           listingsLabel: L10n.get("favorites_tab_listings"),
+          //           servicesLabel: L10n.get("favorites_tab_services"),
+          //           tasksLabel: L10n.get("favorites_tab_tasks"),
+          //         );
+          //       },
+          //     );
+          //   },
+          // ),
+          // const SizedBox(height: 6),
+          Expanded(
+            child: _buildListingsTab(),
+            // child: TabBarView(
+            //   controller: _tabController,
+            //   children: [
+            //     _buildListingsTab(),
+            //     _buildServicesTab(),
+            //     _buildTasksTab(),
+            //   ],
+            // ),
+          ),
+        ],
+      ),
+    );
+
+    if (widget.embedded) {
+      return body;
+    }
+
     return Scaffold(
       appBar: CommonAppBar(
         title: L10n.get("menu_my_listings"),
         showBackButton: true,
         liquidGlass: true,
       ),
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<ListingsBloc, ListingsState>(
-            listener: (_, __) {
-              _resetListingsScrollLoadingState();
-              _tryAutoSelectInitialTab();
-            },
-          ),
-          BlocListener<GigOffersBloc, GigOffersState>(
-            listener: (_, __) => _tryAutoSelectInitialTab(),
-          ),
-          BlocListener<GigRequestsBloc, GigRequestsState>(
-            listener: (_, __) => _tryAutoSelectInitialTab(),
-          ),
-        ],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Services/tasks are temporarily removed from this screen.
-            // ListenableBuilder(
-            //   listenable: LanguageState(),
-            //   builder: (context, _) {
-            //     return AnimatedBuilder(
-            //       animation: _tabController,
-            //       builder: (context, _) {
-            //         return FavoritesTabRibbon(
-            //           tabController: _tabController,
-            //           listingsLabel: L10n.get("favorites_tab_listings"),
-            //           servicesLabel: L10n.get("favorites_tab_services"),
-            //           tasksLabel: L10n.get("favorites_tab_tasks"),
-            //         );
-            //       },
-            //     );
-            //   },
-            // ),
-            // const SizedBox(height: 6),
-            Expanded(
-              child: _buildListingsTab(),
-              // child: TabBarView(
-              //   controller: _tabController,
-              //   children: [
-              //     _buildListingsTab(),
-              //     _buildServicesTab(),
-              //     _buildTasksTab(),
-              //   ],
-              // ),
-            ),
-          ],
-        ),
-      ),
+      body: body,
     );
   }
 
   Widget _buildListingsTab() {
     return BlocSelector<ListingsBloc, ListingsState, _UserListingsData>(
-      selector:
-          (state) => state.map(
-            initial:
-                (_) => const _UserListingsData(
-                  isLoading: false,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: [],
-                  hasMore: false,
-                ),
-            loading:
-                (_) => const _UserListingsData(
-                  isLoading: true,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: [],
-                  hasMore: false,
-                ),
-            loaded:
-                (loadedState) => _UserListingsData(
-                  isLoading: false,
-                  hasError: false,
-                  errorMessage: "",
-                  listings: loadedState.listings,
-                  hasMore: loadedState.hasMore,
-                ),
-            error:
-                (errorState) => _UserListingsData(
-                  isLoading: false,
-                  hasError: true,
-                  errorMessage: errorState.message,
-                  listings: [],
-                  hasMore: false,
-                ),
-          ),
+      selector: (state) => state.map(
+        initial: (_) => const _UserListingsData(
+          isLoading: false,
+          hasError: false,
+          errorMessage: "",
+          listings: [],
+          hasMore: false,
+        ),
+        loading: (_) => const _UserListingsData(
+          isLoading: true,
+          hasError: false,
+          errorMessage: "",
+          listings: [],
+          hasMore: false,
+        ),
+        loaded: (loadedState) => _UserListingsData(
+          isLoading: false,
+          hasError: false,
+          errorMessage: "",
+          listings: loadedState.listings,
+          hasMore: loadedState.hasMore,
+        ),
+        error: (errorState) => _UserListingsData(
+          isLoading: false,
+          hasError: true,
+          errorMessage: errorState.message,
+          listings: [],
+          hasMore: false,
+        ),
+      ),
       builder: (context, data) {
         if (data.isLoading) {
           return const Center(child: HouseLoadingIndicator());
@@ -473,8 +476,8 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
           return _buildGigErrorState(
             message: state.message,
             onRetry: () => context.read<GigOffersBloc>().add(
-              FetchGigOffers(providerUserId: _userId),
-            ),
+                  FetchGigOffers(providerUserId: _userId),
+                ),
           );
         }
         if (state is GigOffersLoaded) {
@@ -517,8 +520,8 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
                     onConfirmDelete: (s) => s.deleteOffer(offer.id),
                     onRemovedFromList: () {
                       context.read<GigOffersBloc>().add(
-                        RemoveGigOfferFromList(offer.id),
-                      );
+                            RemoveGigOfferFromList(offer.id),
+                          );
                     },
                     child: GigOfferTile(offer: offer),
                   );
@@ -552,8 +555,8 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
           return _buildGigErrorState(
             message: state.message,
             onRetry: () => context.read<GigRequestsBloc>().add(
-              FetchGigRequests(clientUserId: _userId),
-            ),
+                  FetchGigRequests(clientUserId: _userId),
+                ),
           );
         }
         if (state is GigRequestsLoaded) {
@@ -589,7 +592,7 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
                     builder: (context, _) {
                       final canSwipe =
                           UserListingState().isOwner(request.clientUserId) &&
-                          request.status == GigRequestStatus.open;
+                              request.status == GigRequestStatus.open;
                       return GigFeedTileSwipeWrapper(
                         entityId: request.id,
                         enabled: canSwipe,
@@ -604,19 +607,19 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
                         onConfirmDelete: (s) => s.cancelRequest(request.id),
                         onRemovedFromList: () {
                           context.read<GigRequestsBloc>().add(
-                            RemoveGigRequestFromList(request.id),
-                          );
+                                RemoveGigRequestFromList(request.id),
+                              );
                         },
                         child: GigRequestTile(
                           request: request,
                           onDetailClosed: (feedNeedsRefresh) {
                             if (!feedNeedsRefresh || _userId == null) return;
                             context.read<GigRequestsBloc>().add(
-                              FetchGigRequests(
-                                refresh: true,
-                                clientUserId: _userId,
-                              ),
-                            );
+                                  FetchGigRequests(
+                                    refresh: true,
+                                    clientUserId: _userId,
+                                  ),
+                                );
                           },
                         ),
                       );
@@ -661,8 +664,7 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
                     builder: (context) {
                       final label = Theme.of(context).textTheme.labelLarge;
                       final baseSize = label?.fontSize ?? 14;
-                      final textStyle =
-                          label?.copyWith(
+                      final textStyle = label?.copyWith(
                             fontSize: baseSize * 1.2,
                             height: 1.0,
                           ) ??
@@ -672,7 +674,9 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
                             fontWeight: FontWeight.w500,
                           );
                       return PrimaryButtonFactory.iconText(
-                        onPressed: () => context.pushCreateListing(),
+                        onPressed: () {
+                          unawaited(showCreateChoiceSheet(context));
+                        },
                         icon: Icons.add,
                         text: L10n.get("create_listing_button"),
                         width: double.infinity,

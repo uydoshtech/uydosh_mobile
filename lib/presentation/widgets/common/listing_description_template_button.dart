@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_assistant.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -18,7 +19,7 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
 
   final TextEditingController controller;
 
-  /// App convention: 1 = room needed, 2 = roommate needed.
+  /// App convention: 1 = room needed, 2 = roommate needed, 3 = group forming.
   final int listingTypeId;
 
   /// App convention: 1 = male, 2 = female.
@@ -26,13 +27,17 @@ class ListingDescriptionTemplateButton extends StatelessWidget {
   final bool inlineWithCounter;
 
   String _templateKey() {
-    final isRoomNeeded = listingTypeId == 1;
-    if (isRoomNeeded) {
-      return "listing_description_template_room_needed";
+    switch (listingTypeId) {
+      case ListingTypeIds.roomNeeded:
+        return "listing_description_template_room_needed";
+      case ListingTypeIds.groupForming:
+        return "listing_description_template_group_forming";
+      case ListingTypeIds.roommateNeeded:
+      default:
+        return gender == 2
+            ? "listing_description_template_roommate_needed_female"
+            : "listing_description_template_roommate_needed_male";
     }
-    return gender == 2
-        ? "listing_description_template_roommate_needed_female"
-        : "listing_description_template_roommate_needed_male";
   }
 
   void _insertTemplate(BuildContext context) {

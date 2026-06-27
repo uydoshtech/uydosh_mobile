@@ -94,6 +94,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get complete_profile_prompt_later => 'Позже';
 
   @override
+  String get group_join_requires_profile =>
+      'Заполните профиль, чтобы вступить в эту группу.';
+
+  @override
   String get compatibility_title => 'Совместимость с вами:';
 
   @override
@@ -1075,6 +1079,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get listing_description_template_roommate_needed_female =>
       'Ищу соседку.\nФормат: (1–2 в комнате).\nКто уже живёт: (сколько человек).\nУсловия: (с хозяйкой/без), (отдельная/общая комната).\nСрок: (заезд) + (на сколько).';
+
+  @override
+  String get listing_description_template_group_forming =>
+      'Собираем группу для совместной аренды.\nКого ищем: (1–2 человека, пол/возраст).\nБюджет на человека: (сумма).\nРайон/метро: (где ищем).\nФормат: (отдельные/общие комнаты).\nЗаезд: (дата + срок).\nВажно: (чистота/тишина/гости/животные).';
 
   @override
   String get listing_type_roommate_needed => 'Ищу соседа';
@@ -2479,6 +2487,18 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get delete_account_blocked =>
       'Ваш аккаунт ограничен. Вы не можете удалить аккаунт, пока он заблокирован. Обратитесь в службу поддержки.';
+
+  @override
+  String get nav_my => 'Моё';
+
+  @override
+  String get my_hub_tab_groups => 'Группы';
+
+  @override
+  String get my_hub_tab_bookmarks => 'Мои закладки';
+
+  @override
+  String get my_hub_tab_alerts => 'Мои оповещения';
 
   @override
   String get favorites_title => 'Избранное';

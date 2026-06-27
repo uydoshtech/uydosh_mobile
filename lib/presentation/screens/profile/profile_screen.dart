@@ -41,6 +41,8 @@ import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/domain/services/gamification_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
+import "package:uy_dosh/presentation/router/main_navigation.dart"
+    show mainNavigationKey;
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 // import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_header_section.dart";
@@ -955,7 +957,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () {
               HapticFeedbackUtils.impact();
               if (isSessionExpired) {
-                LogoutService().performLogout();
+                unawaited(
+                  _performProfileLogout(context, showSuccessToast: false),
+                );
               } else {
                 context.read<CurrentUserProfileBloc>().add(
                       const CurrentUserProfileEvent.fetchProfile(),
@@ -1019,15 +1023,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    CommonConfirmationDialogs.showLogoutConfirmation(
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final confirmed = await CommonConfirmationDialogs.showLogoutConfirmation(
       context: context,
-      onConfirm: () async {
-        final message = L10n.get("logout_success");
-        ToastTheme.showSuccess(context, message: message);
-        await LogoutService().performLogout();
-      },
     );
+    if (confirmed != true || !context.mounted) return;
+    await _performProfileLogout(context);
+  }
+
+  Future<void> _performProfileLogout(
+    BuildContext context, {
+    bool showSuccessToast = true,
+  }) async {
+    if (showSuccessToast) {
+      ToastTheme.showSuccess(context, message: L10n.get("logout_success"));
+    }
+
+    await LogoutService().performLogout();
+    if (!context.mounted) return;
+
+    mainNavigationKey.currentState?.navigateToIndex(0);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.popUntil((route) => route.isFirst);
+    }
   }
 
   void _showDeleteAccountDialog(BuildContext context) {

@@ -56,6 +56,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.embedded = false,
     this.initialListings = const [],
     this.initialTotal,
+    this.embeddedViewToggleBottom = 168.0,
   });
 
   final int listingTypeId;
@@ -75,6 +76,7 @@ class SearchResultsMapScreen extends StatefulWidget {
   final bool embedded;
   final List<Listing> initialListings;
   final int? initialTotal;
+  final double embeddedViewToggleBottom;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -88,6 +90,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _isLoading = true;
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
+  List<ListingMapPin> _selectedPinGroup = const [];
   UniversityMapMarker? _selectedUniversityMarker;
   List<UniversityMapMarker> _universityMarkers = const [];
   bool _showDistrictLayer = false;
@@ -106,16 +109,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   @override
   void initState() {
     super.initState();
-    _listingTypeId = widget.listingTypeId;
-    _locationId = widget.locationId;
-    _subwayStationId = widget.subwayStationId;
-    _subwayStationIds = List<int>.from(widget.subwayStationIds);
-    _subwayLineId = widget.subwayLineId;
-    _gender = widget.gender;
-    _minPrice = widget.minPrice;
-    _maxPrice = widget.maxPrice;
-    _privateRoom = widget.privateRoom;
-    _withPhoto = widget.withPhoto;
+    _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
       final initialResult = _resultFromListings(
         widget.initialListings,
@@ -126,6 +120,66 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     }
     _loadResults(showLoading: false);
     _loadCurrentUserUniversityMarker();
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchResultsMapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_widgetFiltersChanged(oldWidget)) return;
+
+    _syncFiltersFromWidget();
+    _selectedPin = null;
+    _selectedPinGroup = const [];
+    _selectedUniversityMarker = null;
+    _loadResults();
+  }
+
+  void _syncFiltersFromWidget() {
+    _listingTypeId = widget.listingTypeId;
+    _locationId = widget.locationId;
+    _subwayStationId = widget.subwayStationId;
+    _subwayStationIds = List<int>.from(widget.subwayStationIds);
+    _subwayLineId = widget.subwayLineId;
+    _gender = widget.gender;
+    _minPrice = widget.minPrice;
+    _maxPrice = widget.maxPrice;
+    _privateRoom = widget.privateRoom;
+    _withPhoto = widget.withPhoto;
+  }
+
+  bool _widgetFiltersChanged(SearchResultsMapScreen oldWidget) {
+    return oldWidget.listingTypeId != widget.listingTypeId ||
+        oldWidget.locationId != widget.locationId ||
+        oldWidget.subwayStationId != widget.subwayStationId ||
+        !_intListsEqual(oldWidget.subwayStationIds, widget.subwayStationIds) ||
+        oldWidget.subwayLineId != widget.subwayLineId ||
+        oldWidget.gender != widget.gender ||
+        oldWidget.minPrice != widget.minPrice ||
+        oldWidget.maxPrice != widget.maxPrice ||
+        oldWidget.privateRoom != widget.privateRoom ||
+        oldWidget.withPhoto != widget.withPhoto;
+  }
+
+  bool _matchesCurrentFilters(SearchBottomSheetResult result) {
+    return _listingTypeId == result.listingTypeId &&
+        _locationId == result.locationId &&
+        _subwayStationId == result.subwayStationId &&
+        _intListsEqual(_subwayStationIds, result.subwayStationIds) &&
+        _subwayLineId == result.subwayLineId &&
+        _gender == result.gender &&
+        _minPrice == result.minPrice &&
+        _maxPrice == result.maxPrice &&
+        _privateRoom == result.privateRoom &&
+        _withPhoto == result.withPhoto;
+  }
+
+  bool _intListsEqual(List<int> a, List<int> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   Future<void> _loadCurrentUserUniversityMarker() async {
@@ -180,6 +234,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _isLoading = true;
         _loadError = null;
         _selectedPin = null;
+        _selectedPinGroup = const [];
         _selectedUniversityMarker = null;
       });
     }
@@ -192,6 +247,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _loadError = null;
         _isLoading = false;
         _selectedPin = _autoSelectedPin(result);
+        _selectedPinGroup = const [];
       });
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
@@ -257,6 +313,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       primaryLabelKey: "apply",
       primaryIcon: Icons.check,
       onApply: (result) {
+        if (_matchesCurrentFilters(result)) return;
+
         setState(() {
           _listingTypeId = result.listingTypeId;
           _locationId = result.locationId;
@@ -269,6 +327,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _privateRoom = result.privateRoom;
           _withPhoto = result.withPhoto;
           _selectedPin = null;
+          _selectedPinGroup = const [];
           _selectedUniversityMarker = null;
         });
         _loadResults();
@@ -634,27 +693,44 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
+      selectedPinGroup: _selectedPinGroup,
       selectedUniversityMarker: _selectedUniversityMarker,
       universityMarkers: _universityMarkers,
       showDistrictLayer: _showDistrictLayer,
+      placeViewToggleAtBottom: widget.embedded,
+      viewToggleBottom: widget.embeddedViewToggleBottom,
       onOpenFilters: _openFilters,
       onOpenFeedView: _openFeedView,
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
       },
-      onClearSelectedPin: () => setState(() => _selectedPin = null),
+      onClearSelectedPin: () {
+        setState(() {
+          _selectedPin = null;
+          _selectedPinGroup = const [];
+        });
+      },
       onClearSelectedUniversityMarker: () {
         setState(() => _selectedUniversityMarker = null);
       },
       onSelectPin: (pin) {
         setState(() {
           _selectedPin = pin;
+          _selectedPinGroup = const [];
+          _selectedUniversityMarker = null;
+        });
+      },
+      onSelectPinGroup: (pins) {
+        setState(() {
+          _selectedPin = null;
+          _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
           _selectedUniversityMarker = null;
         });
       },
       onSelectUniversityMarker: (marker) {
         setState(() {
           _selectedPin = null;
+          _selectedPinGroup = const [];
           _selectedUniversityMarker = marker;
         });
       },

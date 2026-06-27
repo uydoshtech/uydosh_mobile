@@ -454,7 +454,7 @@ class _ListingGroupMemberProfilesSheetState
 
     if (showPendingRequests) {
       height += _sheetPendingSectionHeaderHeight;
-      if (_loadingRequests || _pendingRequests.isEmpty) {
+      if (_loadingRequests) {
         height += _sheetLoadingRequestsHeight;
       } else {
         height += _estimatedPendingRequestCardsHeight();
@@ -790,10 +790,13 @@ class _ListingGroupMemberProfilesSheetState
       builder: (context, constraints) {
         final scheme = Theme.of(context).colorScheme;
         final sortedMembers = _sortedMembers;
+        final pendingRequestCount =
+            widget.groupListingDetail?.groupContext?.pendingJoinRequestCount;
+        final shouldShowPendingLoader = _loadingRequests &&
+            !_hasCheckedRequests &&
+            (pendingRequestCount == null || pendingRequestCount > 0);
         final showPendingRequests = widget.isOwner &&
-            (_loadingRequests ||
-                _pendingRequests.isNotEmpty ||
-                _hasCheckedRequests);
+            (shouldShowPendingLoader || _pendingRequests.isNotEmpty);
         final maxSheetHeight = math.min(
           _availableSheetHeight(context),
           constraints.maxHeight.isFinite
@@ -857,6 +860,46 @@ class _ListingGroupMemberProfilesSheetState
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (showPendingRequests) ...[
+                              Text(
+                                L10n.get("group_pending_join_requests"),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              if (_loadingRequests)
+                                const SizedBox(
+                                  height: _sheetLoadingRequestsHeight,
+                                  child: Center(
+                                    child: HouseLoadingIndicator(size: 24),
+                                  ),
+                                )
+                              else
+                                for (final request in _pendingRequests) ...[
+                                  if (request != _pendingRequests.first)
+                                    const SizedBox(height: 10),
+                                  _PendingJoinRequestCard(
+                                    request: request,
+                                    compatibility: _pendingRequestCompatibility[
+                                        request.applicantUserId],
+                                    isBusy:
+                                        _busyRequestIds.contains(request.id),
+                                    onTap: () {
+                                      HapticFeedbackUtils.impact();
+                                      Navigator.of(context).pop();
+                                      widget
+                                          .onMemberTap(request.applicantUserId);
+                                    },
+                                    onApprove: () => _approveRequest(request),
+                                    onReject: () => _rejectRequest(request),
+                                  ),
+                                ],
+                              const SizedBox(height: 18),
+                            ],
                             for (final member in sortedMembers) ...[
                               if (member != sortedMembers.first)
                                 const SizedBox(height: 10),
@@ -893,62 +936,6 @@ class _ListingGroupMemberProfilesSheetState
                                     ? _confirmLeaveGroup
                                     : null,
                               ),
-                            ],
-                            if (showPendingRequests) ...[
-                              const SizedBox(height: 18),
-                              Text(
-                                L10n.get("group_pending_join_requests"),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                              const SizedBox(height: 10),
-                              if (_loadingRequests)
-                                const SizedBox(
-                                  height: _sheetLoadingRequestsHeight,
-                                  child: Center(
-                                    child: HouseLoadingIndicator(size: 24),
-                                  ),
-                                )
-                              else if (_pendingRequests.isEmpty)
-                                SizedBox(
-                                  height: _sheetLoadingRequestsHeight,
-                                  child: Center(
-                                    child: Text(
-                                      L10n.get("group_no_pending_requests"),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: scheme.onSurfaceVariant,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ),
-                                )
-                              else
-                                for (final request in _pendingRequests) ...[
-                                  if (request != _pendingRequests.first)
-                                    const SizedBox(height: 10),
-                                  _PendingJoinRequestCard(
-                                    request: request,
-                                    compatibility: _pendingRequestCompatibility[
-                                        request.applicantUserId],
-                                    isBusy:
-                                        _busyRequestIds.contains(request.id),
-                                    onTap: () {
-                                      HapticFeedbackUtils.impact();
-                                      Navigator.of(context).pop();
-                                      widget
-                                          .onMemberTap(request.applicantUserId);
-                                    },
-                                    onApprove: () => _approveRequest(request),
-                                    onReject: () => _rejectRequest(request),
-                                  ),
-                                ],
                             ],
                           ],
                         ),
@@ -1384,13 +1371,30 @@ class _MemberProfileCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            member.name,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  member.name,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (_roleLabel != null) ...[
+                                const SizedBox(width: 6),
+                                _RoleBadge(
+                                  label: _roleLabel!,
+                                  color: roleColor,
+                                  isEmphasized: _isLandlord,
+                                  isFilled:
+                                      ThemeState().isLightTheme && _isOwner,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         if (compatibility?.percent != null) ...[
@@ -1405,15 +1409,6 @@ class _MemberProfileCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    if (_roleLabel != null) ...[
-                      const SizedBox(height: 6),
-                      _RoleBadge(
-                        label: _roleLabel!,
-                        color: roleColor,
-                        isEmphasized: _isLandlord,
-                        isFilled: ThemeState().isLightTheme && _isOwner,
-                      ),
-                    ],
                     _buildFieldHighlights(context),
                     if (canLeave && onLeave != null) ...[
                       const SizedBox(height: 8),
@@ -1654,6 +1649,7 @@ class _PendingJoinRequestCard extends StatelessWidget {
                       color: ThemeState().isLightTheme
                           ? AppColors.warningDark
                           : AppColors.warning,
+                      isBlinking: true,
                     ),
                     _buildFieldHighlights(context),
                     if (message != null && message.isNotEmpty) ...[
@@ -1713,30 +1709,76 @@ class _PendingJoinRequestCard extends StatelessWidget {
   }
 }
 
-class _RoleBadge extends StatelessWidget {
+class _RoleBadge extends StatefulWidget {
   const _RoleBadge({
     required this.label,
     required this.color,
     this.isEmphasized = false,
     this.isFilled = false,
+    this.isBlinking = false,
   });
 
   final String label;
   final Color color;
   final bool isEmphasized;
   final bool isFilled;
+  final bool isBlinking;
+
+  @override
+  State<_RoleBadge> createState() => _RoleBadgeState();
+}
+
+class _RoleBadgeState extends State<_RoleBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _blinkController;
+  late final Animation<double> _blinkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 850),
+    );
+    _blinkAnimation = CurvedAnimation(
+      parent: _blinkController,
+      curve: Curves.easeInOut,
+    );
+    if (widget.isBlinking) {
+      _blinkController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _RoleBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isBlinking == oldWidget.isBlinking) return;
+    if (widget.isBlinking) {
+      _blinkController.repeat(reverse: true);
+    } else {
+      _blinkController
+        ..stop()
+        ..value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isFilled
+    final backgroundColor = widget.isFilled
         ? Colors.black
-        : color.withValues(alpha: isEmphasized ? 0.22 : 0.12);
-    final foregroundColor = isFilled ? Colors.white : color;
-    final borderColor = isFilled
+        : widget.color.withValues(alpha: widget.isEmphasized ? 0.22 : 0.12);
+    final foregroundColor = widget.isFilled ? Colors.white : widget.color;
+    final borderColor = widget.isFilled
         ? Colors.black
-        : color.withValues(alpha: isEmphasized ? 0.55 : 0.28);
+        : widget.color.withValues(alpha: widget.isEmphasized ? 0.55 : 0.28);
 
-    return Container(
+    final badge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -1744,14 +1786,21 @@ class _RoleBadge extends StatelessWidget {
         border: Border.all(color: borderColor),
       ),
       child: Text(
-        label,
+        widget.label,
         style: TextStyle(
           color: foregroundColor,
           fontSize: 12,
-          fontWeight: isEmphasized ? FontWeight.w700 : FontWeight.w600,
+          fontWeight: widget.isEmphasized ? FontWeight.w700 : FontWeight.w600,
           height: 1.1,
         ),
       ),
+    );
+
+    if (!widget.isBlinking) return badge;
+
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.45, end: 1).animate(_blinkAnimation),
+      child: badge,
     );
   }
 }

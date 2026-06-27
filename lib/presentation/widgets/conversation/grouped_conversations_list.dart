@@ -861,9 +861,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
                   isExpanded: isExpanded,
                   avatarColor: avatarColor,
                   avatarIconColor: avatarIconColor,
-                  ringColor: useLiquidGlass
-                      ? glassTintColor.withValues(alpha: 0.48)
-                      : cardColor,
+                  ringColor: avatarCircleBorderColor(context),
                 ),
               ),
             ],

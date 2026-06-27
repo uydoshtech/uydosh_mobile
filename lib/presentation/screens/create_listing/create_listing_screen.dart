@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -171,7 +172,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   static const int _descriptionBaseLines = 4;
   static const int _descriptionExpandedExtraLines = 3;
-  bool _isDescriptionExpanded = false;
+  bool _isDescriptionExpanded = true;
 
   /// The most recent auto-generated default title. Used to decide whether the
   /// user has manually edited the title — if `_titleController.text` matches
@@ -2201,6 +2202,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               maxLength: _titleMaxLength,
               maxLines: 1,
               textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.sentences,
               buildCounter: _buildTitleCounter,
             ),
           ),
@@ -2224,6 +2226,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 hintText: hintText,
                 showErrorBorder: _showDescriptionError,
                 controller: _descriptionController,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: UydoshPlateFieldDecoration.forHint(
                   context,
                   hintText: hintText,
@@ -2427,7 +2430,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               : _descriptionController.text.trim(),
           stepIndex: 2,
         ),
-        if (_selectedListingTypeId != 1 && !_isGroupFormingFlow)
+        if (_selectedListingTypeId != 1 && !_isGroupFormingFlow) ...[
           _summaryTile(
             label: _summaryLabel("listing_photos_label", fallback: "Photos"),
             value: _selectedPhotos.isEmpty
@@ -2438,6 +2441,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   ),
             stepIndex: 2,
           ),
+          if (_selectedPhotos.isNotEmpty) _reviewPhotoStrip(),
+        ],
       ],
     );
   }
@@ -2594,6 +2599,64 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 ),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _reviewPhotoStrip() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => _goToStep(2),
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+            context,
+            theme: theme,
+          ),
+          padding: const EdgeInsets.all(10),
+          child: SizedBox(
+            height: 72,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _selectedPhotos.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final photoPath = _selectedPhotos[index];
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: ColoredBox(
+                    color: ThemeState().isBlueTheme
+                        ? BlueThemeColors.surface
+                        : theme.colorScheme.surfaceContainerHighest,
+                    child: Image.file(
+                      File(photoPath),
+                      width: 96,
+                      height: 72,
+                      fit: BoxFit.cover,
+                      cacheWidth: 240,
+                      errorBuilder: (context, error, stackTrace) {
+                        return SizedBox(
+                          width: 96,
+                          height: 72,
+                          child: Center(
+                            child: ThemeIcon(
+                              Icons.broken_image,
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

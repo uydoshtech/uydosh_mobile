@@ -225,13 +225,16 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     if (!AuthFlow.requireAuth(context)) return;
 
     final locationId = _getSelectedLocationId();
-    final subwayLineId = _searchFiltersState.selectedSubwayLine > 0
-        ? _searchFiltersState.selectedSubwayLine
-        : null;
     final stationIds = _searchFiltersState.selectedStationIdsList;
     final subwayStationId = stationIds.length == 1
         ? stationIds.first
         : _getSelectedSubwayStationId();
+    final hasStationFilter = stationIds.isNotEmpty ||
+        (subwayStationId != null && subwayStationId > 0);
+    final subwayLineId =
+        hasStationFilter && _searchFiltersState.selectedSubwayLine > 0
+            ? _searchFiltersState.selectedSubwayLine
+            : null;
 
     final hasAnyLocationConstraint = (locationId != null && locationId > 0) ||
         (subwayLineId != null && subwayLineId > 0) ||
@@ -751,6 +754,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         ? subwayStationIds.first
         : _getSelectedSubwayStationId();
     final subwayLine = _searchFiltersState.selectedSubwayLine;
+    final hasStationFilter = subwayStationIds.isNotEmpty ||
+        (subwayStationId != null && subwayStationId > 0);
+    final effectiveSubwayLineId =
+        hasStationFilter && subwayLine > 0 ? subwayLine : null;
     final gender = _searchFiltersState.selectedGender;
     final minPrice = _searchFiltersState.minPrice;
     final maxPrice = _searchFiltersState.maxPrice;
@@ -759,12 +766,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Debug logging to see what values are being passed
     logger.d(
-      "SearchBottomSheet._performSearch - subwayStationId: $subwayStationId, subwayLine: $subwayLine, priceRange: $minPrice-$maxPrice",
+      "SearchBottomSheet._performSearch - subwayStationId: $subwayStationId, subwayLine: $effectiveSubwayLineId, priceRange: $minPrice-$maxPrice",
     );
 
     // Debug logging to see what will be passed to HomeScreen
     logger.d(
-      "SearchBottomSheet._performSearch - Will create HomeScreen with subwayLineId: $subwayLine, priceRange: $minPrice-$maxPrice",
+      "SearchBottomSheet._performSearch - Will create HomeScreen with subwayLineId: $effectiveSubwayLineId, priceRange: $minPrice-$maxPrice",
     );
 
     // Navigate to home screen with search parameters
@@ -779,7 +786,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           locationId: locationId,
           subwayStationId: subwayStationId,
           subwayStationIds: subwayStationIds,
-          subwayLineId: subwayLine > 0 ? subwayLine : null,
+          subwayLineId: effectiveSubwayLineId,
           minPrice: minPrice,
           maxPrice: maxPrice,
           privateRoom: privateRoom,
@@ -801,7 +808,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               locationId: locationId,
               subwayStationId: subwayStationId,
               subwayStationIds: subwayStationIds,
-              subwayLineId: subwayLine > 0 ? subwayLine : null,
+              subwayLineId: effectiveSubwayLineId,
               gender: gender > 0 ? gender : null,
               minPrice: minPrice,
               maxPrice: maxPrice,
@@ -826,7 +833,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               locationId: locationId,
               subwayStationId: subwayStationId,
               subwayStationIds: subwayStationIds,
-              subwayLineId: subwayLine,
+              subwayLineId: effectiveSubwayLineId,
               gender: gender > 0 ? gender : null,
               minPrice: minPrice,
               maxPrice: maxPrice,
@@ -848,7 +855,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
               locationId: locationId,
               subwayStationId: subwayStationId,
               subwayStationIds: subwayStationIds,
-              subwayLineId: subwayLine,
+              subwayLineId: effectiveSubwayLineId,
               gender: gender > 0 ? gender : null,
               minPrice: minPrice,
               maxPrice: maxPrice,

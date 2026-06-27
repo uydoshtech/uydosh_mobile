@@ -486,6 +486,18 @@ final class _DrawerColors {
         effectsEnabled ? (isDark ? 0.64 : 0.78) : (isDark ? 0.88 : 0.94);
     return base.withValues(alpha: alpha);
   }
+
+  static Color footerBackground(BuildContext context) {
+    final currentTheme = ThemeState().currentTheme;
+    if (currentTheme == AppTheme.lightTheme) {
+      return ThemeState().backgroundColor;
+    }
+
+    return glassTint(
+      context,
+      effectsEnabled: LiquidGlassRendering.effectsEnabled(context),
+    );
+  }
 }
 
 class _DrawerGlassSurface extends StatelessWidget {
@@ -536,7 +548,9 @@ class _DrawerFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      color: _DrawerColors.footerBackground(context),
       child: FutureBuilder<String>(
         future: VersionService.getVersion(),
         builder: (context, snapshot) {

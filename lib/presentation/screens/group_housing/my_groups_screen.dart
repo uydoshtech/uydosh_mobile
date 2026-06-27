@@ -6,21 +6,21 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
-import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
-import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
-import "package:uy_dosh/presentation/utils/conversation_inbox_filters.dart";
-import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 
 class MyGroupsScreen extends StatefulWidget {
-  const MyGroupsScreen({super.key});
+  const MyGroupsScreen({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<MyGroupsScreen> createState() => _MyGroupsScreenState();
@@ -79,32 +79,13 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
 
   Future<void> _openGroup(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
-    final userId = _currentUserId ?? await SessionManager.getUserId();
-    if (!mounted) return;
-    if (_currentUserId == null) {
-      setState(() => _currentUserId = userId);
+    final listingId = conversation.listingId;
+    if (listingId == null) {
+      ToastTheme.showError(context, message: L10n.get("error_generic"));
+      return;
     }
 
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
-        builder: (context) => ChatScreen(
-          conversationId: conversation.id,
-          listingId: conversation.listingId,
-          listingTypeId: conversation.listingTypeId,
-          listingOwnerUserId: conversation.participantId,
-          conversationContextType: conversation.contextType,
-          conversationParticipantId: conversation.participantId,
-          listingTitle: resolvedConversationListingTitle(conversation),
-          otherUserInitials: StringUtils.extractInitials(
-            conversation.otherUserName,
-          ),
-          otherUserName: conversation.otherUserName,
-          otherUserId: conversationCounterpartyUserId(conversation, userId),
-          otherUserAvatar: conversation.otherUserAvatar,
-        ),
-      ),
-    );
+    await context.pushListingDetail(listingId);
   }
 
   Future<void> _refresh() => _loadGroups();
@@ -115,6 +96,13 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
       listenable: ThemeState(),
       builder: (context, child) {
         final themeState = ThemeState();
+        if (widget.embedded) {
+          return ColoredBox(
+            color: themeState.backgroundColor,
+            child: _buildBody(),
+          );
+        }
+
         return Scaffold(
           backgroundColor: themeState.backgroundColor,
           appBar: CommonAppBar(

@@ -23,7 +23,7 @@ class _CenteredMapStatus extends StatelessWidget {
             if (loading)
               HouseLoadingIndicator(
                 size: 40,
-                color: theme.colorScheme.primary,
+                color: Colors.black,
               )
             else
               ThemeIcon(icon, size: 48, color: theme.colorScheme.primary),

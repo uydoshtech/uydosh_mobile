@@ -22,7 +22,6 @@ import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
@@ -46,10 +45,8 @@ import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_hapt
 import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
-import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
@@ -67,27 +64,6 @@ part "home_search_results_shell.dart";
 
 /// Matches empty-search Ghost + Primary CTAs (30px bell stack + 14px vertical padding).
 const double _kEmptySearchCtaButtonHeight = 58;
-
-/// Selector payload for the bottom-right search FAB stack: whether the bell
-/// "create alert" FAB should be visible (i.e. a search has run in the current
-/// context and has results) and whether that search returned zero results.
-@immutable
-class _SearchAlertFabState {
-  const _SearchAlertFabState({required this.showFab, required this.isEmpty});
-
-  final bool showFab;
-  final bool isEmpty;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _SearchAlertFabState &&
-          other.showFab == showFab &&
-          other.isEmpty == isEmpty;
-
-  @override
-  int get hashCode => Object.hash(showFab, isEmpty);
-}
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
 @immutable
@@ -264,11 +240,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   final GlobalKey<TutorialTargetWrapperState> _alertBellTutorialKey =
       GlobalKey<TutorialTargetWrapperState>();
   bool _noResultsAlertTutorialShownThisSession = false;
-  // Persisted user dismissal of the empty-search bell hint bubble. Until the
-  // SharedPreferences read resolves we keep the hint hidden to avoid a brief
-  // flicker.
-  bool _bellHintDismissed = true;
-  final LayerLink _bellHintLayerLink = LayerLink();
 
   @override
   void initState() {
@@ -340,44 +311,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     getIt<AppAnalyticsService>().logScreenView(screenName: "home");
 
-    unawaited(_loadBellHintDismissed());
-    TooltipsState().addListener(_onTooltipsStateChanged);
-
     // Show search button tutorial on first visit to browse screen (with delay)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), _maybeShowSearchTutorial);
     });
-  }
-
-  Future<void> _loadBellHintDismissed() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final dismissed =
-          prefs.getBool(TooltipsState.keyEmptySearchBellHintDismissed) ?? false;
-      if (!mounted) return;
-      setState(() => _bellHintDismissed = dismissed);
-    } catch (_) {
-      // If prefs are unavailable, keep the hint hidden by default.
-    }
-  }
-
-  Future<void> _dismissBellHint() async {
-    if (!mounted) return;
-    setState(() => _bellHintDismissed = true);
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(
-        TooltipsState.keyEmptySearchBellHintDismissed,
-        true,
-      );
-    } catch (_) {}
-  }
-
-  void _onTooltipsStateChanged() {
-    // Re-read the per-tip flag after [TooltipsState.enableAndResetAll] clears
-    // it so the bell hint reappears without forcing a screen remount.
-    if (!mounted) return;
-    unawaited(_loadBellHintDismissed());
   }
 
   Future<void> _bootstrapHomeSearchFilters() async {
@@ -465,8 +402,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   /// active "search").
   bool _hasUserAppliedSearchCriteria() {
     return _searchFiltersState.selectedLocationIndex > 0 ||
-        _searchFiltersState.selectedSubwayLine > 0 ||
         _searchFiltersState.selectedStationId > 0 ||
+        _searchFiltersState.selectedStationIdsList.isNotEmpty ||
         _searchFiltersState.minPrice != 0.0 ||
         _searchFiltersState.maxPrice != 1000.0 ||
         _searchFiltersState.privateRoom ||
@@ -750,7 +687,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     AuthenticationState().removeListener(_onAuthenticationChanged);
     _searchFiltersState.removeListener(_onSearchFiltersStateChanged);
     HomeRefreshState().removeListener(_onHomeRefreshStateChanged);
-    TooltipsState().removeListener(_onTooltipsStateChanged);
     _resetScrollLoadingState();
     ScrollUtils.disposeScrollController(
       _scrollController,
@@ -905,9 +841,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final subwayStationIds = fromExplicit
         ? widget.subwayStationIds
         : _searchFiltersState.searchSubwayStationIds;
-    final subwayLineId = fromExplicit
+    final stationIds = subwayStationIds ?? const <int>[];
+    final hasStationFilter = stationIds.isNotEmpty ||
+        (subwayStationId != null && subwayStationId > 0);
+    final rawSubwayLineId = fromExplicit
         ? widget.subwayLineId
         : _searchFiltersState.selectedSubwayLine;
+    final subwayLineId = hasStationFilter ? rawSubwayLineId : null;
     final gender =
         fromExplicit ? widget.gender : _searchFiltersState.selectedGender;
 
@@ -1085,26 +1025,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       searchRibbonHeight: searchRibbonHeight,
       inlineRibbonTop: ThemeState().mainShellGlassExtraTopInset(context),
       mapTopPadding: ThemeState().mainShellGlassExtraTopInset(context),
-      viewToggleTop: _viewToggleFabTop(
-        searchRibbonHeight: searchRibbonHeight,
-      ),
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
       alertFabBottom: _searchAlertFabStackBottom(context),
       searchFiltersState: _searchFiltersState,
-      bellHintLayerLink: _bellHintLayerLink,
       searchButtonTutorialKey: _searchButtonTutorialKey,
-      bellHintDismissed: _bellHintDismissed,
-      isCreatingSearchAlert: _isCreatingSearchAlert,
-      fabGap: _kFabGap,
       searchModeFiltersRibbonBuilder: (_) => _buildSearchModeFiltersRibbon(),
       inlineFiltersRibbonBuilder: (_) => _buildInlineFiltersRibbonAnimated(),
       onOpenMapView: () => _openSearchResultsMap(
         _currentSearchResultForViewToggle(),
       ),
-      onCreateSearchAlert: _showCreateSearchAlertSheet,
       onOpenInlineSearch: _openInlineSearchFromFab,
-      onDismissBellHint: _dismissBellHint,
       onOpenFeedFromMap: _returnToFeedFromMap,
     );
 
@@ -1157,15 +1088,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         ),
       ),
     );
-  }
-
-  double _viewToggleFabTop({required double searchRibbonHeight}) {
-    if (widget.isSearchMode) {
-      return searchRibbonHeight + 4;
-    }
-    return ThemeState().mainShellGlassExtraTopInset(context) +
-        _inlineSearchRibbonHeight +
-        4;
   }
 
   SearchBottomSheetResult _currentSearchResultForViewToggle() {
@@ -1490,6 +1412,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersChips() {
+    final selectedStationIds = _searchFiltersState.selectedStationIdsList;
+    final effectiveSubwayLineId = selectedStationIds.isNotEmpty &&
+            _searchFiltersState.selectedSubwayLine > 0
+        ? _searchFiltersState.selectedSubwayLine
+        : null;
+
     return AppliedSearchFiltersBar(
       onPressed: _openInlineSearchFromFab,
       listingTypeId: _searchFiltersState.searchListingTypeId,
@@ -1502,9 +1430,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ? _searchFiltersState.selectedStationId
           : null,
       subwayStationIds: _searchFiltersState.searchSubwayStationIds,
-      subwayLineId: _searchFiltersState.selectedSubwayLine > 0
-          ? _searchFiltersState.selectedSubwayLine
-          : null,
+      subwayLineId: effectiveSubwayLineId,
       minPrice: _searchFiltersState.minPrice,
       maxPrice: _searchFiltersState.maxPrice,
       privateRoom: _searchFiltersState.privateRoom,
@@ -2115,7 +2041,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void _pushFullSearchResultsRoute() {
     final locationId = _searchFiltersState.selectedLocationIndex;
     final stationId = _searchFiltersState.selectedStationId;
-    final lineId = _searchFiltersState.selectedSubwayLine;
+    final stationIds = _searchFiltersState.selectedStationIdsList;
+    final lineId =
+        stationIds.isNotEmpty && _searchFiltersState.selectedSubwayLine > 0
+            ? _searchFiltersState.selectedSubwayLine
+            : null;
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -2125,7 +2055,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             listingTypeId: _searchFiltersState.selectedListingTypeId,
             locationId: locationId > 0 ? locationId : null,
             subwayStationId: stationId > 0 ? stationId : null,
-            subwayLineId: lineId > 0 ? lineId : null,
+            subwayStationIds: stationIds,
+            subwayLineId: lineId,
             gender: _searchFiltersState.selectedGender,
             minPrice: _searchFiltersState.minPrice,
             maxPrice: _searchFiltersState.maxPrice,

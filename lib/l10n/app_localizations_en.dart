@@ -94,6 +94,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get complete_profile_prompt_later => 'Later';
 
   @override
+  String get group_join_requires_profile =>
+      'Complete your profile before joining this group.';
+
+  @override
   String get compatibility_title => 'Compatibility with you:';
 
   @override
@@ -1076,6 +1080,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get listing_description_template_roommate_needed_female =>
       'Looking for a female roommate.\nFormat: (1–2 per room).\nWho lives there: (how many people).\nConditions: (with/without landlord), (private/shared room).\nTimeline: (move-in + duration).';
+
+  @override
+  String get listing_description_template_group_forming =>
+      'Forming a group to rent together.\nLooking for: (1–2 people, gender/age).\nBudget per person: (amount).\nArea/metro: (where to search).\nFormat: (private/shared rooms).\nMove-in: (date + duration).\nImportant: (cleanliness/quiet/guests/pets).';
 
   @override
   String get listing_type_roommate_needed => 'Need Roommate';
@@ -2467,6 +2475,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get delete_account_blocked =>
       'Your account has been restricted. You cannot delete your account while it is blocked. Please contact support.';
+
+  @override
+  String get nav_my => 'My';
+
+  @override
+  String get my_hub_tab_groups => 'Groups';
+
+  @override
+  String get my_hub_tab_bookmarks => 'My Bookmarks';
+
+  @override
+  String get my_hub_tab_alerts => 'My Alerts';
 
   @override
   String get favorites_title => 'Favorites';

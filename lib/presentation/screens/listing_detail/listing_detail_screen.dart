@@ -34,6 +34,7 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/favorites_state.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
+import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
@@ -82,6 +83,7 @@ import "package:uy_dosh/presentation/screens/complaint/listing_complaints_screen
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
+import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_compatibility_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_budget_fit_chip.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/group_shortlist_pill_button.dart";
@@ -662,8 +664,61 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     );
   }
 
-  Future<void> _requestToJoinGroup(ListingDetail listingDetail) async {
+  Future<UserProfile?> _loadCurrentUserProfileForGroupJoin({
+    bool preferCache = false,
+  }) async {
+    if (preferCache) {
+      final cached = await SessionManager.getCachedUserProfile();
+      if (cached != null) return cached;
+    }
+
+    try {
+      final profile =
+          await getIt<IUserProfileService>().getCurrentUserProfile();
+      await SessionManager.storeUserProfile(profile);
+      ProfileCompletionState().updateFromProfile(profile);
+      return profile;
+    } catch (e) {
+      final cached =
+          preferCache ? null : await SessionManager.getCachedUserProfile();
+      if (cached != null) return cached;
+      if (mounted)
+        ToastReporting.errorMessage(context, throwableUserMessage(e));
+      return null;
+    }
+  }
+
+  Future<bool> _ensureProfileReadyForGroupJoin() async {
+    var profile = await _loadCurrentUserProfileForGroupJoin();
+    if (!mounted || profile == null) return false;
+    if (ProfileCompletionState.hasCompleteProfile(profile)) {
+      return true;
+    }
+
+    ToastReporting.warningKey(context, "group_join_requires_profile");
+    final profileForEdit = profile;
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EditProfileScreen(profile: profileForEdit),
+      ),
+    );
+    if (!mounted || result != true) return false;
+
+    profile = await _loadCurrentUserProfileForGroupJoin();
+    if (!mounted || profile == null) return false;
+    final isReady = ProfileCompletionState.hasCompleteProfile(profile);
+    if (!isReady) {
+      ToastReporting.warningKey(context, "group_join_requires_profile");
+    }
+    return isReady;
+  }
+
+  Future<void> _requestToJoinGroup(
+    ListingDetail listingDetail, {
+    bool allowProfileRetry = true,
+  }) async {
     if (!AuthFlow.requireAuth(context)) return;
+    if (!await _ensureProfileReadyForGroupJoin()) return;
     try {
       await getIt<IListingGroupService>().createJoinRequest(
         listingId: listingDetail.id,
@@ -681,8 +736,23 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         );
         return;
       }
+      if (allowProfileRetry && _isProfileRequiredForGroupJoinMessage(message)) {
+        final isReady = await _ensureProfileReadyForGroupJoin();
+        if (isReady && mounted) {
+          await _requestToJoinGroup(
+            listingDetail,
+            allowProfileRetry: false,
+          );
+        }
+        return;
+      }
       ToastReporting.errorMessage(context, message);
     }
+  }
+
+  bool _isProfileRequiredForGroupJoinMessage(String message) {
+    return message.trim().toLowerCase() ==
+        "please complete your profile before joining a group";
   }
 
   bool _isAlreadyInAnotherGroupMessage(String message) {

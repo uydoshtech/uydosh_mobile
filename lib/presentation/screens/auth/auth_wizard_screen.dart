@@ -45,6 +45,7 @@ import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_pages/auth_wizard_terms_finish_page.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_theme.dart";
 import "package:uy_dosh/presentation/screens/auth/phone_sign_in_sheet.dart";
+import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/screens/support/support_chat_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
@@ -400,10 +401,50 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     _navigateToMainNavigation();
   }
 
-  Future<void> _goToProfileCreationPage() async {
+  Future<void> _openEditProfileFromOffer() async {
     HapticFeedbackUtils.impact();
+    final profile = await _getProfileForEditing();
+    if (!mounted) return;
+
+    if (profile == null) {
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("error_loading_profile"),
+      );
+      return;
+    }
+
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EditProfileScreen(profile: profile),
+      ),
+    );
+    if (!mounted) return;
+
+    if (result == true) {
+      await _goToTermsFinishPage();
+    }
+  }
+
+  Future<UserProfile?> _getProfileForEditing() async {
+    final cached = await SessionManager.getCachedUserProfile();
+    if (cached != null) return cached;
+
+    try {
+      final profile = await _profileService.getCurrentUserProfile();
+      await SessionManager.storeUserProfile(profile);
+      return profile;
+    } catch (e) {
+      logger.d("AuthWizard: failed to load profile for edit offer: $e");
+      return null;
+    }
+  }
+
+  Future<void> _goToProfileOfferPage() async {
     if (!mounted) return;
     setState(() {
+      _isAuthenticating = false;
+      _profileCreated = true;
       _currentPage = 3;
     });
     await _pageController.animateToPage(
@@ -411,11 +452,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
-  }
-
-  void _skipProfileCreation() {
-    HapticFeedbackUtils.impact();
-    _navigateToMainNavigation();
   }
 
   Future<void> _goToTermsFinishPage() async {
@@ -1230,17 +1266,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           violationDialogResult: violationDialogResult,
         );
       } else {
-        logger.d("🆕 New user - offering optional profile creation");
-        logger.d("🔍 Navigating to profile offer page...");
-        // Let new users decide whether to complete their profile now or later.
+        logger.d("🆕 New user - navigating to required profile creation");
+        logger.d("🔍 Navigating to profile creation page...");
         if (mounted) {
           setState(() {
-            _currentPage = 2; // Profile completion offer page
+            _currentPage = 2; // Required profile creation page
           });
           logger.d("🔍 Page updated to: $_currentPage");
 
           _pageController.animateToPage(
-            2, // Profile completion offer page
+            2, // Required profile creation page
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
@@ -1450,17 +1485,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           violationDialogResult: violationDialogResult,
         );
       } else {
-        logger.d("🆕 New user - offering optional profile creation");
-        logger.d("🔍 Navigating to profile offer page...");
-        // Let new users decide whether to complete their profile now or later.
+        logger.d("🆕 New user - navigating to required profile creation");
+        logger.d("🔍 Navigating to profile creation page...");
         if (mounted) {
           setState(() {
-            _currentPage = 2; // Profile completion offer page
+            _currentPage = 2; // Required profile creation page
           });
           logger.d("🔍 Page updated to: $_currentPage");
 
           _pageController.animateToPage(
-            2, // Profile completion offer page
+            2, // Required profile creation page
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
@@ -1469,11 +1503,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       }
     } catch (e) {
       logger.d("❌ Error checking profile status: $e");
-      // If check fails, proceed to the profile offer as fallback.
-      logger.d("🔍 Fallback: navigating to profile offer page...");
+      // If check fails, proceed to required profile creation as fallback.
+      logger.d("🔍 Fallback: navigating to profile creation page...");
       if (mounted) {
         setState(() {
-          _currentPage = 2; // Go to profile offer page as fallback
+          _currentPage = 2; // Go to required profile creation as fallback
         });
         logger.d("🔍 Page updated to: $_currentPage");
 
@@ -1481,7 +1515,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         _isProgrammaticNavigation = true;
 
         _pageController.animateToPage(
-          2, // Profile offer page
+          2, // Required profile creation page
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
@@ -1501,7 +1535,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Get total number of steps based on user needs
   int _getTotalSteps() {
-    return 5; // Language, sign-in, profile offer, profile, terms/finish
+    return 5; // Language, sign-in, profile, profile offer, terms/finish
   }
 
   /// Index of the last lit progress stripe.
@@ -1985,7 +2019,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d("==============================");
 
       try {
-        await _profileService.createProfile(request);
+        final createdProfile = await _profileService.createProfile(request);
+        await SessionManager.storeUserProfile(createdProfile);
       } catch (e) {
         logger.d("❌ Profile service error: $e");
 
@@ -2067,7 +2102,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
           message: L10n.get("profile_completed_success"),
         );
 
-        await _goToTermsFinishPage();
+        await _goToProfileOfferPage();
       }
     } catch (e) {
       if (mounted) {
@@ -2155,11 +2190,11 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               : _currentPage == 1
                                   ? L10n.get("auth_wizard_oauth_step_header")
                                   : _currentPage == 2
-                                      ? L10n.get(
-                                          "complete_profile_prompt_title",
-                                        )
+                                      ? L10n.get("complete_profile")
                                       : _currentPage == 3
-                                          ? L10n.get("complete_profile")
+                                          ? L10n.get(
+                                              "complete_profile_prompt_title",
+                                            )
                                           : L10n.get(
                                               "auth_terms_finish_header",
                                             ),
@@ -2265,10 +2300,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             );
                           },
                         ),
-                        AuthWizardProfileOfferPage(
-                          onCompleteNow: _goToProfileCreationPage,
-                          onDoLater: _skipProfileCreation,
-                        ),
                         AuthWizardProfilePage(
                           profileScrollController: _profileScrollController,
                           nameSectionKey: _profileNameKey,
@@ -2303,6 +2334,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           studentMissing: _studentMissing,
                           universityMissing: _universityMissing,
                         ),
+                        AuthWizardProfileOfferPage(
+                          onCompleteNow: _openEditProfileFromOffer,
+                          onDoLater: _goToTermsFinishPage,
+                        ),
                         AuthWizardTermsFinishPage(
                           onOpenTermsOfService: _openTermsOfService,
                         ),
@@ -2322,7 +2357,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                 // wizard with dead-end controls flashing under the success
                 // card.
                 if (!(_currentPage == 1 && _isGoogleSignedIn) &&
-                    _currentPage != 2)
+                    _currentPage != 3)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
@@ -2729,10 +2764,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       case 2:
         return _selectedLanguage.isNotEmpty && _isGoogleSignedIn;
       case 3:
-        // Profile page only if Google Sign-In completed AND user needs profile creation
         return _selectedLanguage.isNotEmpty &&
             _isGoogleSignedIn &&
-            _needsProfileCreation();
+            _profileCreated;
       case 4:
         return _selectedLanguage.isNotEmpty &&
             _isGoogleSignedIn &&
@@ -2740,23 +2774,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       default:
         return false;
     }
-  }
-
-  // Check if user needs profile creation
-  bool _needsProfileCreation() {
-    // If user is not signed in with Google, they need profile creation
-    if (!_isGoogleSignedIn) {
-      return true;
-    }
-
-    // If user is signed in but we haven"t checked with backend yet, assume they need profile creation
-    if (_currentUser == null) {
-      return true;
-    }
-
-    // For now, assume all users need profile creation until we get a definitive response from backend
-    // This will be updated when we implement proper profile existence checking
-    return true;
   }
 
   VoidCallback? _getNextButtonAction() {
@@ -2774,14 +2791,14 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         }
         return _nextPage;
       case 2:
-        return _goToProfileCreationPage;
-      case 3:
         // Profile setup — keep the button enabled; [_completeProfile] runs
         // validation, toggles [_showValidationErrors] for red borders, scrolls
         // to the first invalid control, and only submits when everything is
         // filled (matches [_completeProfile] rules, including region only for
         // Uzbekistan and university only when student).
         return _completeProfile;
+      case 3:
+        return _openEditProfileFromOffer;
       case 4:
         return _finishCreateAccountFlow;
       default:
@@ -2803,9 +2820,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         }
         return "next";
       case 2:
-        return "complete_profile_prompt_cta";
-      case 3:
         return "complete";
+      case 3:
+        return "complete_profile_prompt_cta";
       case 4:
         return "finish";
       default:

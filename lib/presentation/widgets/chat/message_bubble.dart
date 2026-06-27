@@ -502,7 +502,7 @@ class _MessageBubbleState extends State<MessageBubble>
 
     return all
         .map((e) {
-          if (e.reaction != mine) return e;
+          if (!_reactionKeysEqual(e.reaction, mine)) return e;
           final adjusted = e.count - 1;
           if (adjusted <= 0) return null;
           return MessageReactionCount(reaction: e.reaction, count: adjusted);
@@ -514,7 +514,7 @@ class _MessageBubbleState extends State<MessageBubble>
   int _aggregateCountForReaction(String reactionId) {
     final entries = widget.message.reactions ?? [];
     for (final e in entries) {
-      if (e.reaction == reactionId) return e.count;
+      if (_reactionKeysEqual(e.reaction, reactionId)) return e.count;
     }
     return 1;
   }
