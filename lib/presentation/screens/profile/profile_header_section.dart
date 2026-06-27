@@ -308,8 +308,6 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   ),
                 ),
                 const SizedBox(height: 10),
-              ] else if (displayName.isNotEmpty) ...[
-                const SizedBox(height: 4),
               ],
               SizedBox(
                 height: _followCountsRowHeight,
@@ -421,19 +419,19 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
         onTap: _pickAndUploadAvatar,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          width: 64,
-          height: 64,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.black,
-              width: 2,
+              width: 1,
             ),
           ),
           child: const ThemeIcon(
             Icons.photo_camera,
-            size: 32,
+            size: 12,
             color: Colors.black,
             useThemeColor: false,
           ),

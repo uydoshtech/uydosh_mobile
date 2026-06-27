@@ -134,7 +134,6 @@ class _AdminUniversitiesMapScreenState
         title: title,
         height: double.infinity,
         showDefaultPlacemark: false,
-        moveCameraOnTargetChange: true,
       ),
     );
   }

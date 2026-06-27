@@ -184,7 +184,7 @@ class _MapListingTileSurface extends StatelessWidget {
   }
 }
 
-class _PinGroupSummaryTooltip extends StatelessWidget {
+class _PinGroupSummaryTooltip extends StatefulWidget {
   const _PinGroupSummaryTooltip({
     required this.pins,
     required this.onClose,
@@ -197,11 +197,30 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
   final ValueChanged<ListingMapPin> onOpenPin;
 
   @override
+  State<_PinGroupSummaryTooltip> createState() =>
+      _PinGroupSummaryTooltipState();
+}
+
+class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final placeLabel = _placeLabel;
     final placeStationLineIds = _placeStationLineIds;
-    final countLabel = L10n.plural("listings_count", pins.length);
+    final showPageIndicator = widget.pins.length > 1;
     return _MapListingTileSurface(
       borderRadius: BorderRadius.circular(18),
       child: Stack(
@@ -212,48 +231,58 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 44),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _PinGroupPlaceTitle(
-                        label: placeLabel ?? countLabel,
-                        stationLineIds: placeStationLineIds,
-                      ),
-                      if (placeLabel != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          countLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: _MapListingTileStyle.metaColor(context),
-                            fontWeight: FontWeight.w700,
-                          ),
+                if (placeLabel != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 44),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _PinGroupPlaceTitle(
+                          label: placeLabel,
+                          stationLineIds: placeStationLineIds,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                ],
                 SizedBox(
                   height: 148,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
+                  child: PageView.builder(
+                    controller: _pageController,
                     physics: const BouncingScrollPhysics(),
-                    itemCount: pins.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemCount: widget.pins.length,
                     itemBuilder: (context, index) {
-                      final pin = pins[index];
-                      return _PinGroupListingCard(
-                        pin: pin,
-                        onTap: () => onOpenPin(pin),
+                      final pin = widget.pins[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: _PinGroupListingCard(
+                          pin: pin,
+                          onTap: () => widget.onOpenPin(pin),
+                        ),
                       );
                     },
                   ),
                 ),
+                if (showPageIndicator) ...[
+                  const SizedBox(height: 10),
+                  Center(
+                    child: SmoothPageIndicator(
+                      controller: _pageController,
+                      count: widget.pins.length,
+                      effect: WormEffect(
+                        dotColor: _pinGroupCarouselDotColor(context),
+                        activeDotColor: _pinGroupCarouselDotColor(context),
+                        dotHeight: 8,
+                        dotWidth: 8,
+                        spacing: 8,
+                        paintStyle: PaintingStyle.stroke,
+                        strokeWidth: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -261,7 +290,7 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
             top: 4,
             right: 4,
             child: IconButton(
-              onPressed: onClose,
+              onPressed: widget.onClose,
               icon: Icon(
                 Icons.close,
                 color: _MapListingTileStyle.titleColor(context),
@@ -276,13 +305,13 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
   }
 
   String? get _placeLabel {
-    for (final pin in pins) {
+    for (final pin in widget.pins) {
       final stationLabel = pin.stationLabel;
       if (stationLabel != null && stationLabel.isNotEmpty) {
         return stationLabel;
       }
     }
-    for (final pin in pins) {
+    for (final pin in widget.pins) {
       final locationLabel = pin.locationLabel;
       if (locationLabel != null && locationLabel.isNotEmpty) {
         return locationLabel;
@@ -292,13 +321,19 @@ class _PinGroupSummaryTooltip extends StatelessWidget {
   }
 
   List<int> get _placeStationLineIds {
-    for (final pin in pins) {
+    for (final pin in widget.pins) {
       final stationLabel = pin.stationLabel;
       if (stationLabel != null && stationLabel.isNotEmpty) {
         return pin.subwayLineIds;
       }
     }
     return const [];
+  }
+
+  Color _pinGroupCarouselDotColor(BuildContext context) {
+    if (ThemeState().isLightTheme) return Colors.black;
+    if (ThemeState().isBlueTheme) return Colors.white;
+    return AppColors.primary;
   }
 }
 
@@ -365,8 +400,7 @@ class _PinGroupListingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final borderRadius = BorderRadius.circular(14);
-    return SizedBox(
-      width: 286,
+    return SizedBox.expand(
       child: _MapListingTileSurface(
         borderRadius: borderRadius,
         child: InkWell(

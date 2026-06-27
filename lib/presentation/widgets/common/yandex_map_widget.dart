@@ -21,6 +21,9 @@ import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
+part "yandex_map_widget_icons.dart";
+part "yandex_map_widget_map_objects.dart";
+
 class ListingMapPin {
   const ListingMapPin({
     required this.listingId,
@@ -65,6 +68,50 @@ class UniversityMapMarker {
   final double longitude;
   final String title;
   final String fullTitle;
+}
+
+class YandexMapCameraOptions {
+  const YandexMapCameraOptions({
+    this.moveOnTargetChange = true,
+    this.includeUniversityMarkersInCamera = true,
+  });
+
+  final bool moveOnTargetChange;
+  final bool includeUniversityMarkersInCamera;
+}
+
+class YandexMapLayerOptions {
+  const YandexMapLayerOptions({
+    this.showUserLocation = false,
+    this.showDistrictLayer = false,
+    this.showMetroStationsLayer = false,
+  });
+
+  final bool showUserLocation;
+  final bool showDistrictLayer;
+  final bool showMetroStationsLayer;
+}
+
+class YandexMapTooltipOptions {
+  const YandexMapTooltipOptions({
+    this.showListingDetail = true,
+    this.showUniversityMarker = true,
+    this.showMetroStation = true,
+  });
+
+  final bool showListingDetail;
+  final bool showUniversityMarker;
+  final bool showMetroStation;
+}
+
+class YandexMapZoomControlsOptions {
+  const YandexMapZoomControlsOptions({
+    this.right,
+    this.bottom,
+  });
+
+  final double? right;
+  final double? bottom;
 }
 
 class _ListingPinGroup {
@@ -145,17 +192,12 @@ class YandexMapWidget extends StatefulWidget {
     this.onMapCreated,
     this.onCameraPositionChanged,
     this.height = 200,
-    this.moveCameraOnTargetChange = true,
-    this.includeUniversityMarkersInCamera = true,
-    this.showListingDetailTooltip = true,
-    this.showUniversityMarkerTooltip = true,
+    this.cameraOptions = const YandexMapCameraOptions(),
+    this.layerOptions = const YandexMapLayerOptions(),
+    this.tooltipOptions = const YandexMapTooltipOptions(),
     this.showDefaultPlacemark = true,
-    this.showUserLocation = false,
-    this.showDistrictLayer = false,
-    this.showMetroStationsLayer = false,
     this.showLoadingPlaceholderContent = true,
-    this.zoomControlsRight,
-    this.zoomControlsBottom,
+    this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.onMetroStationTooltipChanged,
   });
 
@@ -175,17 +217,12 @@ class YandexMapWidget extends StatefulWidget {
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
   final CameraPositionCallback? onCameraPositionChanged;
-  final bool moveCameraOnTargetChange;
-  final bool includeUniversityMarkersInCamera;
-  final bool showListingDetailTooltip;
-  final bool showUniversityMarkerTooltip;
+  final YandexMapCameraOptions cameraOptions;
+  final YandexMapLayerOptions layerOptions;
+  final YandexMapTooltipOptions tooltipOptions;
   final bool showDefaultPlacemark;
-  final bool showUserLocation;
-  final bool showDistrictLayer;
-  final bool showMetroStationsLayer;
   final bool showLoadingPlaceholderContent;
-  final double? zoomControlsRight;
-  final double? zoomControlsBottom;
+  final YandexMapZoomControlsOptions zoomControlsOptions;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
 
   @override
@@ -197,10 +234,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
   static const double _minDistrictLabelZoom = 11.5;
-  static const double _minMetroStationLabelZoom = 12.5;
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
+  static const int _minClusterableListingPinGroups = 16;
+  static const double _listingClusterRadius = 44.0;
+  static const int _listingClusterMinZoom = 15;
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
@@ -220,6 +259,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   UniversityMapMarker? _selectedUniversityMarker;
   SubwayStation? _selectedMetroStation;
   bool _isUserLocationLayerVisible = false;
+  bool _mapRebuildScheduled = false;
+  int? _cachedMapObjectsKey;
+  List<MapObject>? _cachedMapObjects;
   int _zoomSliderRequestId = 0;
   late double _currentZoom;
   static const int _maxRetries = 3;
@@ -241,10 +283,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (oldWidget.listingDetail?.id != widget.listingDetail?.id) {
       _showListingDetailTooltip = _canShowListingDetailTooltip;
     }
-    if (oldWidget.showUserLocation != widget.showUserLocation) {
+    if (oldWidget.layerOptions.showUserLocation !=
+        widget.layerOptions.showUserLocation) {
       _syncUserLocationLayer();
     }
-    if (oldWidget.showMetroStationsLayer && !widget.showMetroStationsLayer) {
+    if (oldWidget.layerOptions.showMetroStationsLayer &&
+        !widget.layerOptions.showMetroStationsLayer) {
       _setSelectedMetroStation(null, notify: true);
     }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
@@ -255,7 +299,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _syncListingGroupIconBytes();
     }
     _syncSelectedUniversityMarker();
-    if (!_mapTargetChanged(oldWidget) || !widget.moveCameraOnTargetChange) {
+    if (!_mapTargetChanged(oldWidget) ||
+        !widget.cameraOptions.moveOnTargetChange) {
       return;
     }
 
@@ -273,80 +318,21 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Future<void> _initializeIcon() async {
     try {
-      final iconBytes = await _createIconBytes(Icons.home, 100);
-      final selectedIconBytes = await _createIconBytes(
-        Icons.home,
-        124,
-        backgroundColor: AppColors.primary,
-        outlineColor: Colors.white,
-        outlineWidth: 7,
-        shadowColor: Colors.black.withValues(alpha: 0.35),
-        shadowBlurRadius: 10,
-        shadowOffset: const Offset(0, 5),
-      );
-      final listingTypeIconBytes = <String, Uint8List>{};
-      final selectedListingTypeIconBytes = <String, Uint8List>{};
-      for (final code in ListingTypeHelper.getAllCodes()) {
-        final icon = ListingTypeHelper.getIcon(code);
-        listingTypeIconBytes[code] = await _createIconBytes(icon, 100);
-        selectedListingTypeIconBytes[code] = await _createIconBytes(
-          icon,
-          124,
-          backgroundColor: AppColors.primary,
-          outlineColor: Colors.white,
-          outlineWidth: 7,
-          shadowColor: Colors.black.withValues(alpha: 0.35),
-          shadowBlurRadius: 10,
-          shadowOffset: const Offset(0, 5),
-        );
-      }
-      final universityIconBytes = await _createIconBytes(
-        Icons.school_rounded,
-        112,
-        backgroundColor: AppColors.success,
-        outlineColor: Colors.white,
-        outlineWidth: 7,
-        shadowColor: Colors.black.withValues(alpha: 0.32),
-        shadowBlurRadius: 10,
-        shadowOffset: const Offset(0, 5),
-      );
-      final selectedUniversityIconBytes = await _createIconBytes(
-        Icons.school_rounded,
-        124,
-        backgroundColor: Colors.black,
-        iconColor: Colors.white,
-        outlineColor: Colors.white,
-        outlineWidth: 8,
-        shadowColor: Colors.black.withValues(alpha: 0.38),
-        shadowBlurRadius: 12,
-        shadowOffset: const Offset(0, 6),
-      );
-      final metroStationIconBytes = <int, Uint8List>{};
-      for (final line in MetroCache.getAvailableLines()) {
-        metroStationIconBytes[line] = await _createIconBytes(
-          Icons.directions_subway_rounded,
-          96,
-          backgroundColor: _metroLineColor(line),
-          outlineColor: Colors.white,
-          outlineWidth: 7,
-          shadowColor: Colors.black.withValues(alpha: 0.28),
-          shadowBlurRadius: 9,
-          shadowOffset: const Offset(0, 4),
-        );
-      }
-      _cachedIconBytes = iconBytes;
-      _cachedSelectedIconBytes = selectedIconBytes;
-      _cachedUniversityIconBytes = universityIconBytes;
-      _cachedSelectedUniversityIconBytes = selectedUniversityIconBytes;
+      final sharedIcons = await _loadSharedIconBytes();
+      _cachedIconBytes = sharedIcons.defaultIconBytes;
+      _cachedSelectedIconBytes = sharedIcons.selectedIconBytes;
+      _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
+      _cachedSelectedUniversityIconBytes =
+          sharedIcons.selectedUniversityIconBytes;
       _cachedListingTypeIconBytes
         ..clear()
-        ..addAll(listingTypeIconBytes);
+        ..addAll(sharedIcons.listingTypeIconBytes);
       _cachedSelectedListingTypeIconBytes
         ..clear()
-        ..addAll(selectedListingTypeIconBytes);
+        ..addAll(sharedIcons.selectedListingTypeIconBytes);
       _cachedMetroStationIconBytes
         ..clear()
-        ..addAll(metroStationIconBytes);
+        ..addAll(sharedIcons.metroStationIconBytes);
       _syncListingGroupIconBytes();
       logger.d("✅ Map listing type icons created successfully");
       if (mounted) {
@@ -392,10 +378,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Get map objects for location and metro station
-    final mapObjects = _createMapObjects();
-
-    // Determine center point for camera
+    final mapReadyForObjects = _isMapReady || kIsWeb;
+    final mapObjects =
+        mapReadyForObjects ? _createMapObjects() : const <MapObject>[];
     final centerPoint = _getCenterPoint();
 
     return Container(
@@ -418,7 +403,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             if (!_isMapReady && !kIsWeb)
               _buildMapLoadingState(context, centerPoint),
             // Show actual map when ready
-            if (_isMapReady || kIsWeb)
+            if (mapReadyForObjects)
               kIsWeb
                   ? _buildWebFallback(
                       context,
@@ -663,7 +648,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final controller = _mapController;
     if (controller == null || kIsWeb) return;
 
-    if (!widget.showUserLocation) {
+    if (!widget.layerOptions.showUserLocation) {
       if (!_isUserLocationLayerVisible) return;
       try {
         await controller.toggleUserLayer(visible: false);
@@ -700,325 +685,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     );
   }
 
-  List<MapObject> _createMapObjects() {
-    final districtLayerObjects = widget.showDistrictLayer
-        ? _createDistrictLayerMapObjects()
-        : const <MapObject>[];
-    final metroStationLayerObjects = widget.showMetroStationsLayer
-        ? _createMetroStationLayerMapObjects()
-        : const <MapObject>[];
-    final areaLayerObjects = [
-      ...districtLayerObjects,
-      ...metroStationLayerObjects,
-    ];
-    final universityMarkerObjects = _createUniversityMarkerMapObjects();
-    if (widget.pins.isNotEmpty) {
-      final listingPinObjects = _createListingPinMapObjects();
-      return [
-        ...areaLayerObjects,
-        if (listingPinObjects.isNotEmpty)
-          MapObjectCollection(
-            mapId: const MapObjectId("listing_pin_layer"),
-            mapObjects: listingPinObjects,
-            zIndex: _listingPinZIndex,
-          ),
-        ...universityMarkerObjects,
-      ];
-    }
-    if (universityMarkerObjects.isNotEmpty) {
-      return [
-        ...areaLayerObjects,
-        ...universityMarkerObjects,
-      ];
-    }
-    if (!widget.showDefaultPlacemark) {
-      return areaLayerObjects;
-    }
-
-    final coordinates = _getCoordinates();
-    if (coordinates == null) {
-      logger.w("❌ No coordinates available for map objects");
-      return areaLayerObjects;
-    }
-
-    logger.d(
-      "📍 Creating map objects at: ${coordinates["latitude"]}, ${coordinates["longitude"]}",
-    );
-
-    // Use Cupertino icon if available, otherwise fallback to PNG
-    BitmapDescriptor iconDescriptor;
-    if (_cachedIconBytes != null) {
-      logger.d("🎨 Using Cupertino location icon");
-      final listingTypeCode = widget.listingDetail?.listingType.code;
-      final listingTypeIconBytes = listingTypeCode == null
-          ? null
-          : _cachedListingTypeIconBytes[listingTypeCode];
-      iconDescriptor = BitmapDescriptor.fromBytes(
-        listingTypeIconBytes ?? _cachedIconBytes!,
-      );
-    } else {
-      logger.d("🖼️ Using PNG fallback");
-      iconDescriptor = BitmapDescriptor.fromAssetImage(
-        "assets/images/location_pin.png",
-      );
-    }
-
-    final placemark = PlacemarkMapObject(
-      mapId: const MapObjectId("listing_location_placemark"),
-      point: Point(
-        latitude: coordinates["latitude"]!,
-        longitude: coordinates["longitude"]!,
-      ),
-      icon: PlacemarkIcon.single(
-        PlacemarkIconStyle(image: iconDescriptor, scale: 1.0),
-      ),
-    );
-
-    logger.d("✅ Created placemark: ${placemark.mapId}");
-    logger.d(
-      "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
-    );
-    return [
-      ...areaLayerObjects,
-      placemark,
-    ];
-  }
-
-  List<MapObject> _createDistrictLayerMapObjects() {
-    return [
-      for (final district in TashkentDistrictBoundaryCache.districts)
-        for (var polygonIndex = 0;
-            polygonIndex < district.polygons.length;
-            polygonIndex++)
-          PolygonMapObject(
-            mapId: MapObjectId(
-              "tashkent_district_${district.locationId}_$polygonIndex",
-            ),
-            polygon: Polygon(
-              outerRing: _toLinearRing(
-                district.polygons[polygonIndex].outerRing,
-              ),
-              innerRings: [
-                for (final ring in district.polygons[polygonIndex].innerRings)
-                  _toLinearRing(ring),
-              ],
-            ),
-            zIndex: 0.1,
-            strokeWidth: 2.0,
-            strokeColor: _districtLayerColor(
-              district.locationId,
-            ).withValues(alpha: 0.78),
-            fillColor: _districtLayerColor(
-              district.locationId,
-            ).withValues(alpha: 0.22),
-          ),
-      if (_currentZoom >= _minDistrictLabelZoom)
-        ..._createDistrictLabelMapObjects(),
-    ];
-  }
-
-  List<MapObject> _createDistrictLabelMapObjects() {
-    final language = Localizations.localeOf(context).languageCode;
-    return [
-      for (final district in TashkentDistrictBoundaryCache.districts)
-        PlacemarkMapObject(
-          mapId: MapObjectId("tashkent_district_${district.locationId}_label"),
-          point: _districtLabelPoint(district),
-          zIndex: 1.0,
-          opacity: 1.0,
-          text: PlacemarkText(
-            text: LocationCache.getLocationShortName(
-              district.locationId,
-              language,
-            ),
-            style: const PlacemarkTextStyle(
-              placement: TextStylePlacement.center,
-              color: Color(0xFF111111),
-              outlineColor: Colors.white,
-              size: 11,
-              textOptional: true,
-            ),
-          ),
-        ),
-    ];
-  }
-
-  Point _districtLabelPoint(TashkentDistrictBoundary district) {
-    final ring = _largestOuterRing(district);
-    if (ring.isEmpty) {
-      final coordinates = LocationCache.getLocationCoordinatesById(
-        district.locationId,
-      );
-      return Point(
-        latitude: coordinates?["latitude"] ?? 41.2995,
-        longitude: coordinates?["longitude"] ?? 69.2401,
-      );
-    }
-
-    final centroid = _ringCentroid(ring);
-    if (centroid != null) return centroid;
-
-    final latitude = ring.fold<double>(
-          0,
-          (sum, point) => sum + point.latitude,
-        ) /
-        ring.length;
-    final longitude = ring.fold<double>(
-          0,
-          (sum, point) => sum + point.longitude,
-        ) /
-        ring.length;
-    return Point(latitude: latitude, longitude: longitude);
-  }
-
-  List<DistrictBoundaryPoint> _largestOuterRing(
-    TashkentDistrictBoundary district,
-  ) {
-    List<DistrictBoundaryPoint> largest = const [];
-    var largestArea = 0.0;
-    for (final polygon in district.polygons) {
-      final area = _ringArea(polygon.outerRing).abs();
-      if (area > largestArea) {
-        largestArea = area;
-        largest = polygon.outerRing;
-      }
-    }
-    return largest;
-  }
-
-  double _ringArea(List<DistrictBoundaryPoint> ring) {
-    if (ring.length < 3) return 0;
-    var area = 0.0;
-    for (var i = 0; i < ring.length; i++) {
-      final current = ring[i];
-      final next = ring[(i + 1) % ring.length];
-      area += current.longitude * next.latitude;
-      area -= next.longitude * current.latitude;
-    }
-    return area / 2;
-  }
-
-  Point? _ringCentroid(List<DistrictBoundaryPoint> ring) {
-    final area = _ringArea(ring);
-    if (area.abs() < 0.000000001) return null;
-
-    var latitude = 0.0;
-    var longitude = 0.0;
-    for (var i = 0; i < ring.length; i++) {
-      final current = ring[i];
-      final next = ring[(i + 1) % ring.length];
-      final factor =
-          current.longitude * next.latitude - next.longitude * current.latitude;
-      longitude += (current.longitude + next.longitude) * factor;
-      latitude += (current.latitude + next.latitude) * factor;
-    }
-
-    return Point(
-      latitude: latitude / (6 * area),
-      longitude: longitude / (6 * area),
-    );
-  }
-
-  LinearRing _toLinearRing(List<DistrictBoundaryPoint> points) {
-    return LinearRing(
-      points: [
-        for (final point in points)
-          Point(latitude: point.latitude, longitude: point.longitude),
-      ],
-    );
-  }
-
-  Color _districtLayerColor(int locationId) {
-    const colors = [
-      Color(0xFFE53935),
-      Color(0xFF8E24AA),
-      Color(0xFF3949AB),
-      Color(0xFF1E88E5),
-      Color(0xFF00ACC1),
-      Color(0xFF43A047),
-      Color(0xFF7CB342),
-      Color(0xFFFDD835),
-      Color(0xFFFFB300),
-      Color(0xFFFB8C00),
-      Color(0xFF6D4C41),
-      Color(0xFF546E7A),
-    ];
-    return colors[(locationId - 1).abs() % colors.length];
-  }
-
-  List<MapObject> _createMetroStationLayerMapObjects() {
-    final language = Localizations.localeOf(context).languageCode;
-    final showLabels = _currentZoom >= _minMetroStationLabelZoom;
-    return [
-      for (final station in MetroCache.getAllStations())
-        if (station.latitude != null && station.longitude != null) ...[
-          _createMetroStationPlacemark(station),
-          if (showLabels)
-            PlacemarkMapObject(
-              mapId: MapObjectId(
-                "tashkent_metro_station_${station.id}_label",
-              ),
-              point: Point(
-                latitude: station.latitude!,
-                longitude: station.longitude!,
-              ),
-              zIndex: 1.25,
-              opacity: 1.0,
-              consumeTapEvents: true,
-              text: PlacemarkText(
-                text: MetroCache.getStationName(station, language),
-                style: const PlacemarkTextStyle(
-                  placement: TextStylePlacement.right,
-                  offset: 6,
-                  color: Color(0xFF111111),
-                  outlineColor: Colors.white,
-                  size: 10,
-                  textOptional: true,
-                ),
-              ),
-              onTap: (_, point) => _handleMetroStationTap(station, point),
-            ),
-        ],
-    ];
-  }
-
-  MapObject _createMetroStationPlacemark(SubwayStation station) {
-    final point = Point(
-      latitude: station.latitude!,
-      longitude: station.longitude!,
-    );
-    final selected = _selectedMetroStation?.id == station.id;
-    final iconBytes = _cachedMetroStationIconBytes[station.line];
-    if (iconBytes == null) {
-      return CircleMapObject(
-        mapId: MapObjectId("tashkent_metro_station_${station.id}_circle"),
-        circle: Circle(center: point, radius: selected ? 270 : 180),
-        zIndex: selected ? 1.35 : 1.15,
-        consumeTapEvents: true,
-        strokeWidth: selected ? 4.5 : 3.0,
-        strokeColor: Colors.white.withValues(alpha: 0.95),
-        fillColor: _metroLineColor(station.line).withValues(alpha: 0.9),
-        onTap: (_, point) => _handleMetroStationTap(station, point),
-      );
-    }
-
-    return PlacemarkMapObject(
-      mapId: MapObjectId("tashkent_metro_station_${station.id}_placemark"),
-      point: point,
-      zIndex: selected ? 1.35 : 1.2,
-      opacity: 1.0,
-      consumeTapEvents: true,
-      icon: PlacemarkIcon.single(
-        PlacemarkIconStyle(
-          image: BitmapDescriptor.fromBytes(iconBytes),
-          anchor: const Offset(0.5, 0.5),
-          scale: selected ? 0.93 : 0.62,
-        ),
-      ),
-      onTap: (_, point) => _handleMetroStationTap(station, point),
-    );
-  }
-
   void _handleMetroStationTap(SubwayStation station, Point point) {
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
@@ -1044,76 +710,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
-  Color _metroLineColor(int line) {
-    return switch (line) {
-      1 => const Color(0xFFE53935),
-      2 => const Color(0xFF1E88E5),
-      3 => const Color(0xFF43A047),
-      4 => const Color(0xFFFFB300),
-      _ => const Color(0xFF546E7A),
-    };
-  }
-
-  List<MapObject> _createUniversityMarkerMapObjects() {
-    final iconBytes = _cachedUniversityIconBytes;
-    final selectedIconBytes = _cachedSelectedUniversityIconBytes;
-    if (widget.universityMarkers.isEmpty) return [];
-    if (iconBytes == null || selectedIconBytes == null) {
-      logger.w("📍 University marker icon is not ready yet");
-      return [];
-    }
-
-    final selectedMarkerId = _selectedUniversityMarker?.id;
-    final orderedMarkers = <UniversityMapMarker>[
-      for (final marker in widget.universityMarkers)
-        if (marker.id != selectedMarkerId) marker,
-      for (final marker in widget.universityMarkers)
-        if (marker.id == selectedMarkerId) marker,
-    ];
-
-    return [
-      for (final marker in orderedMarkers)
-        if (marker.id == selectedMarkerId)
-          PlacemarkMapObject(
-            mapId: MapObjectId("university_${marker.id}_placemark"),
-            point: Point(
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            ),
-            zIndex: 9,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(selectedIconBytes),
-                anchor: const Offset(0.5, 0.5),
-                scale: 1.0,
-              ),
-            ),
-            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
-          )
-        else
-          PlacemarkMapObject(
-            mapId: MapObjectId("university_${marker.id}_placemark"),
-            point: Point(
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            ),
-            zIndex: 5,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(iconBytes),
-                anchor: const Offset(0.5, 0.5),
-                scale: 0.9,
-              ),
-            ),
-            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
-          ),
-    ];
-  }
-
   void _handleUniversityMarkerTap(UniversityMapMarker marker, Point point) {
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
@@ -1129,213 +725,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       return;
     }
     setState(() => _selectedUniversityMarker = marker);
-  }
-
-  List<MapObject> _createListingPinMapObjects() {
-    logger.d("📍 Creating ${widget.pins.length} listing map pins");
-
-    final iconBytes = _cachedIconBytes;
-    final selectedIconBytes = _cachedSelectedIconBytes;
-    if (iconBytes == null || selectedIconBytes == null) {
-      logger.w("📍 Listing pin icon is not ready yet");
-      return [];
-    }
-    final selectedListingIds = <int>{
-      if (widget.selectedListingId != null) widget.selectedListingId!,
-      ...widget.selectedListingGroupIds,
-    };
-    final groups = _groupListingPins(widget.pins);
-    final orderedGroups = <_ListingPinGroup>[
-      for (final group in groups)
-        if (!group.pins
-            .any((pin) => selectedListingIds.contains(pin.listingId)))
-          group,
-      for (final group in groups)
-        if (group.pins.any((pin) => selectedListingIds.contains(pin.listingId)))
-          group,
-    ];
-
-    return [
-      for (final group in orderedGroups)
-        if (group.pins.length > 1)
-          _createListingGroupPlacemark(
-            group,
-            selected: group.pins.any(
-              (pin) => selectedListingIds.contains(pin.listingId),
-            ),
-          )
-        else if (selectedListingIds.contains(group.pins.first.listingId))
-          PlacemarkMapObject(
-            mapId:
-                MapObjectId("listing_${group.pins.first.listingId}_placemark"),
-            point: Point(
-              latitude: group.pins.first.latitude,
-              longitude: group.pins.first.longitude,
-            ),
-            zIndex: _selectedListingPinZIndex,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: _listingPinIconDescriptor(
-                  group.pins.first,
-                  selected: true,
-                ),
-                anchor: const Offset(0.5, 0.5),
-                zIndex: _selectedListingPinZIndex,
-                scale: 1.0,
-              ),
-            ),
-            onTap: (_, __) {
-              if (_selectedUniversityMarker != null) {
-                setState(() => _selectedUniversityMarker = null);
-              }
-              _setSelectedMetroStation(null, notify: true);
-              widget.onPinTap?.call(group.pins.first);
-            },
-          )
-        else
-          PlacemarkMapObject(
-            mapId:
-                MapObjectId("listing_${group.pins.first.listingId}_placemark"),
-            point: Point(
-              latitude: group.pins.first.latitude,
-              longitude: group.pins.first.longitude,
-            ),
-            zIndex: _listingPinZIndex,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: _listingPinIconDescriptor(group.pins.first),
-                anchor: const Offset(0.5, 0.5),
-                zIndex: _listingPinZIndex,
-                scale: 0.9,
-              ),
-            ),
-            onTap: (_, __) {
-              if (_selectedUniversityMarker != null) {
-                setState(() => _selectedUniversityMarker = null);
-              }
-              _setSelectedMetroStation(null, notify: true);
-              widget.onPinTap?.call(group.pins.first);
-            },
-          ),
-    ];
-  }
-
-  PlacemarkMapObject _createListingGroupPlacemark(
-    _ListingPinGroup group, {
-    required bool selected,
-  }) {
-    final count = group.pins.length;
-    final listingTypeCode = _listingGroupTypeCode(group.pins);
-    _ensureListingGroupIconBytes(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-    );
-    final groupIconBytes = _cachedListingGroupIconBytes[_listingGroupIconKey(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-    )];
-    return PlacemarkMapObject(
-      mapId: MapObjectId("listing_group_${group.key}_placemark"),
-      point: Point(
-        latitude: group.latitude,
-        longitude: group.longitude,
-      ),
-      zIndex: selected ? _selectedListingPinZIndex : _listingGroupPinZIndex,
-      opacity: 1.0,
-      consumeTapEvents: true,
-      icon: PlacemarkIcon.single(
-        PlacemarkIconStyle(
-          image: groupIconBytes == null
-              ? BitmapDescriptor.fromBytes(
-                  selected ? _cachedSelectedIconBytes! : _cachedIconBytes!,
-                )
-              : BitmapDescriptor.fromBytes(groupIconBytes),
-          anchor: const Offset(0.5, 0.5),
-          zIndex: selected ? _selectedListingPinZIndex : _listingGroupPinZIndex,
-          scale: selected ? 1.5 : 1.425,
-        ),
-      ),
-      onTap: (_, __) {
-        if (_selectedUniversityMarker != null) {
-          setState(() => _selectedUniversityMarker = null);
-        }
-        _setSelectedMetroStation(null, notify: true);
-        final onPinGroupTap = widget.onPinGroupTap;
-        if (onPinGroupTap != null) {
-          onPinGroupTap(group.pins);
-          return;
-        }
-        widget.onPinTap?.call(group.pins.first);
-      },
-    );
-  }
-
-  BitmapDescriptor _listingPinIconDescriptor(
-    ListingMapPin pin, {
-    bool selected = false,
-  }) {
-    return _listingTypeIconDescriptor(
-      listingTypeCode: pin.listingTypeCode,
-      listingTypeId: pin.listingTypeId,
-      selected: selected,
-    );
-  }
-
-  BitmapDescriptor _listingTypeIconDescriptor({
-    String? listingTypeCode,
-    int? listingTypeId,
-    bool selected = false,
-  }) {
-    final fallbackBytes =
-        selected ? _cachedSelectedIconBytes : _cachedIconBytes;
-    final bytesByCode = selected
-        ? _cachedSelectedListingTypeIconBytes
-        : _cachedListingTypeIconBytes;
-    final resolvedCode = _resolveListingTypeCode(
-      listingTypeCode: listingTypeCode,
-      listingTypeId: listingTypeId,
-    );
-    final iconBytes = resolvedCode == null ? null : bytesByCode[resolvedCode];
-    return BitmapDescriptor.fromBytes(iconBytes ?? fallbackBytes!);
-  }
-
-  String? _resolveListingTypeCode({
-    String? listingTypeCode,
-    int? listingTypeId,
-  }) {
-    final code = listingTypeCode;
-    if (code != null &&
-        code.isNotEmpty &&
-        ListingTypeHelper.getAllCodes().contains(code)) {
-      return code;
-    }
-
-    final id = listingTypeId;
-    if (id == null) return null;
-    final codeFromId = ListingTypeHelper.getCodeFromId(id);
-    return ListingTypeHelper.getAllCodes().contains(codeFromId)
-        ? codeFromId
-        : null;
-  }
-
-  String? _listingGroupTypeCode(List<ListingMapPin> pins) {
-    String? groupCode;
-    for (final pin in pins) {
-      final code = _resolveListingTypeCode(
-        listingTypeCode: pin.listingTypeCode,
-        listingTypeId: pin.listingTypeId,
-      );
-      if (code == null) return null;
-      groupCode ??= code;
-      if (groupCode != code) return null;
-    }
-    return groupCode;
   }
 
   Map<String, double>? _getCoordinates() {
@@ -1475,15 +864,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   bool _mapTargetChanged(YandexMapWidget oldWidget) {
     if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
-    if (widget.includeUniversityMarkersInCamera &&
+    if (widget.cameraOptions.includeUniversityMarkersInCamera &&
         _universityMarkersChanged(
           oldWidget.universityMarkers,
           widget.universityMarkers,
         )) {
       return true;
     }
-    if (oldWidget.includeUniversityMarkersInCamera !=
-        widget.includeUniversityMarkersInCamera) {
+    if (oldWidget.cameraOptions.includeUniversityMarkersInCamera !=
+        widget.cameraOptions.includeUniversityMarkersInCamera) {
       return true;
     }
     return oldWidget.latitude != widget.latitude ||
@@ -1540,35 +929,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return [
       for (final pin in widget.pins)
         Point(latitude: pin.latitude, longitude: pin.longitude),
-      if (widget.includeUniversityMarkersInCamera)
+      if (widget.cameraOptions.includeUniversityMarkersInCamera)
         for (final marker in widget.universityMarkers)
           Point(latitude: marker.latitude, longitude: marker.longitude),
     ];
   }
 
-  List<_ListingPinGroup> _groupListingPins(List<ListingMapPin> pins) {
-    final pinsByCoordinate = <String, List<ListingMapPin>>{};
-    for (final pin in pins) {
-      final key = _listingPinCoordinateKey(pin.latitude, pin.longitude);
-      pinsByCoordinate.putIfAbsent(key, () => <ListingMapPin>[]).add(pin);
-    }
-    return [
-      for (final entry in pinsByCoordinate.entries)
-        _ListingPinGroup(
-          key: entry.key,
-          latitude: entry.value.first.latitude,
-          longitude: entry.value.first.longitude,
-          pins: List<ListingMapPin>.unmodifiable(entry.value),
-        ),
-    ];
-  }
-
-  String _listingPinCoordinateKey(double latitude, double longitude) {
-    return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
-  }
-
   bool get _canShowListingDetailTooltip {
-    return widget.showListingDetailTooltip && widget.listingDetail != null;
+    return widget.tooltipOptions.showListingDetail &&
+        widget.listingDetail != null;
   }
 
   Widget? _activeMapTooltip() {
@@ -1584,7 +953,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
 
     final metroStation = _selectedMetroStation;
-    if (widget.showMetroStationsLayer && metroStation != null) {
+    if (widget.tooltipOptions.showMetroStation &&
+        widget.layerOptions.showMetroStationsLayer &&
+        metroStation != null) {
       return _MetroStationMapTooltip(
         key: ValueKey("metro-station-${metroStation.id}"),
         station: metroStation,
@@ -1594,7 +965,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
 
     final marker = _selectedUniversityMarker;
-    if (widget.showUniversityMarkerTooltip && marker != null) {
+    if (widget.tooltipOptions.showUniversityMarker && marker != null) {
       return UniversityMapTooltip(
         key: ValueKey("university-${marker.id}"),
         marker: marker,
@@ -1749,222 +1120,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
-  Future<Uint8List> _createIconBytes(
-    IconData iconData,
-    int size, {
-    Color backgroundColor = const Color(0xFF000000),
-    Color iconColor = Colors.white,
-    Color? outlineColor,
-    double outlineWidth = 0,
-    Color? shadowColor,
-    double shadowBlurRadius = 0,
-    Offset shadowOffset = Offset.zero,
-  }) async {
-    final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
-
-    final center = Offset(size / 2, size / 2);
-    final radius = size * 0.39;
-
-    if (shadowColor != null && shadowBlurRadius > 0) {
-      final shadowPaint = Paint()
-        ..color = shadowColor
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadowBlurRadius)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(center + shadowOffset, radius, shadowPaint);
-    }
-
-    if (outlineColor != null && outlineWidth > 0) {
-      final outlinePaint = Paint()
-        ..color = outlineColor
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(center, radius + outlineWidth, outlinePaint);
-    }
-
-    final circlePaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, radius, circlePaint);
-
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: String.fromCharCode(iconData.codePoint),
-        style: TextStyle(
-          fontSize: size.toDouble() * 0.6,
-          fontFamily: iconData.fontFamily,
-          package: iconData.fontPackage,
-          color: iconColor,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-
-    textPainter.layout();
-    final offset = Offset(
-      (size - textPainter.width) / 2,
-      (size - textPainter.height) / 2,
-    );
-    textPainter.paint(canvas, offset);
-
-    final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(size, size);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    return byteData!.buffer.asUint8List();
-  }
-
-  void _syncListingGroupIconBytes() {
-    for (final group in _groupListingPins(widget.pins)) {
-      if (group.pins.length < 2) continue;
-      final listingTypeCode = _listingGroupTypeCode(group.pins);
-      _ensureListingGroupIconBytes(
-        group.pins.length,
-        listingTypeCode: listingTypeCode,
-      );
-      _ensureListingGroupIconBytes(
-        group.pins.length,
-        listingTypeCode: listingTypeCode,
-        selected: true,
-      );
-    }
-  }
-
-  void _ensureListingGroupIconBytes(
-    int count, {
-    String? listingTypeCode,
-    bool selected = false,
-  }) {
-    if (_cachedIconBytes == null || _cachedSelectedIconBytes == null) return;
-    final key = _listingGroupIconKey(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-    );
-    if (_cachedListingGroupIconBytes.containsKey(key) ||
-        _pendingListingGroupIconKeys.contains(key)) {
-      return;
-    }
-
-    _pendingListingGroupIconKeys.add(key);
-    _createListingGroupIconBytes(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-    ).then((bytes) {
-      _pendingListingGroupIconKeys.remove(key);
-      _cachedListingGroupIconBytes[key] = bytes;
+  void _requestMapRebuild() {
+    if (!mounted || _mapRebuildScheduled) return;
+    _mapRebuildScheduled = true;
+    Future.microtask(() {
+      _mapRebuildScheduled = false;
       if (mounted) setState(() {});
-    }).catchError((error) {
-      _pendingListingGroupIconKeys.remove(key);
-      logger.w("Could not create grouped listing pin icon: $error");
     });
   }
 
-  String _listingGroupIconKey(
-    int count, {
-    required String? listingTypeCode,
-    required bool selected,
-  }) {
-    return "${selected ? "selected" : "default"}_${listingTypeCode ?? "mixed"}_$count";
-  }
-
-  Future<Uint8List> _createListingGroupIconBytes(
-    int count, {
-    required bool selected,
-    String? listingTypeCode,
-  }) async {
-    const width = 148;
-    const height = 96;
-    final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
-    const center = Offset(width / 2, height / 2);
-    final pillHeight = selected ? 68.0 : 62.0;
-    final pillWidth = selected ? 130.0 : 122.0;
-    final pillRect = Rect.fromCenter(
-      center: center,
-      width: pillWidth,
-      height: pillHeight,
-    );
-    final pillRadius = Radius.circular(pillHeight / 2);
-    final pillRRect = RRect.fromRectAndRadius(pillRect, pillRadius);
-
-    final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: selected ? 0.35 : 0.24)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(pillRRect.shift(const Offset(0, 5)), shadowPaint);
-
-    final outlinePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    final outlineWidth = selected ? 8.0 : 6.0;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        pillRect.inflate(outlineWidth),
-        Radius.circular((pillHeight / 2) + outlineWidth),
-      ),
-      outlinePaint,
-    );
-
-    final pillPaint = Paint()
-      ..color = selected ? AppColors.primary : Colors.black
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(pillRRect, pillPaint);
-
-    final label = count > 99 ? "99+" : count.toString();
-    final iconData = listingTypeCode == null
-        ? Icons.home_work_outlined
-        : ListingTypeHelper.getIcon(listingTypeCode);
-    final iconPainter = TextPainter(
-      text: TextSpan(
-        text: String.fromCharCode(iconData.codePoint),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: label.length > 2 ? 32 : 38,
-          fontFamily: iconData.fontFamily,
-          package: iconData.fontPackage,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: label.length > 2 ? 30 : 36,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.8,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    const gap = 8.0;
-    final contentWidth = textPainter.width + gap + iconPainter.width;
-    final contentHeight = iconPainter.height > textPainter.height
-        ? iconPainter.height
-        : textPainter.height;
-    final contentLeft = (width - contentWidth) / 2;
-    final contentTop = (height - contentHeight) / 2;
-    textPainter.paint(
-      canvas,
-      Offset(
-        contentLeft,
-        contentTop + (contentHeight - textPainter.height) / 2,
-      ),
-    );
-    iconPainter.paint(
-      canvas,
-      Offset(
-        contentLeft + textPainter.width + gap,
-        contentTop + (contentHeight - iconPainter.height) / 2,
-      ),
-    );
-
-    final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(width, height);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
+  void _clearSelectedUniversityMarker() {
+    if (_selectedUniversityMarker != null) {
+      setState(() => _selectedUniversityMarker = null);
+    }
   }
 
   Widget _buildZoomControls() {
@@ -1975,11 +1143,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         themeState.isBlueTheme ? Colors.black : theme.colorScheme.onSurface;
     final borderRadius = BorderRadius.circular(999);
     final safeAreaPadding = MediaQuery.paddingOf(context);
-    const width = 48.0;
+    const width = 24.0;
     const height = 176.0;
     final slider = _buildZoomSlider(foregroundColor);
-    final right = widget.zoomControlsRight;
-    final bottom = widget.zoomControlsBottom;
+    final right = widget.zoomControlsOptions.right;
+    final bottom = widget.zoomControlsOptions.bottom;
 
     return Positioned(
       left: right == null ? safeAreaPadding.left + 8 : null,

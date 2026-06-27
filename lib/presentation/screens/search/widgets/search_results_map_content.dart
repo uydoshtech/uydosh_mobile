@@ -79,11 +79,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     final pinGroup = selectedPinGroup;
     final universityMarker = selectedUniversityMarker;
     final showNoResultsTile = !isLoading && result.total == 0;
+    final hasMapTooltipSpace = hasSelectedMetroStation && !showNoResultsTile;
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
-        hasSelectedMetroStation ||
-        showNoResultsTile;
+        showNoResultsTile ||
+        hasMapTooltipSpace;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.2;
     const feedViewButtonHeight = 34.2;
@@ -91,8 +92,6 @@ class _SearchResultsMapContent extends StatelessWidget {
     const viewToggleGap = 8.0;
     const zoomControlsWidth = 48.0;
     const metroTooltipReservedHeight = 64.0;
-    const layerButtonIconSize = 18.0;
-    const layerButtonBorder = BorderSide(color: Colors.black, width: 1);
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
     final zoomControlsBottom = viewToggleBottom +
         feedViewButtonHeight +
@@ -106,34 +105,6 @@ class _SearchResultsMapContent extends StatelessWidget {
       height: feedViewButtonHeight,
       iconSize: 22.5,
       foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
-      elevation: ThemeState().isBlueTheme ? null : 8,
-    );
-    final districtLayerButton = SearchFloatingActionButton(
-      onPressed: onToggleDistrictLayer,
-      iconData: Icons.layers_rounded,
-      tooltip: showDistrictLayer
-          ? context.l10n.hide_district_layer
-          : context.l10n.show_district_layer,
-      width: viewToggleWidth,
-      height: viewToggleHeight,
-      iconSize: layerButtonIconSize,
-      backgroundColor: showDistrictLayer ? Colors.black : Colors.white,
-      foregroundColor: showDistrictLayer ? Colors.white : Colors.black,
-      borderSide: layerButtonBorder,
-      elevation: ThemeState().isBlueTheme ? null : 8,
-    );
-    final metroStationsLayerButton = SearchFloatingActionButton(
-      onPressed: onToggleMetroStationsLayer,
-      iconData: Icons.directions_subway_rounded,
-      tooltip: showMetroStationsLayer
-          ? context.l10n.hide_metro_stations_layer
-          : context.l10n.show_metro_stations_layer,
-      width: viewToggleWidth,
-      height: viewToggleHeight,
-      iconSize: layerButtonIconSize,
-      backgroundColor: showMetroStationsLayer ? Colors.black : Colors.white,
-      foregroundColor: showMetroStationsLayer ? Colors.white : Colors.black,
-      borderSide: layerButtonBorder,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     return Column(
@@ -167,20 +138,29 @@ class _SearchResultsMapContent extends StatelessWidget {
                   ],
                   title: context.l10n.search_results,
                   height: double.infinity,
-                  moveCameraOnTargetChange: result.pins.isNotEmpty,
-                  includeUniversityMarkersInCamera: false,
+                  cameraOptions: YandexMapCameraOptions(
+                    moveOnTargetChange: result.pins.isNotEmpty,
+                    includeUniversityMarkersInCamera: false,
+                  ),
                   showDefaultPlacemark: false,
-                  showUniversityMarkerTooltip: false,
-                  showUserLocation: true,
-                  showDistrictLayer: showDistrictLayer,
-                  showMetroStationsLayer: showMetroStationsLayer,
+                  tooltipOptions: YandexMapTooltipOptions(
+                    showUniversityMarker: false,
+                    showMetroStation: !showNoResultsTile,
+                  ),
+                  layerOptions: YandexMapLayerOptions(
+                    showUserLocation: true,
+                    showDistrictLayer: showDistrictLayer,
+                    showMetroStationsLayer: showMetroStationsLayer,
+                  ),
                   showLoadingPlaceholderContent: false,
-                  zoomControlsRight: placeViewToggleAtBottom
-                      ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
-                      : null,
-                  zoomControlsBottom: placeViewToggleAtBottom
-                      ? zoomControlsBottom.clamp(0.0, double.infinity)
-                      : null,
+                  zoomControlsOptions: YandexMapZoomControlsOptions(
+                    right: placeViewToggleAtBottom
+                        ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                        : null,
+                    bottom: placeViewToggleAtBottom
+                        ? zoomControlsBottom.clamp(0.0, double.infinity)
+                        : null,
+                  ),
                   onMetroStationTooltipChanged: onMetroStationTooltipChanged,
                   onMapTap: (_) {
                     onClearSelectedPin();
@@ -220,36 +200,37 @@ class _SearchResultsMapContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     MapTooltipFadeTransition(
-                      child: pin != null
-                          ? _PinSummaryTooltip(
-                              key: ValueKey("pin-${pin.listingId}"),
-                              pin: pin,
-                              onClose: onClearSelectedPin,
-                              onOpen: () => onOpenPin(pin),
+                      child: showNoResultsTile
+                          ? _NoMapResultsTile(
+                              key: const ValueKey("no-map-results"),
+                              label: L10n.get("no_results"),
                             )
-                          : pinGroup.isNotEmpty
-                              ? _PinGroupSummaryTooltip(
-                                  key: ValueKey(
-                                    "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
-                                  ),
-                                  pins: pinGroup,
+                          : pin != null
+                              ? _PinSummaryTooltip(
+                                  key: ValueKey("pin-${pin.listingId}"),
+                                  pin: pin,
                                   onClose: onClearSelectedPin,
-                                  onOpenPin: onOpenPin,
+                                  onOpen: () => onOpenPin(pin),
                                 )
-                              : universityMarker != null
-                                  ? UniversityMapTooltip(
+                              : pinGroup.isNotEmpty
+                                  ? _PinGroupSummaryTooltip(
                                       key: ValueKey(
-                                        "university-${universityMarker.id}",
+                                        "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
                                       ),
-                                      marker: universityMarker,
-                                      onClose: onClearSelectedUniversityMarker,
+                                      pins: pinGroup,
+                                      onClose: onClearSelectedPin,
+                                      onOpenPin: onOpenPin,
                                     )
-                                  : showNoResultsTile
-                                      ? _NoMapResultsTile(
-                                          key: const ValueKey("no-map-results"),
-                                          label: L10n.get("no_results"),
+                                  : universityMarker != null
+                                      ? UniversityMapTooltip(
+                                          key: ValueKey(
+                                            "university-${universityMarker.id}",
+                                          ),
+                                          marker: universityMarker,
+                                          onClose:
+                                              onClearSelectedUniversityMarker,
                                         )
-                                      : hasSelectedMetroStation
+                                      : hasMapTooltipSpace
                                           ? const SizedBox(
                                               key: ValueKey(
                                                 "metro-station-tooltip-space",
@@ -269,13 +250,14 @@ class _SearchResultsMapContent extends StatelessWidget {
                       feedViewButton,
                       const SizedBox(height: viewToggleGap),
                     ],
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        metroStationsLayerButton,
-                        const SizedBox(width: viewToggleGap),
-                        districtLayerButton,
-                      ],
+                    _MapLayerToggleButtons(
+                      showMetroStationsLayer: showMetroStationsLayer,
+                      showDistrictLayer: showDistrictLayer,
+                      onToggleMetroStationsLayer: onToggleMetroStationsLayer,
+                      onToggleDistrictLayer: onToggleDistrictLayer,
+                      width: viewToggleWidth,
+                      height: viewToggleHeight,
+                      gap: viewToggleGap,
                     ),
                   ],
                 ),
@@ -347,6 +329,77 @@ class _NoMapResultsTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MapLayerToggleButtons extends StatelessWidget {
+  const _MapLayerToggleButtons({
+    required this.showMetroStationsLayer,
+    required this.showDistrictLayer,
+    required this.onToggleMetroStationsLayer,
+    required this.onToggleDistrictLayer,
+    required this.width,
+    required this.height,
+    required this.gap,
+  });
+
+  final bool showMetroStationsLayer;
+  final bool showDistrictLayer;
+  final VoidCallback onToggleMetroStationsLayer;
+  final VoidCallback onToggleDistrictLayer;
+  final double width;
+  final double height;
+  final double gap;
+
+  static const _iconSize = 18.0;
+  static const _border = BorderSide(color: Colors.black, width: 1);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildLayerButton(
+          context,
+          active: showMetroStationsLayer,
+          iconData: Icons.directions_subway_rounded,
+          activeTooltip: context.l10n.hide_metro_stations_layer,
+          inactiveTooltip: context.l10n.show_metro_stations_layer,
+          onPressed: onToggleMetroStationsLayer,
+        ),
+        SizedBox(width: gap),
+        _buildLayerButton(
+          context,
+          active: showDistrictLayer,
+          iconData: Icons.layers_rounded,
+          activeTooltip: context.l10n.hide_district_layer,
+          inactiveTooltip: context.l10n.show_district_layer,
+          onPressed: onToggleDistrictLayer,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLayerButton(
+    BuildContext context, {
+    required bool active,
+    required IconData iconData,
+    required String activeTooltip,
+    required String inactiveTooltip,
+    required VoidCallback onPressed,
+  }) {
+    return SearchFloatingActionButton(
+      onPressed: onPressed,
+      iconData: iconData,
+      tooltip: active ? activeTooltip : inactiveTooltip,
+      width: width,
+      height: height,
+      iconSize: _iconSize,
+      backgroundColor: active ? Colors.black : Colors.white,
+      foregroundColor: active ? Colors.white : Colors.black,
+      borderSide: _border,
+      elevation: ThemeState().isBlueTheme ? null : 8,
     );
   }
 }
