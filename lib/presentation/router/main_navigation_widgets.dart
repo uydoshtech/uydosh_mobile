@@ -24,6 +24,8 @@ class HomeListingsAppBarTitle extends StatefulWidget {
 
 class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
   bool _countReady = false;
+  bool _inlineActive = HomeInlineSearchState().isActive;
+  int? _activationRevision;
 
   /// Fine vertical tuning for inline [WidgetSpan]s (logical px; +Y is down).
   static const double _bulletDiscDy = 0.5;
@@ -35,82 +37,108 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
   int? _totalFor(ListingsState state) =>
       state.maybeMap(loaded: (s) => s.total, orElse: () => null);
 
+  int? _revisionFor(ListingsState state) =>
+      state.maybeMap(loaded: (s) => s.revision, orElse: () => null);
+
+  @override
+  void initState() {
+    super.initState();
+    HomeInlineSearchState().addListener(_handleInlineSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    HomeInlineSearchState().removeListener(_handleInlineSearchChanged);
+    super.dispose();
+  }
+
+  void _handleInlineSearchChanged() {
+    final nextActive = HomeInlineSearchState().isActive;
+    if (nextActive == _inlineActive) return;
+
+    final state = context.read<ListingsBloc>().state;
+    setState(() {
+      _inlineActive = nextActive;
+      _countReady = false;
+      _activationRevision = nextActive ? _revisionFor(state) : null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: HomeInlineSearchState(),
+      listenable: LanguageState(),
       builder: (context, _) {
-        final inlineActive = HomeInlineSearchState().isActive;
+        return BlocConsumer<ListingsBloc, ListingsState>(
+          listenWhen: (previous, current) =>
+              _isLoaded(previous) != _isLoaded(current) ||
+              _totalFor(previous) != _totalFor(current) ||
+              _revisionFor(previous) != _revisionFor(current),
+          listener: (context, state) {
+            final revision = _revisionFor(state);
+            final hasFreshInlineResult = _inlineActive &&
+                _isLoaded(state) &&
+                (_activationRevision == null ||
+                    revision != _activationRevision);
+            final nextReady = hasFreshInlineResult;
+            if (nextReady != _countReady && mounted) {
+              setState(() => _countReady = nextReady);
+            }
+          },
+          buildWhen: (previous, current) =>
+              _isLoaded(previous) != _isLoaded(current) ||
+              _totalFor(previous) != _totalFor(current) ||
+              _revisionFor(previous) != _revisionFor(current),
+          builder: (context, state) {
+            final total = _totalFor(state);
+            final showCount =
+                _inlineActive && _countReady && total != null && total > 0;
 
-        return ListenableBuilder(
-          listenable: LanguageState(),
-          builder: (context, _) {
-            return BlocConsumer<ListingsBloc, ListingsState>(
-              listenWhen: (previous, current) =>
-                  _isLoaded(previous) != _isLoaded(current),
-              listener: (context, state) {
-                final isInlineActive = HomeInlineSearchState().isActive;
-                final nextReady = _isLoaded(state) && isInlineActive;
-                if (nextReady != _countReady && mounted) {
-                  setState(() => _countReady = nextReady);
-                }
-              },
-              buildWhen: (previous, current) =>
-                  _isLoaded(previous) != _isLoaded(current) ||
-                  _totalFor(previous) != _totalFor(current),
-              builder: (context, state) {
-                final total = _totalFor(state);
-                final showCount =
-                    inlineActive && _countReady && total != null && total > 0;
+            // “•” uses title size; digits are smaller for hierarchy.
+            final titleFs = widget.titleStyle.fontSize ?? 20;
+            final countStyle = widget.titleStyle.copyWith(
+              fontWeight: FontWeight.w600,
+              color: widget.titleStyle.color?.withValues(alpha: 0.72),
+            );
+            final countNumberStyle = countStyle.copyWith(fontSize: titleFs - 5);
 
-                // “•” uses title size; digits are smaller for hierarchy.
-                final titleFs = widget.titleStyle.fontSize ?? 20;
-                final countStyle = widget.titleStyle.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: widget.titleStyle.color?.withValues(alpha: 0.72),
-                );
-                final countNumberStyle =
-                    countStyle.copyWith(fontSize: titleFs - 5);
-
-                return Text.rich(
+            return Text.rich(
+              TextSpan(
+                children: [
                   TextSpan(
-                    children: [
-                      TextSpan(
-                        text: L10n.get("nav_housing"),
-                        style: widget.titleStyle,
+                    text: L10n.get("nav_housing"),
+                    style: widget.titleStyle,
+                  ),
+                  if (showCount) ...[
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Transform.translate(
+                        offset: const Offset(0, _bulletDiscDy),
+                        child: Text(
+                          " \u2022 ",
+                          style: countStyle,
+                        ),
                       ),
-                      if (showCount) ...[
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Transform.translate(
-                            offset: const Offset(0, _bulletDiscDy),
-                            child: Text(
-                              " \u2022 ",
-                              style: countStyle,
-                            ),
-                          ),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Transform.translate(
+                        offset: const Offset(0, _countTallyDy),
+                        child: Text(
+                          "$total",
+                          style: countNumberStyle,
                         ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Transform.translate(
-                            offset: const Offset(0, _countTallyDy),
-                            child: Text(
-                              "$total",
-                              style: countNumberStyle,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  strutStyle: StrutStyle.fromTextStyle(
-                    widget.titleStyle,
-                    forceStrutHeight: true,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              strutStyle: StrutStyle.fromTextStyle(
+                widget.titleStyle,
+                forceStrutHeight: true,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             );
           },
         );

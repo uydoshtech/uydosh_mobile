@@ -456,8 +456,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       ),
       child: Stack(
         children: [
-          // Map-like background pattern
-          CustomPaint(painter: MapPatternPainter(), size: Size.infinite),
           // Loading indicator and location info
           if (widget.showLoadingPlaceholderContent)
             Center(

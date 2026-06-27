@@ -239,8 +239,10 @@ class _SearchResultsFabStack extends StatelessWidget {
                       iconData: Icons.search,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
-                      foregroundColor:
-                          ThemeState().isBlueTheme ? Colors.white : null,
+                      foregroundColor: ThemeState().isBlueTheme &&
+                              showViewToggle
+                          ? Colors.white
+                          : null,
                       elevation: ThemeState().isBlueTheme ? null : 8,
                     ),
                   );

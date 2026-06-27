@@ -93,6 +93,11 @@ class _SearchResultsMapContent extends StatelessWidget {
     const metroTooltipReservedHeight = 64.0;
     const layerButtonIconSize = 18.0;
     const layerButtonBorder = BorderSide(color: Colors.black, width: 1);
+    final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
+    final zoomControlsBottom = viewToggleBottom +
+        feedViewButtonHeight +
+        viewToggleGap -
+        safeAreaBottom;
     final feedViewButton = SearchFloatingActionButton(
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
@@ -174,7 +179,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                       ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
                       : null,
                   zoomControlsBottom: placeViewToggleAtBottom
-                      ? viewToggleBottom + feedViewButtonHeight + viewToggleGap
+                      ? zoomControlsBottom.clamp(0.0, double.infinity)
                       : null,
                   onMetroStationTooltipChanged: onMetroStationTooltipChanged,
                   onMapTap: (_) {
