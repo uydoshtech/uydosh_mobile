@@ -923,7 +923,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
         selector: (state) => state.map(
           initial: (_) => _HomeScreenData(
-            isLoading: widget.isSearchMode,
+            isLoading: true,
             hasError: false,
             errorMessage: "",
             listings: const [],

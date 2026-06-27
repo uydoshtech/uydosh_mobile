@@ -95,21 +95,26 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             top: widget.inlineRibbonTop,
             child: widget.inlineFiltersRibbonBuilder(context),
           ),
-        _SearchResultsFabStack(
-          inSearchContext: widget.inSearchContext,
-          bottom: widget.alertFabBottom,
-          searchFiltersState: widget.searchFiltersState,
-          searchButtonTutorialKey: widget.searchButtonTutorialKey,
-          isHomeTabActive: widget.isHomeTabActive,
-          isSearchMode: widget.isSearchMode,
-          onOpenMapView: widget.onOpenMapView,
-          onOpenInlineSearch: widget.onOpenInlineSearch,
-        ),
       ],
     );
 
     if (!widget.inSearchContext || !_mapHasBeenShown) {
-      return listView;
+      return Stack(
+        children: [
+          listView,
+          _SearchResultsFabStack(
+            inSearchContext: widget.inSearchContext,
+            bottom: widget.alertFabBottom,
+            searchFiltersState: widget.searchFiltersState,
+            searchButtonTutorialKey: widget.searchButtonTutorialKey,
+            isHomeTabActive: widget.isHomeTabActive,
+            isSearchMode: widget.isSearchMode,
+            showViewToggle: true,
+            onOpenMapView: widget.onOpenMapView,
+            onOpenInlineSearch: widget.onOpenInlineSearch,
+          ),
+        ],
+      );
     }
 
     final mapView = SearchResultsMapScreen(
@@ -127,6 +132,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       embedded: true,
       initialListings: widget.initialMapListings,
       initialTotal: widget.initialMapTotal,
+      embeddedSearchButtonBottom: widget.alertFabBottom,
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(
         widget.alertFabBottom,
       ),
@@ -139,11 +145,27 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             child: mapView,
           );
 
-    return IndexedStack(
-      index: widget.searchResultsView == _SearchResultsView.map ? 1 : 0,
+    final isShowingMap = widget.searchResultsView == _SearchResultsView.map;
+    return Stack(
       children: [
-        listView,
-        paddedMapView,
+        IndexedStack(
+          index: isShowingMap ? 1 : 0,
+          children: [
+            listView,
+            paddedMapView,
+          ],
+        ),
+        _SearchResultsFabStack(
+          inSearchContext: widget.inSearchContext,
+          bottom: widget.alertFabBottom,
+          searchFiltersState: widget.searchFiltersState,
+          searchButtonTutorialKey: widget.searchButtonTutorialKey,
+          isHomeTabActive: widget.isHomeTabActive,
+          isSearchMode: widget.isSearchMode,
+          showViewToggle: !isShowingMap,
+          onOpenMapView: widget.onOpenMapView,
+          onOpenInlineSearch: widget.onOpenInlineSearch,
+        ),
       ],
     );
   }
@@ -157,6 +179,7 @@ class _SearchResultsFabStack extends StatelessWidget {
     required this.searchButtonTutorialKey,
     required this.isHomeTabActive,
     required this.isSearchMode,
+    required this.showViewToggle,
     required this.onOpenMapView,
     required this.onOpenInlineSearch,
   });
@@ -169,6 +192,7 @@ class _SearchResultsFabStack extends StatelessWidget {
   final GlobalKey<TutorialTargetWrapperState> searchButtonTutorialKey;
   final bool isHomeTabActive;
   final bool isSearchMode;
+  final bool showViewToggle;
   final VoidCallback onOpenMapView;
   final VoidCallback onOpenInlineSearch;
 
@@ -183,7 +207,7 @@ class _SearchResultsFabStack extends StatelessWidget {
     return Positioned.fill(
       child: Stack(
         children: [
-          if (inSearchContext)
+          if (inSearchContext && showViewToggle)
             Positioned(
               right: 16,
               bottom: viewToggleBottomFor(bottom),

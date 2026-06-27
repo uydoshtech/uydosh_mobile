@@ -9,7 +9,11 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
+import "package:uy_dosh/domain/models/listing_group.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
+import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
+import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -33,6 +37,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
   bool _loading = true;
   String? _errorMessage;
   List<ConversationSummary> _groups = const [];
+  Map<int, ListingGroupContext> _groupContexts = const {};
 
   @override
   void initState() {
@@ -54,11 +59,13 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
           .where((c) => c.contextType?.trim().toLowerCase() == "listing_group")
           .toList()
         ..sort((a, b) => _activityTime(b).compareTo(_activityTime(a)));
+      final groupContexts = await _loadGroupContexts(groups);
 
       if (!mounted) return;
       setState(() {
         _currentUserId = userId;
         _groups = groups;
+        _groupContexts = groupContexts;
         _loading = false;
       });
     } catch (_) {
@@ -77,6 +84,31 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
         DateTime.fromMillisecondsSinceEpoch(0);
   }
 
+  Future<Map<int, ListingGroupContext>> _loadGroupContexts(
+    List<ConversationSummary> groups,
+  ) async {
+    final entries = await Future.wait(
+      groups.map((group) async {
+        final listingId = group.listingId;
+        if (listingId == null) return null;
+        try {
+          final detail = await getIt<IListingService>().getListingDetail(
+            listingId,
+          );
+          final groupContext = detail.groupContext;
+          if (groupContext == null) return null;
+          return MapEntry(group.id, groupContext);
+        } catch (_) {
+          return null;
+        }
+      }),
+    );
+
+    return Map.fromEntries(
+      entries.whereType<MapEntry<int, ListingGroupContext>>(),
+    );
+  }
+
   Future<void> _openGroup(ConversationSummary conversation) async {
     HapticFeedbackUtils.impact();
     final listingId = conversation.listingId;
@@ -86,6 +118,23 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
     }
 
     await context.pushListingDetail(listingId);
+  }
+
+  Future<void> _openChat(ConversationSummary conversation) async {
+    HapticFeedbackUtils.impact();
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        settings: RouteSettings(name: ChatScreen.routeName(conversation.id)),
+        builder: (_) => ChatScreen(
+          conversationId: conversation.id,
+          listingId: conversation.listingId,
+          listingTypeId: conversation.listingTypeId,
+          listingTitle: resolvedConversationListingTitle(conversation),
+          conversationContextType: "listing_group",
+          conversationParticipantId: conversation.participantId,
+        ),
+      ),
+    );
   }
 
   Future<void> _refresh() => _loadGroups();
@@ -152,7 +201,9 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
             useFeedTileSurface: true,
             surfaceMargin: EdgeInsets.zero,
             showParticipantAvatarStack: true,
+            groupContext: _groupContexts[group.id],
             onTap: () => _openGroup(group),
+            onChatTap: () => _openChat(group),
           );
         },
       ),

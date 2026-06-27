@@ -25,6 +25,7 @@ class SearchFloatingActionButton extends StatefulWidget {
     this.width,
     this.height,
     this.elevation,
+    this.borderSide,
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
   }) : assert(
@@ -42,6 +43,7 @@ class SearchFloatingActionButton extends StatefulWidget {
   final double? width;
   final double? height;
   final double? elevation;
+  final BorderSide? borderSide;
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
 
@@ -169,7 +171,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
             decoration: BoxDecoration(color: widget.backgroundColor),
             child: liquidContent,
           );
-    final Widget liquidBody = SizedBox(
+    Widget liquidBody = SizedBox(
       width: width,
       height: height,
       child: LiquidGlassPlate(
@@ -185,6 +187,16 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
         ),
       ),
     );
+    if (widget.borderSide != null) {
+      liquidBody = Container(
+        width: width,
+        height: height,
+        foregroundDecoration: ShapeDecoration(
+          shape: StadiumBorder(side: widget.borderSide!),
+        ),
+        child: liquidBody,
+      );
+    }
 
     final Widget legacyBody = Material(
       color: Colors.transparent,
@@ -205,6 +217,9 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: shadows,
+            border: widget.borderSide == null
+                ? null
+                : Border.fromBorderSide(widget.borderSide!),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

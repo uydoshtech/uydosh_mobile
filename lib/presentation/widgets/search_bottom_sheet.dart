@@ -88,9 +88,12 @@ class SearchBottomSheetWidget {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
     bool metroOnly = false,
+    bool applyProfileDefaults = true,
+    bool commitFiltersOnApply = true,
     int? currentListingTypeId,
     int? currentLocationId,
     int? currentSubwayStationId,
+    List<int>? currentSubwayStationIds,
     int? currentSubwayLineId,
     int? currentGender,
     double? currentMinPrice,
@@ -125,17 +128,20 @@ class SearchBottomSheetWidget {
     final preSheetSnapshot = SearchFiltersSnapshot.capture(searchFiltersState);
     var didCommit = false;
 
-    await searchFiltersState.applyProfileValuesForSearchSheet();
+    if (applyProfileDefaults) {
+      await searchFiltersState.applyProfileValuesForSearchSheet();
+    }
 
     // Some callers pass "defaults" (e.g. 2/male) on the first open which would
     // override the profile-derived values inside the sheet initState. When we
     // detect first open (no saved prefs yet), force-seed the sheet with the
     // computed values instead.
-    final resolvedListingTypeId = isFirstOpen
+    final resolvedListingTypeId = applyProfileDefaults && isFirstOpen
         ? searchFiltersState.selectedListingTypeId
         : currentListingTypeId;
-    final resolvedGender =
-        isFirstOpen ? searchFiltersState.selectedGender : currentGender;
+    final resolvedGender = applyProfileDefaults && isFirstOpen
+        ? searchFiltersState.selectedGender
+        : currentGender;
 
     // Try to get existing blocs from context to avoid redundant fetches
     ListingsBloc? existingListingsBloc;
@@ -190,9 +196,11 @@ class SearchBottomSheetWidget {
             replaceCurrentRoute: replaceCurrentRoute,
             openedFromHomeScreen: openedFromHomeScreen,
             metroOnly: metroOnly,
+            commitFiltersOnApply: commitFiltersOnApply,
             currentListingTypeId: resolvedListingTypeId,
             currentLocationId: currentLocationId,
             currentSubwayStationId: currentSubwayStationId,
+            currentSubwayStationIds: currentSubwayStationIds,
             currentSubwayLineId: currentSubwayLineId,
             currentGender: resolvedGender,
             currentMinPrice: currentMinPrice,
@@ -227,9 +235,11 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
     this.metroOnly = false,
+    this.commitFiltersOnApply = true,
     this.currentListingTypeId,
     this.currentLocationId,
     this.currentSubwayStationId,
+    this.currentSubwayStationIds,
     this.currentSubwayLineId,
     this.currentGender,
     this.currentMinPrice,
@@ -244,9 +254,11 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
   final bool metroOnly;
+  final bool commitFiltersOnApply;
   final int? currentListingTypeId;
   final int? currentLocationId;
   final int? currentSubwayStationId;
+  final List<int>? currentSubwayStationIds;
   final int? currentSubwayLineId;
   final int? currentGender;
   final double? currentMinPrice;

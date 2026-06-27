@@ -66,6 +66,19 @@ abstract class ISearchAlertService {
   });
 
   Future<List<SearchAlert>> listAlerts();
+  Future<SearchAlert?> updateAlertFilters({
+    required int alertId,
+    required int listingTypeId,
+    required double minPrice,
+    required double maxPrice,
+    required bool privateRoomOnly,
+    required bool withPhotoOnly,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+  });
   Future<bool> setAlertEnabled({required int alertId, required bool enabled});
   Future<bool> deleteAlert({required int alertId});
 }
@@ -104,7 +117,8 @@ class SearchAlertService implements ISearchAlertService {
         gender: gender,
       );
 
-      final r = await _oauthApiClient.post<Map<String, dynamic>, _CreateSearchAlertRequest>(
+      final r = await _oauthApiClient
+          .post<Map<String, dynamic>, _CreateSearchAlertRequest>(
         "/users/me/search-alerts",
         (json) => json as Map<String, dynamic>,
         data: data,
@@ -134,6 +148,52 @@ class SearchAlertService implements ISearchAlertService {
   }
 
   @override
+  Future<SearchAlert?> updateAlertFilters({
+    required int alertId,
+    required int listingTypeId,
+    required double minPrice,
+    required double maxPrice,
+    required bool privateRoomOnly,
+    required bool withPhotoOnly,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+  }) async {
+    try {
+      final data = _CreateSearchAlertRequest(
+        listingTypeId: listingTypeId,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoom: privateRoomOnly,
+        withPhoto: withPhotoOnly,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayStationIds: subwayStationIds,
+        subwayLineId: subwayLineId,
+        gender: gender,
+      );
+
+      final r = await _oauthApiClient
+          .patch<Map<String, dynamic>, _CreateSearchAlertRequest>(
+        "/users/me/search-alerts/$alertId",
+        (json) => json as Map<String, dynamic>,
+        data: data,
+      );
+
+      final rawAlert = r["alert"];
+      if (rawAlert is Map<String, dynamic>) {
+        return SearchAlert.fromJson(rawAlert);
+      }
+      return null;
+    } catch (e) {
+      logger.d("SearchAlertService: update filters failed: $e");
+      return null;
+    }
+  }
+
+  @override
   Future<List<SearchAlert>> listAlerts() async {
     final r = await _oauthApiClient.get<Map<String, dynamic>>(
       "/users/me/search-alerts",
@@ -148,7 +208,8 @@ class SearchAlertService implements ISearchAlertService {
   }
 
   @override
-  Future<bool> setAlertEnabled({required int alertId, required bool enabled}) async {
+  Future<bool> setAlertEnabled(
+      {required int alertId, required bool enabled}) async {
     try {
       await _oauthApiClient.patch<Map<String, dynamic>, _SetEnabledRequest>(
         "/users/me/search-alerts/$alertId",

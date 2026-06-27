@@ -12,6 +12,7 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -151,6 +152,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showDefaultPlacemark = true,
     this.showUserLocation = false,
     this.showDistrictLayer = false,
+    this.showMetroStationsLayer = false,
   });
 
   final double? latitude;
@@ -176,6 +178,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showDefaultPlacemark;
   final bool showUserLocation;
   final bool showDistrictLayer;
+  final bool showMetroStationsLayer;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -186,6 +189,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
   static const double _minDistrictLabelZoom = 11.5;
+  static const double _minMetroStationLabelZoom = 12.5;
+  static const double _listingPinZIndex = 100.0;
+  static const double _listingGroupPinZIndex = 101.0;
+  static const double _selectedListingPinZIndex = 110.0;
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
@@ -194,6 +201,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
+  final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
   YandexMapController? _mapController;
   bool _isMapReady = false;
@@ -202,6 +210,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int _automaticCameraFinishesToIgnore = 0;
   bool _showListingDetailTooltip = false;
   UniversityMapMarker? _selectedUniversityMarker;
+  SubwayStation? _selectedMetroStation;
   bool _isUserLocationLayerVisible = false;
   int _zoomSliderRequestId = 0;
   late double _currentZoom;
@@ -226,6 +235,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
     if (oldWidget.showUserLocation != widget.showUserLocation) {
       _syncUserLocationLayer();
+    }
+    if (oldWidget.showMetroStationsLayer && !widget.showMetroStationsLayer) {
+      _selectedMetroStation = null;
     }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
         !_intListsEqual(
@@ -301,6 +313,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         shadowBlurRadius: 12,
         shadowOffset: const Offset(0, 6),
       );
+      final metroStationIconBytes = <int, Uint8List>{};
+      for (final line in MetroCache.getAvailableLines()) {
+        metroStationIconBytes[line] = await _createIconBytes(
+          Icons.directions_subway_rounded,
+          96,
+          backgroundColor: _metroLineColor(line),
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+          shadowColor: Colors.black.withValues(alpha: 0.28),
+          shadowBlurRadius: 9,
+          shadowOffset: const Offset(0, 4),
+        );
+      }
       _cachedIconBytes = iconBytes;
       _cachedSelectedIconBytes = selectedIconBytes;
       _cachedUniversityIconBytes = universityIconBytes;
@@ -311,6 +336,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedSelectedListingTypeIconBytes
         ..clear()
         ..addAll(selectedListingTypeIconBytes);
+      _cachedMetroStationIconBytes
+        ..clear()
+        ..addAll(metroStationIconBytes);
       _syncListingGroupIconBytes();
       logger.d("✅ Map listing type icons created successfully");
       if (mounted) {
@@ -594,6 +622,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           if (_selectedUniversityMarker != null) {
             setState(() => _selectedUniversityMarker = null);
           }
+          if (_selectedMetroStation != null) {
+            setState(() => _selectedMetroStation = null);
+          }
           widget.onMapTap?.call(point);
         },
         onCameraPositionChanged: _handleCameraPositionChanged,
@@ -663,28 +694,35 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final districtLayerObjects = widget.showDistrictLayer
         ? _createDistrictLayerMapObjects()
         : const <MapObject>[];
+    final metroStationLayerObjects = widget.showMetroStationsLayer
+        ? _createMetroStationLayerMapObjects()
+        : const <MapObject>[];
+    final areaLayerObjects = [
+      ...districtLayerObjects,
+      ...metroStationLayerObjects,
+    ];
     final universityMarkerObjects = _createUniversityMarkerMapObjects();
     if (widget.pins.isNotEmpty) {
       return [
-        ...districtLayerObjects,
+        ...areaLayerObjects,
         ..._createListingPinMapObjects(),
         ...universityMarkerObjects,
       ];
     }
     if (universityMarkerObjects.isNotEmpty) {
       return [
-        ...districtLayerObjects,
+        ...areaLayerObjects,
         ...universityMarkerObjects,
       ];
     }
     if (!widget.showDefaultPlacemark) {
-      return districtLayerObjects;
+      return areaLayerObjects;
     }
 
     final coordinates = _getCoordinates();
     if (coordinates == null) {
       logger.w("❌ No coordinates available for map objects");
-      return districtLayerObjects;
+      return areaLayerObjects;
     }
 
     logger.d(
@@ -725,7 +763,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
     );
     return [
-      ...districtLayerObjects,
+      ...areaLayerObjects,
       placemark,
     ];
   }
@@ -892,6 +930,99 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return colors[(locationId - 1).abs() % colors.length];
   }
 
+  List<MapObject> _createMetroStationLayerMapObjects() {
+    final language = Localizations.localeOf(context).languageCode;
+    final showLabels = _currentZoom >= _minMetroStationLabelZoom;
+    return [
+      for (final station in MetroCache.getAllStations())
+        if (station.latitude != null && station.longitude != null) ...[
+          _createMetroStationPlacemark(station),
+          if (showLabels)
+            PlacemarkMapObject(
+              mapId: MapObjectId(
+                "tashkent_metro_station_${station.id}_label",
+              ),
+              point: Point(
+                latitude: station.latitude!,
+                longitude: station.longitude!,
+              ),
+              zIndex: 1.25,
+              opacity: 1.0,
+              consumeTapEvents: true,
+              text: PlacemarkText(
+                text: MetroCache.getStationName(station, language),
+                style: const PlacemarkTextStyle(
+                  placement: TextStylePlacement.right,
+                  offset: 6,
+                  color: Color(0xFF111111),
+                  outlineColor: Colors.white,
+                  size: 10,
+                  textOptional: true,
+                ),
+              ),
+              onTap: (_, point) => _handleMetroStationTap(station, point),
+            ),
+        ],
+    ];
+  }
+
+  MapObject _createMetroStationPlacemark(SubwayStation station) {
+    final point = Point(
+      latitude: station.latitude!,
+      longitude: station.longitude!,
+    );
+    final iconBytes = _cachedMetroStationIconBytes[station.line];
+    if (iconBytes == null) {
+      return CircleMapObject(
+        mapId: MapObjectId("tashkent_metro_station_${station.id}_circle"),
+        circle: Circle(center: point, radius: 180),
+        zIndex: 1.15,
+        consumeTapEvents: true,
+        strokeWidth: 3.0,
+        strokeColor: Colors.white.withValues(alpha: 0.95),
+        fillColor: _metroLineColor(station.line).withValues(alpha: 0.9),
+        onTap: (_, point) => _handleMetroStationTap(station, point),
+      );
+    }
+
+    return PlacemarkMapObject(
+      mapId: MapObjectId("tashkent_metro_station_${station.id}_placemark"),
+      point: point,
+      zIndex: 1.2,
+      opacity: 1.0,
+      consumeTapEvents: true,
+      icon: PlacemarkIcon.single(
+        PlacemarkIconStyle(
+          image: BitmapDescriptor.fromBytes(iconBytes),
+          anchor: const Offset(0.5, 0.5),
+          scale: 0.62,
+        ),
+      ),
+      onTap: (_, point) => _handleMetroStationTap(station, point),
+    );
+  }
+
+  void _handleMetroStationTap(SubwayStation station, Point point) {
+    if (_showListingDetailTooltip) {
+      _showListingDetailTooltip = false;
+    }
+    if (_selectedUniversityMarker != null) {
+      _selectedUniversityMarker = null;
+    }
+    widget.onMapTap?.call(point);
+    setState(() => _selectedMetroStation = station);
+  }
+
+  Color _metroLineColor(int line) {
+    return switch (line) {
+      1 => const Color(0xFFE53935),
+      2 => const Color(0xFF1E88E5),
+      3 => const Color(0xFF43A047),
+      4 => const Color(0xFFFFB300),
+      _ => const Color(0xFF546E7A),
+    };
+  }
+
   List<MapObject> _createUniversityMarkerMapObjects() {
     final iconBytes = _cachedUniversityIconBytes;
     final selectedIconBytes = _cachedSelectedUniversityIconBytes;
@@ -1009,7 +1140,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               latitude: group.pins.first.latitude,
               longitude: group.pins.first.longitude,
             ),
-            zIndex: 8,
+            zIndex: _selectedListingPinZIndex,
             opacity: 1.0,
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
@@ -1019,6 +1150,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   selected: true,
                 ),
                 anchor: const Offset(0.5, 0.5),
+                zIndex: _selectedListingPinZIndex,
                 scale: 1.0,
               ),
             ),
@@ -1037,13 +1169,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               latitude: group.pins.first.latitude,
               longitude: group.pins.first.longitude,
             ),
-            zIndex: 2,
+            zIndex: _listingPinZIndex,
             opacity: 1.0,
             consumeTapEvents: true,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
                 image: _listingPinIconDescriptor(group.pins.first),
                 anchor: const Offset(0.5, 0.5),
+                zIndex: _listingPinZIndex,
                 scale: 0.9,
               ),
             ),
@@ -1079,7 +1212,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         latitude: group.latitude,
         longitude: group.longitude,
       ),
-      zIndex: selected ? 8 : 3,
+      zIndex: selected ? _selectedListingPinZIndex : _listingGroupPinZIndex,
       opacity: 1.0,
       consumeTapEvents: true,
       icon: PlacemarkIcon.single(
@@ -1090,7 +1223,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 )
               : BitmapDescriptor.fromBytes(groupIconBytes),
           anchor: const Offset(0.5, 0.5),
-          scale: selected ? 1.0 : 0.95,
+          zIndex: selected ? _selectedListingPinZIndex : _listingGroupPinZIndex,
+          scale: selected ? 1.5 : 1.425,
         ),
       ),
       onTap: (_, __) {
@@ -1414,6 +1548,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       );
     }
 
+    final metroStation = _selectedMetroStation;
+    if (widget.showMetroStationsLayer && metroStation != null) {
+      return _MetroStationMapTooltip(
+        key: ValueKey("metro-station-${metroStation.id}"),
+        station: metroStation,
+        lineColor: _metroLineColor(metroStation.line),
+        onClose: () => setState(() {
+          _selectedMetroStation = null;
+        }),
+      );
+    }
+
     final marker = _selectedUniversityMarker;
     if (widget.showUniversityMarkerTooltip && marker != null) {
       return UniversityMapTooltip(
@@ -1694,27 +1840,43 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     required bool selected,
     String? listingTypeCode,
   }) async {
-    const size = 112;
+    const width = 148;
+    const height = 96;
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
-    const center = Offset(size / 2, size / 2);
-    final radius = selected ? size * 0.39 : size * 0.36;
+    const center = Offset(width / 2, height / 2);
+    final pillHeight = selected ? 68.0 : 62.0;
+    final pillWidth = selected ? 130.0 : 122.0;
+    final pillRect = Rect.fromCenter(
+      center: center,
+      width: pillWidth,
+      height: pillHeight,
+    );
+    final pillRadius = Radius.circular(pillHeight / 2);
+    final pillRRect = RRect.fromRectAndRadius(pillRect, pillRadius);
 
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: selected ? 0.35 : 0.24)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center + const Offset(0, 5), radius, shadowPaint);
+    canvas.drawRRect(pillRRect.shift(const Offset(0, 5)), shadowPaint);
 
     final outlinePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, radius + (selected ? 8 : 6), outlinePaint);
+    final outlineWidth = selected ? 8.0 : 6.0;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        pillRect.inflate(outlineWidth),
+        Radius.circular((pillHeight / 2) + outlineWidth),
+      ),
+      outlinePaint,
+    );
 
-    final circlePaint = Paint()
+    final pillPaint = Paint()
       ..color = selected ? AppColors.primary : Colors.black
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, radius, circlePaint);
+    canvas.drawRRect(pillRRect, pillPaint);
 
     final label = count > 99 ? "99+" : count.toString();
     final iconData = listingTypeCode == null
@@ -1725,7 +1887,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         text: String.fromCharCode(iconData.codePoint),
         style: TextStyle(
           color: Colors.white,
-          fontSize: label.length > 2 ? 34.5 : 42,
+          fontSize: label.length > 2 ? 32 : 38,
           fontFamily: iconData.fontFamily,
           package: iconData.fontPackage,
         ),
@@ -1737,37 +1899,37 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         text: label,
         style: TextStyle(
           color: Colors.white,
-          fontSize: label.length > 2 ? 27 : 34,
+          fontSize: label.length > 2 ? 30 : 36,
           fontWeight: FontWeight.w900,
-          letterSpacing: -1,
+          letterSpacing: -0.8,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    const gap = 4.0;
-    final contentWidth = iconPainter.width + gap + textPainter.width;
+    const gap = 8.0;
+    final contentWidth = textPainter.width + gap + iconPainter.width;
     final contentHeight = iconPainter.height > textPainter.height
         ? iconPainter.height
         : textPainter.height;
-    final contentLeft = (size - contentWidth) / 2;
-    final contentTop = (size - contentHeight) / 2;
-    iconPainter.paint(
-      canvas,
-      Offset(
-        contentLeft,
-        contentTop + (contentHeight - iconPainter.height) / 2,
-      ),
-    );
+    final contentLeft = (width - contentWidth) / 2;
+    final contentTop = (height - contentHeight) / 2;
     textPainter.paint(
       canvas,
       Offset(
-        contentLeft + iconPainter.width + gap,
+        contentLeft,
         contentTop + (contentHeight - textPainter.height) / 2,
+      ),
+    );
+    iconPainter.paint(
+      canvas,
+      Offset(
+        contentLeft + textPainter.width + gap,
+        contentTop + (contentHeight - iconPainter.height) / 2,
       ),
     );
 
     final picture = pictureRecorder.endRecording();
-    final image = await picture.toImage(size, size);
+    final image = await picture.toImage(width, height);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
@@ -1900,6 +2062,109 @@ class MapTooltipFadeTransition extends StatelessWidget {
           );
         },
         child: child ?? const SizedBox.shrink(key: ValueKey("empty-tooltip")),
+      ),
+    );
+  }
+}
+
+class _MetroStationMapTooltip extends StatelessWidget {
+  const _MetroStationMapTooltip({
+    required this.station,
+    required this.lineColor,
+    required this.onClose,
+    super.key,
+  });
+
+  final SubwayStation station;
+  final Color lineColor;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final language = Localizations.localeOf(context).languageCode;
+    final stationName = MetroCache.getStationLabelFromStation(
+      station,
+      language,
+    );
+    final locationId = station.locationId;
+    final districtName = locationId == null
+        ? null
+        : LocationCache.getLocationName(locationId, language);
+
+    return Material(
+      color: Colors.transparent,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ThemeIcon(
+                    Icons.directions_subway_rounded,
+                    color: lineColor,
+                    size: 24,
+                    useThemeColor: false,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stationName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        if (districtName != null) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            districtName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: -10,
+                right: -40,
+                child: IconButton(
+                  onPressed: onClose,
+                  icon: const Icon(Icons.close),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

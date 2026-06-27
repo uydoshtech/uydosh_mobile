@@ -93,6 +93,8 @@
   "open_feed_view": "Lentani ochish",
   "show_district_layer": "Tumanlar qatlamini ko‘rsatish",
   "hide_district_layer": "Tumanlar qatlamini yashirish",
+  "show_metro_stations_layer": "Metro bekatlarini ko‘rsatish",
+  "hide_metro_stations_layer": "Metro bekatlarini yashirish",
   "error": "Xatolik",
   "error_loading_listing_details": "E'lon tafsilotlarini yuklashda xatolik",
   "error_listing_not_loaded": "E'lon hali yuklanmagan",

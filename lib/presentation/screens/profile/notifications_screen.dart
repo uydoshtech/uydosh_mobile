@@ -1,5 +1,7 @@
 // ignore_for_file: eol_at_end_of_file
 
+import "dart:async" show unawaited;
+
 import "package:dio/dio.dart";
 import "package:firebase_messaging/firebase_messaging.dart";
 import "package:flutter/foundation.dart"
@@ -50,6 +52,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dar
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/telegram/telegram_alerts_settings_card.dart";
 
 // Force-show the "Enable notifications" tile on web (Chrome) so the layout can
@@ -924,6 +927,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     return null;
   }
 
+  List<int> _subwayStationIdsForBottomSheet(SearchAlert a) {
+    final ids = a.subwayStationIds;
+    if (ids != null && ids.isNotEmpty) {
+      return List<int>.from(ids);
+    }
+    final stationId = a.subwayStationId;
+    if (stationId != null && stationId > 0) {
+      return [stationId];
+    }
+    return const [];
+  }
+
   Map<String, dynamic> _toJson(SearchAlert a, {bool? enabled}) => {
         "id": a.id,
         "enabled": enabled ?? a.enabled,
@@ -938,6 +953,100 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         "private_room": a.privateRoom,
         "with_photo": a.withPhoto,
       };
+
+  Future<void> _openEditAlertSheet(SearchAlert a) async {
+    if (!mounted || _bulkWorking) return;
+
+    final stationIds = _subwayStationIdsForBottomSheet(a);
+    final singleStationId = stationIds.length == 1 ? stationIds.first : null;
+    final searchState = SearchFiltersState();
+
+    await SearchBottomSheetWidget.show(
+      context,
+      applyProfileDefaults: false,
+      commitFiltersOnApply: false,
+      currentListingTypeId:
+          a.listingTypeId ?? searchState.selectedListingTypeId,
+      currentLocationId: a.locationId ?? 0,
+      currentSubwayStationId: singleStationId,
+      currentSubwayStationIds: stationIds,
+      currentSubwayLineId: _subwayLineIdForBottomSheet(a) ?? 0,
+      currentGender: a.gender ?? 0,
+      currentMinPrice: a.minPrice ?? searchState.minPrice,
+      currentMaxPrice: a.maxPrice ?? searchState.maxPrice,
+      currentPrivateRoom: a.privateRoom ?? false,
+      currentWithPhoto: a.withPhoto ?? false,
+      primaryLabelKey: "apply",
+      primaryIcon: Icons.check,
+      onApply: (result) {
+        unawaited(_saveAlertEdit(a, result));
+      },
+    );
+  }
+
+  Future<void> _refreshAlertsSilently() async {
+    try {
+      final alerts = await getIt<ISearchAlertService>().listAlerts();
+      setStateIfMounted(() => _alerts = alerts);
+      ActiveSearchAlertsState().syncFromAlerts(alerts);
+    } catch (_) {
+      // The local update already succeeded; a later pull-to-refresh can resync.
+    }
+  }
+
+  Future<void> _saveAlertEdit(
+    SearchAlert original,
+    SearchBottomSheetResult result,
+  ) async {
+    if (!mounted) return;
+
+    final hasAnyLocationConstraint =
+        (result.locationId != null && result.locationId! > 0) ||
+            (result.subwayLineId != null && result.subwayLineId! > 0) ||
+            result.subwayStationIds.isNotEmpty ||
+            (result.subwayStationId != null && result.subwayStationId! > 0);
+    if (!hasAnyLocationConstraint) {
+      ToastTheme.showError(context, message: L10n.get("search_alert_too_wide"));
+      return;
+    }
+
+    setState(() => _bulkWorking = true);
+    try {
+      final updated = await getIt<ISearchAlertService>().updateAlertFilters(
+        alertId: original.id,
+        listingTypeId: result.listingTypeId,
+        locationId: result.locationId,
+        subwayStationId:
+            result.subwayStationIds.length > 1 ? null : result.subwayStationId,
+        subwayStationIds:
+            result.subwayStationIds.length > 1 ? result.subwayStationIds : null,
+        subwayLineId: result.subwayLineId,
+        gender: result.gender,
+        minPrice: result.minPrice,
+        maxPrice: result.maxPrice,
+        privateRoomOnly: result.privateRoom,
+        withPhotoOnly: result.withPhoto,
+      );
+
+      if (!mounted) return;
+      if (updated == null) {
+        ToastTheme.showError(context, message: L10n.get("search_alert_failed"));
+        return;
+      }
+
+      setState(() {
+        _alerts = _alerts
+            .map((alert) => alert.id == original.id ? updated : alert)
+            .toList();
+      });
+      ActiveSearchAlertsState().syncFromAlerts(_alerts);
+      ToastTheme.showSuccess(context,
+          message: L10n.get("search_alert_updated"));
+      unawaited(_refreshAlertsSilently());
+    } finally {
+      setStateIfMounted(() => _bulkWorking = false);
+    }
+  }
 
   Future<void> _openAlertResults(SearchAlert a) async {
     if (!mounted) return;
@@ -1409,7 +1518,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                             padding: EdgeInsets.zero,
                                             visualScale: 0.8,
                                             onSelected: (value) {
-                                              if (value == "toggle") {
+                                              if (value == "edit") {
+                                                _openEditAlertSheet(a);
+                                              } else if (value == "toggle") {
                                                 _toggleEnabled(a, !a.enabled);
                                               } else if (value == "delete") {
                                                 _deleteAlertAnimated(
@@ -1421,6 +1532,14 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                             itemBuilder: (menuContext) {
                                               final isEnabled = a.enabled;
                                               return [
+                                                PopupMenuItem(
+                                                  value: "edit",
+                                                  child: UydoshPopupMenuItemRow(
+                                                    icon: Icons.edit_outlined,
+                                                    text: L10n.get("edit"),
+                                                    enabled: true,
+                                                  ),
+                                                ),
                                                 PopupMenuItem(
                                                   value: "toggle",
                                                   child: UydoshPopupMenuItemRow(

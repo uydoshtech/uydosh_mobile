@@ -215,6 +215,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get hide_district_layer => 'Скрыть слой районов';
 
   @override
+  String get show_metro_stations_layer => 'Показать станции метро';
+
+  @override
+  String get hide_metro_stations_layer => 'Скрыть станции метро';
+
+  @override
   String get error => 'Ошибка';
 
   @override

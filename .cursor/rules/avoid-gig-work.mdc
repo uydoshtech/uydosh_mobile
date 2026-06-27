@@ -1,0 +1,10 @@
+---
+description: Avoid gig-related screens and services unless explicitly requested
+alwaysApply: true
+---
+
+# Gig Work Exclusion
+
+- Do not modify, refactor, review, test, or otherwise work on gig-related screens, widgets, ribbons, or services unless the user explicitly asks for gig work.
+- Treat paths containing `gig` and services such as `lib/domain/services/*gig*.dart` as out of scope by default.
+- If a broader task appears to require touching gig code, ask for confirmation before proceeding.

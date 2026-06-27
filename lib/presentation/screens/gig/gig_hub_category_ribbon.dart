@@ -155,8 +155,13 @@ class GigHubCategoryChip extends StatelessWidget {
                 : Colors.black;
         final inactiveFg = themeState.unselectedTabTextColor;
         final radius = const BorderRadius.all(Radius.circular(22));
+        final selectedIconBadgeBg = themeState.isLightTheme
+            ? Colors.black
+            : activeFg.withValues(alpha: 0.16);
+        final selectedIconColor =
+            themeState.isLightTheme ? Colors.white : activeFg;
         final iconColor =
-            isSelected ? activeFg : inactiveFg.withValues(alpha: 0.85);
+            isSelected ? selectedIconColor : inactiveFg.withValues(alpha: 0.85);
         final labelStyle = TextStyle(
           fontSize: 13,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
@@ -189,7 +194,7 @@ class GigHubCategoryChip extends StatelessWidget {
                   icon: icon,
                   iconColor: iconColor,
                   badgeBackgroundColor: isSelected
-                      ? activeFg.withValues(alpha: 0.16)
+                      ? selectedIconBadgeBg
                       : inactiveFg.withValues(alpha: 0.12),
                   dimension: 28.6,
                   iconSize: 17.5,

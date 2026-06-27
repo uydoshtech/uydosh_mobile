@@ -93,6 +93,8 @@
   "open_feed_view": "Открыть ленту",
   "show_district_layer": "Показать слой районов",
   "hide_district_layer": "Скрыть слой районов",
+  "show_metro_stations_layer": "Показать станции метро",
+  "hide_metro_stations_layer": "Скрыть станции метро",
   "error": "Ошибка",
   "error_loading_listing_details": "Ошибка загрузки деталей объявления",
   "error_listing_not_loaded": "Объявление еще не загружено",

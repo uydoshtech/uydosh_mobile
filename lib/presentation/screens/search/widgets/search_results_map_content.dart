@@ -14,11 +14,15 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.selectedUniversityMarker,
     required this.universityMarkers,
     required this.showDistrictLayer,
+    required this.showMetroStationsLayer,
     required this.placeViewToggleAtBottom,
+    required this.searchButtonBottom,
     required this.viewToggleBottom,
     required this.onOpenFilters,
+    required this.onOpenEmbeddedSearch,
     required this.onOpenFeedView,
     required this.onToggleDistrictLayer,
+    required this.onToggleMetroStationsLayer,
     required this.onClearSelectedPin,
     required this.onClearSelectedUniversityMarker,
     required this.onSelectPin,
@@ -49,11 +53,15 @@ class _SearchResultsMapContent extends StatelessWidget {
   final UniversityMapMarker? selectedUniversityMarker;
   final List<UniversityMapMarker> universityMarkers;
   final bool showDistrictLayer;
+  final bool showMetroStationsLayer;
   final bool placeViewToggleAtBottom;
+  final double searchButtonBottom;
   final double viewToggleBottom;
   final VoidCallback onOpenFilters;
+  final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onOpenFeedView;
   final VoidCallback onToggleDistrictLayer;
+  final VoidCallback onToggleMetroStationsLayer;
   final VoidCallback onClearSelectedPin;
   final VoidCallback onClearSelectedUniversityMarker;
   final ValueChanged<ListingMapPin> onSelectPin;
@@ -75,6 +83,8 @@ class _SearchResultsMapContent extends StatelessWidget {
     const viewToggleWidth = 61.2;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
+    const layerButtonIconSize = 18.0;
+    const layerButtonBorder = BorderSide(color: Colors.black, width: 1);
     final feedViewButton = SearchFloatingActionButton(
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
@@ -89,13 +99,29 @@ class _SearchResultsMapContent extends StatelessWidget {
       onPressed: onToggleDistrictLayer,
       iconData:
           showDistrictLayer ? Icons.layers_clear_rounded : Icons.layers_rounded,
-      tooltip: L10n.get(
-        showDistrictLayer ? "hide_district_layer" : "show_district_layer",
-      ),
+      tooltip: showDistrictLayer
+          ? context.l10n.hide_district_layer
+          : context.l10n.show_district_layer,
       width: viewToggleWidth,
       height: viewToggleHeight,
+      iconSize: layerButtonIconSize,
       backgroundColor: showDistrictLayer ? Colors.black : Colors.white,
       foregroundColor: showDistrictLayer ? Colors.white : Colors.black,
+      borderSide: layerButtonBorder,
+      elevation: ThemeState().isBlueTheme ? null : 8,
+    );
+    final metroStationsLayerButton = SearchFloatingActionButton(
+      onPressed: onToggleMetroStationsLayer,
+      iconData: Icons.directions_subway_rounded,
+      tooltip: showMetroStationsLayer
+          ? context.l10n.hide_metro_stations_layer
+          : context.l10n.show_metro_stations_layer,
+      width: viewToggleWidth,
+      height: viewToggleHeight,
+      iconSize: layerButtonIconSize,
+      backgroundColor: showMetroStationsLayer ? Colors.black : Colors.white,
+      foregroundColor: showMetroStationsLayer ? Colors.white : Colors.black,
+      borderSide: layerButtonBorder,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     return Column(
@@ -135,6 +161,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                   showUniversityMarkerTooltip: false,
                   showUserLocation: true,
                   showDistrictLayer: showDistrictLayer,
+                  showMetroStationsLayer: showMetroStationsLayer,
                   onMapTap: (_) {
                     onClearSelectedPin();
                     onClearSelectedUniversityMarker();
@@ -213,7 +240,14 @@ class _SearchResultsMapContent extends StatelessWidget {
                       feedViewButton,
                       const SizedBox(height: viewToggleGap),
                     ],
-                    districtLayerButton,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        metroStationsLayerButton,
+                        const SizedBox(width: viewToggleGap),
+                        districtLayerButton,
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -222,6 +256,16 @@ class _SearchResultsMapContent extends StatelessWidget {
                   right: 16,
                   bottom: viewToggleBottom,
                   child: feedViewButton,
+                ),
+              if (placeViewToggleAtBottom && onOpenEmbeddedSearch != null)
+                Positioned(
+                  right: 16,
+                  bottom: searchButtonBottom,
+                  child: SearchFloatingActionButton(
+                    onPressed: onOpenEmbeddedSearch,
+                    iconData: Icons.search,
+                    elevation: ThemeState().isBlueTheme ? null : 8,
+                  ),
                 ),
             ],
           ),

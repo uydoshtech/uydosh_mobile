@@ -214,6 +214,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hide_district_layer => 'Hide districts layer';
 
   @override
+  String get show_metro_stations_layer => 'Show metro stations';
+
+  @override
+  String get hide_metro_stations_layer => 'Hide metro stations';
+
+  @override
   String get error => 'Error';
 
   @override

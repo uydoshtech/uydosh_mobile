@@ -215,6 +215,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get hide_district_layer => 'Tumanlar qatlamini yashirish';
 
   @override
+  String get show_metro_stations_layer => 'Metro bekatlarini ko‘rsatish';
+
+  @override
+  String get hide_metro_stations_layer => 'Metro bekatlarini yashirish';
+
+  @override
   String get error => 'Xatolik';
 
   @override

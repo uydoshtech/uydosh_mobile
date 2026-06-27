@@ -93,6 +93,8 @@
   "open_feed_view": "Open feed view",
   "show_district_layer": "Show districts layer",
   "hide_district_layer": "Hide districts layer",
+  "show_metro_stations_layer": "Show metro stations",
+  "hide_metro_stations_layer": "Hide metro stations",
   "error": "Error",
   "error_loading_listing_details": "Error loading listing details",
   "error_listing_not_loaded": "Listing not loaded yet",

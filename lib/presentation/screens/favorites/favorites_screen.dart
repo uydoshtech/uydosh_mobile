@@ -639,10 +639,9 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
   static const double _listContentGap = 8.0;
 
-  /// Single list top inset: status bar (+ small gap) when embedded, like Home.
+  /// Parent embedded shells already account for the glass header inset.
   double _shellAwareListTopPadding() {
-    if (!widget.embedded) return _listContentGap;
-    return _embeddedShellTopPadding() + _listContentGap;
+    return _listContentGap;
   }
 
   Widget _buildListingsFavoritesTab(double topPad) {

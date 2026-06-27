@@ -56,7 +56,9 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.embedded = false,
     this.initialListings = const [],
     this.initialTotal,
+    this.embeddedSearchButtonBottom = 100.0,
     this.embeddedViewToggleBottom = 168.0,
+    this.onOpenEmbeddedSearch,
   });
 
   final int listingTypeId;
@@ -76,7 +78,9 @@ class SearchResultsMapScreen extends StatefulWidget {
   final bool embedded;
   final List<Listing> initialListings;
   final int? initialTotal;
+  final double embeddedSearchButtonBottom;
   final double embeddedViewToggleBottom;
+  final VoidCallback? onOpenEmbeddedSearch;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -94,6 +98,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   UniversityMapMarker? _selectedUniversityMarker;
   List<UniversityMapMarker> _universityMarkers = const [];
   bool _showDistrictLayer = false;
+  bool _showMetroStationsLayer = false;
 
   late int _listingTypeId;
   int? _locationId;
@@ -697,12 +702,18 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedUniversityMarker: _selectedUniversityMarker,
       universityMarkers: _universityMarkers,
       showDistrictLayer: _showDistrictLayer,
+      showMetroStationsLayer: _showMetroStationsLayer,
       placeViewToggleAtBottom: widget.embedded,
+      searchButtonBottom: widget.embeddedSearchButtonBottom,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       onOpenFilters: _openFilters,
+      onOpenEmbeddedSearch: widget.onOpenEmbeddedSearch,
       onOpenFeedView: _openFeedView,
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
+      },
+      onToggleMetroStationsLayer: () {
+        setState(() => _showMetroStationsLayer = !_showMetroStationsLayer);
       },
       onClearSelectedPin: () {
         setState(() {

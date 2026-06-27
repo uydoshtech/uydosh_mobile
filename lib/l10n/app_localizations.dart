@@ -490,6 +490,18 @@ abstract class AppLocalizations {
   /// **'Hide districts layer'**
   String get hide_district_layer;
 
+  /// No description provided for @show_metro_stations_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show metro stations'**
+  String get show_metro_stations_layer;
+
+  /// No description provided for @hide_metro_stations_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide metro stations'**
+  String get hide_metro_stations_layer;
+
   /// No description provided for @error.
   ///
   /// In en, this message translates to:

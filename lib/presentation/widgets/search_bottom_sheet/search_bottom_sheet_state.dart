@@ -29,7 +29,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     // Don"t set initialItem here to avoid forcing position 0
     _stationPickerController = FixedExtentScrollController();
     _metroLineScrollController = FixedExtentScrollController(
-      initialItem: _searchFiltersState.selectedSubwayLine,
+      initialItem:
+          widget.currentSubwayLineId ?? _searchFiltersState.selectedSubwayLine,
     );
     // Position is synced in [LocationPicker] once locations load (controller
     // is created before the async locations list exists).
@@ -54,6 +55,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     if (widget.currentSubwayStationId != null) {
       unawaited(
           _searchFiltersState.setStationId(widget.currentSubwayStationId!));
+    }
+
+    if (widget.currentSubwayStationIds != null) {
+      unawaited(
+        _searchFiltersState.setStationIds(widget.currentSubwayStationIds!),
+      );
     }
 
     if (widget.currentGender != null) {
@@ -741,10 +748,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   }) {
     HapticFeedbackUtils.impact();
 
-    // Tell SearchBottomSheetWidget.show() to commit the in-session edits.
-    // Must happen BEFORE Navigator.pop so the show() caller (which awaits
-    // the modal future) sees a true flag when the future resolves.
-    widget.onCommit?.call();
+    if (widget.commitFiltersOnApply) {
+      // Tell SearchBottomSheetWidget.show() to commit the in-session edits.
+      // Must happen BEFORE Navigator.pop so the show() caller (which awaits
+      // the modal future) sees a true flag when the future resolves.
+      widget.onCommit?.call();
+    }
 
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;

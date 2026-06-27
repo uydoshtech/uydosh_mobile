@@ -15,6 +15,8 @@ class GigCategoryIconBadge extends StatelessWidget {
     required this.badgeBackgroundColor,
     this.dimension = 22,
     this.iconSize = 12,
+    this.borderColor,
+    this.borderWidth = 0,
     super.key,
   });
 
@@ -23,6 +25,8 @@ class GigCategoryIconBadge extends StatelessWidget {
   final Color badgeBackgroundColor;
   final double dimension;
   final double iconSize;
+  final Color? borderColor;
+  final double borderWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +43,18 @@ class GigCategoryIconBadge extends StatelessWidget {
         final scale = dimension > 0 ? side / dimension : 1.0;
         final glyph = iconSize * scale;
 
-        return ClipOval(
-          child: Container(
-            width: side,
-            height: side,
+        return Container(
+          width: side,
+          height: side,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
             color: badgeBackgroundColor,
-            alignment: Alignment.center,
-            child: Icon(icon, size: glyph, color: iconColor),
+            border: borderColor == null || borderWidth <= 0
+                ? null
+                : Border.all(color: borderColor!, width: borderWidth),
           ),
+          child: Icon(icon, size: glyph, color: iconColor),
         );
       },
     );
