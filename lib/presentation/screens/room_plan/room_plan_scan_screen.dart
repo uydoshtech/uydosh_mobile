@@ -202,7 +202,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       if (!mounted) return;
 
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
-        "enableMultiRoom": false,
+        "enableMultiRoom": true,
         "strings": <String, String>{
           "cancel": L10n.get("cancel"),
           "done": L10n.get("done"),

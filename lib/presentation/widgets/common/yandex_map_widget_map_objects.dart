@@ -853,11 +853,24 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     );
   }
 
+  bool _clusterContainsUserUniversity(Cluster cluster) {
+    final userUniversityMarkerId = widget.userUniversityMarkerId;
+    if (userUniversityMarkerId == null) return false;
+    final userUniversityMapId =
+        MapObjectId("university_${userUniversityMarkerId}_placemark");
+    return cluster.placemarks.any(
+      (placemark) => placemark.mapId == userUniversityMapId,
+    );
+  }
+
   Future<Cluster?> _handleUniversityClusterAdded(
     ClusterizedPlacemarkCollection self,
     Cluster cluster,
   ) async {
-    final iconBytes = await _universityClusterIconBytes(cluster.size);
+    final iconBytes = await _universityClusterIconBytes(
+      cluster.size,
+      isUserUniversity: _clusterContainsUserUniversity(cluster),
+    );
     return cluster.copyWith(
       appearance: cluster.appearance.copyWith(
         zIndex: 9,

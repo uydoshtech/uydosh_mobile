@@ -48,6 +48,7 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
             useThemeColors: true,
             showArrows: false,
             useGlassPlate: true,
+            useToggleButtons: false,
           ),
         ),
       ],

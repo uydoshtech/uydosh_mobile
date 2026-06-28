@@ -1,6 +1,7 @@
 import SceneKit
 
 /// Footprint metrics extracted from RoomPlan USDZ floor geometry (not full-scene AABB).
+/// Multi-room scans sum each room floor mesh area; long×short is the overall OBB footprint.
 struct RoomScanMetricsResult {
   let floorLongM: Double
   let floorShortM: Double
@@ -25,6 +26,12 @@ struct ScanFloorFootprint {
   let polygonXZ: [(x: Float, z: Float)]
   let floorY: Float
   let ceilingY: Float
+}
+
+/// One scanned room's floor mesh footprint (RoomPlan exports a separate floor node per room).
+private struct RoomFloorFootprint {
+  var points: [(x: Float, z: Float)]
+  var triangles: [[(x: Float, z: Float)]]
 }
 
 /// Computes room dimensions from floor polygon geometry with fallbacks.
@@ -83,21 +90,41 @@ enum RoomScanMetricsComputer {
 
   // MARK: - Footprint
 
+  private static func roomFootprintHasGeometry(_ footprint: RoomFloorFootprint) -> Bool {
+    !footprint.triangles.isEmpty || footprint.points.count >= 3
+  }
+
   private static func computeFootprintMetrics(
     scene: SCNScene,
     sceneBounds: (min: SCNVector3, max: SCNVector3)
   ) -> RoomScanMetricsResult? {
-    var floorPoints = collectFloorPoints(from: scene, sceneBounds: sceneBounds)
-    var floorTriangles: [[(x: Float, z: Float)]] = collectFloorTriangles(from: scene, sceneBounds: sceneBounds)
+    let roomFootprints = collectFloorFootprintsByRoom(from: scene, sceneBounds: sceneBounds)
+      .filter(roomFootprintHasGeometry)
 
+    var floorPoints: [(x: Float, z: Float)] = []
+    var floorTriangles: [[(x: Float, z: Float)]] = []
     var source = "floor_polygon"
-    if floorPoints.count < 3 {
+
+    if !roomFootprints.isEmpty {
+      floorPoints = roomFootprints.flatMap(\.points)
+      floorTriangles = roomFootprints.flatMap(\.triangles)
+      if roomFootprints.count > 1 {
+        source = "multi_room_floor_sum"
+      }
+    } else {
+      floorPoints = collectFloorPoints(from: scene, sceneBounds: sceneBounds)
+      floorTriangles = collectFloorTriangles(from: scene, sceneBounds: sceneBounds)
+    }
+
+    var hasFloorGeometry = !floorTriangles.isEmpty || floorPoints.count >= 3
+    if !hasFloorGeometry {
       floorPoints = wallBasePoints(scene: scene, sceneBounds: sceneBounds)
       floorTriangles.removeAll()
       source = floorPoints.count >= 3 ? "wall_bases" : "scene_aabb"
+      hasFloorGeometry = floorPoints.count >= 3
     }
 
-    if floorPoints.count < 3 {
+    if !hasFloorGeometry {
       let dx = sceneBounds.max.x - sceneBounds.min.x
       let dz = sceneBounds.max.z - sceneBounds.min.z
       guard dx > 1e-6 || dz > 1e-6 else { return nil }
@@ -118,8 +145,19 @@ enum RoomScanMetricsComputer {
       )
     }
 
+    if floorPoints.count < 3, !floorTriangles.isEmpty {
+      floorPoints = floorTriangles.flatMap { tri in tri.map { (x: $0.x, z: $0.z) } }
+    }
+
     let obb = minimumAreaBoundingRect(points: floorPoints)
-    let polygonArea = polygonAreaM2(from: floorTriangles, fallbackPoints: floorPoints)
+    let polygonArea: Double
+    if roomFootprints.count > 1 {
+      polygonArea = roomFootprints.reduce(0) { partial, footprint in
+        partial + polygonAreaM2(from: footprint.triangles, fallbackPoints: footprint.points)
+      }
+    } else {
+      polygonArea = polygonAreaM2(from: floorTriangles, fallbackPoints: floorPoints)
+    }
     let minX = floorPoints.map(\.x).min() ?? sceneBounds.min.x
     let maxX = floorPoints.map(\.x).max() ?? sceneBounds.max.x
     let minZ = floorPoints.map(\.z).min() ?? sceneBounds.min.z
@@ -140,6 +178,40 @@ enum RoomScanMetricsComputer {
       footprintSource: source,
       polygonVertexCount: floorPoints.count
     )
+  }
+
+  /// Groups floor mesh geometry by SceneKit node — one footprint per scanned room.
+  private static func collectFloorFootprintsByRoom(
+    from scene: SCNScene,
+    sceneBounds: (min: SCNVector3, max: SCNVector3)
+  ) -> [RoomFloorFootprint] {
+    var footprints: [RoomFloorFootprint] = []
+    func visit(_ node: SCNNode) {
+      if node.geometry != nil {
+        let name = (node.name ?? "").lowercased()
+        let isNamedFloor = name.contains("floor") || name.contains("ground")
+        let nodeBounds = worldBounds(of: node)
+        let isSlab = nodeBounds.map { isLikelyFloorSlab($0, sceneBounds: sceneBounds) } ?? false
+        if isNamedFloor || isSlab {
+          let floorY = nodeBounds?.min.y ?? sceneBounds.min.y
+          let yTol = max(0.08, 0.06 * max(sceneBounds.max.y - sceneBounds.min.y, 0.12))
+          var points: [(x: Float, z: Float)] = []
+          var triangles: [[(x: Float, z: Float)]] = []
+          for v in worldVertices(of: node) where abs(v.y - floorY) <= yTol {
+            points.append((x: v.x, z: v.z))
+          }
+          for tri in worldTrianglesXZ(of: node, floorY: floorY, yTolerance: yTol) {
+            triangles.append(tri)
+          }
+          if points.count >= 3 || !triangles.isEmpty {
+            footprints.append(RoomFloorFootprint(points: points, triangles: triangles))
+          }
+        }
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+    return footprints
   }
 
   private static func collectFloorPoints(

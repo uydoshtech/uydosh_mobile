@@ -18,6 +18,7 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -274,7 +275,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _withPhoto == result.withPhoto;
   }
 
-  bool get _filterRibbonEnabled => AuthenticationState().isAuthenticated;
+  bool get _filterRibbonEnabled =>
+      AuthenticationState().isAuthenticated ||
+      HomeInlineSearchState().isActive;
 
   bool get _hasMapSearchFilters {
     if (!_filterRibbonEnabled) {
@@ -365,10 +368,23 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     if (kIsWeb) return;
     final status = await Permission.location.status;
     if (!mounted) return;
+
+    final isGranted = status.isGranted || status.isLimited;
+    final shouldAutoLoad = isGranted && _userLocationRequestToken == 0;
+
     setState(() {
       _showLocationPrompt =
-          _userLocationRequestToken == 0 && !status.isPermanentlyDenied;
+          !isGranted &&
+          _userLocationRequestToken == 0 &&
+          !status.isPermanentlyDenied;
+      if (shouldAutoLoad) {
+        _userLocationRequestToken++;
+      }
     });
+
+    if (shouldAutoLoad) {
+      await _loadCurrentUserLocationOnce();
+    }
   }
 
   Future<void> _requestUserLocation() async {

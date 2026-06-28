@@ -384,7 +384,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     _ensureUnfilteredBrowseFeed();
   }
 
-  bool _canShowInlineSearchRibbon() {
+  /// Auto-restore / bootstrap only — not for explicit search-sheet commits.
+  bool _canAutoRestoreInlineSearchRibbon() {
     return AuthenticationState().isAuthenticated;
   }
 
@@ -540,7 +541,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// has it set, hence the parameter).
   void _activateInlineSearch({required bool persistActiveFlag}) {
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
-    if (!_canShowInlineSearchRibbon()) return;
+    if (!_canAutoRestoreInlineSearchRibbon()) return;
     setState(() {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
@@ -1347,9 +1348,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildInlineFiltersRibbonAnimated() {
-    if (!_canShowInlineSearchRibbon()) {
-      return const SizedBox.shrink();
-    }
     return ListenableBuilder(
       listenable: AnimationSettingsState(),
       builder: (context, _) {
@@ -1898,40 +1896,14 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     await HomeInlineSearchState().setRibbonDismissedByUser(false);
     await _persistSearchResultFilters(result);
 
-    final showRibbon = _canShowInlineSearchRibbon();
-
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
       setState(() {
         _openMapViewWithSnapshot(result);
-        if (showRibbon) {
-          _inlineSearchActive = true;
-          _inlineSearchSpacerExpanded = true;
-        }
-        _inlineSearchClosing = false;
-      });
-      if (showRibbon) {
-        HomeInlineSearchState().setActive(true);
-        unawaited(() async {
-          try {
-            final p = await SharedPreferences.getInstance();
-            await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-          } catch (_) {}
-        }());
-      }
-      return;
-    }
-
-    if (!mounted) return;
-    setState(() {
-      if (showRibbon) {
         _inlineSearchActive = true;
+        _inlineSearchClosing = false;
         _inlineSearchSpacerExpanded = true;
-      }
-      _inlineSearchClosing = false;
-      _mapViewState.openFeed(result);
-    });
-    if (showRibbon) {
+      });
       HomeInlineSearchState().setActive(true);
       unawaited(() async {
         try {
@@ -1939,10 +1911,26 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
           await p.setBool(HomeInlineSearchState.activePrefsKey, true);
         } catch (_) {}
       }());
+      return;
     }
+
+    if (!mounted) return;
+    setState(() {
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+      _mapViewState.openFeed(result);
+    });
+    HomeInlineSearchState().setActive(true);
+    unawaited(() async {
+      try {
+        final p = await SharedPreferences.getInstance();
+        await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+      } catch (_) {}
+    }());
     // Dispatch immediately so the feed cannot sit on a stale unfiltered page
     // while SharedPreferences writes finish (pull-to-refresh was fixing that).
-    _performSearch(keepStaleWhileRibbonAnimates: showRibbon);
+    _performSearch(keepStaleWhileRibbonAnimates: true);
   }
 
   bool _shouldSuppressInlineSearchRestore({
@@ -2253,18 +2241,17 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Future<void> _openSearchResultsMap(SearchBottomSheetResult result) async {
     if (!mounted) return;
-    final showRibbon = _canShowInlineSearchRibbon();
     _searchFiltersState.clearPersistedFiltersDismissed();
     unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
     setState(() {
       _openMapViewWithSnapshot(result);
-      if (!widget.isSearchMode && showRibbon) {
+      if (!widget.isSearchMode) {
         _inlineSearchActive = true;
         _inlineSearchClosing = false;
         _inlineSearchSpacerExpanded = true;
       }
     });
-    if (!widget.isSearchMode && showRibbon) {
+    if (!widget.isSearchMode) {
       HomeInlineSearchState().setActive(true);
       unawaited(() async {
         await HomeInlineSearchState().setRibbonDismissedByUser(false);

@@ -543,16 +543,23 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     return _createClusterIconBytes(label, backgroundColor: Colors.black);
   }
 
-  Future<Uint8List> _universityClusterIconBytes(int count) {
+  Future<Uint8List> _universityClusterIconBytes(
+    int count, {
+    bool isUserUniversity = false,
+  }) {
     final cappedCount = count > 99 ? 99 : count;
-    final key =
+    final countLabel =
         cappedCount == 99 && count > 99 ? "99+" : cappedCount.toString();
+    final key = isUserUniversity ? "${countLabel}_user" : countLabel;
     final cached = _sharedUniversityClusterIconBytes[key];
     if (cached != null) return Future.value(cached);
 
     return _pendingSharedUniversityClusterIconBytes.putIfAbsent(
       key,
-      () => _createUniversityClusterIconBytes(key).then((bytes) {
+      () => _createUniversityClusterIconBytes(
+        countLabel,
+        isUserUniversity: isUserUniversity,
+      ).then((bytes) {
         _sharedUniversityClusterIconBytes[key] = bytes;
         _pendingSharedUniversityClusterIconBytes.remove(key);
         return bytes;
@@ -563,8 +570,15 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
   }
 
-  Future<Uint8List> _createUniversityClusterIconBytes(String label) async {
-    return _createClusterIconBytes(label, backgroundColor: AppColors.success);
+  Future<Uint8List> _createUniversityClusterIconBytes(
+    String label, {
+    bool isUserUniversity = false,
+  }) async {
+    return _createClusterIconBytes(
+      label,
+      backgroundColor:
+          isUserUniversity ? AppColors.error : AppColors.success,
+    );
   }
 
   Future<Uint8List> _createClusterIconBytes(
