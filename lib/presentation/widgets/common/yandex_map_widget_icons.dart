@@ -13,6 +13,10 @@ class _YandexMapSharedIconBytes {
     required this.selectedIconBytes,
     required this.universityIconBytes,
     required this.selectedUniversityIconBytes,
+    required this.userLocationPinIconBytes,
+    required this.userLocationArrowIconBytes,
+    required this.groceryStoreIconBytes,
+    required this.busStopIconBytes,
     required this.listingTypeIconBytes,
     required this.selectedListingTypeIconBytes,
     required this.metroStationIconBytes,
@@ -22,6 +26,10 @@ class _YandexMapSharedIconBytes {
   final Uint8List selectedIconBytes;
   final Uint8List universityIconBytes;
   final Uint8List selectedUniversityIconBytes;
+  final Uint8List userLocationPinIconBytes;
+  final Uint8List userLocationArrowIconBytes;
+  final Uint8List groceryStoreIconBytes;
+  final Uint8List busStopIconBytes;
   final Map<String, Uint8List> listingTypeIconBytes;
   final Map<String, Uint8List> selectedListingTypeIconBytes;
   final Map<int, Uint8List> metroStationIconBytes;
@@ -90,7 +98,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     final selectedUniversityIconBytes = await _createIconBytes(
       Icons.school_rounded,
       124,
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.primary,
       iconColor: Colors.white,
       outlineColor: Colors.white,
       outlineWidth: 8,
@@ -98,13 +106,36 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       shadowBlurRadius: 12,
       shadowOffset: const Offset(0, 6),
     );
+    final userLocationPinIconBytes = await _createUserLocationPinIconBytes();
+    final userLocationArrowIconBytes =
+        await _createUserLocationArrowIconBytes();
+    final groceryStoreIconBytes = await _createIconBytes(
+      Icons.local_grocery_store_rounded,
+      88,
+      backgroundColor: const Color(0xFF2E7D32),
+      outlineColor: Colors.white,
+      outlineWidth: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.22),
+      shadowBlurRadius: 8,
+      shadowOffset: const Offset(0, 4),
+    );
+    final busStopIconBytes = await _createIconBytes(
+      Icons.directions_bus_rounded,
+      88,
+      backgroundColor: const Color(0xFF6A1B9A),
+      outlineColor: Colors.white,
+      outlineWidth: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.22),
+      shadowBlurRadius: 8,
+      shadowOffset: const Offset(0, 4),
+    );
     final metroStationIconBytes = <int, Uint8List>{};
     for (final line in MetroCache.getAvailableLines()) {
       metroStationIconBytes[line] = await _createIconBytes(
         Icons.directions_subway_rounded,
         96,
         backgroundColor: _metroLineColor(line),
-        outlineColor: Colors.white,
+        outlineColor: line == 4 ? Colors.black : Colors.white,
         outlineWidth: 7,
         shadowColor: Colors.black.withValues(alpha: 0.28),
         shadowBlurRadius: 9,
@@ -117,6 +148,10 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       selectedIconBytes: selectedIconBytes,
       universityIconBytes: universityIconBytes,
       selectedUniversityIconBytes: selectedUniversityIconBytes,
+      userLocationPinIconBytes: userLocationPinIconBytes,
+      userLocationArrowIconBytes: userLocationArrowIconBytes,
+      groceryStoreIconBytes: groceryStoreIconBytes,
+      busStopIconBytes: busStopIconBytes,
       listingTypeIconBytes: Map.unmodifiable(listingTypeIconBytes),
       selectedListingTypeIconBytes: Map.unmodifiable(
         selectedListingTypeIconBytes,
@@ -194,6 +229,164 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     } finally {
       picture.dispose();
     }
+  }
+
+  Future<Uint8List> _createUserLocationPinIconBytes() async {
+    const size = 104;
+    const center = Offset(size / 2, size / 2);
+    const outerRadius = 28.0;
+    const innerRadius = 17.0;
+    const yandexLocationRed = Color(0xFFFF3333);
+
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.24)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center + const Offset(0, 4), outerRadius, shadowPaint);
+
+    final outlinePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, outerRadius, outlinePaint);
+
+    final dotPaint = Paint()
+      ..color = yandexLocationRed
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, innerRadius, dotPaint);
+
+    return _createPngBytesFromPicture(pictureRecorder, size, size);
+  }
+
+  Future<Uint8List> _createUserLocationArrowIconBytes() async {
+    const size = 152;
+    const center = Offset(size / 2, size / 2);
+    const outerRadius = 30.0;
+    const innerRadius = 17.0;
+    const yandexLocationRed = Color(0xFFFF3333);
+
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+
+    final arrowPath = Path()
+      ..moveTo(center.dx, 12)
+      ..lineTo(center.dx - 24, center.dy - 8)
+      ..lineTo(center.dx, center.dy - 18)
+      ..lineTo(center.dx + 24, center.dy - 8)
+      ..close();
+
+    final arrowOutlinePaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 14
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(arrowPath, arrowOutlinePaint);
+
+    final arrowPaint = Paint()
+      ..color = yandexLocationRed
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(arrowPath, arrowPaint);
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.24)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center + const Offset(0, 4), outerRadius, shadowPaint);
+
+    final outlinePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, outerRadius, outlinePaint);
+
+    final dotPaint = Paint()
+      ..color = yandexLocationRed
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, innerRadius, dotPaint);
+
+    return _createPngBytesFromPicture(pictureRecorder, size, size);
+  }
+
+  Future<Uint8List> _createPngBytesFromPicture(
+    ui.PictureRecorder pictureRecorder,
+    int width,
+    int height,
+  ) async {
+    final picture = pictureRecorder.endRecording();
+    try {
+      final image = await picture.toImage(width, height);
+      try {
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        return byteData!.buffer.asUint8List();
+      } finally {
+        image.dispose();
+      }
+    } finally {
+      picture.dispose();
+    }
+  }
+
+  void _ensureMetroWalkAreaLabelIconBytes(String label) {
+    if (_cachedMetroWalkAreaLabelIconBytes.containsKey(label) ||
+        _pendingMetroWalkAreaLabelIconKeys.contains(label)) {
+      return;
+    }
+
+    _pendingMetroWalkAreaLabelIconKeys.add(label);
+    _createMetroWalkAreaLabelIconBytes(label).then((bytes) {
+      _pendingMetroWalkAreaLabelIconKeys.remove(label);
+      if (!mounted) return;
+      _cachedMetroWalkAreaLabelIconBytes[label] = bytes;
+      _requestMapRebuild();
+    }).catchError((Object error) {
+      _pendingMetroWalkAreaLabelIconKeys.remove(label);
+      logger.w("Could not create metro walk area label icon: $error");
+    });
+  }
+
+  Future<Uint8List> _createMetroWalkAreaLabelIconBytes(String label) async {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: Color(0xFF1565C0),
+          fontSize: 42,
+          fontWeight: FontWeight.w800,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    const horizontalPadding = 13.0;
+    const verticalPadding = 9.0;
+    final width = (textPainter.width + horizontalPadding * 2).ceil();
+    final height = (textPainter.height + verticalPadding * 2).ceil();
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final offset = Offset(horizontalPadding, verticalPadding);
+
+    final outlinePainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 6
+            ..strokeJoin = StrokeJoin.round
+            ..color = Colors.white,
+          fontSize: 42,
+          fontWeight: FontWeight.w800,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    outlinePainter.paint(canvas, offset);
+    textPainter.paint(canvas, offset);
+
+    return _createPngBytesFromPicture(pictureRecorder, width, height);
   }
 
   Future<Uint8List> _listingClusterIconBytes(int count) {

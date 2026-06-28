@@ -203,6 +203,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get map_web_preview => 'Veb koʻrinish';
 
   @override
+  String get metro_station_walk_area_label => '10 daqiqa piyoda hududi';
+
+  @override
   String get open_map_view => 'Xaritani ochish';
 
   @override
@@ -243,6 +246,24 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Metro bekatlarini yashirish';
+
+  @override
+  String get show_universities_layer => 'Universitetlarni ko‘rsatish';
+
+  @override
+  String get hide_universities_layer => 'Universitetlarni yashirish';
+
+  @override
+  String get show_grocery_stores_layer => 'Oziq-ovqat do‘konlarini ko‘rsatish';
+
+  @override
+  String get hide_grocery_stores_layer => 'Oziq-ovqat do‘konlarini yashirish';
+
+  @override
+  String get show_bus_stops_layer => 'Avtobus bekatlarini ko‘rsatish';
+
+  @override
+  String get hide_bus_stops_layer => 'Avtobus bekatlarini yashirish';
 
   @override
   String get error => 'Xatolik';

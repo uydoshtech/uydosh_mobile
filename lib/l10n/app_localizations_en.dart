@@ -202,6 +202,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map_web_preview => 'Web preview';
 
   @override
+  String get metro_station_walk_area_label => '10 min walk area';
+
+  @override
   String get open_map_view => 'Open map view';
 
   @override
@@ -242,6 +245,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Hide metro stations';
+
+  @override
+  String get show_universities_layer => 'Show universities';
+
+  @override
+  String get hide_universities_layer => 'Hide universities';
+
+  @override
+  String get show_grocery_stores_layer => 'Show grocery stores';
+
+  @override
+  String get hide_grocery_stores_layer => 'Hide grocery stores';
+
+  @override
+  String get show_bus_stops_layer => 'Show bus stops';
+
+  @override
+  String get hide_bus_stops_layer => 'Hide bus stops';
 
   @override
   String get error => 'Error';

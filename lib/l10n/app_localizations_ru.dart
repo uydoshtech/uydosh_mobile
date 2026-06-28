@@ -203,6 +203,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get map_web_preview => 'Веб-предпросмотр';
 
   @override
+  String get metro_station_walk_area_label => '10 минут пешком';
+
+  @override
   String get open_map_view => 'Открыть карту';
 
   @override
@@ -243,6 +246,24 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Скрыть станции метро';
+
+  @override
+  String get show_universities_layer => 'Показать университеты';
+
+  @override
+  String get hide_universities_layer => 'Скрыть университеты';
+
+  @override
+  String get show_grocery_stores_layer => 'Показать продуктовые магазины';
+
+  @override
+  String get hide_grocery_stores_layer => 'Скрыть продуктовые магазины';
+
+  @override
+  String get show_bus_stops_layer => 'Показать автобусные остановки';
+
+  @override
+  String get hide_bus_stops_layer => 'Скрыть автобусные остановки';
 
   @override
   String get error => 'Ошибка';

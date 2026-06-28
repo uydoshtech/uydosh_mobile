@@ -105,8 +105,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   UniversityMapMarker? _selectedUniversityMarker;
   bool _hasSelectedMetroStation = false;
   List<UniversityMapMarker> _universityMarkers = const [];
+  String? _currentUserUniversityMarkerId;
   bool _showDistrictLayer = true;
-  bool _showMetroStationsLayer = false;
+  bool _showMetroStationsLayer = true;
+  bool _showUniversitiesLayer = false;
+  bool _showGroceryStoresLayer = false;
+  bool _showBusStopsLayer = false;
   bool _showLocationPrompt = false;
   int _userLocationRequestToken = 0;
 
@@ -134,7 +138,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _selectedPin = _autoSelectedPin(initialResult);
     }
     _loadResults(showLoading: false);
-    _loadCurrentUserUniversityMarker();
+    _loadUniversityMarkers();
     unawaited(_refreshLocationPromptVisibility());
   }
 
@@ -199,42 +203,47 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     return true;
   }
 
-  Future<void> _loadCurrentUserUniversityMarker() async {
+  Future<void> _loadUniversityMarkers() async {
     try {
-      final profile = await SessionManager.getCachedUserProfile();
-      final universityId = profile?.universityId;
-      if (universityId == null) return;
-
       if (!UniversityCache.isInitialized) {
         await UniversityCache.initialize();
       }
-      final university = UniversityCache.getUniversityById(universityId);
-      if (university == null) return;
-
-      final latitude = double.tryParse(university.latitude ?? "");
-      final longitude = double.tryParse(university.longitude ?? "");
-      if (latitude == null || longitude == null) return;
-      if (_isPlaceholderUniversityCoordinate(latitude, longitude)) return;
-
+      final profile = await SessionManager.getCachedUserProfile();
       final language = LanguageState().currentLanguage;
-      final shortName = university.getLocalizedShortName(language);
-      final marker = UniversityMapMarker(
-        id: university.id.toString(),
-        latitude: latitude,
-        longitude: longitude,
-        title: shortName.isNotEmpty
-            ? shortName
-            : university.getLocalizedName(language),
-        fullTitle: university.getLocalizedName(language),
-      );
+      final markers = UniversityCache.getAllUniversities()
+          .map((university) => _markerForUniversity(university, language))
+          .whereType<UniversityMapMarker>()
+          .toList()
+        ..sort((a, b) => a.title.compareTo(b.title));
 
       if (!mounted) return;
       setState(() {
-        _universityMarkers = [marker];
+        _universityMarkers = markers;
+        _currentUserUniversityMarkerId = profile?.universityId?.toString();
       });
     } catch (error) {
-      logger.w("Could not load current user's university marker: $error");
+      logger.w("Could not load university markers: $error");
     }
+  }
+
+  UniversityMapMarker? _markerForUniversity(
+    University university,
+    String language,
+  ) {
+    final latitude = double.tryParse(university.latitude ?? "");
+    final longitude = double.tryParse(university.longitude ?? "");
+    if (latitude == null || longitude == null) return null;
+    if (_isPlaceholderUniversityCoordinate(latitude, longitude)) return null;
+
+    final shortName = university.getLocalizedShortName(language);
+    final fullName = university.getLocalizedName(language);
+    return UniversityMapMarker(
+      id: university.id.toString(),
+      latitude: latitude,
+      longitude: longitude,
+      title: shortName.isNotEmpty ? shortName : fullName,
+      fullTitle: fullName,
+    );
   }
 
   Future<void> _refreshLocationPromptVisibility() async {
@@ -738,9 +747,14 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedPinGroup: _selectedPinGroup,
       selectedUniversityMarker: _selectedUniversityMarker,
       hasSelectedMetroStation: _hasSelectedMetroStation,
-      universityMarkers: _universityMarkers,
+      universityMarkers: _showUniversitiesLayer ? _universityMarkers : const [],
+      selectedUniversityMarkerId:
+          _selectedUniversityMarker?.id ?? _currentUserUniversityMarkerId,
       showDistrictLayer: _showDistrictLayer,
       showMetroStationsLayer: _showMetroStationsLayer,
+      showUniversitiesLayer: _showUniversitiesLayer,
+      showGroceryStoresLayer: _showGroceryStoresLayer,
+      showBusStopsLayer: _showBusStopsLayer,
       showLocationPrompt: _showLocationPrompt,
       userLocationRequestToken: _userLocationRequestToken,
       placeViewToggleAtBottom: widget.embedded,
@@ -758,6 +772,14 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _showMetroStationsLayer = !_showMetroStationsLayer;
           if (!_showMetroStationsLayer) {
             _hasSelectedMetroStation = false;
+          }
+        });
+      },
+      onToggleUniversitiesLayer: () {
+        setState(() {
+          _showUniversitiesLayer = !_showUniversitiesLayer;
+          if (!_showUniversitiesLayer) {
+            _selectedUniversityMarker = null;
           }
         });
       },

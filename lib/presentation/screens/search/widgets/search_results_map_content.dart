@@ -14,8 +14,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.selectedUniversityMarker,
     required this.hasSelectedMetroStation,
     required this.universityMarkers,
+    required this.selectedUniversityMarkerId,
     required this.showDistrictLayer,
     required this.showMetroStationsLayer,
+    required this.showUniversitiesLayer,
+    required this.showGroceryStoresLayer,
+    required this.showBusStopsLayer,
     required this.showLocationPrompt,
     required this.userLocationRequestToken,
     required this.placeViewToggleAtBottom,
@@ -27,6 +31,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onRequestUserLocation,
     required this.onToggleDistrictLayer,
     required this.onToggleMetroStationsLayer,
+    required this.onToggleUniversitiesLayer,
     required this.onClearSelectedPin,
     required this.onClearSelectedUniversityMarker,
     required this.onSelectPin,
@@ -58,8 +63,12 @@ class _SearchResultsMapContent extends StatelessWidget {
   final UniversityMapMarker? selectedUniversityMarker;
   final bool hasSelectedMetroStation;
   final List<UniversityMapMarker> universityMarkers;
+  final String? selectedUniversityMarkerId;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final bool showUniversitiesLayer;
+  final bool showGroceryStoresLayer;
+  final bool showBusStopsLayer;
   final bool showLocationPrompt;
   final int userLocationRequestToken;
   final bool placeViewToggleAtBottom;
@@ -71,6 +80,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final VoidCallback onRequestUserLocation;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleMetroStationsLayer;
+  final VoidCallback onToggleUniversitiesLayer;
   final VoidCallback onClearSelectedPin;
   final VoidCallback onClearSelectedUniversityMarker;
   final ValueChanged<ListingMapPin> onSelectPin;
@@ -98,7 +108,14 @@ class _SearchResultsMapContent extends StatelessWidget {
     const viewToggleGap = 8.0;
     const zoomControlsWidth = 48.0;
     const metroTooltipReservedHeight = 64.0;
+    const brandMarkSize = 42.0;
+    const brandMarkInset = 10.0;
+    const locationPromptGapAboveBrandMark = 20.0;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
+    final locationPromptBottom = safeAreaBottom +
+        brandMarkInset +
+        brandMarkSize +
+        locationPromptGapAboveBrandMark;
     final zoomControlsBottom = viewToggleBottom +
         feedViewButtonHeight +
         viewToggleGap -
@@ -138,6 +155,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                   apiKey: AppConfig.yandexMapsApiKey,
                   pins: result.pins,
                   universityMarkers: universityMarkers,
+                  selectedUniversityMarkerId: selectedUniversityMarkerId,
+                  selectedUniversityZoomFocusId: universityMarker?.id,
                   selectedListingId: selectedPin?.listingId,
                   selectedListingGroupIds: [
                     for (final pin in pinGroup) pin.listingId,
@@ -157,6 +176,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                     showUserLocation: true,
                     showDistrictLayer: showDistrictLayer,
                     showMetroStationsLayer: showMetroStationsLayer,
+                    showGroceryStoresLayer: showGroceryStoresLayer,
+                    showBusStopsLayer: showBusStopsLayer,
                   ),
                   userLocationRequestToken: userLocationRequestToken,
                   showLoadingPlaceholderContent: false,
@@ -263,8 +284,10 @@ class _SearchResultsMapContent extends StatelessWidget {
                     _MapLayerToggleButtons(
                       showMetroStationsLayer: showMetroStationsLayer,
                       showDistrictLayer: showDistrictLayer,
+                      showUniversitiesLayer: showUniversitiesLayer,
                       onToggleMetroStationsLayer: onToggleMetroStationsLayer,
                       onToggleDistrictLayer: onToggleDistrictLayer,
+                      onToggleUniversitiesLayer: onToggleUniversitiesLayer,
                       width: viewToggleWidth,
                       height: viewToggleHeight,
                       gap: viewToggleGap,
@@ -296,7 +319,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                 Positioned(
                   left: 12,
                   right: 88,
-                  bottom: searchButtonBottom,
+                  bottom: locationPromptBottom,
                   child: _MapLocationPromptCard(
                     onPressed: onRequestUserLocation,
                   ),
@@ -363,7 +386,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: scheme.onSurface,
+                      color: Colors.black,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),
@@ -374,7 +397,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
+                      color: Colors.black,
                       fontWeight: FontWeight.w600,
                       height: 1.15,
                     ),
@@ -450,8 +473,10 @@ class _MapLayerToggleButtons extends StatelessWidget {
   const _MapLayerToggleButtons({
     required this.showMetroStationsLayer,
     required this.showDistrictLayer,
+    required this.showUniversitiesLayer,
     required this.onToggleMetroStationsLayer,
     required this.onToggleDistrictLayer,
+    required this.onToggleUniversitiesLayer,
     required this.width,
     required this.height,
     required this.gap,
@@ -459,8 +484,10 @@ class _MapLayerToggleButtons extends StatelessWidget {
 
   final bool showMetroStationsLayer;
   final bool showDistrictLayer;
+  final bool showUniversitiesLayer;
   final VoidCallback onToggleMetroStationsLayer;
   final VoidCallback onToggleDistrictLayer;
+  final VoidCallback onToggleUniversitiesLayer;
   final double width;
   final double height;
   final double gap;
@@ -490,6 +517,35 @@ class _MapLayerToggleButtons extends StatelessWidget {
           inactiveTooltip: context.l10n.show_district_layer,
           onPressed: onToggleDistrictLayer,
         ),
+        SizedBox(width: gap),
+        _buildLayerButton(
+          context,
+          active: showUniversitiesLayer,
+          iconData: Icons.school_rounded,
+          activeTooltip: context.l10n.hide_universities_layer,
+          inactiveTooltip: context.l10n.show_universities_layer,
+          onPressed: onToggleUniversitiesLayer,
+        ),
+        /*
+        SizedBox(width: gap),
+        _buildLayerButton(
+          context,
+          active: showGroceryStoresLayer,
+          iconData: Icons.local_grocery_store_rounded,
+          activeTooltip: context.l10n.hide_grocery_stores_layer,
+          inactiveTooltip: context.l10n.show_grocery_stores_layer,
+          onPressed: onToggleGroceryStoresLayer,
+        ),
+        SizedBox(width: gap),
+        _buildLayerButton(
+          context,
+          active: showBusStopsLayer,
+          iconData: Icons.directions_bus_rounded,
+          activeTooltip: context.l10n.hide_bus_stops_layer,
+          inactiveTooltip: context.l10n.show_bus_stops_layer,
+          onPressed: onToggleBusStopsLayer,
+        ),
+        */
       ],
     );
   }

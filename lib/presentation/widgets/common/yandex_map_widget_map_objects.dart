@@ -4,6 +4,15 @@ final Map<String, Polygon> _cachedDistrictPolygons = {};
 final Map<int, Point> _cachedDistrictLabelPoints = {};
 final Map<String, PlacemarkMapObject> _cachedMetroStationPlacemarkTemplates =
     {};
+final Set<String> _metroStationCoordinateKeys = {
+  for (final station in MetroCache.getAllStations())
+    if (station.latitude != null && station.longitude != null)
+      _mapCoordinateKey(station.latitude!, station.longitude!),
+};
+
+String _mapCoordinateKey(double latitude, double longitude) {
+  return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
+}
 
 extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   List<MapObject> _createMapObjects() {
@@ -20,11 +29,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   int _mapObjectsCacheKey() {
     final districtLabelsVisible =
         _currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom;
+    final metroWalkAreaLabelVisible = _isMetroWalkAreaLabelVisible;
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
       widget.layerOptions.showMetroStationsLayer,
+      widget.layerOptions.showGroceryStoresLayer,
+      widget.layerOptions.showBusStopsLayer,
       widget.showDefaultPlacemark,
+      Localizations.localeOf(context).languageCode,
       districtLabelsVisible,
+      metroWalkAreaLabelVisible,
       _selectedMetroStation?.id,
       _selectedUniversityMarker?.id,
       widget.selectedListingId,
@@ -36,12 +50,18 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedSelectedIconBytes != null,
       _cachedUniversityIconBytes != null,
       _cachedSelectedUniversityIconBytes != null,
+      _cachedGroceryStoreIconBytes != null,
+      _cachedBusStopIconBytes != null,
       _cachedListingTypeIconBytes.length,
       _cachedSelectedListingTypeIconBytes.length,
       _cachedListingGroupIconBytes.length,
       _cachedMetroStationIconBytes.length,
+      _cachedMetroWalkAreaLabelIconBytes.length,
+      Object.hashAll(_groceryStoreMarkers.map(_poiMarkerCacheKey)),
+      Object.hashAll(_busStopMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_groupListingPins(widget.pins).map(_pinGroupCacheKey)),
       Object.hashAll(widget.universityMarkers.map(_universityMarkerCacheKey)),
+      widget.selectedUniversityMarkerId,
     ]);
   }
 
@@ -77,6 +97,15 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     );
   }
 
+  int _poiMarkerCacheKey(_YandexMapPoiMarker marker) {
+    return Object.hash(
+      marker.id,
+      marker.name,
+      marker.point.latitude,
+      marker.point.longitude,
+    );
+  }
+
   List<MapObject> _buildMapObjects() {
     final districtLayerObjects = widget.layerOptions.showDistrictLayer
         ? _createDistrictLayerMapObjects()
@@ -84,9 +113,27 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final metroStationLayerObjects = widget.layerOptions.showMetroStationsLayer
         ? _createMetroStationLayerMapObjects()
         : const <MapObject>[];
+    final groceryStoreLayerObjects = widget.layerOptions.showGroceryStoresLayer
+        ? _createPoiLayerMapObjects(
+            markers: _groceryStoreMarkers,
+            layerId: "grocery_store",
+            iconBytes: _cachedGroceryStoreIconBytes,
+            fallbackColor: const Color(0xFF2E7D32),
+          )
+        : const <MapObject>[];
+    final busStopLayerObjects = widget.layerOptions.showBusStopsLayer
+        ? _createPoiLayerMapObjects(
+            markers: _busStopMarkers,
+            layerId: "bus_stop",
+            iconBytes: _cachedBusStopIconBytes,
+            fallbackColor: const Color(0xFF6A1B9A),
+          )
+        : const <MapObject>[];
     final areaLayerObjects = [
       ...districtLayerObjects,
       ...metroStationLayerObjects,
+      ...groceryStoreLayerObjects,
+      ...busStopLayerObjects,
     ];
     final universityMarkerObjects = _createUniversityMarkerMapObjects();
     if (widget.pins.isNotEmpty) {
@@ -137,7 +184,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
     final placemark = PlacemarkMapObject(
       mapId: const MapObjectId("listing_location_placemark"),
-      point: Point(
+      point: _listingPlacemarkPoint(
         latitude: coordinates["latitude"]!,
         longitude: coordinates["longitude"]!,
       ),
@@ -406,10 +453,100 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   List<MapObject> _createMetroStationLayerMapObjects() {
     return [
+      if (_selectedMetroStation != null) ...[
+        _createMetroStationWalkingRadius(),
+        if (_isMetroWalkAreaLabelVisible)
+          _createMetroStationWalkingRadiusLabel(),
+      ],
       for (final station in MetroCache.getAllStations())
         if (station.latitude != null && station.longitude != null)
           _createMetroStationPlacemark(station),
     ];
+  }
+
+  bool get _isMetroWalkAreaLabelVisible {
+    return _currentZoom >=
+        _YandexMapWidgetState._minMetroStationWalkAreaLabelZoom;
+  }
+
+  CircleMapObject _createMetroStationWalkingRadius() {
+    final station = _selectedMetroStation!;
+    final point = Point(
+      latitude: station.latitude!,
+      longitude: station.longitude!,
+    );
+    const radiusColor = Color(0xFF1E88E5);
+    return CircleMapObject(
+      mapId: MapObjectId("tashkent_metro_station_${station.id}_walking_radius"),
+      circle: Circle(
+        center: point,
+        radius: _YandexMapWidgetState._metroStationWalkingRadiusMeters,
+      ),
+      zIndex: 1.05,
+      strokeWidth: 2.0,
+      strokeColor: radiusColor.withValues(alpha: 0.42),
+      fillColor: radiusColor.withValues(alpha: 0.16),
+    );
+  }
+
+  PlacemarkMapObject _createMetroStationWalkingRadiusLabel() {
+    final station = _selectedMetroStation!;
+    final label = context.l10n.metro_station_walk_area_label;
+    _ensureMetroWalkAreaLabelIconBytes(label);
+    final iconBytes = _cachedMetroWalkAreaLabelIconBytes[label];
+    final labelPoint = _pointOffsetNorth(
+      latitude: station.latitude!,
+      longitude: station.longitude!,
+      meters: _YandexMapWidgetState._metroStationWalkingRadiusMeters * 0.56,
+    );
+    if (iconBytes != null) {
+      return PlacemarkMapObject(
+        mapId: MapObjectId(
+          "tashkent_metro_station_${station.id}_walking_radius_label",
+        ),
+        point: labelPoint,
+        zIndex: 1.1,
+        opacity: 1.0,
+        icon: PlacemarkIcon.single(
+          PlacemarkIconStyle(
+            image: BitmapDescriptor.fromBytes(iconBytes),
+            anchor: const Offset(0.5, 0.5),
+            scale: 1.0,
+          ),
+        ),
+      );
+    }
+
+    return PlacemarkMapObject(
+      mapId: MapObjectId(
+        "tashkent_metro_station_${station.id}_walking_radius_label",
+      ),
+      point: labelPoint,
+      zIndex: 1.1,
+      opacity: 1.0,
+      text: PlacemarkText(
+        text: label,
+        style: const PlacemarkTextStyle(
+          placement: TextStylePlacement.center,
+          color: Color(0xFF1565C0),
+          outlineColor: Colors.white,
+          size: 12,
+          textOptional: false,
+        ),
+      ),
+    );
+  }
+
+  Point _pointOffsetNorth({
+    required double latitude,
+    required double longitude,
+    required double meters,
+  }) {
+    const metersPerLatitudeDegree = 111320.0;
+    return Point(
+      latitude: latitude + meters / metersPerLatitudeDegree,
+      longitude: longitude,
+    );
   }
 
   MapObject _createMetroStationPlacemark(SubwayStation station) {
@@ -426,7 +563,8 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         zIndex: selected ? 1.35 : 1.15,
         consumeTapEvents: true,
         strokeWidth: selected ? 4.5 : 3.0,
-        strokeColor: Colors.white.withValues(alpha: 0.95),
+        strokeColor: (station.line == 4 ? Colors.black : Colors.white)
+            .withValues(alpha: 0.95),
         fillColor: _metroLineColor(station.line).withValues(alpha: 0.9),
         onTap: (_, point) => _handleMetroStationTap(station, point),
       );
@@ -466,6 +604,40 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     };
   }
 
+  List<MapObject> _createPoiLayerMapObjects({
+    required List<_YandexMapPoiMarker> markers,
+    required String layerId,
+    required Uint8List? iconBytes,
+    required Color fallbackColor,
+  }) {
+    return [
+      for (final marker in markers)
+        if (iconBytes == null)
+          CircleMapObject(
+            mapId: MapObjectId("${layerId}_${marker.id}_circle"),
+            circle: Circle(center: marker.point, radius: 120),
+            zIndex: 2.0,
+            strokeWidth: 2.5,
+            strokeColor: Colors.white.withValues(alpha: 0.95),
+            fillColor: fallbackColor.withValues(alpha: 0.9),
+          )
+        else
+          PlacemarkMapObject(
+            mapId: MapObjectId("${layerId}_${marker.id}_placemark"),
+            point: marker.point,
+            zIndex: 2.1,
+            opacity: 1.0,
+            icon: PlacemarkIcon.single(
+              PlacemarkIconStyle(
+                image: BitmapDescriptor.fromBytes(iconBytes),
+                anchor: const Offset(0.5, 0.5),
+                scale: 0.58,
+              ),
+            ),
+          ),
+    ];
+  }
+
   List<MapObject> _createUniversityMarkerMapObjects() {
     final iconBytes = _cachedUniversityIconBytes;
     final selectedIconBytes = _cachedSelectedUniversityIconBytes;
@@ -475,55 +647,145 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       return [];
     }
 
-    final selectedMarkerId = _selectedUniversityMarker?.id;
-    final orderedMarkers = <UniversityMapMarker>[
+    final highlightedMarkerId = _highlightedUniversityMarkerId;
+    final regularPlacemarks = <PlacemarkMapObject>[
       for (final marker in widget.universityMarkers)
-        if (marker.id != selectedMarkerId) marker,
-      for (final marker in widget.universityMarkers)
-        if (marker.id == selectedMarkerId) marker,
-    ];
-
-    return [
-      for (final marker in orderedMarkers)
-        if (marker.id == selectedMarkerId)
-          PlacemarkMapObject(
-            mapId: MapObjectId("university_${marker.id}_placemark"),
-            point: Point(
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            ),
-            zIndex: 9,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(selectedIconBytes),
-                anchor: const Offset(0.5, 0.5),
-                scale: 1.0,
-              ),
-            ),
-            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
-          )
-        else
-          PlacemarkMapObject(
-            mapId: MapObjectId("university_${marker.id}_placemark"),
-            point: Point(
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            ),
-            zIndex: 5,
-            opacity: 1.0,
-            consumeTapEvents: true,
-            icon: PlacemarkIcon.single(
-              PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(iconBytes),
-                anchor: const Offset(0.5, 0.5),
-                scale: 0.9,
-              ),
-            ),
-            onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
+        if (marker.id != highlightedMarkerId)
+          _createUniversityMarkerPlacemark(
+            marker,
+            iconBytes: iconBytes,
+            selectedIconBytes: selectedIconBytes,
+            selected: false,
           ),
     ];
+    final highlightedPlacemark = highlightedMarkerId == null
+        ? null
+        : _highlightedUniversityPlacemark(
+            highlightedMarkerId,
+            iconBytes: iconBytes,
+            selectedIconBytes: selectedIconBytes,
+          );
+    final regularLayer = regularPlacemarks.length <
+            _YandexMapWidgetState._minClusterableUniversityMarkers
+        ? regularPlacemarks
+        : [_universityMarkerCollection(regularPlacemarks)];
+
+    return [
+      ...regularLayer,
+      if (highlightedPlacemark != null) highlightedPlacemark,
+    ];
+  }
+
+  String? get _highlightedUniversityMarkerId {
+    return widget.selectedUniversityMarkerId ?? _selectedUniversityMarker?.id;
+  }
+
+  PlacemarkMapObject? _highlightedUniversityPlacemark(
+    String highlightedMarkerId, {
+    required Uint8List iconBytes,
+    required Uint8List selectedIconBytes,
+  }) {
+    for (final marker in widget.universityMarkers) {
+      if (marker.id == highlightedMarkerId) {
+        return _createUniversityMarkerPlacemark(
+          marker,
+          iconBytes: iconBytes,
+          selectedIconBytes: selectedIconBytes,
+          selected: true,
+        );
+      }
+    }
+    return null;
+  }
+
+  MapObject _universityMarkerCollection(List<PlacemarkMapObject> placemarks) {
+    return ClusterizedPlacemarkCollection(
+      mapId: const MapObjectId("university_marker_cluster_layer"),
+      placemarks: placemarks,
+      radius: _YandexMapWidgetState._universityClusterRadius,
+      minZoom: _YandexMapWidgetState._universityClusterMinZoom,
+      zIndex: 5,
+      consumeTapEvents: true,
+      onClusterAdded: _handleUniversityClusterAdded,
+      onClusterTap: _handleUniversityClusterTap,
+    );
+  }
+
+  Future<Cluster?> _handleUniversityClusterAdded(
+    ClusterizedPlacemarkCollection self,
+    Cluster cluster,
+  ) async {
+    final iconBytes = await _listingClusterIconBytes(cluster.size);
+    return cluster.copyWith(
+      appearance: cluster.appearance.copyWith(
+        zIndex: 9,
+        opacity: 1.0,
+        icon: PlacemarkIcon.single(
+          PlacemarkIconStyle(
+            image: BitmapDescriptor.fromBytes(iconBytes),
+            anchor: const Offset(0.5, 0.5),
+            scale: 1.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleUniversityClusterTap(
+    ClusterizedPlacemarkCollection self,
+    Cluster cluster,
+  ) {
+    final controller = _mapController;
+    if (controller == null) return;
+    _clearSelectedUniversityMarker();
+    _setSelectedMetroStation(null, notify: true);
+    controller.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: cluster.appearance.point,
+          zoom: (_currentZoom + 1.5)
+              .clamp(
+                _YandexMapWidgetState._minZoom,
+                _YandexMapWidgetState._maxZoom,
+              )
+              .toDouble(),
+          azimuth: 0,
+          tilt: 0,
+        ),
+      ),
+      animation: const MapAnimation(
+        type: MapAnimationType.smooth,
+        duration: 0.28,
+      ),
+    );
+  }
+
+  PlacemarkMapObject _createUniversityMarkerPlacemark(
+    UniversityMapMarker marker, {
+    required Uint8List iconBytes,
+    required Uint8List selectedIconBytes,
+    required bool selected,
+  }) {
+    return PlacemarkMapObject(
+      mapId: MapObjectId("university_${marker.id}_placemark"),
+      point: Point(
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+      ),
+      zIndex: selected ? 9 : 5,
+      opacity: 1.0,
+      consumeTapEvents: true,
+      icon: PlacemarkIcon.single(
+        PlacemarkIconStyle(
+          image: BitmapDescriptor.fromBytes(
+            selected ? selectedIconBytes : iconBytes,
+          ),
+          anchor: const Offset(0.5, 0.5),
+          scale: selected ? 1.0 : 0.9,
+        ),
+      ),
+      onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
+    );
   }
 
   List<PlacemarkMapObject> _createListingPinMapObjects() {
@@ -575,7 +837,10 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         : _YandexMapWidgetState._listingPinZIndex;
     return PlacemarkMapObject(
       mapId: MapObjectId("listing_${pin.listingId}_placemark"),
-      point: Point(latitude: pin.latitude, longitude: pin.longitude),
+      point: _listingPlacemarkPoint(
+        latitude: pin.latitude,
+        longitude: pin.longitude,
+      ),
       zIndex: zIndex,
       opacity: 1.0,
       consumeTapEvents: true,
@@ -613,7 +878,10 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     )];
     return PlacemarkMapObject(
       mapId: MapObjectId("listing_group_${group.key}_placemark"),
-      point: Point(latitude: group.latitude, longitude: group.longitude),
+      point: _listingPlacemarkPoint(
+        latitude: group.latitude,
+        longitude: group.longitude,
+      ),
       zIndex: selected
           ? _YandexMapWidgetState._selectedListingPinZIndex
           : _YandexMapWidgetState._listingGroupPinZIndex,
@@ -726,6 +994,24 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   String _listingPinCoordinateKey(double latitude, double longitude) {
-    return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
+    return _mapCoordinateKey(latitude, longitude);
+  }
+
+  Point _listingPlacemarkPoint({
+    required double latitude,
+    required double longitude,
+  }) {
+    if (!widget.layerOptions.showMetroStationsLayer ||
+        !_metroStationCoordinateKeys.contains(
+          _mapCoordinateKey(latitude, longitude),
+        )) {
+      return Point(latitude: latitude, longitude: longitude);
+    }
+
+    return _pointOffsetNorth(
+      latitude: latitude,
+      longitude: longitude,
+      meters: _YandexMapWidgetState._listingPinMetroStationOffsetMeters,
+    );
   }
 }

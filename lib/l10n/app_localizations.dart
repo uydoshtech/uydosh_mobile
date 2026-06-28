@@ -466,6 +466,12 @@ abstract class AppLocalizations {
   /// **'Web preview'**
   String get map_web_preview;
 
+  /// No description provided for @metro_station_walk_area_label.
+  ///
+  /// In en, this message translates to:
+  /// **'10 min walk area'**
+  String get metro_station_walk_area_label;
+
   /// No description provided for @open_map_view.
   ///
   /// In en, this message translates to:
@@ -543,6 +549,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide metro stations'**
   String get hide_metro_stations_layer;
+
+  /// No description provided for @show_universities_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show universities'**
+  String get show_universities_layer;
+
+  /// No description provided for @hide_universities_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide universities'**
+  String get hide_universities_layer;
+
+  /// No description provided for @show_grocery_stores_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show grocery stores'**
+  String get show_grocery_stores_layer;
+
+  /// No description provided for @hide_grocery_stores_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide grocery stores'**
+  String get hide_grocery_stores_layer;
+
+  /// No description provided for @show_bus_stops_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Show bus stops'**
+  String get show_bus_stops_layer;
+
+  /// No description provided for @hide_bus_stops_layer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide bus stops'**
+  String get hide_bus_stops_layer;
 
   /// No description provided for @error.
   ///

@@ -1,3 +1,4 @@
+import "dart:async" show unawaited;
 import "dart:typed_data";
 import "dart:ui" as ui;
 import "package:flutter/foundation.dart" show kIsWeb;
@@ -85,11 +86,15 @@ class YandexMapLayerOptions {
     this.showUserLocation = false,
     this.showDistrictLayer = false,
     this.showMetroStationsLayer = false,
+    this.showGroceryStoresLayer = false,
+    this.showBusStopsLayer = false,
   });
 
   final bool showUserLocation;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final bool showGroceryStoresLayer;
+  final bool showBusStopsLayer;
 }
 
 class YandexMapTooltipOptions {
@@ -123,6 +128,18 @@ class _ListingPinGroup {
   final double latitude;
   final double longitude;
   final List<ListingMapPin> pins;
+}
+
+class _YandexMapPoiMarker {
+  const _YandexMapPoiMarker({
+    required this.id,
+    required this.name,
+    required this.point,
+  });
+
+  final String id;
+  final String name;
+  final Point point;
 }
 
 class MapPatternPainter extends CustomPainter {
@@ -180,6 +197,8 @@ class YandexMapWidget extends StatefulWidget {
     this.listingDetail,
     this.pins = const [],
     this.universityMarkers = const [],
+    this.selectedUniversityMarkerId,
+    this.selectedUniversityZoomFocusId,
     this.selectedListingId,
     this.selectedListingGroupIds = const [],
     this.onPinTap,
@@ -209,6 +228,8 @@ class YandexMapWidget extends StatefulWidget {
   final ListingDetail? listingDetail;
   final List<ListingMapPin> pins;
   final List<UniversityMapMarker> universityMarkers;
+  final String? selectedUniversityMarkerId;
+  final String? selectedUniversityZoomFocusId;
   final int? selectedListingId;
   final List<int> selectedListingGroupIds;
   final ValueChanged<ListingMapPin>? onPinTap;
@@ -242,20 +263,34 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
+  static const double _metroStationWalkingRadiusMeters = 1100.0;
+  static const double _minMetroStationWalkAreaLabelZoom = 12.5;
+  static const double _listingPinMetroStationOffsetMeters = 45.0;
   static const int _minClusterableListingPinGroups = 16;
   static const double _listingClusterRadius = 44.0;
   static const int _listingClusterMinZoom = 15;
+  static const int _minClusterableUniversityMarkers = 16;
+  static const double _universityClusterRadius = 44.0;
+  static const int _universityClusterMinZoom = 15;
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
   Uint8List? _cachedSelectedUniversityIconBytes;
+  Uint8List? _cachedUserLocationPinIconBytes;
+  Uint8List? _cachedUserLocationArrowIconBytes;
+  Uint8List? _cachedGroceryStoreIconBytes;
+  Uint8List? _cachedBusStopIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
+  final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
+  final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
   YandexMapController? _mapController;
+  SearchSession? _groceryStoreSearchSession;
+  SearchSession? _busStopSearchSession;
   bool _isMapReady = false;
   bool _isInitializing = false;
   int _retryCount = 0;
@@ -265,6 +300,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   SubwayStation? _selectedMetroStation;
   bool _isUserLocationLayerVisible = false;
   bool _mapRebuildScheduled = false;
+  int _poiSearchGeneration = 0;
+  String? _poiSearchVisibleRegionKey;
+  List<_YandexMapPoiMarker> _groceryStoreMarkers = const [];
+  List<_YandexMapPoiMarker> _busStopMarkers = const [];
   int? _cachedMapObjectsKey;
   List<MapObject>? _cachedMapObjects;
   int _zoomSliderRequestId = 0;
@@ -300,6 +339,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         !widget.layerOptions.showMetroStationsLayer) {
       _setSelectedMetroStation(null, notify: true);
     }
+    if (_poiLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
+      _syncPoiLayers();
+    }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
         !_intListsEqual(
           oldWidget.selectedListingGroupIds,
@@ -323,6 +365,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   void dispose() {
     _mapOperationGeneration++;
     _zoomSliderRequestId++;
+    _poiSearchGeneration++;
+    unawaited(_groceryStoreSearchSession?.close());
+    unawaited(_busStopSearchSession?.close());
     _mapController = null;
     _cachedMapObjects = null;
     _cachedMapObjectsKey = null;
@@ -337,6 +382,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
       _cachedSelectedUniversityIconBytes =
           sharedIcons.selectedUniversityIconBytes;
+      _cachedUserLocationPinIconBytes = sharedIcons.userLocationPinIconBytes;
+      _cachedUserLocationArrowIconBytes =
+          sharedIcons.userLocationArrowIconBytes;
+      _cachedGroceryStoreIconBytes = sharedIcons.groceryStoreIconBytes;
+      _cachedBusStopIconBytes = sharedIcons.busStopIconBytes;
       _cachedListingTypeIconBytes
         ..clear()
         ..addAll(sharedIcons.listingTypeIconBytes);
@@ -446,27 +496,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       left: _brandMarkInset,
       bottom: _brandMarkInset + bottomPadding,
       child: IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: BlueThemeColors.primary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 12,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Image.asset(
-              "assets/icon/components/brand_mark.png",
-              width: _brandMarkSize,
-              height: _brandMarkSize,
-              fit: BoxFit.contain,
-            ),
-          ),
+        child: Image.asset(
+          "assets/icon/components/brand_mark.png",
+          width: _brandMarkSize,
+          height: _brandMarkSize,
+          fit: BoxFit.contain,
         ),
       ),
     );
@@ -635,6 +669,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           _mapOperationGeneration++;
           widget.onMapCreated?.call(controller);
           _syncUserLocationLayer();
+          _syncPoiLayers();
 
           // Map created successfully
           logger.d(
@@ -725,12 +760,39 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Future<UserLocationView> _customizeUserLocationView(
     UserLocationView view,
   ) async {
+    final pinIconBytes = _cachedUserLocationPinIconBytes;
+    final arrowIconBytes = _cachedUserLocationArrowIconBytes;
+    final accuracyCircle = view.accuracyCircle.copyWith(
+      fillColor: const Color(0xFFFF3333).withValues(alpha: 0.12),
+      strokeColor: const Color(0xFFFF3333).withValues(alpha: 0.28),
+      strokeWidth: 2,
+    );
+
+    if (pinIconBytes == null || arrowIconBytes == null) {
+      return view.copyWith(accuracyCircle: accuracyCircle);
+    }
+
     return view.copyWith(
-      accuracyCircle: view.accuracyCircle.copyWith(
-        fillColor: AppColors.primary.withValues(alpha: 0.16),
-        strokeColor: AppColors.primary.withValues(alpha: 0.35),
-        strokeWidth: 2,
+      pin: view.pin.copyWith(
+        opacity: 1,
+        icon: PlacemarkIcon.single(
+          PlacemarkIconStyle(
+            image: BitmapDescriptor.fromBytes(pinIconBytes),
+            scale: 1.0,
+          ),
+        ),
       ),
+      arrow: view.arrow.copyWith(
+        opacity: 1,
+        icon: PlacemarkIcon.single(
+          PlacemarkIconStyle(
+            image: BitmapDescriptor.fromBytes(arrowIconBytes),
+            rotationType: RotationType.rotate,
+            scale: 1.0,
+          ),
+        ),
+      ),
+      accuracyCircle: accuracyCircle,
     );
   }
 
@@ -909,6 +971,67 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final controller = _mapController;
     if (controller == null) return;
     await _moveInitialCamera(controller, _getCenterPoint());
+  }
+
+  Point? _selectedZoomFocusPoint() {
+    return _selectedMetroStationZoomFocusPoint() ??
+        _selectedListingZoomFocusPoint() ??
+        _selectedUniversityZoomFocusPoint();
+  }
+
+  Point? _selectedMetroStationZoomFocusPoint() {
+    final station = _selectedMetroStation;
+    if (station?.latitude == null || station?.longitude == null) return null;
+    return Point(latitude: station!.latitude!, longitude: station.longitude!);
+  }
+
+  Point? _selectedListingZoomFocusPoint() {
+    final selectedListingIds = <int>{
+      if (widget.selectedListingId != null) widget.selectedListingId!,
+      ...widget.selectedListingGroupIds,
+    };
+    if (selectedListingIds.isEmpty) return null;
+
+    final points = [
+      for (final pin in widget.pins)
+        if (selectedListingIds.contains(pin.listingId))
+          _listingPlacemarkPoint(
+            latitude: pin.latitude,
+            longitude: pin.longitude,
+          ),
+    ];
+    return _averagePoint(points);
+  }
+
+  Point? _selectedUniversityZoomFocusPoint() {
+    final selectedId = widget.selectedUniversityZoomFocusId;
+    if (selectedId == null) {
+      final marker = _selectedUniversityMarker;
+      if (marker == null) return null;
+      return Point(latitude: marker.latitude, longitude: marker.longitude);
+    }
+
+    for (final marker in widget.universityMarkers) {
+      if (marker.id == selectedId) {
+        return Point(latitude: marker.latitude, longitude: marker.longitude);
+      }
+    }
+    return null;
+  }
+
+  Point? _averagePoint(List<Point> points) {
+    if (points.isEmpty) return null;
+    final latitude = points.fold<double>(
+          0,
+          (sum, point) => sum + point.latitude,
+        ) /
+        points.length;
+    final longitude = points.fold<double>(
+          0,
+          (sum, point) => sum + point.longitude,
+        ) /
+        points.length;
+    return Point(latitude: latitude, longitude: longitude);
   }
 
   bool _isCurrentMapOperation(
@@ -1159,8 +1282,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     CameraUpdateReason reason,
     bool finished,
   ) {
+    final zoomChanged = (cameraPosition.zoom - _currentZoom).abs() >= 0.01;
     if (finished) {
       _setCurrentZoom(cameraPosition.zoom);
+      _syncPoiLayers();
     }
     if (_automaticCameraFinishesToIgnore > 0) {
       if (finished) {
@@ -1168,7 +1293,36 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
       return;
     }
+    if (finished && zoomChanged) {
+      _centerSelectedObjectAfterZoom(cameraPosition);
+    }
     widget.onCameraPositionChanged?.call(cameraPosition, reason, finished);
+  }
+
+  void _centerSelectedObjectAfterZoom(CameraPosition cameraPosition) {
+    final controller = _mapController;
+    final focusPoint = _selectedZoomFocusPoint();
+    if (controller == null || focusPoint == null) return;
+    if (_pointsAreClose(cameraPosition.target, focusPoint)) return;
+
+    unawaited(
+      _moveCameraAutomatically(
+        controller,
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: focusPoint,
+            zoom: cameraPosition.zoom,
+            azimuth: cameraPosition.azimuth,
+            tilt: cameraPosition.tilt,
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _pointsAreClose(Point a, Point b) {
+    return (a.latitude - b.latitude).abs() < 0.000001 &&
+        (a.longitude - b.longitude).abs() < 0.000001;
   }
 
   void _setCurrentZoom(double zoom) {
@@ -1194,6 +1348,179 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _mapRebuildScheduled = false;
       if (mounted) setState(() {});
     });
+  }
+
+  bool _poiLayerOptionsChanged(
+    YandexMapLayerOptions oldOptions,
+    YandexMapLayerOptions newOptions,
+  ) {
+    return oldOptions.showGroceryStoresLayer !=
+            newOptions.showGroceryStoresLayer ||
+        oldOptions.showBusStopsLayer != newOptions.showBusStopsLayer;
+  }
+
+  void _syncPoiLayers() {
+    if (!mounted || kIsWeb || !_isMapReady || _mapController == null) return;
+    if (!widget.layerOptions.showGroceryStoresLayer &&
+        !widget.layerOptions.showBusStopsLayer) {
+      if (_groceryStoreMarkers.isEmpty && _busStopMarkers.isEmpty) return;
+      setState(() {
+        _groceryStoreMarkers = const [];
+        _busStopMarkers = const [];
+        _poiSearchVisibleRegionKey = null;
+      });
+      return;
+    }
+    unawaited(_refreshVisiblePoiLayers());
+  }
+
+  Future<void> _refreshVisiblePoiLayers() async {
+    final controller = _mapController;
+    if (controller == null || kIsWeb) return;
+    final generation = ++_poiSearchGeneration;
+    final mapGeneration = _mapOperationGeneration;
+    final visibleRegion = await controller.getVisibleRegion();
+    if (!_isCurrentMapOperation(controller, mapGeneration) ||
+        generation != _poiSearchGeneration) {
+      return;
+    }
+
+    final regionKey = _visibleRegionSearchKey(visibleRegion);
+    final groceryEnabled = widget.layerOptions.showGroceryStoresLayer;
+    final busStopEnabled = widget.layerOptions.showBusStopsLayer;
+    if (_poiSearchVisibleRegionKey == regionKey &&
+        (!groceryEnabled || _groceryStoreMarkers.isNotEmpty) &&
+        (!busStopEnabled || _busStopMarkers.isNotEmpty)) {
+      return;
+    }
+
+    final geometry = Geometry.fromBoundingBox(
+      _visibleRegionBoundingBox(visibleRegion),
+    );
+    final results = await Future.wait([
+      if (groceryEnabled)
+        _searchPoiLayer(
+          searchText: "продуктовый магазин",
+          geometry: geometry,
+          searchType: SearchType.biz,
+          sessionSetter: (session) => _groceryStoreSearchSession = session,
+        )
+      else
+        Future.value(const <_YandexMapPoiMarker>[]),
+      if (busStopEnabled)
+        _searchPoiLayer(
+          searchText: "автобусная остановка",
+          geometry: geometry,
+          searchType: SearchType.none,
+          sessionSetter: (session) => _busStopSearchSession = session,
+        )
+      else
+        Future.value(const <_YandexMapPoiMarker>[]),
+    ]);
+
+    if (!mounted ||
+        !_isCurrentMapOperation(controller, mapGeneration) ||
+        generation != _poiSearchGeneration) {
+      return;
+    }
+    setState(() {
+      _poiSearchVisibleRegionKey = regionKey;
+      _groceryStoreMarkers = results[0];
+      _busStopMarkers = results[1];
+    });
+  }
+
+  Future<List<_YandexMapPoiMarker>> _searchPoiLayer({
+    required String searchText,
+    required Geometry geometry,
+    required SearchType searchType,
+    required ValueChanged<SearchSession> sessionSetter,
+  }) async {
+    try {
+      final (session, resultFuture) = await YandexSearch.searchByText(
+        searchText: searchText,
+        geometry: geometry,
+        searchOptions: SearchOptions(
+          searchType: searchType,
+          geometry: true,
+          resultPageSize: 50,
+          origin: "uydosh_map_layers",
+        ),
+      );
+      sessionSetter(session);
+      final result = await resultFuture;
+      if (result.error != null) {
+        logger.w("Could not load $searchText map layer: ${result.error}");
+        return const [];
+      }
+      return _poiMarkersFromSearchItems(searchText, result.items ?? const []);
+    } catch (error) {
+      logger.w("Could not load $searchText map layer: $error");
+      return const [];
+    }
+  }
+
+  List<_YandexMapPoiMarker> _poiMarkersFromSearchItems(
+    String layerKey,
+    List<SearchItem> items,
+  ) {
+    final markersByCoordinate = <String, _YandexMapPoiMarker>{};
+    for (final item in items) {
+      final point = _searchItemPoint(item);
+      if (point == null) continue;
+      final coordinateKey = _mapCoordinateKey(point.latitude, point.longitude);
+      markersByCoordinate.putIfAbsent(
+        coordinateKey,
+        () => _YandexMapPoiMarker(
+          id: "${layerKey.hashCode}_$coordinateKey",
+          name: item.name,
+          point: point,
+        ),
+      );
+    }
+    return List<_YandexMapPoiMarker>.unmodifiable(markersByCoordinate.values);
+  }
+
+  Point? _searchItemPoint(SearchItem item) {
+    for (final geometry in item.geometry) {
+      final point = geometry.point;
+      if (point != null) return point;
+    }
+    return null;
+  }
+
+  BoundingBox _visibleRegionBoundingBox(VisibleRegion region) {
+    final latitudes = [
+      region.topLeft.latitude,
+      region.topRight.latitude,
+      region.bottomLeft.latitude,
+      region.bottomRight.latitude,
+    ];
+    final longitudes = [
+      region.topLeft.longitude,
+      region.topRight.longitude,
+      region.bottomLeft.longitude,
+      region.bottomRight.longitude,
+    ];
+    final north = latitudes.reduce((a, b) => a > b ? a : b);
+    final south = latitudes.reduce((a, b) => a < b ? a : b);
+    final east = longitudes.reduce((a, b) => a > b ? a : b);
+    final west = longitudes.reduce((a, b) => a < b ? a : b);
+    return BoundingBox(
+      northEast: Point(latitude: north, longitude: east),
+      southWest: Point(latitude: south, longitude: west),
+    );
+  }
+
+  String _visibleRegionSearchKey(VisibleRegion region) {
+    final box = _visibleRegionBoundingBox(region);
+    return [
+      box.northEast.latitude.toStringAsFixed(3),
+      box.northEast.longitude.toStringAsFixed(3),
+      box.southWest.latitude.toStringAsFixed(3),
+      box.southWest.longitude.toStringAsFixed(3),
+      _currentZoom.toStringAsFixed(1),
+    ].join("_");
   }
 
   void _clearSelectedUniversityMarker() {
@@ -1285,7 +1612,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     await controller.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: cameraPosition.target,
+          target: _selectedZoomFocusPoint() ?? cameraPosition.target,
           zoom: zoom,
           azimuth: cameraPosition.azimuth,
           tilt: cameraPosition.tilt,
