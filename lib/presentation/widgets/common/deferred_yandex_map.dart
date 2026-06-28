@@ -3,6 +3,7 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 
@@ -17,8 +18,8 @@ import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 ///
 /// This widget renders a lightweight static placeholder until either the user
 /// taps it or [autoLoad] is flipped to `true` by the parent. Only then is the
-/// live [YandexMapWidget] mounted (and from then on it stays mounted for the
-/// rest of the screen's lifetime).
+/// live [YandexMapWidget] mounted. If another route covers this one, the native
+/// map is temporarily unmounted and restored when the route becomes visible.
 ///
 /// Parents that gate the map behind an expandable section can drive [autoLoad]
 /// instead of relying on a manual tap: flip it once the expand animation has
@@ -53,8 +54,9 @@ class DeferredYandexMap extends StatefulWidget {
   State<DeferredYandexMap> createState() => _DeferredYandexMapState();
 }
 
-class _DeferredYandexMapState extends State<DeferredYandexMap> {
+class _DeferredYandexMapState extends State<DeferredYandexMap> with RouteAware {
   bool _loadMap = false;
+  bool _routeActive = true;
 
   @override
   void initState() {
@@ -74,8 +76,38 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.unsubscribe(this);
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPush() => _setRouteActive(true);
+
+  @override
+  void didPopNext() => _setRouteActive(true);
+
+  @override
+  void didPushNext() => _setRouteActive(false);
+
+  void _setRouteActive(bool active) {
+    if (_routeActive == active || !mounted) return;
+    setState(() => _routeActive = active);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (_loadMap) {
+    if (_loadMap && _routeActive) {
       return YandexMapWidget(
         apiKey: widget.apiKey,
         latitude: widget.latitude,
@@ -88,14 +120,17 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> {
       );
     }
 
+    if (_loadMap) {
+      return SizedBox(height: widget.height, width: double.infinity);
+    }
+
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     // In the blue theme `primary` is a dark navy that is almost identical to
     // the placeholder background, leaving the map icon invisible. Fall back to
     // the lighter teal accent there so the icon reads clearly.
-    final accentColor = ThemeState().isBlueTheme
-        ? scheme.secondary
-        : scheme.primary;
+    final accentColor =
+        ThemeState().isBlueTheme ? scheme.secondary : scheme.primary;
     return SizedBox(
       height: widget.height,
       width: double.infinity,

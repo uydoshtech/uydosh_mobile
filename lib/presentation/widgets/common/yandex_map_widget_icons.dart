@@ -21,6 +21,8 @@ class _YandexMapSharedIconBytes {
     required this.selectedUniversityIconBytes,
     required this.userLocationPinIconBytes,
     required this.userLocationArrowIconBytes,
+    required this.darkUserLocationPinIconBytes,
+    required this.darkUserLocationArrowIconBytes,
     required this.groceryStoreIconBytes,
     required this.busStopIconBytes,
     required this.listingTypeIconBytes,
@@ -38,6 +40,8 @@ class _YandexMapSharedIconBytes {
   final Uint8List selectedUniversityIconBytes;
   final Uint8List userLocationPinIconBytes;
   final Uint8List userLocationArrowIconBytes;
+  final Uint8List darkUserLocationPinIconBytes;
+  final Uint8List darkUserLocationArrowIconBytes;
   final Uint8List groceryStoreIconBytes;
   final Uint8List busStopIconBytes;
   final Map<String, Uint8List> listingTypeIconBytes;
@@ -175,9 +179,23 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowBlurRadius: 12,
             shadowOffset: const Offset(0, 6),
           );
-    final userLocationPinIconBytes = await _createUserLocationPinIconBytes();
-    final userLocationArrowIconBytes =
-        await _createUserLocationArrowIconBytes();
+    final userLocationPinIconBytes = await _createUserLocationPinIconBytes(
+      foregroundColor: Colors.black,
+      outlineColor: Colors.white,
+    );
+    final userLocationArrowIconBytes = await _createUserLocationArrowIconBytes(
+      foregroundColor: Colors.black,
+      outlineColor: Colors.white,
+    );
+    final darkUserLocationPinIconBytes = await _createUserLocationPinIconBytes(
+      foregroundColor: Colors.white,
+      outlineColor: Colors.black,
+    );
+    final darkUserLocationArrowIconBytes =
+        await _createUserLocationArrowIconBytes(
+      foregroundColor: Colors.white,
+      outlineColor: Colors.black,
+    );
     final groceryStoreIconBytes = reduceStartupIconWork
         ? iconBytes
         : await _createIconBytes(
@@ -228,6 +246,8 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       selectedUniversityIconBytes: selectedUniversityIconBytes,
       userLocationPinIconBytes: userLocationPinIconBytes,
       userLocationArrowIconBytes: userLocationArrowIconBytes,
+      darkUserLocationPinIconBytes: darkUserLocationPinIconBytes,
+      darkUserLocationArrowIconBytes: darkUserLocationArrowIconBytes,
       groceryStoreIconBytes: groceryStoreIconBytes,
       busStopIconBytes: busStopIconBytes,
       listingTypeIconBytes: Map.unmodifiable(listingTypeIconBytes),
@@ -310,12 +330,14 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     }
   }
 
-  Future<Uint8List> _createUserLocationPinIconBytes() async {
+  Future<Uint8List> _createUserLocationPinIconBytes({
+    required Color foregroundColor,
+    required Color outlineColor,
+  }) async {
     const size = 104;
     const center = Offset(size / 2, size / 2);
     const outerRadius = 28.0;
     const innerRadius = 17.0;
-    const yandexLocationRed = Color(0xFFFF3333);
 
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -327,24 +349,26 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     canvas.drawCircle(center + const Offset(0, 4), outerRadius, shadowPaint);
 
     final outlinePaint = Paint()
-      ..color = Colors.white
+      ..color = outlineColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, outerRadius, outlinePaint);
 
     final dotPaint = Paint()
-      ..color = yandexLocationRed
+      ..color = foregroundColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, innerRadius, dotPaint);
 
     return _createPngBytesFromPicture(pictureRecorder, size, size);
   }
 
-  Future<Uint8List> _createUserLocationArrowIconBytes() async {
+  Future<Uint8List> _createUserLocationArrowIconBytes({
+    required Color foregroundColor,
+    required Color outlineColor,
+  }) async {
     const size = 152;
     const center = Offset(size / 2, size / 2);
     const outerRadius = 30.0;
     const innerRadius = 17.0;
-    const yandexLocationRed = Color(0xFFFF3333);
 
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -357,7 +381,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       ..close();
 
     final arrowOutlinePaint = Paint()
-      ..color = Colors.white
+      ..color = outlineColor
       ..strokeWidth = 14
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round
@@ -365,7 +389,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     canvas.drawPath(arrowPath, arrowOutlinePaint);
 
     final arrowPaint = Paint()
-      ..color = yandexLocationRed
+      ..color = foregroundColor
       ..style = PaintingStyle.fill;
     canvas.drawPath(arrowPath, arrowPaint);
 
@@ -376,12 +400,12 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     canvas.drawCircle(center + const Offset(0, 4), outerRadius, shadowPaint);
 
     final outlinePaint = Paint()
-      ..color = Colors.white
+      ..color = outlineColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, outerRadius, outlinePaint);
 
     final dotPaint = Paint()
-      ..color = yandexLocationRed
+      ..color = foregroundColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, innerRadius, dotPaint);
 

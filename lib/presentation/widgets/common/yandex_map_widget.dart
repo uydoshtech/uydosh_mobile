@@ -1,7 +1,7 @@
 import "dart:async" show unawaited;
 import "dart:typed_data";
 import "dart:ui" as ui;
-import "package:flutter/foundation.dart" show kIsWeb;
+import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
 import "package:flutter/material.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
@@ -289,6 +289,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedSelectedUniversityIconBytes;
   Uint8List? _cachedUserLocationPinIconBytes;
   Uint8List? _cachedUserLocationArrowIconBytes;
+  Uint8List? _cachedDarkUserLocationPinIconBytes;
+  Uint8List? _cachedDarkUserLocationArrowIconBytes;
   Uint8List? _cachedGroceryStoreIconBytes;
   Uint8List? _cachedBusStopIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
@@ -299,6 +301,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
   final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
+  final Map<Uint8List, BitmapDescriptor> _cachedBitmapDescriptors = {};
   YandexMapController? _mapController;
   SearchSession? _groceryStoreSearchSession;
   SearchSession? _busStopSearchSession;
@@ -318,8 +321,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   List<_YandexMapPoiMarker> _busStopMarkers = const [];
   int? _cachedMapObjectsKey;
   List<MapObject>? _cachedMapObjects;
+  int? _cachedListingPinGroupsKey;
+  List<_ListingPinGroup>? _cachedListingPinGroups;
   int _zoomSliderRequestId = 0;
   int _mapOperationGeneration = 0;
+  late final ValueNotifier<double> _zoomNotifier;
   late double _currentZoom;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
@@ -328,6 +334,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   void initState() {
     super.initState();
     _currentZoom = _initialZoom();
+    _zoomNotifier = ValueNotifier<double>(_currentZoom);
     _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
     _syncListingGroupIconBytes();
@@ -353,6 +360,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
     if (_poiLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       _syncPoiLayers();
+    }
+    if (oldWidget.nightModeEnabled != widget.nightModeEnabled) {
+      unawaited(_refreshUserLocationLayerAppearance());
     }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
         !_intListsEqual(
@@ -383,6 +393,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _mapController = null;
     _cachedMapObjects = null;
     _cachedMapObjectsKey = null;
+    _cachedListingPinGroups = null;
+    _cachedListingPinGroupsKey = null;
+    _zoomNotifier.dispose();
     super.dispose();
   }
 
@@ -401,6 +414,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedUserLocationPinIconBytes = sharedIcons.userLocationPinIconBytes;
       _cachedUserLocationArrowIconBytes =
           sharedIcons.userLocationArrowIconBytes;
+      _cachedDarkUserLocationPinIconBytes =
+          sharedIcons.darkUserLocationPinIconBytes;
+      _cachedDarkUserLocationArrowIconBytes =
+          sharedIcons.darkUserLocationArrowIconBytes;
       _cachedGroceryStoreIconBytes = sharedIcons.groceryStoreIconBytes;
       _cachedBusStopIconBytes = sharedIcons.busStopIconBytes;
       _cachedListingTypeIconBytes
@@ -416,7 +433,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ..clear()
         ..addAll(sharedIcons.metroStationIconBytes);
       _syncListingGroupIconBytes();
-      logger.d("✅ Map listing type icons created successfully");
+      unawaited(_refreshUserLocationLayerAppearance());
+      if (kDebugMode) {
+        logger.d("✅ Map listing type icons created successfully");
+      }
       if (mounted) {
         setState(() {});
       }
@@ -429,9 +449,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (_isInitializing) return;
 
     _isInitializing = true;
-    logger.d(
-      "🗺️ Initializing Yandex Map with delay... (attempt ${_retryCount + 1}/$_maxRetries)",
-    );
+    if (kDebugMode) {
+      logger.d(
+        "🗺️ Initializing Yandex Map with delay... (attempt ${_retryCount + 1}/$_maxRetries)",
+      );
+    }
 
     // Add a delay to allow Yandex Maps SDK to fully initialize
     await Future.delayed(_retryDelay);
@@ -451,9 +473,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
 
     _retryCount++;
-    logger.d(
-      "🔄 Retrying Yandex Map initialization (attempt ${_retryCount + 1}/$_maxRetries)",
-    );
+    if (kDebugMode) {
+      logger.d(
+        "🔄 Retrying Yandex Map initialization (attempt ${_retryCount + 1}/$_maxRetries)",
+      );
+    }
 
     _initializeMapWithDelay();
   }
@@ -533,7 +557,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     BuildContext context,
     Map<String, double> centerPoint,
   ) {
-    logger.d("⏳ Building map loading state...");
+    if (kDebugMode) {
+      logger.d("⏳ Building map loading state...");
+    }
+    final loaderColor = widget.nightModeEnabled ? Colors.white : Colors.black;
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -550,12 +577,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Loading indicator
-                  const SizedBox(
+                  SizedBox(
                     width: 32,
                     height: 32,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      valueColor: AlwaysStoppedAnimation<Color>(loaderColor),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -610,7 +637,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     double latitude,
     double longitude,
   ) {
-    logger.d("🌐 Building web fallback map at $latitude, $longitude");
+    if (kDebugMode) {
+      logger.d("🌐 Building web fallback map at $latitude, $longitude");
+    }
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -676,7 +705,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     Map<String, double> centerPoint,
     List<MapObject> mapObjects,
   ) {
-    logger.d("📱 Building mobile map...");
+    if (kDebugMode) {
+      logger.d("📱 Building mobile map...");
+    }
     try {
       return YandexMap(
         // Enable all gesture interactions for better user experience
@@ -696,15 +727,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           _syncUserLocationLayer();
 
           // Map created successfully
-          logger.d(
-            "🗺️ Yandex Map created successfully with ${mapObjects.length} pins",
-          );
-          logger.d(
-            "📍 Pin location: ${centerPoint["latitude"]}, ${centerPoint["longitude"]}",
-          );
-          logger.d(
-            "🎯 MapObjects: ${mapObjects.map((obj) => obj.runtimeType).toList()}",
-          );
+          if (kDebugMode) {
+            logger.d(
+              "🗺️ Yandex Map created successfully with ${mapObjects.length} pins",
+            );
+            logger.d(
+              "📍 Pin location: ${centerPoint["latitude"]}, ${centerPoint["longitude"]}",
+            );
+          }
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
@@ -714,10 +744,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           });
 
           // Map created successfully - placemarks should be visible from mapObjects
-          logger.d("🔧 Map created with ${mapObjects.length} placemarks");
+          if (kDebugMode) {
+            logger.d("🔧 Map created with ${mapObjects.length} placemarks");
+          }
         },
         onMapTap: (point) {
-          logger.d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
+          if (kDebugMode) {
+            logger
+                .d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
+          }
           if (_showListingDetailTooltip) {
             setState(() => _showListingDetailTooltip = false);
           }
@@ -734,7 +769,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       );
     } catch (e) {
       logger.e("❌ Yandex Map creation failed: $e");
-      logger.d("🔄 Retrying map initialization...");
+      if (kDebugMode) {
+        logger.d("🔄 Retrying map initialization...");
+      }
 
       // If this is the first attempt, retry after a delay
       if (_retryCount < _maxRetries) {
@@ -782,14 +819,36 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
+  Future<void> _refreshUserLocationLayerAppearance() async {
+    if (!_isUserLocationLayerVisible) return;
+    final controller = _mapController;
+    if (controller == null || kIsWeb) return;
+    final generation = _mapOperationGeneration;
+
+    try {
+      await controller.toggleUserLayer(visible: false);
+      if (!_isCurrentMapOperation(controller, generation)) return;
+      _isUserLocationLayerVisible = false;
+      await _syncUserLocationLayer();
+    } catch (error) {
+      logger.w("Could not refresh user location layer appearance: $error");
+    }
+  }
+
   Future<UserLocationView> _customizeUserLocationView(
     UserLocationView view,
   ) async {
-    final pinIconBytes = _cachedUserLocationPinIconBytes;
-    final arrowIconBytes = _cachedUserLocationArrowIconBytes;
+    final pinIconBytes = widget.nightModeEnabled
+        ? _cachedDarkUserLocationPinIconBytes
+        : _cachedUserLocationPinIconBytes;
+    final arrowIconBytes = widget.nightModeEnabled
+        ? _cachedDarkUserLocationArrowIconBytes
+        : _cachedUserLocationArrowIconBytes;
+    final userLocationColor =
+        widget.nightModeEnabled ? Colors.white : Colors.black;
     final accuracyCircle = view.accuracyCircle.copyWith(
-      fillColor: const Color(0xFFFF3333).withValues(alpha: 0.12),
-      strokeColor: const Color(0xFFFF3333).withValues(alpha: 0.28),
+      fillColor: userLocationColor.withValues(alpha: 0.12),
+      strokeColor: userLocationColor.withValues(alpha: 0.28),
       strokeWidth: 2,
     );
 
@@ -802,7 +861,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         opacity: 1,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(pinIconBytes),
+            image: _bitmapDescriptorFromBytes(pinIconBytes),
             scale: 1.0,
           ),
         ),
@@ -811,7 +870,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         opacity: 1,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(arrowIconBytes),
+            image: _bitmapDescriptorFromBytes(arrowIconBytes),
             rotationType: RotationType.rotate,
             scale: 1.0,
           ),
@@ -880,9 +939,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           listing.subwayStation!.id,
         );
         if (coordsById != null) {
-          logger.d(
-            "🚇 Found metro station coordinates by ID ${listing.subwayStation!.id}: $coordsById",
-          );
+          if (kDebugMode) {
+            logger.d(
+              "🚇 Found metro station coordinates by ID ${listing.subwayStation!.id}: $coordsById",
+            );
+          }
           return coordsById;
         }
 
@@ -896,9 +957,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             stationName,
           );
           if (coordsByName != null) {
-            logger.d(
-              "🚇 Found metro station coordinates by name $stationName: $coordsByName",
-            );
+            if (kDebugMode) {
+              logger.d(
+                "🚇 Found metro station coordinates by name $stationName: $coordsByName",
+              );
+            }
             return coordsByName;
           }
 
@@ -913,9 +976,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           listing.location!.id,
         );
         if (coordsById != null) {
-          logger.d(
-            "📍 Found location coordinates by ID ${listing.location!.id}: $coordsById",
-          );
+          if (kDebugMode) {
+            logger.d(
+              "📍 Found location coordinates by ID ${listing.location!.id}: $coordsById",
+            );
+          }
           return coordsById;
         }
 
@@ -929,9 +994,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
             locationName,
           );
           if (coordsByName != null) {
-            logger.d(
-              "📍 Found location coordinates by name $locationName: $coordsByName",
-            );
+            if (kDebugMode) {
+              logger.d(
+                "📍 Found location coordinates by name $locationName: $coordsByName",
+              );
+            }
             return coordsByName;
           }
 
@@ -941,7 +1008,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
 
     // Fallback to first available location coordinates
-    logger.d("📍 Using fallback coordinates from first available location");
+    if (kDebugMode) {
+      logger.d("📍 Using fallback coordinates from first available location");
+    }
     final firstLocation = LocationCache.getAllLocations().first;
     if (firstLocation.latitude != null && firstLocation.longitude != null) {
       return {
@@ -951,7 +1020,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
 
     // Ultimate fallback to hardcoded Tashkent center
-    logger.d("📍 Using ultimate fallback - hardcoded Tashkent center");
+    if (kDebugMode) {
+      logger.d("📍 Using ultimate fallback - hardcoded Tashkent center");
+    }
     return CoordinatesCache.getDefaultCoordinates();
   }
 
@@ -1323,11 +1394,31 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   void _setCurrentZoom(double zoom) {
     final nextZoom = zoom.clamp(_minZoom, _maxZoom).toDouble();
     if ((nextZoom - _currentZoom).abs() < 0.01) return;
+    final oldZoom = _currentZoom;
+    final shouldRebuildMapObjects = _requiresZoomDrivenMapRebuild(
+      oldZoom: oldZoom,
+      newZoom: nextZoom,
+    );
+    _currentZoom = nextZoom;
+    _zoomNotifier.value = nextZoom;
     if (!mounted) {
-      _currentZoom = nextZoom;
       return;
     }
-    setState(() => _currentZoom = nextZoom);
+    if (shouldRebuildMapObjects) {
+      setState(() {});
+    }
+  }
+
+  bool _requiresZoomDrivenMapRebuild({
+    required double oldZoom,
+    required double newZoom,
+  }) {
+    final districtLabelChanged = (oldZoom >= _minDistrictLabelZoom) !=
+        (newZoom >= _minDistrictLabelZoom);
+    final metroWalkAreaLabelChanged =
+        (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
+            (newZoom >= _minMetroStationWalkAreaLabelZoom);
+    return districtLabelChanged || metroWalkAreaLabelChanged;
   }
 
   void _consumeAutomaticCameraFinish() {
@@ -1596,11 +1687,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
         ),
-        child: Slider(
-          min: _minZoom,
-          max: _maxZoom,
-          value: _currentZoom,
-          onChanged: _setZoomFromSlider,
+        child: ValueListenableBuilder<double>(
+          valueListenable: _zoomNotifier,
+          builder: (context, zoom, _) {
+            return Slider(
+              min: _minZoom,
+              max: _maxZoom,
+              value: zoom,
+              onChanged: _setZoomFromSlider,
+            );
+          },
         ),
       ),
     );

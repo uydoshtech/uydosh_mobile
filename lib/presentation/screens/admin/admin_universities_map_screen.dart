@@ -3,6 +3,7 @@ import "package:uy_dosh/base/cache/university_cache.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/domain/models/university.dart";
+import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
@@ -17,16 +18,47 @@ class AdminUniversitiesMapScreen extends StatefulWidget {
       _AdminUniversitiesMapScreenState();
 }
 
-class _AdminUniversitiesMapScreenState
-    extends State<AdminUniversitiesMapScreen> {
+class _AdminUniversitiesMapScreenState extends State<AdminUniversitiesMapScreen>
+    with RouteAware {
   List<UniversityMapMarker> _markers = const [];
   bool _isLoading = true;
+  bool _routeActive = true;
   Object? _loadError;
 
   @override
   void initState() {
     super.initState();
     _loadMarkers();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.unsubscribe(this);
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPush() => _setRouteActive(true);
+
+  @override
+  void didPopNext() => _setRouteActive(true);
+
+  @override
+  void didPushNext() => _setRouteActive(false);
+
+  void _setRouteActive(bool active) {
+    if (_routeActive == active || !mounted) return;
+    setState(() => _routeActive = active);
   }
 
   Future<void> _loadMarkers({bool refresh = false}) async {
@@ -127,14 +159,16 @@ class _AdminUniversitiesMapScreenState
 
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: YandexMapWidget(
-        apiKey: AppConfig.yandexMapsApiKey,
-        pins: const [],
-        universityMarkers: _markers,
-        title: title,
-        height: double.infinity,
-        showDefaultPlacemark: false,
-      ),
+      child: _routeActive
+          ? YandexMapWidget(
+              apiKey: AppConfig.yandexMapsApiKey,
+              pins: const [],
+              universityMarkers: _markers,
+              title: title,
+              height: double.infinity,
+              showDefaultPlacemark: false,
+            )
+          : const SizedBox.expand(),
     );
   }
 }

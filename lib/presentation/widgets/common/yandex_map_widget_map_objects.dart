@@ -1,6 +1,7 @@
 part of "yandex_map_widget.dart";
 
 final Map<String, Polygon> _cachedDistrictPolygons = {};
+final Map<String, Polygon> _cachedSimplifiedDistrictPolygons = {};
 final Map<int, Point> _cachedDistrictLabelPoints = {};
 final Map<String, PlacemarkMapObject> _cachedMetroStationPlacemarkTemplates =
     {};
@@ -30,6 +31,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final districtLabelsVisible =
         _currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom;
     final metroWalkAreaLabelVisible = _isMetroWalkAreaLabelVisible;
+    final listingPinGroups = _groupListingPins(widget.pins);
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
       widget.layerOptions.showMetroStationsLayer,
@@ -64,7 +66,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedMetroWalkAreaLabelIconBytes.length,
       Object.hashAll(_groceryStoreMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_busStopMarkers.map(_poiMarkerCacheKey)),
-      Object.hashAll(_groupListingPins(widget.pins).map(_pinGroupCacheKey)),
+      Object.hashAll(listingPinGroups.map(_pinGroupCacheKey)),
       Object.hashAll(widget.universityMarkers.map(_universityMarkerCacheKey)),
       widget.selectedUniversityMarkerId,
       widget.userUniversityMarkerId,
@@ -167,22 +169,28 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       return areaLayerObjects;
     }
 
-    logger.d(
-      "📍 Creating map objects at: ${coordinates["latitude"]}, ${coordinates["longitude"]}",
-    );
+    if (kDebugMode) {
+      logger.d(
+        "📍 Creating map objects at: ${coordinates["latitude"]}, ${coordinates["longitude"]}",
+      );
+    }
 
     BitmapDescriptor iconDescriptor;
     if (_cachedIconBytes != null) {
-      logger.d("🎨 Using Cupertino location icon");
+      if (kDebugMode) {
+        logger.d("🎨 Using Cupertino location icon");
+      }
       final listingTypeCode = widget.listingDetail?.listingType.code;
       final listingTypeIconBytes = listingTypeCode == null
           ? null
           : _cachedListingTypeIconBytes[listingTypeCode];
-      iconDescriptor = BitmapDescriptor.fromBytes(
+      iconDescriptor = _bitmapDescriptorFromBytes(
         listingTypeIconBytes ?? _cachedIconBytes!,
       );
     } else {
-      logger.d("🖼️ Using PNG fallback");
+      if (kDebugMode) {
+        logger.d("🖼️ Using PNG fallback");
+      }
       iconDescriptor = BitmapDescriptor.fromAssetImage(
         "assets/images/location_pin.png",
       );
@@ -199,10 +207,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       ),
     );
 
-    logger.d("✅ Created placemark: ${placemark.mapId}");
-    logger.d(
-      "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
-    );
+    if (kDebugMode) {
+      logger.d("✅ Created placemark: ${placemark.mapId}");
+      logger.d(
+        "🎯 Placemark point: ${placemark.point.latitude}, ${placemark.point.longitude}",
+      );
+    }
     return [
       ...areaLayerObjects,
       placemark,
@@ -242,7 +252,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         opacity: 1.0,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(iconBytes),
+            image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
             scale: 1.0,
           ),
@@ -310,25 +320,52 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     int polygonIndex,
   ) {
     final key = "${district.locationId}_$polygonIndex";
-    return _cachedDistrictPolygons.putIfAbsent(key, () {
+    final cache = isAndroidDevice
+        ? _cachedSimplifiedDistrictPolygons
+        : _cachedDistrictPolygons;
+    return cache.putIfAbsent(key, () {
       final polygon = district.polygons[polygonIndex];
       return Polygon(
-        outerRing: _toLinearRing(polygon.outerRing),
+        outerRing: _toLinearRing(_districtRingForPlatform(polygon.outerRing)),
         innerRings: [
-          for (final ring in polygon.innerRings) _toLinearRing(ring),
+          for (final ring in polygon.innerRings)
+            _toLinearRing(_districtRingForPlatform(ring)),
         ],
       );
     });
   }
 
+  List<DistrictBoundaryPoint> _districtRingForPlatform(
+    List<DistrictBoundaryPoint> ring,
+  ) {
+    if (!isAndroidDevice) return ring;
+    return _simplifyDistrictRing(ring);
+  }
+
+  List<DistrictBoundaryPoint> _simplifyDistrictRing(
+    List<DistrictBoundaryPoint> ring,
+  ) {
+    const maxAndroidDistrictRingPoints = 80;
+    if (ring.length <= maxAndroidDistrictRingPoints) return ring;
+
+    final step = (ring.length / maxAndroidDistrictRingPoints).ceil();
+    final simplified = <DistrictBoundaryPoint>[];
+    for (var i = 0; i < ring.length; i += step) {
+      simplified.add(ring[i]);
+    }
+    final last = ring.last;
+    if (!identical(simplified.last, last)) {
+      simplified.add(last);
+    }
+    return List<DistrictBoundaryPoint>.unmodifiable(simplified);
+  }
+
   List<MapObject> _createDistrictLabelMapObjects() {
     final language = Localizations.localeOf(context).languageCode;
-    final textColor = widget.nightModeEnabled
-        ? Colors.white
-        : const Color(0xFF111111);
-    final outlineColor = widget.nightModeEnabled
-        ? Colors.white
-        : const Color(0xFF111111);
+    final textColor =
+        widget.nightModeEnabled ? Colors.white : const Color(0xFF111111);
+    final outlineColor =
+        widget.nightModeEnabled ? Colors.white : const Color(0xFF111111);
     return [
       for (final district in TashkentDistrictBoundaryCache.districts)
         PlacemarkMapObject(
@@ -487,9 +524,8 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       latitude: station.latitude!,
       longitude: station.longitude!,
     );
-    final radiusColor = widget.nightModeEnabled
-        ? Colors.white
-        : const Color(0xFF1E88E5);
+    final radiusColor =
+        widget.nightModeEnabled ? Colors.white : const Color(0xFF1E88E5);
     return CircleMapObject(
       mapId: MapObjectId("tashkent_metro_station_${station.id}_walking_radius"),
       circle: Circle(
@@ -523,7 +559,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         opacity: 1.0,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(iconBytes),
+            image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
             scale: 1.0,
           ),
@@ -596,7 +632,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         consumeTapEvents: true,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(iconBytes),
+            image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
             scale: selected ? 0.93 : 0.62,
           ),
@@ -643,7 +679,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
             opacity: 1.0,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(iconBytes),
+                image: _bitmapDescriptorFromBytes(iconBytes),
                 anchor: const Offset(0.5, 0.5),
                 scale: 0.58,
               ),
@@ -749,7 +785,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         opacity: 1.0,
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(iconBytes),
+            image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
             scale: 1.0,
           ),
@@ -807,7 +843,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       consumeTapEvents: true,
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
-          image: BitmapDescriptor.fromBytes(
+          image: _bitmapDescriptorFromBytes(
             selected
                 ? isUserUniversity
                     ? selectedUserIconBytes
@@ -825,7 +861,9 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   List<PlacemarkMapObject> _createListingPinMapObjects() {
-    logger.d("📍 Creating ${widget.pins.length} listing map pins");
+    if (kDebugMode) {
+      logger.d("📍 Creating ${widget.pins.length} listing map pins");
+    }
 
     final iconBytes = _cachedIconBytes;
     final darkIconBytes = _cachedDarkIconBytes;
@@ -930,14 +968,14 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
           image: groupIconBytes == null
-              ? BitmapDescriptor.fromBytes(
+              ? _bitmapDescriptorFromBytes(
                   selected
                       ? _cachedSelectedIconBytes!
                       : widget.nightModeEnabled
                           ? _cachedDarkIconBytes!
                           : _cachedIconBytes!,
                 )
-              : BitmapDescriptor.fromBytes(groupIconBytes),
+              : _bitmapDescriptorFromBytes(groupIconBytes),
           anchor: const Offset(0.5, 0.5),
           zIndex: selected
               ? _YandexMapWidgetState._selectedListingPinZIndex
@@ -989,7 +1027,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       listingTypeId: listingTypeId,
     );
     final iconBytes = resolvedCode == null ? null : bytesByCode[resolvedCode];
-    return BitmapDescriptor.fromBytes(iconBytes ?? fallbackBytes!);
+    return _bitmapDescriptorFromBytes(iconBytes ?? fallbackBytes!);
   }
 
   String? _resolveListingTypeCode({
@@ -1026,12 +1064,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   List<_ListingPinGroup> _groupListingPins(List<ListingMapPin> pins) {
+    final key = Object.hashAll(pins.map(_pinCacheKey));
+    final cached = _cachedListingPinGroups;
+    if (_cachedListingPinGroupsKey == key && cached != null) return cached;
+
     final pinsByCoordinate = <String, List<ListingMapPin>>{};
     for (final pin in pins) {
       final key = _listingPinCoordinateKey(pin.latitude, pin.longitude);
       pinsByCoordinate.putIfAbsent(key, () => <ListingMapPin>[]).add(pin);
     }
-    return [
+    final groups = [
       for (final entry in pinsByCoordinate.entries)
         _ListingPinGroup(
           key: entry.key,
@@ -1040,6 +1082,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           pins: List<ListingMapPin>.unmodifiable(entry.value),
         ),
     ];
+    _cachedListingPinGroupsKey = key;
+    _cachedListingPinGroups = groups;
+    return groups;
+  }
+
+  BitmapDescriptor _bitmapDescriptorFromBytes(Uint8List bytes) {
+    return _cachedBitmapDescriptors.putIfAbsent(
+      bytes,
+      () => BitmapDescriptor.fromBytes(bytes),
+    );
   }
 
   String _listingPinCoordinateKey(double latitude, double longitude) {
