@@ -672,15 +672,17 @@ class _MapLayerToggleButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _WalkRadiusMinutesButton(
-          minutes: walkRadiusMinutes.minutes,
-          active: walkRadiusActive,
-          width: width,
-          height: height,
-          borderSide: _border,
-          onPressed: onToggleWalkRadiusMinutes,
-        ),
-        SizedBox(width: gap),
+        if (walkRadiusActive) ...[
+          _WalkRadiusMinutesButton(
+            minutes: walkRadiusMinutes.minutes,
+            active: true,
+            width: width,
+            height: height,
+            borderSide: _border,
+            onPressed: onToggleWalkRadiusMinutes,
+          ),
+          SizedBox(width: gap),
+        ],
         _MetroLayerModeButton(
           mode: metroLayerMode,
           width: width,
