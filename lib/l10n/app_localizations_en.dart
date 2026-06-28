@@ -1677,6 +1677,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_content_moderation_title => 'Client configuration';
 
   @override
+  String get admin_settings_category_app_experience => 'App experience';
+
+  @override
+  String get admin_settings_category_maps => 'Maps';
+
+  @override
+  String get admin_settings_category_listings => 'Listings';
+
+  @override
+  String get admin_settings_category_moderation => 'Moderation & safety';
+
+  @override
+  String get admin_settings_category_admin_tools => 'Admin tools';
+
+  @override
+  String get admin_map_layer_default_districts_title =>
+      'Show districts by default';
+
+  @override
+  String get admin_map_layer_default_districts_subtitle =>
+      'District boundaries and labels when the map first opens.';
+
+  @override
+  String get admin_map_layer_default_metro_title => 'Show metro by default';
+
+  @override
+  String get admin_map_layer_default_metro_subtitle =>
+      'Metro stations when the map first opens.';
+
+  @override
+  String get admin_map_layer_default_universities_title =>
+      'Show universities by default';
+
+  @override
+  String get admin_map_layer_default_universities_subtitle =>
+      'University markers when the map first opens.';
+
+  @override
   String get admin_content_moderation_description =>
       'Photo moderation (server): when enabled, uploaded photos are scanned for offensive content; matching images are blurred before they are stored. When disabled, scanning and blurring are skipped (no AWS Rekognition calls).';
 
@@ -1734,6 +1772,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
       'New listings and gigs hidden until admin approval.';
+
+  @override
+  String get admin_app_setting_home_start_map_title => 'Start home with map';
+
+  @override
+  String get admin_app_setting_home_start_map_subtitle =>
+      'On: open map first. Off: open feed first.';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>

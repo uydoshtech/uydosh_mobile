@@ -51,9 +51,14 @@ import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overla
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key, this.initialIndex = 0});
+  const MainNavigation({
+    super.key,
+    this.initialIndex = 0,
+    this.showHomeMapInitially = true,
+  });
 
   final int initialIndex;
+  final bool showHomeMapInitially;
 
   @override
   State<MainNavigation> createState() => MainNavigationState();
@@ -671,7 +676,7 @@ class MainNavigationState extends State<MainNavigation>
       HomeScreen(
         key: _homeScreenKey,
         isHomeTabActive: _currentIndex == 0,
-        showMapInitially: true,
+        showMapInitially: widget.showHomeMapInitially,
       ),
       AppConfig.servicesFeatureEnabled
           ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)

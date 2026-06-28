@@ -1681,6 +1681,45 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_content_moderation_title => 'Настройки клиента';
 
   @override
+  String get admin_settings_category_app_experience => 'Опыт в приложении';
+
+  @override
+  String get admin_settings_category_maps => 'Карты';
+
+  @override
+  String get admin_settings_category_listings => 'Объявления';
+
+  @override
+  String get admin_settings_category_moderation => 'Модерация и безопасность';
+
+  @override
+  String get admin_settings_category_admin_tools => 'Инструменты админа';
+
+  @override
+  String get admin_map_layer_default_districts_title =>
+      'Показывать районы по умолчанию';
+
+  @override
+  String get admin_map_layer_default_districts_subtitle =>
+      'Границы и названия районов при первом открытии карты.';
+
+  @override
+  String get admin_map_layer_default_metro_title =>
+      'Показывать метро по умолчанию';
+
+  @override
+  String get admin_map_layer_default_metro_subtitle =>
+      'Станции метро при первом открытии карты.';
+
+  @override
+  String get admin_map_layer_default_universities_title =>
+      'Показывать университеты по умолчанию';
+
+  @override
+  String get admin_map_layer_default_universities_subtitle =>
+      'Маркеры университетов при первом открытии карты.';
+
+  @override
   String get admin_content_moderation_description =>
       'Модерация фото (сервер): если включено, загружаемые фото проверяются на нежелательный контент; при срабатывании изображение размывается перед сохранением. Если выключено, проверка и размытие не выполняются (вызовы AWS Rekognition отключены).';
 
@@ -1739,6 +1778,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
       'Новые объявления и гиги скрыты до одобрения админом.';
+
+  @override
+  String get admin_app_setting_home_start_map_title =>
+      'Открывать главную с карты';
+
+  @override
+  String get admin_app_setting_home_start_map_subtitle =>
+      'Вкл — сначала карта. Выкл — сначала лента.';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>

@@ -3190,6 +3190,72 @@ abstract class AppLocalizations {
   /// **'Client configuration'**
   String get admin_content_moderation_title;
 
+  /// No description provided for @admin_settings_category_app_experience.
+  ///
+  /// In en, this message translates to:
+  /// **'App experience'**
+  String get admin_settings_category_app_experience;
+
+  /// No description provided for @admin_settings_category_maps.
+  ///
+  /// In en, this message translates to:
+  /// **'Maps'**
+  String get admin_settings_category_maps;
+
+  /// No description provided for @admin_settings_category_listings.
+  ///
+  /// In en, this message translates to:
+  /// **'Listings'**
+  String get admin_settings_category_listings;
+
+  /// No description provided for @admin_settings_category_moderation.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation & safety'**
+  String get admin_settings_category_moderation;
+
+  /// No description provided for @admin_settings_category_admin_tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin tools'**
+  String get admin_settings_category_admin_tools;
+
+  /// No description provided for @admin_map_layer_default_districts_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show districts by default'**
+  String get admin_map_layer_default_districts_title;
+
+  /// No description provided for @admin_map_layer_default_districts_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'District boundaries and labels when the map first opens.'**
+  String get admin_map_layer_default_districts_subtitle;
+
+  /// No description provided for @admin_map_layer_default_metro_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show metro by default'**
+  String get admin_map_layer_default_metro_title;
+
+  /// No description provided for @admin_map_layer_default_metro_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Metro stations when the map first opens.'**
+  String get admin_map_layer_default_metro_subtitle;
+
+  /// No description provided for @admin_map_layer_default_universities_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show universities by default'**
+  String get admin_map_layer_default_universities_title;
+
+  /// No description provided for @admin_map_layer_default_universities_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'University markers when the map first opens.'**
+  String get admin_map_layer_default_universities_subtitle;
+
   /// No description provided for @admin_content_moderation_description.
   ///
   /// In en, this message translates to:
@@ -3279,6 +3345,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New listings and gigs hidden until admin approval.'**
   String get admin_app_setting_listing_gig_moderation_queue_subtitle;
+
+  /// No description provided for @admin_app_setting_home_start_map_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Start home with map'**
+  String get admin_app_setting_home_start_map_title;
+
+  /// No description provided for @admin_app_setting_home_start_map_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On: open map first. Off: open feed first.'**
+  String get admin_app_setting_home_start_map_subtitle;
 
   /// No description provided for @admin_app_setting_listing_owner_conversations_title.
   ///

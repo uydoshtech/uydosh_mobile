@@ -215,6 +215,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showDefaultPlacemark = true,
     this.showLoadingPlaceholderContent = true,
     this.showBrandMark = true,
+    this.brandMarkBottomInset = 0,
     this.showZoomControls = true,
     this.nightModeEnabled = false,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
@@ -247,6 +248,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showDefaultPlacemark;
   final bool showLoadingPlaceholderContent;
   final bool showBrandMark;
+  final double brandMarkBottomInset;
   final bool showZoomControls;
   final bool nightModeEnabled;
   final YandexMapZoomControlsOptions zoomControlsOptions;
@@ -282,6 +284,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
   Uint8List? _cachedUserUniversityIconBytes;
+  Uint8List? _cachedSelectedUserUniversityIconBytes;
   Uint8List? _cachedSelectedUniversityIconBytes;
   Uint8List? _cachedUserLocationPinIconBytes;
   Uint8List? _cachedUserLocationArrowIconBytes;
@@ -389,6 +392,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedSelectedIconBytes = sharedIcons.selectedIconBytes;
       _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
       _cachedUserUniversityIconBytes = sharedIcons.userUniversityIconBytes;
+      _cachedSelectedUserUniversityIconBytes =
+          sharedIcons.selectedUserUniversityIconBytes;
       _cachedSelectedUniversityIconBytes =
           sharedIcons.selectedUniversityIconBytes;
       _cachedUserLocationPinIconBytes = sharedIcons.userLocationPinIconBytes;
@@ -504,9 +509,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Widget _buildMapBrandMark() {
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final bottomInset = widget.brandMarkBottomInset > bottomPadding
+        ? widget.brandMarkBottomInset
+        : bottomPadding;
     return Positioned(
       left: _brandMarkInset,
-      bottom: _brandMarkInset + bottomPadding,
+      bottom: _brandMarkInset + bottomInset,
       child: IgnorePointer(
         child: Image.asset(
           "assets/icon/components/brand_mark.png",
@@ -1295,7 +1303,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     CameraUpdateReason reason,
     bool finished,
   ) {
-    final zoomChanged = (cameraPosition.zoom - _currentZoom).abs() >= 0.01;
     if (finished) {
       _setCurrentZoom(cameraPosition.zoom);
       _syncPoiLayers();
@@ -1306,36 +1313,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
       return;
     }
-    if (finished && zoomChanged) {
-      _centerSelectedObjectAfterZoom(cameraPosition);
-    }
     widget.onCameraPositionChanged?.call(cameraPosition, reason, finished);
-  }
-
-  void _centerSelectedObjectAfterZoom(CameraPosition cameraPosition) {
-    final controller = _mapController;
-    final focusPoint = _selectedZoomFocusPoint();
-    if (controller == null || focusPoint == null) return;
-    if (_pointsAreClose(cameraPosition.target, focusPoint)) return;
-
-    unawaited(
-      _moveCameraAutomatically(
-        controller,
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: focusPoint,
-            zoom: cameraPosition.zoom,
-            azimuth: cameraPosition.azimuth,
-            tilt: cameraPosition.tilt,
-          ),
-        ),
-      ),
-    );
-  }
-
-  bool _pointsAreClose(Point a, Point b) {
-    return (a.latitude - b.latitude).abs() < 0.000001 &&
-        (a.longitude - b.longitude).abs() < 0.000001;
   }
 
   void _setCurrentZoom(double zoom) {

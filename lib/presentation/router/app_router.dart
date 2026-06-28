@@ -1,9 +1,11 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:uy_dosh/base/config/client_home_start_view_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/presentation/router/app_router_keys.dart" as router_keys;
+import "package:uy_dosh/presentation/router/app_router_keys.dart"
+    as router_keys;
 import "package:uy_dosh/presentation/router/main_navigation.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 
@@ -17,7 +19,8 @@ class AppRouter {
 
   /// Global key for the main app bar notifications bell (saved alerts).
   static GlobalKey<TutorialTargetWrapperState>
-      get notificationsBellTutorialKey => router_keys.notificationsBellTutorialKey;
+      get notificationsBellTutorialKey =>
+          router_keys.notificationsBellTutorialKey;
 
   static Widget buildMainNavigation({
     bool attachKey = false,
@@ -28,6 +31,7 @@ class AppRouter {
         child: MainNavigation(
           key: attachKey ? mainNavigationKey : null,
           initialIndex: initialIndex,
+          showHomeMapInitially: ClientHomeStartViewConfig.showMapInitially,
         ),
       );
 

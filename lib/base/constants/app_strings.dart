@@ -1400,6 +1400,21 @@ class AppStrings {
       "admin_panel_category_settings": "Application Settings",
       "admin_panel_section_content_moderation": "Client configuration",
       "admin_content_moderation_title": "Client configuration",
+      "admin_settings_category_app_experience": "App experience",
+      "admin_settings_category_maps": "Maps",
+      "admin_settings_category_listings": "Listings",
+      "admin_settings_category_moderation": "Moderation & safety",
+      "admin_settings_category_admin_tools": "Admin tools",
+      "admin_map_layer_default_districts_title": "Show districts by default",
+      "admin_map_layer_default_districts_subtitle":
+          "District boundaries and labels when the map first opens.",
+      "admin_map_layer_default_metro_title": "Show metro by default",
+      "admin_map_layer_default_metro_subtitle":
+          "Metro stations when the map first opens.",
+      "admin_map_layer_default_universities_title":
+          "Show universities by default",
+      "admin_map_layer_default_universities_subtitle":
+          "University markers when the map first opens.",
       "admin_client_settings_show_listing_contacts":
           "Show listing contact details",
       "admin_client_settings_show_listing_contacts_description":
@@ -1441,6 +1456,9 @@ class AppStrings {
           "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "Firebase SMS sign-in in the auth wizard.",
+      "admin_app_setting_home_start_map_title": "Start home with map",
+      "admin_app_setting_home_start_map_subtitle":
+          "On: open map first. Off: open feed first.",
       "admin_app_setting_group_forming_membership_limit_title":
           "Max active groups per user",
       "admin_app_setting_group_forming_membership_limit_subtitle":
@@ -3533,6 +3551,22 @@ class AppStrings {
       "admin_panel_category_settings": "Настройки приложения",
       "admin_panel_section_content_moderation": "Настройки клиента",
       "admin_content_moderation_title": "Настройки клиента",
+      "admin_settings_category_app_experience": "Опыт в приложении",
+      "admin_settings_category_maps": "Карты",
+      "admin_settings_category_listings": "Объявления",
+      "admin_settings_category_moderation": "Модерация и безопасность",
+      "admin_settings_category_admin_tools": "Инструменты админа",
+      "admin_map_layer_default_districts_title":
+          "Показывать районы по умолчанию",
+      "admin_map_layer_default_districts_subtitle":
+          "Границы и названия районов при первом открытии карты.",
+      "admin_map_layer_default_metro_title": "Показывать метро по умолчанию",
+      "admin_map_layer_default_metro_subtitle":
+          "Станции метро при первом открытии карты.",
+      "admin_map_layer_default_universities_title":
+          "Показывать университеты по умолчанию",
+      "admin_map_layer_default_universities_subtitle":
+          "Маркеры университетов при первом открытии карты.",
       "admin_client_settings_show_listing_contacts":
           "Показывать контакты в объявлениях",
       "admin_client_settings_show_listing_contacts_description":
@@ -3578,6 +3612,9 @@ class AppStrings {
           "Разрешить вход по номеру телефона",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "SMS-вход через Firebase в мастере авторизации.",
+      "admin_app_setting_home_start_map_title": "Открывать главную с карты",
+      "admin_app_setting_home_start_map_subtitle":
+          "Вкл — сначала карта. Выкл — сначала лента.",
       "admin_app_setting_listing_owner_conversations_title":
           "Чаты по объявлению (админ)",
       "admin_app_setting_listing_owner_conversations_subtitle":
@@ -5693,6 +5730,23 @@ class AppStrings {
       "admin_panel_category_settings": "Ilova sozlamalari",
       "admin_panel_section_content_moderation": "Klient sozlamalari",
       "admin_content_moderation_title": "Klient sozlamalari",
+      "admin_settings_category_app_experience": "Ilova tajribasi",
+      "admin_settings_category_maps": "Xaritalar",
+      "admin_settings_category_listings": "E'lonlar",
+      "admin_settings_category_moderation": "Moderatsiya va xavfsizlik",
+      "admin_settings_category_admin_tools": "Admin vositalari",
+      "admin_map_layer_default_districts_title":
+          "Tumanlarni sukut bo‘yicha ko‘rsatish",
+      "admin_map_layer_default_districts_subtitle":
+          "Xarita birinchi ochilganda tuman chegaralari va nomlari.",
+      "admin_map_layer_default_metro_title":
+          "Metroni sukut bo‘yicha ko‘rsatish",
+      "admin_map_layer_default_metro_subtitle":
+          "Xarita birinchi ochilganda metro bekatlari.",
+      "admin_map_layer_default_universities_title":
+          "Universitetlarni sukut bo‘yicha ko‘rsatish",
+      "admin_map_layer_default_universities_subtitle":
+          "Xarita birinchi ochilganda universitet markerlari.",
       "admin_client_settings_show_listing_contacts":
           "Eʼlondagi kontaktlarni ko‘rsatish",
       "admin_client_settings_show_listing_contacts_description":
@@ -5738,6 +5792,10 @@ class AppStrings {
           "Telefon raqami bilan kirishga ruxsat",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "Kirish oynasida Firebase SMS orqali kirish.",
+      "admin_app_setting_home_start_map_title":
+          "Bosh sahifani xaritadan boshlash",
+      "admin_app_setting_home_start_map_subtitle":
+          "Yoniq — avval xarita. O‘chiq — avval lenta.",
       "admin_app_setting_listing_owner_conversations_title":
           "E'lon chatlari (admin)",
       "admin_app_setting_listing_owner_conversations_subtitle":

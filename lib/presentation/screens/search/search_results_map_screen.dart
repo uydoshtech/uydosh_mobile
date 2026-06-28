@@ -8,6 +8,7 @@ import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
+import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -63,6 +64,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.embedded = false,
     this.initialListings = const [],
     this.initialTotal,
+    this.embeddedMapBottomInset = 0,
     this.embeddedSearchButtonBottom = 100.0,
     this.embeddedViewToggleBottom = 168.0,
     this.onOpenEmbeddedSearch,
@@ -85,6 +87,7 @@ class SearchResultsMapScreen extends StatefulWidget {
   final bool embedded;
   final List<Listing> initialListings;
   final int? initialTotal;
+  final double embeddedMapBottomInset;
   final double embeddedSearchButtonBottom;
   final double embeddedViewToggleBottom;
   final VoidCallback? onOpenEmbeddedSearch;
@@ -106,9 +109,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _hasSelectedMetroStation = false;
   List<UniversityMapMarker> _universityMarkers = const [];
   String? _currentUserUniversityMarkerId;
-  bool _showDistrictLayer = true;
-  bool _showMetroStationsLayer = true;
-  bool _showUniversitiesLayer = false;
+  late bool _showDistrictLayer;
+  late bool _showMetroStationsLayer;
+  late bool _showUniversitiesLayer;
   bool _showGroceryStoresLayer = false;
   bool _showBusStopsLayer = false;
   bool? _mapNightModeOverride;
@@ -129,6 +132,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   @override
   void initState() {
     super.initState();
+    final layerDefaults = ClientMapLayerDefaultsConfig.defaults.value;
+    _showDistrictLayer = layerDefaults.districts;
+    _showMetroStationsLayer = layerDefaults.metro;
+    _showUniversitiesLayer = layerDefaults.universities;
     _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
       final initialResult = _resultFromListings(
@@ -760,6 +767,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       showLocationPrompt: _showLocationPrompt,
       userLocationRequestToken: _userLocationRequestToken,
       placeViewToggleAtBottom: widget.embedded,
+      mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
       searchButtonBottom: widget.embeddedSearchButtonBottom,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       onOpenFilters: _openFilters,

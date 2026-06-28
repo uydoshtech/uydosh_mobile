@@ -11,6 +11,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.searchRibbonHeight,
     required this.inlineRibbonTop,
     required this.mapTopPadding,
+    required this.mapBottomInset,
     required this.initialMapListings,
     required this.initialMapTotal,
     required this.alertFabBottom,
@@ -33,6 +34,7 @@ class _SearchResultsShell extends StatefulWidget {
   final double searchRibbonHeight;
   final double inlineRibbonTop;
   final double mapTopPadding;
+  final double mapBottomInset;
   final List<Listing> initialMapListings;
   final int? initialMapTotal;
   final double alertFabBottom;
@@ -134,6 +136,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       embedded: true,
       initialListings: widget.initialMapListings,
       initialTotal: widget.initialMapTotal,
+      embeddedMapBottomInset: widget.mapBottomInset,
       embeddedSearchButtonBottom: widget.alertFabBottom,
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(
         widget.alertFabBottom,

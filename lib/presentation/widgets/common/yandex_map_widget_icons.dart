@@ -17,6 +17,7 @@ class _YandexMapSharedIconBytes {
     required this.selectedIconBytes,
     required this.universityIconBytes,
     required this.userUniversityIconBytes,
+    required this.selectedUserUniversityIconBytes,
     required this.selectedUniversityIconBytes,
     required this.userLocationPinIconBytes,
     required this.userLocationArrowIconBytes,
@@ -33,6 +34,7 @@ class _YandexMapSharedIconBytes {
   final Uint8List selectedIconBytes;
   final Uint8List universityIconBytes;
   final Uint8List userUniversityIconBytes;
+  final Uint8List selectedUserUniversityIconBytes;
   final Uint8List selectedUniversityIconBytes;
   final Uint8List userLocationPinIconBytes;
   final Uint8List userLocationArrowIconBytes;
@@ -150,6 +152,17 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       shadowBlurRadius: 10,
       shadowOffset: const Offset(0, 5),
     );
+    final selectedUserUniversityIconBytes = await _createIconBytes(
+      Icons.school_rounded,
+      124,
+      backgroundColor: AppColors.error,
+      iconColor: Colors.white,
+      outlineColor: Colors.white,
+      outlineWidth: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.38),
+      shadowBlurRadius: 12,
+      shadowOffset: const Offset(0, 6),
+    );
     final userLocationPinIconBytes = await _createUserLocationPinIconBytes();
     final userLocationArrowIconBytes =
         await _createUserLocationArrowIconBytes();
@@ -193,6 +206,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       selectedIconBytes: selectedIconBytes,
       universityIconBytes: universityIconBytes,
       userUniversityIconBytes: userUniversityIconBytes,
+      selectedUserUniversityIconBytes: selectedUserUniversityIconBytes,
       selectedUniversityIconBytes: selectedUniversityIconBytes,
       userLocationPinIconBytes: userLocationPinIconBytes,
       userLocationArrowIconBytes: userLocationArrowIconBytes,

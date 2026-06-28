@@ -168,7 +168,8 @@ class ListingDescriptionDictationMeterDisabledResponse {
 
 class _PatchListingDescriptionDictationMeterDisabledRequest
     implements IJsonEncodable {
-  _PatchListingDescriptionDictationMeterDisabledRequest({required this.disabled});
+  _PatchListingDescriptionDictationMeterDisabledRequest(
+      {required this.disabled});
 
   final bool disabled;
 
@@ -220,6 +221,65 @@ class _PatchPhoneSignInEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class HomeStartViewResponse {
+  HomeStartViewResponse({required this.view});
+
+  factory HomeStartViewResponse.fromJson(Map<String, dynamic> json) {
+    final rawView = json["view"]?.toString().trim().toLowerCase();
+    return HomeStartViewResponse(view: rawView == "feed" ? "feed" : "map");
+  }
+
+  final String view;
+}
+
+class _PatchHomeStartViewRequest implements IJsonEncodable {
+  _PatchHomeStartViewRequest({required this.view});
+
+  final String view;
+
+  @override
+  dynamic toJson() => {"view": view};
+}
+
+class MapLayerDefaultsResponse {
+  MapLayerDefaultsResponse({
+    required this.districts,
+    required this.metro,
+    required this.universities,
+  });
+
+  factory MapLayerDefaultsResponse.fromJson(Map<String, dynamic> json) {
+    return MapLayerDefaultsResponse(
+      districts: _parseBoolLoose(json["districts"], defaultValue: true),
+      metro: _parseBoolLoose(json["metro"], defaultValue: true),
+      universities: _parseBoolLoose(json["universities"], defaultValue: false),
+    );
+  }
+
+  final bool districts;
+  final bool metro;
+  final bool universities;
+}
+
+class _PatchMapLayerDefaultsRequest implements IJsonEncodable {
+  _PatchMapLayerDefaultsRequest({
+    required this.districts,
+    required this.metro,
+    required this.universities,
+  });
+
+  final bool districts;
+  final bool metro;
+  final bool universities;
+
+  @override
+  dynamic toJson() => {
+        "districts": districts,
+        "metro": metro,
+        "universities": universities,
+      };
+}
+
 class AdminListingConversationsEnabledResponse {
   AdminListingConversationsEnabledResponse({required this.enabled});
 
@@ -250,7 +310,8 @@ class GroupFormingMaxActiveMembershipsResponse {
     Map<String, dynamic> json,
   ) {
     final raw = json["limit"];
-    final parsed = raw is num ? raw.toInt() : int.tryParse(raw?.toString() ?? "");
+    final parsed =
+        raw is num ? raw.toInt() : int.tryParse(raw?.toString() ?? "");
     return GroupFormingMaxActiveMembershipsResponse(
       limit: parsed == null || parsed < 1 ? 2 : parsed,
     );
@@ -259,8 +320,7 @@ class GroupFormingMaxActiveMembershipsResponse {
   final int limit;
 }
 
-class _PatchGroupFormingMaxActiveMembershipsRequest
-    implements IJsonEncodable {
+class _PatchGroupFormingMaxActiveMembershipsRequest implements IJsonEncodable {
   _PatchGroupFormingMaxActiveMembershipsRequest({required this.limit});
 
   final int limit;
@@ -309,7 +369,8 @@ abstract class IAdminContentModerationSettingsService {
   Future<ListingGigModerationQueueResponse>
       getListingGigModerationQueueSetting();
 
-  Future<ListingGigModerationQueueResponse> setListingGigModerationQueueEnabled({
+  Future<ListingGigModerationQueueResponse>
+      setListingGigModerationQueueEnabled({
     required bool enabled,
   });
 
@@ -317,6 +378,18 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
     required bool enabled,
+  });
+
+  Future<HomeStartViewResponse> getHomeStartViewSetting();
+
+  Future<HomeStartViewResponse> setHomeStartView({required String view});
+
+  Future<MapLayerDefaultsResponse> getMapLayerDefaultsSetting();
+
+  Future<MapLayerDefaultsResponse> setMapLayerDefaults({
+    required bool districts,
+    required bool metro,
+    required bool universities,
   });
 
   Future<AdminListingConversationsEnabledResponse>
@@ -339,7 +412,8 @@ class AdminContentModerationSettingsService
   final IOAuthApiClient _oauthApiClient;
 
   @override
-  Future<ContentModerationBlurResponse> getContentModerationBlurSetting() async {
+  Future<ContentModerationBlurResponse>
+      getContentModerationBlurSetting() async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         "/admin/settings/content-moderation-blur",
@@ -382,7 +456,8 @@ class AdminContentModerationSettingsService
   }
 
   @override
-  Future<GeminiListingUiHiddenResponse> getGeminiListingUiHiddenSetting() async {
+  Future<GeminiListingUiHiddenResponse>
+      getGeminiListingUiHiddenSetting() async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         "/admin/settings/gemini-listing-ui-hidden",
@@ -425,7 +500,8 @@ class AdminContentModerationSettingsService
   }
 
   @override
-  Future<LidarRoomScanDisabledResponse> getLidarRoomScanDisabledSetting() async {
+  Future<LidarRoomScanDisabledResponse>
+      getLidarRoomScanDisabledSetting() async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         "/admin/settings/lidar-room-scan-disabled",
@@ -623,7 +699,8 @@ class AdminContentModerationSettingsService
   }
 
   @override
-  Future<ListingGigModerationQueueResponse> setListingGigModerationQueueEnabled({
+  Future<ListingGigModerationQueueResponse>
+      setListingGigModerationQueueEnabled({
     required bool enabled,
   }) async {
     try {
@@ -689,6 +766,96 @@ class AdminContentModerationSettingsService
   }
 
   @override
+  Future<HomeStartViewResponse> getHomeStartViewSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/home-start-view",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return HomeStartViewResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from home start view setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading home start view setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<HomeStartViewResponse> setHomeStartView({required String view}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/home-start-view",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchHomeStartViewRequest(view: view),
+      );
+      return HomeStartViewResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from home start view setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating home start view setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MapLayerDefaultsResponse> getMapLayerDefaultsSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/map-layer-defaults",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return MapLayerDefaultsResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from map layer defaults setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading map layer defaults setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MapLayerDefaultsResponse> setMapLayerDefaults({
+    required bool districts,
+    required bool metro,
+    required bool universities,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/map-layer-defaults",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchMapLayerDefaultsRequest(
+          districts: districts,
+          metro: metro,
+          universities: universities,
+        ),
+      );
+      return MapLayerDefaultsResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from map layer defaults setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating map layer defaults setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
   Future<AdminListingConversationsEnabledResponse>
       getAdminListingConversationsEnabledSetting() async {
     try {
@@ -726,7 +893,8 @@ class AdminContentModerationSettingsService
         ),
       );
     } catch (e) {
-      logger.d("Error updating admin listing conversations enabled setting: $e");
+      logger
+          .d("Error updating admin listing conversations enabled setting: $e");
       rethrow;
     }
   }

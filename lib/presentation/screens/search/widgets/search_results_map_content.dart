@@ -25,6 +25,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.showLocationPrompt,
     required this.userLocationRequestToken,
     required this.placeViewToggleAtBottom,
+    required this.mapBottomInset,
     required this.searchButtonBottom,
     required this.viewToggleBottom,
     required this.onOpenFilters,
@@ -77,6 +78,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool showLocationPrompt;
   final int userLocationRequestToken;
   final bool placeViewToggleAtBottom;
+  final double mapBottomInset;
   final double searchButtonBottom;
   final double viewToggleBottom;
   final VoidCallback onOpenFilters;
@@ -120,7 +122,9 @@ class _SearchResultsMapContent extends StatelessWidget {
     const brandMarkInset = 10.0;
     const locationPromptGapAboveBrandMark = 20.0;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
-    final locationPromptBottom = safeAreaBottom +
+    final brandMarkBottomInset =
+        mapBottomInset > safeAreaBottom ? mapBottomInset : safeAreaBottom;
+    final locationPromptBottom = brandMarkBottomInset +
         brandMarkInset +
         brandMarkSize +
         locationPromptGapAboveBrandMark;
@@ -211,6 +215,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                   ),
                   userLocationRequestToken: userLocationRequestToken,
                   showLoadingPlaceholderContent: false,
+                  brandMarkBottomInset: brandMarkBottomInset,
                   zoomControlsOptions: YandexMapZoomControlsOptions(
                     right: placeViewToggleAtBottom
                         ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
@@ -392,6 +397,9 @@ class _MapLocationPromptCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final themeState = ThemeState();
+    final lightThemeForeground =
+        themeState.isLightTheme ? Colors.white : Colors.black;
     return Material(
       color: Colors.transparent,
       child: LiquidGlassPlate(
@@ -402,7 +410,7 @@ class _MapLocationPromptCard extends StatelessWidget {
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: ThemeState().isBlueTheme
+                color: themeState.isBlueTheme
                     ? BlueThemeColors.primary
                     : scheme.primary,
                 shape: BoxShape.circle,
@@ -435,7 +443,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: Colors.black,
+                      color: lightThemeForeground,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),
@@ -446,7 +454,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.black,
+                      color: lightThemeForeground,
                       fontWeight: FontWeight.w600,
                       height: 1.15,
                     ),
@@ -462,8 +470,8 @@ class _MapLocationPromptCard extends StatelessWidget {
               width: 42,
               height: 38,
               iconSize: 19,
-              foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
-              elevation: ThemeState().isBlueTheme ? null : 6,
+              foregroundColor: lightThemeForeground,
+              elevation: themeState.isBlueTheme ? null : 6,
             ),
           ],
         ),

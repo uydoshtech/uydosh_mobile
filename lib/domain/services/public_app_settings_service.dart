@@ -20,17 +20,33 @@ class PublicAppSettingsSnapshot {
     required this.listingContactsVisible,
     required this.listingDescriptionDictationMeterDisabled,
     required this.phoneSignInEnabled,
+    required this.homeStartView,
+    required this.mapDefaultShowDistricts,
+    required this.mapDefaultShowMetro,
+    required this.mapDefaultShowUniversities,
   });
 
   factory PublicAppSettingsSnapshot.fromJson(Map<String, dynamic> json) {
     return PublicAppSettingsSnapshot(
-      geminiListingUiHidden: _readPublicSettingBool(json["geminiListingUiHidden"]),
-      lidarRoomScanDisabled: _readPublicSettingBool(json["lidarRoomScanDisabled"]),
-      customCameraDisabled: _readPublicSettingBool(json["customCameraDisabled"]),
-      listingContactsVisible: _readPublicSettingBool(json["listingContactsVisible"]),
-      listingDescriptionDictationMeterDisabled:
-          _readPublicSettingBool(json["listingDescriptionDictationMeterDisabled"]),
+      geminiListingUiHidden:
+          _readPublicSettingBool(json["geminiListingUiHidden"]),
+      lidarRoomScanDisabled:
+          _readPublicSettingBool(json["lidarRoomScanDisabled"]),
+      customCameraDisabled:
+          _readPublicSettingBool(json["customCameraDisabled"]),
+      listingContactsVisible:
+          _readPublicSettingBool(json["listingContactsVisible"]),
+      listingDescriptionDictationMeterDisabled: _readPublicSettingBool(
+          json["listingDescriptionDictationMeterDisabled"]),
       phoneSignInEnabled: _readPublicSettingBool(json["phoneSignInEnabled"]),
+      homeStartView: _readHomeStartView(json["homeStartView"]),
+      mapDefaultShowDistricts: _readPublicSettingBool(
+          json["mapDefaultShowDistricts"],
+          defaultValue: true),
+      mapDefaultShowMetro: _readPublicSettingBool(json["mapDefaultShowMetro"],
+          defaultValue: true),
+      mapDefaultShowUniversities:
+          _readPublicSettingBool(json["mapDefaultShowUniversities"]),
     );
   }
 
@@ -40,6 +56,15 @@ class PublicAppSettingsSnapshot {
   final bool listingContactsVisible;
   final bool listingDescriptionDictationMeterDisabled;
   final bool phoneSignInEnabled;
+  final String homeStartView;
+  final bool mapDefaultShowDistricts;
+  final bool mapDefaultShowMetro;
+  final bool mapDefaultShowUniversities;
+}
+
+String _readHomeStartView(Object? value) {
+  final normalized = value?.toString().trim().toLowerCase();
+  return normalized == "feed" ? "feed" : "map";
 }
 
 abstract class IPublicAppSettingsService {
@@ -57,6 +82,22 @@ abstract class IPublicAppSettingsService {
   Future<bool> getListingDescriptionDictationMeterDisabled();
 
   Future<bool> getPhoneSignInEnabled();
+
+  Future<String> getHomeStartView();
+
+  Future<MapLayerDefaultsSnapshot> getMapLayerDefaults();
+}
+
+class MapLayerDefaultsSnapshot {
+  const MapLayerDefaultsSnapshot({
+    required this.districts,
+    required this.metro,
+    required this.universities,
+  });
+
+  final bool districts;
+  final bool metro;
+  final bool universities;
 }
 
 class PublicAppSettingsService implements IPublicAppSettingsService {
@@ -93,6 +134,10 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
         listingContactsVisible: false,
         listingDescriptionDictationMeterDisabled: false,
         phoneSignInEnabled: false,
+        homeStartView: "map",
+        mapDefaultShowDistricts: true,
+        mapDefaultShowMetro: true,
+        mapDefaultShowUniversities: false,
       );
     } catch (e) {
       logger.d("PublicAppSettingsService._fetchAll: $e");
@@ -137,5 +182,22 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
   Future<bool> getPhoneSignInEnabled() async {
     await _ensureLoaded();
     return _cached?.phoneSignInEnabled ?? false;
+  }
+
+  @override
+  Future<String> getHomeStartView() async {
+    await _ensureLoaded();
+    return _cached?.homeStartView ?? "map";
+  }
+
+  @override
+  Future<MapLayerDefaultsSnapshot> getMapLayerDefaults() async {
+    await _ensureLoaded();
+    final cached = _cached;
+    return MapLayerDefaultsSnapshot(
+      districts: cached?.mapDefaultShowDistricts ?? true,
+      metro: cached?.mapDefaultShowMetro ?? true,
+      universities: cached?.mapDefaultShowUniversities ?? false,
+    );
   }
 }

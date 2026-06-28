@@ -11,10 +11,12 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
+import "package:uy_dosh/base/config/client_home_start_view_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
+import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
 import "package:uy_dosh/base/state/chat_composer_draft_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
@@ -231,6 +233,8 @@ void main() async {
       OnboardingState().initialize(),
       ThemeState().initialize(),
       UiPerformancePolicy.initialize(),
+      ClientHomeStartViewConfig.load(),
+      ClientMapLayerDefaultsConfig.load(),
       // Determines splash variant (full animated vs quick static). Cheap:
       // a single SharedPreferences read + PackageInfo lookup.
       AppLaunchState().initialize(),

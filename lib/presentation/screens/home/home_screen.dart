@@ -1018,7 +1018,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       );
     }
 
-    final inSearchContext = widget.isSearchMode || _inlineSearchActive;
+    final inSearchContext = widget.isSearchMode ||
+        _inlineSearchActive ||
+        _mapViewState.view == _SearchResultsView.map;
     final mapResult =
         _mapViewState.result ?? _currentSearchResultForViewToggle();
     final initialMapListings = context.select<ListingsBloc, List<Listing>>(
@@ -1043,6 +1045,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       searchRibbonHeight: searchRibbonHeight,
       inlineRibbonTop: ThemeState().mainShellGlassExtraTopInset(context),
       mapTopPadding: ThemeState().mainShellGlassExtraTopInset(context),
+      mapBottomInset: _blueShellExtendBodyBottomInset(context),
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
       alertFabBottom: _searchAlertFabStackBottom(context),

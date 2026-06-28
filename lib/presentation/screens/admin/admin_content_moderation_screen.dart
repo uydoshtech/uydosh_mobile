@@ -3,9 +3,11 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/config/client_admin_listing_conversations_config.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
+import "package:uy_dosh/base/config/client_home_start_view_config.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
+import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -25,6 +27,8 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+
+const _kSettingsCategoryExpandDuration = Duration(milliseconds: 200);
 
 class AdminContentModerationScreen extends StatefulWidget {
   const AdminContentModerationScreen({super.key});
@@ -58,6 +62,12 @@ class _AdminContentModerationScreenState
   bool _isSavingModerationQueue = false;
   bool _phoneSignInEnabled = false;
   bool _isSavingPhoneSignIn = false;
+  bool _homeStartsWithMap = true;
+  bool _isSavingHomeStartView = false;
+  bool _mapDefaultShowDistricts = true;
+  bool _mapDefaultShowMetro = true;
+  bool _mapDefaultShowUniversities = false;
+  bool _isSavingMapLayerDefaults = false;
   bool _adminListingConversationsEnabled = false;
   bool _isSavingAdminListingConversations = false;
   int _groupFormingMaxActiveMemberships = 2;
@@ -66,6 +76,9 @@ class _AdminContentModerationScreenState
   bool _isSavingPushDebug = false;
   bool _isSavingListingMoveToTop = false;
   bool _isSavingTooltips = false;
+  final Set<_SettingsCategory> _expandedCategories = {
+    _SettingsCategory.appExperience,
+  };
 
   @override
   void initState() {
@@ -84,11 +97,10 @@ class _AdminContentModerationScreenState
       final blurRes = await _settingsService.getContentModerationBlurSetting();
       final geminiRes =
           await _settingsService.getGeminiListingUiHiddenSetting();
-      final lidarRes =
-          await _settingsService.getLidarRoomScanDisabledSetting();
+      final lidarRes = await _settingsService.getLidarRoomScanDisabledSetting();
       final cameraRes = await _settingsService.getCustomCameraDisabledSetting();
-      final dictationMeterRes =
-          await _settingsService.getListingDescriptionDictationMeterDisabledSetting();
+      final dictationMeterRes = await _settingsService
+          .getListingDescriptionDictationMeterDisabledSetting();
       final contactsRes =
           await _settingsService.getListingContactsVisibleSetting();
       var listingGigModQueueEnabled = true;
@@ -108,6 +120,31 @@ class _AdminContentModerationScreenState
       } catch (e) {
         logger.d(
           "Phone sign-in enabled setting skipped (is the API updated?): $e",
+        );
+      }
+      var homeStartsWithMap = true;
+      try {
+        final homeStartViewRes =
+            await _settingsService.getHomeStartViewSetting();
+        homeStartsWithMap =
+            homeStartViewRes.view == ClientHomeStartViewConfig.mapView;
+      } catch (e) {
+        logger.d(
+          "Home start view setting skipped (is the API updated?): $e",
+        );
+      }
+      var mapDefaultShowDistricts = true;
+      var mapDefaultShowMetro = true;
+      var mapDefaultShowUniversities = false;
+      try {
+        final mapLayerDefaultsRes =
+            await _settingsService.getMapLayerDefaultsSetting();
+        mapDefaultShowDistricts = mapLayerDefaultsRes.districts;
+        mapDefaultShowMetro = mapLayerDefaultsRes.metro;
+        mapDefaultShowUniversities = mapLayerDefaultsRes.universities;
+      } catch (e) {
+        logger.d(
+          "Map layer defaults setting skipped (is the API updated?): $e",
         );
       }
       var adminListingConversationsEnabled = false;
@@ -140,6 +177,10 @@ class _AdminContentModerationScreenState
         _listingContactsVisible = contactsRes.visible;
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
         _phoneSignInEnabled = phoneSignInEnabled;
+        _homeStartsWithMap = homeStartsWithMap;
+        _mapDefaultShowDistricts = mapDefaultShowDistricts;
+        _mapDefaultShowMetro = mapDefaultShowMetro;
+        _mapDefaultShowUniversities = mapDefaultShowUniversities;
         _adminListingConversationsEnabled = adminListingConversationsEnabled;
         _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
         _isLoading = false;
@@ -154,6 +195,16 @@ class _AdminContentModerationScreenState
         visible: _listingContactsVisible,
       );
       ClientPhoneSignInConfig.applyEnabled(enabled: phoneSignInEnabled);
+      ClientHomeStartViewConfig.applyView(
+        homeStartsWithMap
+            ? ClientHomeStartViewConfig.mapView
+            : ClientHomeStartViewConfig.feedView,
+      );
+      ClientMapLayerDefaultsConfig.apply(
+        districts: mapDefaultShowDistricts,
+        metro: mapDefaultShowMetro,
+        universities: mapDefaultShowUniversities,
+      );
       ClientAdminListingConversationsConfig.applyEnabled(
         value: adminListingConversationsEnabled,
       );
@@ -214,7 +265,8 @@ class _AdminContentModerationScreenState
     if (_isSavingDictationMeter) return;
     setState(() => _isSavingDictationMeter = true);
     try {
-      final res = await _settingsService.setListingDescriptionDictationMeterDisabled(
+      final res =
+          await _settingsService.setListingDescriptionDictationMeterDisabled(
         disabled: !value,
       );
       setStateIfMounted(() {
@@ -336,6 +388,67 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onHomeStartsWithMapChanged(bool value) async {
+    if (_isSavingHomeStartView) return;
+    setState(() => _isSavingHomeStartView = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setHomeStartView(
+        view: value
+            ? ClientHomeStartViewConfig.mapView
+            : ClientHomeStartViewConfig.feedView,
+      );
+      setStateIfMounted(() {
+        _homeStartsWithMap = res.view == ClientHomeStartViewConfig.mapView;
+      });
+      ClientHomeStartViewConfig.applyView(res.view);
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingHomeStartView = false);
+    }
+  }
+
+  Future<void> _setMapLayerDefaults({
+    bool? districts,
+    bool? metro,
+    bool? universities,
+  }) async {
+    if (_isSavingMapLayerDefaults) return;
+    final nextDistricts = districts ?? _mapDefaultShowDistricts;
+    final nextMetro = metro ?? _mapDefaultShowMetro;
+    final nextUniversities = universities ?? _mapDefaultShowUniversities;
+    setState(() => _isSavingMapLayerDefaults = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setMapLayerDefaults(
+        districts: nextDistricts,
+        metro: nextMetro,
+        universities: nextUniversities,
+      );
+      setStateIfMounted(() {
+        _mapDefaultShowDistricts = res.districts;
+        _mapDefaultShowMetro = res.metro;
+        _mapDefaultShowUniversities = res.universities;
+      });
+      ClientMapLayerDefaultsConfig.apply(
+        districts: res.districts,
+        metro: res.metro,
+        universities: res.universities,
+      );
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingMapLayerDefaults = false);
+    }
+  }
+
   Future<void> _onAdminListingConversationsEnabledChanged(bool value) async {
     if (_isSavingAdminListingConversations) return;
     setState(() => _isSavingAdminListingConversations = true);
@@ -446,22 +559,13 @@ class _AdminContentModerationScreenState
     );
   }
 
-  Widget _neumorphicRow(Widget child) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        cardTheme: Theme.of(context).cardTheme.copyWith(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-      ),
-      child: ListingDetailTileShell(
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.zero,
-        child: child,
-      ),
-    );
+  void _toggleSettingsCategory(_SettingsCategory category) {
+    HapticFeedbackUtils.selectionClick();
+    setState(() {
+      if (!_expandedCategories.remove(category)) {
+        _expandedCategories.add(category);
+      }
+    });
   }
 
   Widget _buildBody(BuildContext context) {
@@ -509,406 +613,536 @@ class _AdminContentModerationScreenState
     return ListView(
       children: [
         const SizedBox(height: 4),
-        ListenableBuilder(
-          listenable: TooltipsState(),
-          builder: (context, _) {
-            return _neumorphicRow(
-              ListTile(
-                leading: _isSavingTooltips
-                    ? const Padding(
-                      padding: EdgeInsets.all(2),
-                      child: UydoshInlineSpinner(
-                        color: Colors.white,
-                        dimension: 24,
-                        strokeWidth: 2,
-                      ),
-                    )
-                    : const ThemeIcon(Icons.tips_and_updates_outlined),
-                title: Text(L10n.get("tooltips_toggle")),
-                subtitle: Text(
-                  L10n.get("tooltips_toggle_description"),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: NeumorphicThemeAwareToggle(
-                  value: TooltipsState().enabled,
-                  enabled: !_isSavingTooltips,
-                  onChanged: _onTooltipsEnabledChanged,
-                ),
-              ),
-            );
-          },
+        _settingsCategoryCard(
+          category: _SettingsCategory.appExperience,
+          icon: Icons.tune_outlined,
+          titleKey: "admin_settings_category_app_experience",
+          children: [
+            ListenableBuilder(
+              listenable: TooltipsState(),
+              builder: (context, _) => _tooltipsTile(context),
+            ),
+            _homeStartViewTile(context),
+            _phoneSignInTile(context),
+          ],
         ),
         const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingListingContacts
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.contact_phone),
-            title: Text(
-              L10n.get("admin_client_settings_show_listing_contacts"),
+        _settingsCategoryCard(
+          category: _SettingsCategory.maps,
+          icon: Icons.map_outlined,
+          titleKey: "admin_settings_category_maps",
+          children: [
+            _mapLayerDefaultTile(
+              context,
+              icon: Icons.layers_rounded,
+              titleKey: "admin_map_layer_default_districts_title",
+              subtitleKey: "admin_map_layer_default_districts_subtitle",
+              value: _mapDefaultShowDistricts,
+              onChanged: (value) => _setMapLayerDefaults(districts: value),
             ),
-            subtitle: Text(
-              L10n.get(
-                "admin_client_settings_show_listing_contacts_description",
-              ),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            _mapLayerDefaultTile(
+              context,
+              icon: Icons.directions_subway_rounded,
+              titleKey: "admin_map_layer_default_metro_title",
+              subtitleKey: "admin_map_layer_default_metro_subtitle",
+              value: _mapDefaultShowMetro,
+              onChanged: (value) => _setMapLayerDefaults(metro: value),
             ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _listingContactsVisible,
-              enabled: !_isSavingListingContacts,
-              onChanged: _onShowListingContactsChanged,
+            _mapLayerDefaultTile(
+              context,
+              icon: Icons.school_rounded,
+              titleKey: "admin_map_layer_default_universities_title",
+              subtitleKey: "admin_map_layer_default_universities_subtitle",
+              value: _mapDefaultShowUniversities,
+              onChanged: (value) => _setMapLayerDefaults(universities: value),
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingModerationQueue
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.fact_check_outlined),
-            title: Text(
-              L10n.get("admin_app_setting_listing_gig_moderation_queue_title"),
-            ),
-            subtitle: Text(
-              L10n.get(
-                "admin_app_setting_listing_gig_moderation_queue_subtitle",
-              ),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _listingGigModerationQueueEnabled,
-              enabled: !_isSavingModerationQueue,
-              onChanged: _onListingGigModerationQueueChanged,
-            ),
-          ),
+        _settingsCategoryCard(
+          category: _SettingsCategory.listings,
+          icon: Icons.home_work_outlined,
+          titleKey: "admin_settings_category_listings",
+          children: [
+            _listingContactsTile(context),
+            _groupFormingLimitTile(context),
+            _geminiTile(context),
+            _lidarTile(context),
+            _customCameraTile(context),
+            _dictationMeterTile(context),
+          ],
         ),
         const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingPhoneSignIn
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.phone_android_outlined),
-            title: Text(
-              L10n.get("admin_app_setting_phone_sign_in_enabled_title"),
-            ),
-            subtitle: Text(
-              L10n.get("admin_app_setting_phone_sign_in_enabled_subtitle"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _phoneSignInEnabled,
-              enabled: !_isSavingPhoneSignIn,
-              onChanged: _onPhoneSignInEnabledChanged,
-            ),
-          ),
+        _settingsCategoryCard(
+          category: _SettingsCategory.moderation,
+          icon: Icons.verified_user_outlined,
+          titleKey: "admin_settings_category_moderation",
+          children: [
+            _moderationQueueTile(context),
+            _contentModerationBlurTile(context),
+          ],
         ),
         const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingAdminListingConversations
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.forum_outlined),
-            title: Text(
-              L10n.get("admin_app_setting_listing_owner_conversations_title"),
+        _settingsCategoryCard(
+          category: _SettingsCategory.adminTools,
+          icon: Icons.admin_panel_settings_outlined,
+          titleKey: "admin_settings_category_admin_tools",
+          children: [
+            _adminListingConversationsTile(context),
+            ListenableBuilder(
+              listenable: AdminFeatureFlagsState(),
+              builder: (context, _) => _priceInsightsTile(context),
             ),
-            subtitle: Text(
-              L10n.get("admin_app_setting_listing_owner_conversations_subtitle"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            ListenableBuilder(
+              listenable: AdminFeatureFlagsState(),
+              builder: (context, _) => _listingMoveToTopTile(context),
             ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _adminListingConversationsEnabled,
-              enabled: !_isSavingAdminListingConversations,
-              onChanged: _onAdminListingConversationsEnabledChanged,
+            ListenableBuilder(
+              listenable: AdminFeatureFlagsState(),
+              builder: (context, _) => _pushDebugTile(context),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingGroupFormingLimit
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.groups_2_outlined),
-            title: Text(
-              L10n.get(
-                "admin_app_setting_group_forming_membership_limit_title",
-              ),
-            ),
-            subtitle: Text(
-              L10n.get(
-                "admin_app_setting_group_forming_membership_limit_subtitle",
-              ),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: _GroupLimitStepper(
-              value: _groupFormingMaxActiveMemberships,
-              enabled: !_isSavingGroupFormingLimit,
-              onChanged: _setGroupFormingLimit,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: AdminFeatureFlagsState(),
-          builder: (context, _) {
-            final flags = AdminFeatureFlagsState();
-            return _neumorphicRow(
-              ListTile(
-                leading: _isSavingPriceInsights
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const ThemeIcon(Icons.insights_outlined),
-                title: Text(
-                  L10n.get("admin_client_settings_show_price_insights"),
-                ),
-                subtitle: Text(
-                  L10n.get(
-                    "admin_client_settings_show_price_insights_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: NeumorphicThemeAwareToggle(
-                  value: flags.showPriceInsights,
-                  enabled: !_isSavingPriceInsights,
-                  onChanged: _onShowPriceInsightsChanged,
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: AdminFeatureFlagsState(),
-          builder: (context, _) {
-            final flags = AdminFeatureFlagsState();
-            return _neumorphicRow(
-              ListTile(
-                leading: _isSavingPushDebug
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const ThemeIcon(Icons.notifications_active_outlined),
-                title: Text(
-                  L10n.get("admin_client_settings_show_push_debug"),
-                ),
-                subtitle: Text(
-                  L10n.get(
-                    "admin_client_settings_show_push_debug_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: NeumorphicThemeAwareToggle(
-                  value: flags.showPushDebug,
-                  enabled: !_isSavingPushDebug,
-                  onChanged: _onShowPushDebugChanged,
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: AdminFeatureFlagsState(),
-          builder: (context, _) {
-            final flags = AdminFeatureFlagsState();
-            return _neumorphicRow(
-              ListTile(
-                leading: _isSavingListingMoveToTop
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const ThemeIcon(CupertinoIcons.arrow_up_circle),
-                title: Text(
-                  L10n.get("admin_client_settings_show_listing_move_to_top"),
-                ),
-                subtitle: Text(
-                  L10n.get(
-                    "admin_client_settings_show_listing_move_to_top_description",
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: NeumorphicThemeAwareToggle(
-                  value: flags.showListingMoveToTop,
-                  enabled: !_isSavingListingMoveToTop,
-                  onChanged: _onShowListingMoveToTopChanged,
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSaving
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.blur_on_outlined),
-            title: Text(L10n.get("admin_content_moderation_blur_enabled")),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _blurEnabled,
-              enabled: !_isSaving,
-              onChanged: _onChanged,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingGemini
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.auto_awesome_outlined),
-            title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
-            subtitle: Text(
-              L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _geminiListingUiEnabled,
-              enabled: !_isSavingGemini,
-              onChanged: _onGeminiEnabledChanged,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingLidar
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.view_in_ar),
-            title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
-            subtitle: Text(
-              L10n.get("admin_client_config_disable_lidar_room_scan_description"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _lidarRoomScanEnabled,
-              enabled: !_isSavingLidar,
-              onChanged: _onLidarEnabledChanged,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingCustomCamera
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.camera_alt_outlined),
-            title: Text(L10n.get("admin_client_config_disable_custom_camera")),
-            subtitle: Text(
-              L10n.get("admin_client_config_disable_custom_camera_description"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _customCameraEnabled,
-              enabled: !_isSavingCustomCamera,
-              onChanged: _onCustomCameraEnabledChanged,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _neumorphicRow(
-          ListTile(
-            leading: _isSavingDictationMeter
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const ThemeIcon(Icons.graphic_eq),
-            title: Text(L10n.get("admin_client_config_show_listing_dictation_meter")),
-            subtitle: Text(
-              L10n.get("admin_client_config_show_listing_dictation_meter_description"),
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            trailing: NeumorphicThemeAwareToggle(
-              value: _dictationMeterEnabled,
-              enabled: !_isSavingDictationMeter,
-              onChanged: _onDictationMeterEnabledChanged,
-            ),
-          ),
+          ],
         ),
       ],
     );
+  }
+
+  Widget _settingsCategoryCard({
+    required _SettingsCategory category,
+    required IconData icon,
+    required String titleKey,
+    required List<Widget> children,
+  }) {
+    final theme = Theme.of(context);
+    final accent = category.accent(context);
+    final expanded = _expandedCategories.contains(category);
+    final dividerColor =
+        theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.25);
+
+    return ListingDetailTileShell(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => _toggleSettingsCategory(category),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    accent.withValues(alpha: expanded ? 0.14 : 0.08),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        color: accent.withValues(alpha: 0.18),
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.36),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(7),
+                        child: ThemeIcon(icon, size: 22, color: accent),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        L10n.get(titleKey),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: expanded ? 0.5 : 0,
+                      duration: _kSettingsCategoryExpandDuration,
+                      child: ThemeIcon(
+                        Icons.keyboard_arrow_down,
+                        color: accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          ClipRect(
+            child: AnimatedSize(
+              duration: _kSettingsCategoryExpandDuration,
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: expanded
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Divider(height: 1, thickness: 1, color: dividerColor),
+                        for (var i = 0; i < children.length; i++) ...[
+                          children[i],
+                          if (i < children.length - 1)
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 52,
+                              endIndent: 16,
+                              color: dividerColor,
+                            ),
+                        ],
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _savingLeading(IconData icon, bool isSaving) {
+    return isSaving
+        ? const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : ThemeIcon(icon);
+  }
+
+  TextStyle _subtitleStyle(BuildContext context) {
+    return TextStyle(
+      fontSize: 13,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+  }
+
+  Widget _tooltipsTile(BuildContext context) {
+    return ListTile(
+      leading: _isSavingTooltips
+          ? const Padding(
+              padding: EdgeInsets.all(2),
+              child: UydoshInlineSpinner(
+                color: Colors.white,
+                dimension: 24,
+                strokeWidth: 2,
+              ),
+            )
+          : const ThemeIcon(Icons.tips_and_updates_outlined),
+      title: Text(L10n.get("tooltips_toggle")),
+      subtitle: Text(
+        L10n.get("tooltips_toggle_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: TooltipsState().enabled,
+        enabled: !_isSavingTooltips,
+        onChanged: _onTooltipsEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _homeStartViewTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.map_outlined, _isSavingHomeStartView),
+      title: Text(L10n.get("admin_app_setting_home_start_map_title")),
+      subtitle: Text(
+        L10n.get("admin_app_setting_home_start_map_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _homeStartsWithMap,
+        enabled: !_isSavingHomeStartView,
+        onChanged: _onHomeStartsWithMapChanged,
+      ),
+    );
+  }
+
+  Widget _phoneSignInTile(BuildContext context) {
+    return ListTile(
+      leading:
+          _savingLeading(Icons.phone_android_outlined, _isSavingPhoneSignIn),
+      title: Text(L10n.get("admin_app_setting_phone_sign_in_enabled_title")),
+      subtitle: Text(
+        L10n.get("admin_app_setting_phone_sign_in_enabled_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _phoneSignInEnabled,
+        enabled: !_isSavingPhoneSignIn,
+        onChanged: _onPhoneSignInEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _mapLayerDefaultTile(
+    BuildContext context, {
+    required IconData icon,
+    required String titleKey,
+    required String subtitleKey,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return ListTile(
+      leading: _savingLeading(icon, _isSavingMapLayerDefaults),
+      title: Text(L10n.get(titleKey)),
+      subtitle: Text(
+        L10n.get(subtitleKey),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: value,
+        enabled: !_isSavingMapLayerDefaults,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _listingContactsTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.contact_phone, _isSavingListingContacts),
+      title: Text(L10n.get("admin_client_settings_show_listing_contacts")),
+      subtitle: Text(
+        L10n.get("admin_client_settings_show_listing_contacts_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _listingContactsVisible,
+        enabled: !_isSavingListingContacts,
+        onChanged: _onShowListingContactsChanged,
+      ),
+    );
+  }
+
+  Widget _groupFormingLimitTile(BuildContext context) {
+    return ListTile(
+      leading:
+          _savingLeading(Icons.groups_2_outlined, _isSavingGroupFormingLimit),
+      title: Text(
+        L10n.get("admin_app_setting_group_forming_membership_limit_title"),
+      ),
+      subtitle: Text(
+        L10n.get("admin_app_setting_group_forming_membership_limit_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: _GroupLimitStepper(
+        value: _groupFormingMaxActiveMemberships,
+        enabled: !_isSavingGroupFormingLimit,
+        onChanged: _setGroupFormingLimit,
+      ),
+    );
+  }
+
+  Widget _geminiTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.auto_awesome_outlined, _isSavingGemini),
+      title: Text(L10n.get("admin_client_config_hide_gemini_listing_ui")),
+      subtitle: Text(
+        L10n.get("admin_client_config_hide_gemini_listing_ui_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _geminiListingUiEnabled,
+        enabled: !_isSavingGemini,
+        onChanged: _onGeminiEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _lidarTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.view_in_ar, _isSavingLidar),
+      title: Text(L10n.get("admin_client_config_disable_lidar_room_scan")),
+      subtitle: Text(
+        L10n.get("admin_client_config_disable_lidar_room_scan_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _lidarRoomScanEnabled,
+        enabled: !_isSavingLidar,
+        onChanged: _onLidarEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _customCameraTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.camera_alt_outlined, _isSavingCustomCamera),
+      title: Text(L10n.get("admin_client_config_disable_custom_camera")),
+      subtitle: Text(
+        L10n.get("admin_client_config_disable_custom_camera_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _customCameraEnabled,
+        enabled: !_isSavingCustomCamera,
+        onChanged: _onCustomCameraEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _dictationMeterTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.graphic_eq, _isSavingDictationMeter),
+      title: Text(L10n.get("admin_client_config_show_listing_dictation_meter")),
+      subtitle: Text(
+        L10n.get(
+            "admin_client_config_show_listing_dictation_meter_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _dictationMeterEnabled,
+        enabled: !_isSavingDictationMeter,
+        onChanged: _onDictationMeterEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _moderationQueueTile(BuildContext context) {
+    return ListTile(
+      leading:
+          _savingLeading(Icons.fact_check_outlined, _isSavingModerationQueue),
+      title: Text(
+        L10n.get("admin_app_setting_listing_gig_moderation_queue_title"),
+      ),
+      subtitle: Text(
+        L10n.get("admin_app_setting_listing_gig_moderation_queue_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _listingGigModerationQueueEnabled,
+        enabled: !_isSavingModerationQueue,
+        onChanged: _onListingGigModerationQueueChanged,
+      ),
+    );
+  }
+
+  Widget _contentModerationBlurTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(Icons.blur_on_outlined, _isSaving),
+      title: Text(L10n.get("admin_content_moderation_blur_enabled")),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _blurEnabled,
+        enabled: !_isSaving,
+        onChanged: _onChanged,
+      ),
+    );
+  }
+
+  Widget _adminListingConversationsTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.forum_outlined,
+        _isSavingAdminListingConversations,
+      ),
+      title:
+          Text(L10n.get("admin_app_setting_listing_owner_conversations_title")),
+      subtitle: Text(
+        L10n.get("admin_app_setting_listing_owner_conversations_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _adminListingConversationsEnabled,
+        enabled: !_isSavingAdminListingConversations,
+        onChanged: _onAdminListingConversationsEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _priceInsightsTile(BuildContext context) {
+    final flags = AdminFeatureFlagsState();
+    return ListTile(
+      leading: _savingLeading(Icons.insights_outlined, _isSavingPriceInsights),
+      title: Text(L10n.get("admin_client_settings_show_price_insights")),
+      subtitle: Text(
+        L10n.get("admin_client_settings_show_price_insights_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: flags.showPriceInsights,
+        enabled: !_isSavingPriceInsights,
+        onChanged: _onShowPriceInsightsChanged,
+      ),
+    );
+  }
+
+  Widget _listingMoveToTopTile(BuildContext context) {
+    final flags = AdminFeatureFlagsState();
+    return ListTile(
+      leading: _savingLeading(
+          CupertinoIcons.arrow_up_circle, _isSavingListingMoveToTop),
+      title: Text(L10n.get("admin_client_settings_show_listing_move_to_top")),
+      subtitle: Text(
+        L10n.get("admin_client_settings_show_listing_move_to_top_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: flags.showListingMoveToTop,
+        enabled: !_isSavingListingMoveToTop,
+        onChanged: _onShowListingMoveToTopChanged,
+      ),
+    );
+  }
+
+  Widget _pushDebugTile(BuildContext context) {
+    final flags = AdminFeatureFlagsState();
+    return ListTile(
+      leading: _savingLeading(
+          Icons.notifications_active_outlined, _isSavingPushDebug),
+      title: Text(L10n.get("admin_client_settings_show_push_debug")),
+      subtitle: Text(
+        L10n.get("admin_client_settings_show_push_debug_description"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: flags.showPushDebug,
+        enabled: !_isSavingPushDebug,
+        onChanged: _onShowPushDebugChanged,
+      ),
+    );
+  }
+}
+
+enum _SettingsCategory {
+  appExperience,
+  maps,
+  listings,
+  moderation,
+  adminTools;
+
+  Color accent(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    switch (this) {
+      case _SettingsCategory.appExperience:
+        return isDark ? const Color(0xFF82B1FF) : const Color(0xFF1565C0);
+      case _SettingsCategory.maps:
+        return isDark ? const Color(0xFF4DD0E1) : const Color(0xFF00838F);
+      case _SettingsCategory.listings:
+        return isDark ? const Color(0xFF69F0AE) : const Color(0xFF00897B);
+      case _SettingsCategory.moderation:
+        return isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100);
+      case _SettingsCategory.adminTools:
+        return isDark ? const Color(0xFFCE93D8) : const Color(0xFF6A1B9A);
+    }
   }
 }
 
@@ -931,7 +1165,8 @@ class _GroupLimitStepper extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        color:
+            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -956,7 +1191,8 @@ class _GroupLimitStepper extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add),
             color: enabled && value < 10 ? color : disabledColor,
-            onPressed: enabled && value < 10 ? () => onChanged(value + 1) : null,
+            onPressed:
+                enabled && value < 10 ? () => onChanged(value + 1) : null,
           ),
         ],
       ),

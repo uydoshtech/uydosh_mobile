@@ -1699,6 +1699,45 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_content_moderation_title => 'Klient sozlamalari';
 
   @override
+  String get admin_settings_category_app_experience => 'Ilova tajribasi';
+
+  @override
+  String get admin_settings_category_maps => 'Xaritalar';
+
+  @override
+  String get admin_settings_category_listings => 'E\'lonlar';
+
+  @override
+  String get admin_settings_category_moderation => 'Moderatsiya va xavfsizlik';
+
+  @override
+  String get admin_settings_category_admin_tools => 'Admin vositalari';
+
+  @override
+  String get admin_map_layer_default_districts_title =>
+      'Tumanlarni sukut bo‘yicha ko‘rsatish';
+
+  @override
+  String get admin_map_layer_default_districts_subtitle =>
+      'Xarita birinchi ochilganda tuman chegaralari va nomlari.';
+
+  @override
+  String get admin_map_layer_default_metro_title =>
+      'Metroni sukut bo‘yicha ko‘rsatish';
+
+  @override
+  String get admin_map_layer_default_metro_subtitle =>
+      'Xarita birinchi ochilganda metro bekatlari.';
+
+  @override
+  String get admin_map_layer_default_universities_title =>
+      'Universitetlarni sukut bo‘yicha ko‘rsatish';
+
+  @override
+  String get admin_map_layer_default_universities_subtitle =>
+      'Xarita birinchi ochilganda universitet markerlari.';
+
+  @override
   String get admin_content_moderation_description =>
       'Foto moderatsiyasi (server): yoqilganda, yuklangan fotolar nojo\'ya kontent uchun tekshiriladi; aniqlansa, saqlashdan oldin xira qilinadi. O\'chirilganda tekshirish va xiralashtirish o\'tkazilmaydi (AWS Rekognition chaqiruvlari yo\'q).';
 
@@ -1756,6 +1795,14 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get admin_app_setting_listing_gig_moderation_queue_subtitle =>
       'Yangi e\'lon va giglar admin tasdig\'igacha yashiriladi.';
+
+  @override
+  String get admin_app_setting_home_start_map_title =>
+      'Bosh sahifani xaritadan boshlash';
+
+  @override
+  String get admin_app_setting_home_start_map_subtitle =>
+      'Yoniq — avval xarita. O‘chiq — avval lenta.';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>
