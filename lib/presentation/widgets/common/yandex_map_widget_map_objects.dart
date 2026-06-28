@@ -49,6 +49,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedIconBytes != null,
       _cachedSelectedIconBytes != null,
       _cachedUniversityIconBytes != null,
+      _cachedUserUniversityIconBytes != null,
       _cachedSelectedUniversityIconBytes != null,
       _cachedGroceryStoreIconBytes != null,
       _cachedBusStopIconBytes != null,
@@ -62,6 +63,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       Object.hashAll(_groupListingPins(widget.pins).map(_pinGroupCacheKey)),
       Object.hashAll(widget.universityMarkers.map(_universityMarkerCacheKey)),
       widget.selectedUniversityMarkerId,
+      widget.userUniversityMarkerId,
     ]);
   }
 
@@ -640,9 +642,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   List<MapObject> _createUniversityMarkerMapObjects() {
     final iconBytes = _cachedUniversityIconBytes;
+    final userIconBytes = _cachedUserUniversityIconBytes;
     final selectedIconBytes = _cachedSelectedUniversityIconBytes;
     if (widget.universityMarkers.isEmpty) return [];
-    if (iconBytes == null || selectedIconBytes == null) {
+    if (iconBytes == null ||
+        userIconBytes == null ||
+        selectedIconBytes == null) {
       logger.w("📍 University marker icon is not ready yet");
       return [];
     }
@@ -654,6 +659,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           _createUniversityMarkerPlacemark(
             marker,
             iconBytes: iconBytes,
+            userIconBytes: userIconBytes,
             selectedIconBytes: selectedIconBytes,
             selected: false,
           ),
@@ -663,6 +669,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         : _highlightedUniversityPlacemark(
             highlightedMarkerId,
             iconBytes: iconBytes,
+            userIconBytes: userIconBytes,
             selectedIconBytes: selectedIconBytes,
           );
     final regularLayer = regularPlacemarks.length <
@@ -683,6 +690,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   PlacemarkMapObject? _highlightedUniversityPlacemark(
     String highlightedMarkerId, {
     required Uint8List iconBytes,
+    required Uint8List userIconBytes,
     required Uint8List selectedIconBytes,
   }) {
     for (final marker in widget.universityMarkers) {
@@ -690,6 +698,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         return _createUniversityMarkerPlacemark(
           marker,
           iconBytes: iconBytes,
+          userIconBytes: userIconBytes,
           selectedIconBytes: selectedIconBytes,
           selected: true,
         );
@@ -763,9 +772,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   PlacemarkMapObject _createUniversityMarkerPlacemark(
     UniversityMapMarker marker, {
     required Uint8List iconBytes,
+    required Uint8List userIconBytes,
     required Uint8List selectedIconBytes,
     required bool selected,
   }) {
+    final isUserUniversity = marker.id == widget.userUniversityMarkerId;
     return PlacemarkMapObject(
       mapId: MapObjectId("university_${marker.id}_placemark"),
       point: Point(
@@ -778,7 +789,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
           image: BitmapDescriptor.fromBytes(
-            selected ? selectedIconBytes : iconBytes,
+            selected
+                ? selectedIconBytes
+                : isUserUniversity
+                    ? userIconBytes
+                    : iconBytes,
           ),
           anchor: const Offset(0.5, 0.5),
           scale: selected ? 1.0 : 0.9,

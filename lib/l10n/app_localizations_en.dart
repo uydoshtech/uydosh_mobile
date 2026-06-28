@@ -253,6 +253,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hide_universities_layer => 'Hide universities';
 
   @override
+  String get switch_to_dark_map => 'Switch to dark map';
+
+  @override
+  String get switch_to_light_map => 'Switch to light map';
+
+  @override
   String get show_grocery_stores_layer => 'Show grocery stores';
 
   @override

@@ -105,6 +105,8 @@
   "hide_metro_stations_layer": "Скрыть станции метро",
   "show_universities_layer": "Показать университеты",
   "hide_universities_layer": "Скрыть университеты",
+  "switch_to_dark_map": "Переключить карту на тёмную",
+  "switch_to_light_map": "Переключить карту на светлую",
   "show_grocery_stores_layer": "Показать продуктовые магазины",
   "hide_grocery_stores_layer": "Скрыть продуктовые магазины",
   "show_bus_stops_layer": "Показать автобусные остановки",

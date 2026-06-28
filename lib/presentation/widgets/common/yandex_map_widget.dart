@@ -198,6 +198,7 @@ class YandexMapWidget extends StatefulWidget {
     this.pins = const [],
     this.universityMarkers = const [],
     this.selectedUniversityMarkerId,
+    this.userUniversityMarkerId,
     this.selectedUniversityZoomFocusId,
     this.selectedListingId,
     this.selectedListingGroupIds = const [],
@@ -215,6 +216,7 @@ class YandexMapWidget extends StatefulWidget {
     this.showLoadingPlaceholderContent = true,
     this.showBrandMark = true,
     this.showZoomControls = true,
+    this.nightModeEnabled = false,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.userLocationRequestToken = 0,
     this.onMetroStationTooltipChanged,
@@ -229,6 +231,7 @@ class YandexMapWidget extends StatefulWidget {
   final List<ListingMapPin> pins;
   final List<UniversityMapMarker> universityMarkers;
   final String? selectedUniversityMarkerId;
+  final String? userUniversityMarkerId;
   final String? selectedUniversityZoomFocusId;
   final int? selectedListingId;
   final List<int> selectedListingGroupIds;
@@ -245,6 +248,7 @@ class YandexMapWidget extends StatefulWidget {
   final bool showLoadingPlaceholderContent;
   final bool showBrandMark;
   final bool showZoomControls;
+  final bool nightModeEnabled;
   final YandexMapZoomControlsOptions zoomControlsOptions;
   final int userLocationRequestToken;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
@@ -276,6 +280,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
+  Uint8List? _cachedUserUniversityIconBytes;
   Uint8List? _cachedSelectedUniversityIconBytes;
   Uint8List? _cachedUserLocationPinIconBytes;
   Uint8List? _cachedUserLocationArrowIconBytes;
@@ -380,6 +385,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedIconBytes = sharedIcons.defaultIconBytes;
       _cachedSelectedIconBytes = sharedIcons.selectedIconBytes;
       _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
+      _cachedUserUniversityIconBytes = sharedIcons.userUniversityIconBytes;
       _cachedSelectedUniversityIconBytes =
           sharedIcons.selectedUniversityIconBytes;
       _cachedUserLocationPinIconBytes = sharedIcons.userLocationPinIconBytes;
@@ -662,6 +668,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         rotateGesturesEnabled: true, // Enable rotation gestures
         tiltGesturesEnabled: true, // Enable tilt gestures
         fastTapEnabled: true, // Enable fast tap for better responsiveness
+        nightModeEnabled: widget.nightModeEnabled,
         onMapCreated: (controller) {
           if (!mounted) return;
           // Store controller for zoom controls
@@ -1533,8 +1540,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final theme = Theme.of(context);
     final themeState = ThemeState();
     final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final foregroundColor =
-        themeState.isBlueTheme ? Colors.black : theme.colorScheme.onSurface;
+    final foregroundColor = widget.nightModeEnabled
+        ? Colors.white
+        : themeState.isBlueTheme
+            ? Colors.black
+            : theme.colorScheme.onSurface;
     final borderRadius = BorderRadius.circular(999);
     final safeAreaPadding = MediaQuery.paddingOf(context);
     const width = 24.0;

@@ -69,7 +69,7 @@ class AppTheme {
       case messagingTheme:
         return themeName;
       default:
-        return blueTheme;
+        return systemTheme;
     }
   }
 

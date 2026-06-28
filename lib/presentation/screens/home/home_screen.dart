@@ -4,7 +4,6 @@ import "dart:math" as math;
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:permission_handler/permission_handler.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -243,7 +242,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   void initState() {
     super.initState();
     if (widget.showMapInitially) {
-      unawaited(_activateInitialMapIfLocationGranted());
+      unawaited(_activateInitialMapIfRequested());
     }
 
     // Create optimized scroll listener with throttling and reset capability
@@ -349,8 +348,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     _activateInlineSearch(persistActiveFlag: true);
   }
 
-  Future<void> _activateInitialMapIfLocationGranted() async {
-    final changed = await _mapViewState.activateInitialMapIfAllowed(
+  Future<void> _activateInitialMapIfRequested() async {
+    final changed = await _mapViewState.activateInitialMapIfRequested(
       showMapInitially: widget.showMapInitially,
     );
     if (!mounted || !changed) return;

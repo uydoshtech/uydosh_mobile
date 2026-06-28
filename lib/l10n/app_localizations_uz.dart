@@ -254,6 +254,12 @@ class AppLocalizationsUz extends AppLocalizations {
   String get hide_universities_layer => 'Universitetlarni yashirish';
 
   @override
+  String get switch_to_dark_map => 'Xaritani qorong‘i rejimga o‘tkazish';
+
+  @override
+  String get switch_to_light_map => 'Xaritani yorug‘ rejimga o‘tkazish';
+
+  @override
   String get show_grocery_stores_layer => 'Oziq-ovqat do‘konlarini ko‘rsatish';
 
   @override

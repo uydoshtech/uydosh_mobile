@@ -105,6 +105,8 @@
   "hide_metro_stations_layer": "Hide metro stations",
   "show_universities_layer": "Show universities",
   "hide_universities_layer": "Hide universities",
+  "switch_to_dark_map": "Switch to dark map",
+  "switch_to_light_map": "Switch to light map",
   "show_grocery_stores_layer": "Show grocery stores",
   "hide_grocery_stores_layer": "Hide grocery stores",
   "show_bus_stops_layer": "Show bus stops",

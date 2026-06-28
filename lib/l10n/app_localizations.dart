@@ -562,6 +562,18 @@ abstract class AppLocalizations {
   /// **'Hide universities'**
   String get hide_universities_layer;
 
+  /// No description provided for @switch_to_dark_map.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to dark map'**
+  String get switch_to_dark_map;
+
+  /// No description provided for @switch_to_light_map.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to light map'**
+  String get switch_to_light_map;
+
   /// No description provided for @show_grocery_stores_layer.
   ///
   /// In en, this message translates to:

@@ -13,7 +13,7 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
   ThemeState._internal();
   static final ThemeState _instance = ThemeState._internal();
 
-  String _selectedTheme = AppTheme.blueTheme;
+  String _selectedTheme = AppTheme.systemTheme;
   bool _isInitialized = false;
 
   /// Get the currently applied theme name.
@@ -65,7 +65,10 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
         _selectedTheme = AppTheme.normalizeThemeName(savedTheme);
         logger.d("Loaded saved theme: $_selectedTheme");
       } else {
-        logger.d("No saved theme found, using default: $_selectedTheme");
+        _selectedTheme = AppTheme.systemTheme;
+        logger.d(
+          "No saved theme found, using system theme: $effectiveTheme",
+        );
       }
     } catch (e) {
       // If there's an error loading, keep the default theme
@@ -142,7 +145,7 @@ class ThemeState extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(StorageKeys.selectedTheme);
-      _selectedTheme = AppTheme.blueTheme; // Reset to default
+      _selectedTheme = AppTheme.systemTheme; // Reset to platform preference
       notifyListeners();
     } catch (e) {
       logger.d("Error clearing saved theme: $e");

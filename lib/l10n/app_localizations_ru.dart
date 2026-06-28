@@ -254,6 +254,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get hide_universities_layer => 'Скрыть университеты';
 
   @override
+  String get switch_to_dark_map => 'Переключить карту на тёмную';
+
+  @override
+  String get switch_to_light_map => 'Переключить карту на светлую';
+
+  @override
   String get show_grocery_stores_layer => 'Показать продуктовые магазины';
 
   @override

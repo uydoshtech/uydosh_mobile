@@ -15,11 +15,13 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.hasSelectedMetroStation,
     required this.universityMarkers,
     required this.selectedUniversityMarkerId,
+    required this.userUniversityMarkerId,
     required this.showDistrictLayer,
     required this.showMetroStationsLayer,
     required this.showUniversitiesLayer,
     required this.showGroceryStoresLayer,
     required this.showBusStopsLayer,
+    required this.mapNightModeOverride,
     required this.showLocationPrompt,
     required this.userLocationRequestToken,
     required this.placeViewToggleAtBottom,
@@ -32,6 +34,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onToggleDistrictLayer,
     required this.onToggleMetroStationsLayer,
     required this.onToggleUniversitiesLayer,
+    required this.onToggleMapNightMode,
     required this.onClearSelectedPin,
     required this.onClearSelectedUniversityMarker,
     required this.onSelectPin,
@@ -64,11 +67,13 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool hasSelectedMetroStation;
   final List<UniversityMapMarker> universityMarkers;
   final String? selectedUniversityMarkerId;
+  final String? userUniversityMarkerId;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
   final bool showUniversitiesLayer;
   final bool showGroceryStoresLayer;
   final bool showBusStopsLayer;
+  final bool? mapNightModeOverride;
   final bool showLocationPrompt;
   final int userLocationRequestToken;
   final bool placeViewToggleAtBottom;
@@ -81,6 +86,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleMetroStationsLayer;
   final VoidCallback onToggleUniversitiesLayer;
+  final ValueChanged<bool> onToggleMapNightMode;
   final VoidCallback onClearSelectedPin;
   final VoidCallback onClearSelectedUniversityMarker;
   final ValueChanged<ListingMapPin> onSelectPin;
@@ -101,6 +107,8 @@ class _SearchResultsMapContent extends StatelessWidget {
         universityMarker != null ||
         showNoResultsTile ||
         hasMapTooltipSpace;
+    final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
+    final mapNightModeEnabled = mapNightModeOverride ?? appNightModeEnabled;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.2;
     const feedViewButtonHeight = 34.2;
@@ -127,7 +135,11 @@ class _SearchResultsMapContent extends StatelessWidget {
       width: viewToggleWidth,
       height: feedViewButtonHeight,
       iconSize: 22.5,
-      foregroundColor: ThemeState().isBlueTheme ? Colors.black : null,
+      foregroundColor: mapNightModeEnabled
+          ? Colors.white
+          : ThemeState().isBlueTheme
+              ? Colors.black
+              : null,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     return Column(
@@ -156,6 +168,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                   pins: result.pins,
                   universityMarkers: universityMarkers,
                   selectedUniversityMarkerId: selectedUniversityMarkerId,
+                  userUniversityMarkerId: userUniversityMarkerId,
                   selectedUniversityZoomFocusId: universityMarker?.id,
                   selectedListingId: selectedPin?.listingId,
                   selectedListingGroupIds: [
@@ -168,6 +181,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                     includeUniversityMarkersInCamera: false,
                   ),
                   showDefaultPlacemark: false,
+                  nightModeEnabled: mapNightModeEnabled,
                   tooltipOptions: YandexMapTooltipOptions(
                     showUniversityMarker: false,
                     showMetroStation: !showNoResultsTile,
@@ -220,6 +234,28 @@ class _SearchResultsMapContent extends StatelessWidget {
                             key: ValueKey("map-results-idle"),
                           ),
                   ),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                top: viewToggleTop,
+                child: SearchFloatingActionButton(
+                  onPressed: () => onToggleMapNightMode(!mapNightModeEnabled),
+                  iconData: mapNightModeEnabled
+                      ? Icons.light_mode_rounded
+                      : Icons.dark_mode_rounded,
+                  tooltip: mapNightModeEnabled
+                      ? context.l10n.switch_to_light_map
+                      : context.l10n.switch_to_dark_map,
+                  width: viewToggleWidth,
+                  height: viewToggleHeight,
+                  iconSize: 18,
+                  backgroundColor:
+                      mapNightModeEnabled ? Colors.black : Colors.white,
+                  foregroundColor:
+                      mapNightModeEnabled ? Colors.white : Colors.black,
+                  borderSide: const BorderSide(color: Colors.black, width: 1),
+                  elevation: ThemeState().isBlueTheme ? null : 8,
                 ),
               ),
               Positioned(
@@ -311,7 +347,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                     width: viewToggleWidth,
                     height: feedViewButtonHeight,
                     iconSize: 22.5,
-                    foregroundColor: Colors.black,
+                    foregroundColor:
+                        mapNightModeEnabled ? Colors.white : Colors.black,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
                 ),

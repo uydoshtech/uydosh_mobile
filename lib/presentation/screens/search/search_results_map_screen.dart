@@ -111,6 +111,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _showUniversitiesLayer = false;
   bool _showGroceryStoresLayer = false;
   bool _showBusStopsLayer = false;
+  bool? _mapNightModeOverride;
   bool _showLocationPrompt = false;
   int _userLocationRequestToken = 0;
 
@@ -748,13 +749,14 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedUniversityMarker: _selectedUniversityMarker,
       hasSelectedMetroStation: _hasSelectedMetroStation,
       universityMarkers: _showUniversitiesLayer ? _universityMarkers : const [],
-      selectedUniversityMarkerId:
-          _selectedUniversityMarker?.id ?? _currentUserUniversityMarkerId,
+      selectedUniversityMarkerId: _selectedUniversityMarker?.id,
+      userUniversityMarkerId: _currentUserUniversityMarkerId,
       showDistrictLayer: _showDistrictLayer,
       showMetroStationsLayer: _showMetroStationsLayer,
       showUniversitiesLayer: _showUniversitiesLayer,
       showGroceryStoresLayer: _showGroceryStoresLayer,
       showBusStopsLayer: _showBusStopsLayer,
+      mapNightModeOverride: _mapNightModeOverride,
       showLocationPrompt: _showLocationPrompt,
       userLocationRequestToken: _userLocationRequestToken,
       placeViewToggleAtBottom: widget.embedded,
@@ -782,6 +784,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
             _selectedUniversityMarker = null;
           }
         });
+      },
+      onToggleMapNightMode: (enabled) {
+        setState(() => _mapNightModeOverride = enabled);
       },
       onMetroStationTooltipChanged: (visible) {
         if (_hasSelectedMetroStation == visible) return;
