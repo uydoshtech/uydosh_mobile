@@ -24,14 +24,16 @@ abstract final class UydoshDropdownChrome {
     final isBlueTheme = ThemeState().isBlueTheme;
     if (isBlueTheme) {
       return AppTheme.menuOverlaySurfaceColor.withValues(
-        alpha: AppTheme.menuOverlaySurfaceOpacity,
+        alpha: AppTheme.resolvedMenuOverlaySurfaceOpacity,
       );
     }
     if (isLightTheme) {
-      return Colors.white.withValues(alpha: AppTheme.menuOverlaySurfaceOpacity);
+      return Colors.white.withValues(
+        alpha: AppTheme.resolvedMenuOverlaySurfaceOpacity,
+      );
     }
     return Colors.grey.shade800.withValues(
-      alpha: AppTheme.menuOverlaySurfaceOpacity,
+      alpha: AppTheme.resolvedMenuOverlaySurfaceOpacity,
     );
   }
 

@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Snackbar body used for the "archive with countdown + undo" ribbon.
@@ -184,6 +186,7 @@ class GlassyMessagingArchiveUndoSurface extends StatelessWidget {
         final theme = Theme.of(context);
         final scheme = theme.colorScheme;
         final isDark = theme.brightness == Brightness.dark;
+        final useGlassChrome = ThemeState().usesLiquidGlassChrome;
 
         final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
@@ -192,23 +195,32 @@ class GlassyMessagingArchiveUndoSurface extends StatelessWidget {
             Color.lerp(baseSurface, scheme.primary, isDark ? 0.06 : 0.08) ??
                 baseSurface;
 
-        final decoration = BoxDecoration(
-          borderRadius: borderRadius,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: isDark ? 0.06 : 0.26),
-              surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
-              baseSurface.withValues(alpha: isDark ? 0.24 : 0.28),
-            ],
-            stops: const [0.0, 0.55, 1.0],
-          ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.40),
-            width: 0.7,
-          ),
-        );
+        final decoration = useGlassChrome
+            ? BoxDecoration(
+                borderRadius: borderRadius,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: isDark ? 0.06 : 0.26),
+                    surfaceTint.withValues(alpha: isDark ? 0.22 : 0.30),
+                    baseSurface.withValues(alpha: isDark ? 0.24 : 0.28),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.40),
+                  width: 0.7,
+                ),
+              )
+            : BoxDecoration(
+                borderRadius: borderRadius,
+                color: baseSurface,
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 0.7,
+                ),
+              );
 
         return Container(
           decoration: BoxDecoration(

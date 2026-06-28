@@ -10,9 +10,9 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 
-/// Search control: on liquid-glass themes uses the same [LiquidGlassPlate] stack
-/// as the home filters ribbon (plate wraps tap target; no Material/InkWell above
-/// the blur). Otherwise [ThreeDSurfaceStyle] neumorphic fill + shadows.
+/// Search control: on liquid-glass themes uses [LiquidGlassPlate] (except on
+/// [mapOverlay] where solid/neumorphic styling is used). Otherwise
+/// [ThreeDSurfaceStyle] neumorphic fill + shadows.
 class SearchFloatingActionButton extends StatefulWidget {
   const SearchFloatingActionButton({
     super.key,
@@ -29,6 +29,7 @@ class SearchFloatingActionButton extends StatefulWidget {
     this.borderSide,
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
+    this.mapOverlay = false,
   }) : assert(
           searchFiltersState != null || onPressed != null,
           "searchFiltersState is required when using the default search action.",
@@ -47,6 +48,8 @@ class SearchFloatingActionButton extends StatefulWidget {
   final BorderSide? borderSide;
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
+  /// Map chrome uses solid/neumorphic surfaces instead of frosted glass.
+  final bool mapOverlay;
 
   static const double fabSize = 56.0;
 
@@ -140,7 +143,8 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
 
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final useLiquidGlass = themeState.usesLiquidGlassChrome;
+    final useLiquidGlass =
+        themeState.usesLiquidGlassChrome && !widget.mapOverlay;
     final shadows = solidColors
         ? const <BoxShadow>[]
         : _pressed

@@ -657,57 +657,61 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
                   if (!widget.metroOnly) ...[
                     // Location filter - Wheel Picker
-                    SearchBottomSheetLocationSection(
-                      searchFiltersState: _searchFiltersState,
-                      locationScrollController: _locationScrollController,
-                      getLocationIndexFromId: _getLocationIndexFromId,
-                      onLocationChanged: (locationId) {
-                        setState(() {
-                          if (locationId == null) {
-                            _searchFiltersState.setLocationIndex(0);
-                          } else {
-                            _searchFiltersState.setLocationIndex(
-                              locationId,
-                            );
-                          }
-                        });
-                      },
-                      onMetroReset: _resetMetroPicker,
+                    RepaintBoundary(
+                      child: SearchBottomSheetLocationSection(
+                        searchFiltersState: _searchFiltersState,
+                        locationScrollController: _locationScrollController,
+                        getLocationIndexFromId: _getLocationIndexFromId,
+                        onLocationChanged: (locationId) {
+                          setState(() {
+                            if (locationId == null) {
+                              _searchFiltersState.setLocationIndex(0);
+                            } else {
+                              _searchFiltersState.setLocationIndex(
+                                locationId,
+                              );
+                            }
+                          });
+                        },
+                        onMetroReset: _resetMetroPicker,
+                      ),
                     ),
                     const SizedBox(height: 8),
                   ],
 
                   // Metro Line and Station Selection - Side by Side Wheel Pickers
-                  SearchBottomSheetMetroSection(
-                    searchFiltersState: _searchFiltersState,
-                    currentStations: _currentStations,
-                    metroLineScrollController: _metroLineScrollController,
-                    stationPickerController: _stationPickerController,
-                    metroLineTutorialKey: _metroLineTutorialKey,
-                    metroStationTutorialKey: _metroStationTutorialKey,
-                    getLocalizedName: _getLocalizedName,
-                    onSubwayLineChanged: (index) {
-                      _metroLineChangedInThisSession = true;
-                      // Location and metro now coexist; changing the line no
-                      // longer resets the chosen district.
-                      setState(() {
-                        _searchFiltersState.setSubwayLine(index);
-                      });
-                      if (index > 0) {
-                        _loadStationsForLine(index);
-                      } else {
+                  RepaintBoundary(
+                    child: SearchBottomSheetMetroSection(
+                      searchFiltersState: _searchFiltersState,
+                      currentStations: _currentStations,
+                      metroLineScrollController: _metroLineScrollController,
+                      stationPickerController: _stationPickerController,
+                      metroLineTutorialKey: _metroLineTutorialKey,
+                      metroStationTutorialKey: _metroStationTutorialKey,
+                      getLocalizedName: _getLocalizedName,
+                      onSubwayLineChanged: (index) {
+                        _metroLineChangedInThisSession = true;
+                        // Location and metro now coexist; changing the line no
+                        // longer resets the chosen district.
                         setState(() {
-                          _currentStations = [];
-                          _searchFiltersState.setStationIndex(0);
+                          _searchFiltersState.setSubwayLine(index);
                         });
-                      }
-                    },
-                    onStationChanged: (index) {},
-                    onStationsSelected: (stationIds) {
-                      setState(() {
-                        _searchFiltersState.setStationIds(stationIds);
-                      });
-                    },
+                        if (index > 0) {
+                          _loadStationsForLine(index);
+                        } else {
+                          setState(() {
+                            _currentStations = [];
+                            _searchFiltersState.setStationIndex(0);
+                          });
+                        }
+                      },
+                      onStationChanged: (index) {},
+                      onStationsSelected: (stationIds) {
+                        setState(() {
+                          _searchFiltersState.setStationIds(stationIds);
+                        });
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 12),

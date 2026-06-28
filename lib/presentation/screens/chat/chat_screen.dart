@@ -2197,7 +2197,8 @@ class _ChatScreenState extends State<ChatScreen> {
         final backgroundColor = themeState.backgroundColor;
 
         return Scaffold(
-          extendBodyBehindAppBar: themeState.isBlueTheme,
+          extendBodyBehindAppBar:
+              themeState.isBlueTheme && themeState.usesLiquidGlassChrome,
           backgroundColor: backgroundColor,
           appBar: ChatHeader(
             displayName: _getPeerDisplayName(context),
@@ -2222,7 +2223,7 @@ class _ChatScreenState extends State<ChatScreen> {
               // Hide keyboard when tapping outside of text input
               FocusScope.of(context).unfocus();
             },
-            child: themeState.isBlueTheme
+            child: themeState.isBlueTheme && themeState.usesLiquidGlassChrome
                 ? Stack(
                     fit: StackFit.expand,
                     clipBehavior: Clip.none,

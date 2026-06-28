@@ -21,6 +21,12 @@ class AppTheme {
   /// Shared alpha for popup menus and [DropdownButton] panels so content behind shows slightly.
   static const double menuOverlaySurfaceOpacity = 0.92;
 
+  /// Opaque menu panels on Android; translucent frosted chrome elsewhere.
+  static double get resolvedMenuOverlaySurfaceOpacity =>
+      UiPerformancePolicy.solidColorsPreferredForDevice
+          ? 1.0
+          : menuOverlaySurfaceOpacity;
+
   /// Light blue tinted surface for popup/dropdown panels (replaces pure white).
   static const Color menuOverlaySurfaceColor = Color(0xFFE8F1FB);
 
@@ -265,7 +271,7 @@ class AppTheme {
       // without this, labels use [ColorScheme.onSurface] (white here) on a light menu.
       popupMenuTheme: PopupMenuThemeData(
         color: menuOverlaySurfaceColor.withValues(
-          alpha: menuOverlaySurfaceOpacity,
+          alpha: resolvedMenuOverlaySurfaceOpacity,
         ),
         textStyle: const TextStyle(
           color: BlueThemeColors.primary, // Blue text
@@ -471,7 +477,7 @@ class AppTheme {
       // Popup menu theme - Light blue tinted background with light theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
         color: menuOverlaySurfaceColor.withValues(
-          alpha: menuOverlaySurfaceOpacity,
+          alpha: resolvedMenuOverlaySurfaceOpacity,
         ),
         textStyle: const TextStyle(
           color: LightThemeColors.primary, // Light theme primary text
@@ -651,7 +657,7 @@ class AppTheme {
       // Popup menu theme - Light blue tinted background with messaging theme primary text and icons
       popupMenuTheme: PopupMenuThemeData(
         color: menuOverlaySurfaceColor.withValues(
-          alpha: menuOverlaySurfaceOpacity,
+          alpha: resolvedMenuOverlaySurfaceOpacity,
         ),
         textStyle: const TextStyle(
           color: MessagingThemeColors.primary, // Messaging theme primary text

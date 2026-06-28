@@ -487,7 +487,7 @@ abstract class AppLocalizations {
   /// No description provided for @choose_filters.
   ///
   /// In en, this message translates to:
-  /// **'Choose filters'**
+  /// **'Select a filter please'**
   String get choose_filters;
 
   /// No description provided for @map_location_prompt_title.
@@ -495,12 +495,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show my location'**
   String get map_location_prompt_title;
-
-  /// No description provided for @map_location_prompt_body.
-  ///
-  /// In en, this message translates to:
-  /// **'See where you are relative to nearby listings.'**
-  String get map_location_prompt_body;
 
   /// No description provided for @map_location_prompt_action.
   ///

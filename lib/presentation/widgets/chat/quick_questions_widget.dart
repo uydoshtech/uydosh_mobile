@@ -77,8 +77,9 @@ class QuickQuestionsWidget extends StatelessWidget {
                 keys: keys,
                 pillColor: pillColor,
                 pillTextColor: pillTextColor,
-                useGlassBluePills:
-                    blendWithGlassBackdrop && themeState.isBlueTheme,
+                useGlassBluePills: blendWithGlassBackdrop &&
+                    themeState.isBlueTheme &&
+                    themeState.usesLiquidGlassChrome,
                 glassAnimationsEnabled: glassAnimationsEnabled,
               ),
             ),

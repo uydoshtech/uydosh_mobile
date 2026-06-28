@@ -7,6 +7,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/search/search_filter_defaults.dart";
@@ -47,6 +48,15 @@ class SearchFiltersState extends ChangeNotifier {
   static const Duration _remoteSaveDelay = Duration(milliseconds: 1600);
   Future<void>? _hydrateFuture;
 
+  /// Set when the user dismisses the home filter ribbon (X). Blocks backend
+  /// hydrate, default-filter rebuild, and debounced remote saves until the user
+  /// commits a new search from the bottom sheet.
+  bool _persistedFiltersDismissed = false;
+
+  /// Bumped on dismiss to drop in-flight debounced remote saves that would
+  /// otherwise overwrite a backend clear.
+  int _remotePersistGeneration = 0;
+
   /// Counts active "editing sessions" (e.g. the search bottom sheet) during
   /// which mutations should NOT propagate to outside listeners or to the
   /// backend. The sheet uses this so in-progress edits don't bleed into the
@@ -56,7 +66,40 @@ class SearchFiltersState extends ChangeNotifier {
 
   bool get _externalListenersSuppressed => _editingSessionDepth > 0;
   bool get _remotePersistGated =>
-      _suppressRemotePersist || _editingSessionDepth > 0;
+      _suppressRemotePersist ||
+      _editingSessionDepth > 0 ||
+      _persistedFiltersDismissed;
+
+  /// Marks persisted filters as intentionally cleared (ribbon X). Synchronous
+  /// so hydrate / bootstrap cannot restore stale data in the same frame.
+  void markPersistedFiltersDismissed() {
+    if (_persistedFiltersDismissed) return;
+    _persistedFiltersDismissed = true;
+    _remotePersistGeneration++;
+    _remoteSaveDebounce?.cancel();
+    _remoteSaveDebounce = null;
+  }
+
+  bool get persistedFiltersDismissed => _persistedFiltersDismissed;
+
+  /// Called when the user commits a new search from the bottom sheet.
+  void clearPersistedFiltersDismissed() {
+    if (!_persistedFiltersDismissed) return;
+    _persistedFiltersDismissed = false;
+    _remotePersistGeneration++;
+  }
+
+  Future<bool> _shouldSkipPersistedFilterRestore() async {
+    if (_persistedFiltersDismissed) return true;
+    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+      awaitUserScope: await SessionManager.isAuthenticated(),
+    );
+    if (HomeInlineSearchState().ribbonDismissedByUser) {
+      markPersistedFiltersDismissed();
+      return true;
+    }
+    return false;
+  }
 
   /// Begin an "editing session". While active, [notifyListeners] is a no-op
   /// for outside observers and remote persist is paused. Sessions nest, so
@@ -88,6 +131,8 @@ class SearchFiltersState extends ChangeNotifier {
     _remoteSaveDebounce?.cancel();
     _remoteSaveDebounce = null;
     _hydrateFuture = null;
+    _persistedFiltersDismissed = false;
+    _remotePersistGeneration++;
   }
 
   /// Synchronously flush any pending debounced remote save so it survives a
@@ -95,6 +140,7 @@ class SearchFiltersState extends ChangeNotifier {
   /// cleared (otherwise the OAuth interceptor has nothing to send and the
   /// request 401s, dropping the user's last filter changes on the floor).
   Future<void> flushPendingRemotePersist() async {
+    if (_persistedFiltersDismissed) return;
     final pending = _remoteSaveDebounce;
     if (pending == null || !pending.isActive) return;
     pending.cancel();
@@ -121,6 +167,7 @@ class SearchFiltersState extends ChangeNotifier {
 
   Future<void> _hydrateFromBackendImpl() async {
     if (!await SessionManager.isAuthenticated()) return;
+    if (await _shouldSkipPersistedFilterRestore()) return;
 
     // Honor the user-facing "Restore filters on app start" preference: when
     // disabled, skip pulling the backend copy so this device stays "fresh".
@@ -227,15 +274,22 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   void _scheduleRemotePersist() {
-    if (_suppressRemotePersist) return;
+    if (_suppressRemotePersist || _persistedFiltersDismissed) return;
     _remoteSaveDebounce?.cancel();
+    final generation = _remotePersistGeneration;
     _remoteSaveDebounce = Timer(_remoteSaveDelay, () {
       _remoteSaveDebounce = null;
-      unawaited(_flushRemotePersist());
+      if (generation != _remotePersistGeneration) return;
+      unawaited(_flushRemotePersist(expectedGeneration: generation));
     });
   }
 
-  Future<void> _flushRemotePersist() async {
+  Future<void> _flushRemotePersist({int? expectedGeneration}) async {
+    if (_persistedFiltersDismissed) return;
+    if (expectedGeneration != null &&
+        expectedGeneration != _remotePersistGeneration) {
+      return;
+    }
     if (!await SessionManager.isAuthenticated()) return;
     try {
       final payload = <String, dynamic>{
@@ -350,6 +404,14 @@ class SearchFiltersState extends ChangeNotifier {
       await clearAllFilters(persistRemote: false);
       // Filters were intentionally wiped for this launch, so the user has no
       // saved filters to honor; profile defaults may be rebuilt.
+      _hadSavedFilters = false;
+      _isInitialized = true;
+      notifyListeners();
+      return;
+    }
+
+    if (await _shouldSkipPersistedFilterRestore()) {
+      await clearAllFilters(persistRemote: false);
       _hadSavedFilters = false;
       _isInitialized = true;
       notifyListeners();
@@ -502,6 +564,7 @@ class SearchFiltersState extends ChangeNotifier {
   /// Only runs for authenticated users (role/profile are required to build the
   /// defaults and to persist them remotely).
   Future<bool> ensureDefaultFiltersBuiltAndSaved() async {
+    if (await _shouldSkipPersistedFilterRestore()) return false;
     if (_hadSavedFilters) {
       await _upgradeLegacyLandlordListingTypeIdsIfNeeded();
       return false;
@@ -900,11 +963,17 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   /// Clears local filter prefs and the backend snapshot when the user dismisses
-  /// the home filter ribbon (X). Profile-derived defaults are rebuilt on the
-  /// next [ensureDefaultFiltersBuiltAndSaved] call.
+  /// the home filter ribbon (X). Profile-derived defaults are rebuilt only after
+  /// the user commits a new search.
   Future<void> dismissPersistedSearchFilters() async {
-    _remoteSaveDebounce?.cancel();
-    _remoteSaveDebounce = null;
+    markPersistedFiltersDismissed();
+    final dismissGeneration = _remotePersistGeneration;
+
+    // Wait for in-flight pref writes (e.g. from the search sheet) so they
+    // cannot resurrect cleared values after we remove keys.
+    await _prefsWriteChain;
+    if (dismissGeneration != _remotePersistGeneration) return;
+
     await clearAllFilters(persistRemote: false);
     if (!await SessionManager.isAuthenticated()) return;
     try {

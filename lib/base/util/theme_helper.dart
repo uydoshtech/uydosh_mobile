@@ -233,6 +233,7 @@ extension ThemeHelper on ThemeState {
   Color get chatInputBarBackgroundColor {
     if (isLightTheme) return Colors.white;
     if (isBlueTheme) {
+      if (isAndroidDevice) return BlueThemeColors.background;
       return BlueThemeColors.background.withValues(alpha: 0.2);
     }
     return Colors.white;

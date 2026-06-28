@@ -23,6 +23,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.onOpenInlineSearch,
     required this.onOpenMapSearch,
     required this.onOpenFeedFromMap,
+    this.onDismissMapFilterRibbon,
   });
 
   final Widget listContent;
@@ -45,8 +46,12 @@ class _SearchResultsShell extends StatefulWidget {
   final VoidCallback onOpenMapView;
   final VoidCallback onOpenInlineSearch;
   final VoidCallback onOpenMapSearch;
-  final void Function(BuildContext context, SearchBottomSheetResult result)
-      onOpenFeedFromMap;
+  final void Function(
+    BuildContext context,
+    SearchBottomSheetResult result, {
+    bool mapFilterRibbonDismissed,
+  }) onOpenFeedFromMap;
+  final VoidCallback? onDismissMapFilterRibbon;
 
   @override
   State<_SearchResultsShell> createState() => _SearchResultsShellState();
@@ -142,6 +147,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
         widget.alertFabBottom,
       ),
       onOpenEmbeddedSearch: widget.onOpenMapSearch,
+      onDismissFilterRibbon: widget.onDismissMapFilterRibbon,
     );
 
     final paddedMapView = widget.isSearchMode

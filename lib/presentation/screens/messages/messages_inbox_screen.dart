@@ -1975,14 +1975,23 @@ class _ArchivedChatsFab extends StatelessWidget {
         final textColor =
             themeState.isBlueTheme ? Colors.white : themeState.textColor;
 
+        final useGlassChrome = themeState.usesLiquidGlassChrome;
         final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
         final baseTint = themeState.isBlueTheme
             ? BlueThemeColors.background
             : (themeState.isLightTheme ? scheme.surface : themeState.cardColor);
+        final fillColor = useGlassChrome
+            ? baseTint.withValues(alpha: isDark ? 0.14 : 0.18)
+            : baseTint;
+        final borderColor = useGlassChrome
+            ? (themeState.isBlueTheme ? Colors.white : scheme.onSurface)
+                .withValues(alpha: themeState.isBlueTheme ? 0.18 : 0.10)
+            : scheme.outlineVariant.withValues(alpha: 0.45);
 
         const radius = BorderRadius.all(Radius.circular(999));
         Widget archivePill(Widget child) {
+          if (!useGlassChrome) return child;
           return LiquidGlassRendering.backdropBlur(
             enabled: enableGlass,
             sigma: LiquidGlassRendering.switchGlassBlurSigma,
@@ -1994,7 +2003,8 @@ class _ArchivedChatsFab extends StatelessWidget {
           button: true,
           label: L10n.get("archived_chats"),
           child: Material(
-            type: MaterialType.transparency,
+            type: useGlassChrome ? MaterialType.transparency : MaterialType.canvas,
+            color: useGlassChrome ? null : fillColor,
             child: ClipRRect(
               borderRadius: radius,
               child: archivePill(
@@ -2007,23 +2017,21 @@ class _ArchivedChatsFab extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: radius,
-                      color: baseTint.withValues(alpha: isDark ? 0.14 : 0.18),
+                      color: fillColor,
                       border: Border.all(
-                        color: (themeState.isBlueTheme
-                                ? Colors.white
-                                : scheme.onSurface)
-                            .withValues(
-                                alpha: themeState.isBlueTheme ? 0.18 : 0.10),
+                        color: borderColor,
                         width: 0.8,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: isDark ? 0.22 : 0.10),
-                          blurRadius: 18,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      boxShadow: useGlassChrome
+                          ? [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withValues(alpha: isDark ? 0.22 : 0.10),
+                                blurRadius: 18,
+                                offset: const Offset(0, 10),
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

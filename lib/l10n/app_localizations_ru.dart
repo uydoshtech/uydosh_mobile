@@ -212,14 +212,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_feed_view => 'Открыть ленту';
 
   @override
-  String get choose_filters => 'Выбрать фильтры';
+  String get choose_filters => 'Пожалуйста, выберите фильтр';
 
   @override
   String get map_location_prompt_title => 'Показать мою геопозицию';
-
-  @override
-  String get map_location_prompt_body =>
-      'Посмотрите, где вы находитесь относительно объявлений рядом.';
 
   @override
   String get map_location_prompt_action => 'Использовать геопозицию';

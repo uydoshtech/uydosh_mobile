@@ -112,9 +112,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     final pin = selectedPin;
     final pinGroup = selectedPinGroup;
     final universityMarker = selectedUniversityMarker;
+    final showSelectFiltersTile = !hasSearchFilters && !isLoading;
     final showNoResultsTile =
         hasSearchFilters && !isLoading && result.total == 0;
-    final hasMapTooltipSpace = hasSelectedMetroStation && !showNoResultsTile;
+    final hasMapTooltipSpace = hasSelectedMetroStation &&
+        !showSelectFiltersTile &&
+        !showNoResultsTile;
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
@@ -134,12 +137,18 @@ class _SearchResultsMapContent extends StatelessWidget {
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
     final bottomOverlayInset =
         mapBottomInset > safeAreaBottom ? mapBottomInset : safeAreaBottom;
-    final locationPromptBottom =
-        bottomOverlayInset + locationPromptBottomMargin;
+    final locationPromptBottom = placeViewToggleAtBottom
+        ? searchButtonBottom
+        : bottomOverlayInset + locationPromptBottomMargin;
+    final locationPromptHeight = placeViewToggleAtBottom
+        ? (viewToggleBottom - searchButtonBottom) + feedViewButtonHeight
+        : feedViewButtonHeight;
     final zoomControlsBottom = viewToggleBottom +
         feedViewButtonHeight +
         viewToggleGap -
         safeAreaBottom;
+    final mapOverlayPanelColor =
+        mapNightModeEnabled ? null : Colors.white;
     final feedViewButton = SearchFloatingActionButton(
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
@@ -147,11 +156,13 @@ class _SearchResultsMapContent extends StatelessWidget {
       width: viewToggleWidth,
       height: feedViewButtonHeight,
       iconSize: 22.5,
+      backgroundColor: mapOverlayPanelColor,
       foregroundColor: mapNightModeEnabled
           ? Colors.white
           : ThemeState().isBlueTheme
               ? Colors.black
               : null,
+      mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     final mapThemeButton = SearchFloatingActionButton(
@@ -168,6 +179,7 @@ class _SearchResultsMapContent extends StatelessWidget {
       backgroundColor: mapNightModeEnabled ? Colors.black : Colors.white,
       foregroundColor: mapNightModeEnabled ? Colors.white : Colors.black,
       borderSide: const BorderSide(color: Colors.black, width: 1),
+      mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     return Column(
@@ -241,7 +253,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                     nightModeEnabled: mapNightModeEnabled,
                     tooltipOptions: YandexMapTooltipOptions(
                       showUniversityMarker: false,
-                      showMetroStation: !showNoResultsTile,
+                      showMetroStation:
+                          !showSelectFiltersTile && !showNoResultsTile,
                     ),
                     layerOptions: YandexMapLayerOptions(
                       showUserLocation: false,
@@ -416,8 +429,10 @@ class _SearchResultsMapContent extends StatelessWidget {
                     width: viewToggleWidth,
                     height: feedViewButtonHeight,
                     iconSize: 22.5,
+                    backgroundColor: mapOverlayPanelColor,
                     foregroundColor:
                         mapNightModeEnabled ? Colors.white : Colors.black,
+                    mapOverlay: true,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
                 ),
@@ -427,6 +442,9 @@ class _SearchResultsMapContent extends StatelessWidget {
                   width: MediaQuery.sizeOf(context).width * 0.75,
                   bottom: locationPromptBottom,
                   child: _MapLocationPromptCard(
+                    mapNightModeEnabled: mapNightModeEnabled,
+                    height: locationPromptHeight,
+                    actionButtonHeight: feedViewButtonHeight,
                     onPressed: onRequestUserLocation,
                   ),
                 ),
@@ -440,9 +458,15 @@ class _SearchResultsMapContent extends StatelessWidget {
 
 class _MapLocationPromptCard extends StatelessWidget {
   const _MapLocationPromptCard({
+    required this.mapNightModeEnabled,
+    required this.height,
+    required this.actionButtonHeight,
     required this.onPressed,
   });
 
+  final bool mapNightModeEnabled;
+  final double height;
+  final double actionButtonHeight;
   final VoidCallback onPressed;
 
   @override
@@ -451,105 +475,95 @@ class _MapLocationPromptCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    const foregroundColor = Colors.black;
+    final foregroundColor =
+        mapNightModeEnabled ? Colors.white : Colors.black;
     const iconBackgroundColor = Colors.black;
     const iconForegroundColor = Colors.white;
-    final child = Row(
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: iconBackgroundColor,
-            shape: BoxShape.circle,
-            boxShadow: solidColors
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.16),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-          ),
-          child: const Padding(
-            padding: EdgeInsets.all(8),
-            child: ThemeIcon(
-              Icons.my_location_rounded,
-              color: iconForegroundColor,
-              size: 18,
-              useThemeColor: false,
+    const borderRadius = BorderRadius.all(Radius.circular(18));
+    final base = mapNightModeEnabled ? scheme.surface : Colors.white;
+    final shadows = solidColors
+        ? const <BoxShadow>[]
+        : ThreeDSurfaceStyle.elevatedShadows(context);
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: iconBackgroundColor,
+              shape: BoxShape.circle,
+              boxShadow: solidColors
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.16),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: ThemeIcon(
+                Icons.my_location_rounded,
+                color: iconForegroundColor,
+                size: 18,
+                useThemeColor: false,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                L10n.get("map_location_prompt_title"),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: foregroundColor,
-                  fontWeight: FontWeight.w800,
-                  height: 1.0,
-                ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              L10n.get("map_location_prompt_title"),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: foregroundColor,
+                fontWeight: FontWeight.w800,
+                height: 1.0,
               ),
-              const SizedBox(height: 3),
-              Text(
-                L10n.get("map_location_prompt_body"),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: foregroundColor,
-                  fontWeight: FontWeight.w600,
-                  height: 1.15,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
-        SearchFloatingActionButton(
-          onPressed: onPressed,
-          iconData: Icons.near_me_rounded,
-          tooltip: L10n.get("map_location_prompt_action"),
-          width: 42,
-          height: 38,
-          iconSize: 19,
-          backgroundColor: iconBackgroundColor,
-          foregroundColor: iconForegroundColor,
-          elevation: themeState.isBlueTheme ? null : 6,
-        ),
-      ],
+          const SizedBox(width: 10),
+          SearchFloatingActionButton(
+            onPressed: onPressed,
+            iconData: Icons.near_me_rounded,
+            tooltip: L10n.get("map_location_prompt_action"),
+            width: actionButtonHeight,
+            height: actionButtonHeight,
+            iconSize: 19,
+            backgroundColor: iconBackgroundColor,
+            foregroundColor: iconForegroundColor,
+            mapOverlay: true,
+            elevation: themeState.isBlueTheme ? null : 6,
+          ),
+        ],
+      ),
     );
 
-    if (isAndroidDevice) {
-      return Material(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(18),
+    return Material(
+      color: solidColors ? base : Colors.transparent,
+      borderRadius: borderRadius,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          boxShadow: shadows,
+          border: solidColors
+              ? Border.all(color: scheme.outlineVariant)
+              : null,
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: scheme.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: scheme.outlineVariant),
+            borderRadius: borderRadius,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(context, base),
           ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            child: child,
+          child: SizedBox(
+            height: height,
+            child: content,
           ),
         ),
-      );
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: LiquidGlassPlate(
-        borderRadius: BorderRadius.circular(18),
-        sigma: 18,
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        child: child,
       ),
     );
   }
@@ -585,26 +599,28 @@ class _NoMapResultsTile extends StatelessWidget {
       ),
     );
 
+    final tile = DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: borderRadius,
+        border: solidColors ? Border.all(color: scheme.outlineVariant) : null,
+        boxShadow: solidColors
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+      ),
+      child: child,
+    );
+
     return Material(
       color: solidColors ? scheme.surface : Colors.transparent,
       borderRadius: borderRadius,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.surface,
-          borderRadius: borderRadius,
-          border: solidColors ? Border.all(color: scheme.outlineVariant) : null,
-          boxShadow: solidColors
-              ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-        child: child,
-      ),
+      child: tile,
     );
   }
 }
@@ -708,6 +724,7 @@ class _MapLayerToggleButtons extends StatelessWidget {
       backgroundColor: active ? Colors.black : Colors.white,
       foregroundColor: active ? Colors.white : Colors.black,
       borderSide: _border,
+      mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
   }
@@ -744,6 +761,7 @@ class _MetroLayerModeButton extends StatelessWidget {
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
       borderSide: borderSide,
+      mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
   }

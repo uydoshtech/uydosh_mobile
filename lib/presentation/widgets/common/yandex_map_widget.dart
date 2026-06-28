@@ -12,12 +12,10 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
-import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -1717,12 +1715,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Widget _buildZoomControls() {
     final theme = Theme.of(context);
-    final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final foregroundColor = widget.nightModeEnabled
         ? Colors.white
-        : themeState.isBlueTheme
+        : ThemeState().isBlueTheme
             ? Colors.black
             : theme.colorScheme.onSurface;
     final borderRadius = BorderRadius.circular(999);
@@ -1732,6 +1728,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final slider = _buildZoomSlider(foregroundColor);
     final right = widget.zoomControlsOptions.right;
     final bottom = widget.zoomControlsOptions.bottom;
+    final panelColor = widget.nightModeEnabled
+        ? (solidColors ? const Color(0xFF1E1E1E) : theme.colorScheme.surface)
+        : Colors.white;
 
     return Positioned(
       left: right == null ? safeAreaPadding.left + 8 : null,
@@ -1742,32 +1741,27 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       child: SizedBox(
         width: width,
         height: height,
-        child: useLiquidGlass
-            ? LiquidGlassPlate(
-                width: width,
-                height: height,
-                borderRadius: borderRadius,
-                child: slider,
-              )
-            : DecoratedBox(
-                decoration: solidColors
-                    ? BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: borderRadius,
-                        border: Border.all(
-                          color: theme.colorScheme.outlineVariant,
-                        ),
-                      )
-                    : BoxDecoration(
-                        borderRadius: borderRadius,
-                        gradient: ThreeDSurfaceStyle.surfaceGradient(
-                          context,
-                          theme.colorScheme.surface,
-                        ),
-                        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                      ),
-                child: slider,
-              ),
+        child: DecoratedBox(
+          decoration: solidColors
+              ? BoxDecoration(
+                  color: panelColor,
+                  borderRadius: borderRadius,
+                  border: Border.all(
+                    color: widget.nightModeEnabled
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : theme.colorScheme.outlineVariant,
+                  ),
+                )
+              : BoxDecoration(
+                  borderRadius: borderRadius,
+                  gradient: ThreeDSurfaceStyle.surfaceGradient(
+                    context,
+                    panelColor,
+                  ),
+                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                ),
+          child: slider,
+        ),
       ),
     );
   }

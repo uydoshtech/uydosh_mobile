@@ -142,18 +142,7 @@ class _MapListingTileSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final useLiquidGlass = themeState.usesLiquidGlassChrome;
-    if (useLiquidGlass) {
-      return ThreeDElevatedSurface(
-        baseColor: themeState.primaryColor,
-        useLiquidGlass: true,
-        borderRadius: borderRadius,
-        child: child,
-      );
-    }
-
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final bg = scheme.surface;

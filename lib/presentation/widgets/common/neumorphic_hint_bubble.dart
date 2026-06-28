@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Side of the bubble where the speech-bubble tail emerges.
@@ -82,6 +83,7 @@ class NeumorphicHintBubble extends StatelessWidget {
     );
 
     final enableBlur = LiquidGlassRendering.effectsEnabled(context);
+    final solidSurface = UiPerformancePolicy.solidColorsPreferredForDevice;
 
     // Very light grey tint with high luminance + low alpha so the backdrop
     // shows through. Two stops give the surface a gentle top-light feel.
@@ -93,6 +95,7 @@ class NeumorphicHintBubble extends StatelessWidget {
         Color(0xCCECECEC), // ~80% alpha very light grey
       ],
     );
+    const solidFillColor = Color(0xFFF3F3F3);
     // Subtle top-left highlight that emulates light hitting glass.
     const highlightGradient = LinearGradient(
       begin: Alignment.topLeft,
@@ -104,11 +107,13 @@ class NeumorphicHintBubble extends StatelessWidget {
       stops: [0.0, 0.55],
     );
     // Soft white outline so the bubble reads even on bright backdrops.
-    const strokeColor = Color(0x73FFFFFF); // ~45% white
-    const dropShadow = BoxShadow(
-      color: Color(0x4D000000), // 30% black
-      offset: Offset(0, 6),
-      blurRadius: 18,
+    final strokeColor = solidSurface
+        ? const Color(0xFFE0E0E0)
+        : const Color(0x73FFFFFF); // ~45% white
+    final dropShadow = BoxShadow(
+      color: Color(solidSurface ? 0x33000000 : 0x4D000000),
+      offset: const Offset(0, 6),
+      blurRadius: solidSurface ? 10 : 18,
     );
 
     final content = Padding(
@@ -137,26 +142,31 @@ class NeumorphicHintBubble extends StatelessWidget {
         Positioned.fill(
           child: ClipPath(
             clipper: clipper,
-            child: LiquidGlassRendering.backdropBlur(
-              enabled: enableBlur,
-              sigma: LiquidGlassRendering.switchGlassBlurSigma,
-              child: const DecoratedBox(
-                decoration: BoxDecoration(gradient: fillGradient),
-              ),
-            ),
+            child: solidSurface
+                ? const DecoratedBox(
+                    decoration: BoxDecoration(color: solidFillColor),
+                  )
+                : LiquidGlassRendering.backdropBlur(
+                    enabled: enableBlur,
+                    sigma: LiquidGlassRendering.switchGlassBlurSigma,
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(gradient: fillGradient),
+                    ),
+                  ),
           ),
         ),
         // 3. Inner top-left highlight.
-        Positioned.fill(
-          child: IgnorePointer(
-            child: ClipPath(
-              clipper: clipper,
-              child: const DecoratedBox(
-                decoration: BoxDecoration(gradient: highlightGradient),
+        if (!solidSurface)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ClipPath(
+                clipper: clipper,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(gradient: highlightGradient),
+                ),
               ),
             ),
           ),
-        ),
         // 4. Border stroke.
         Positioned.fill(
           child: IgnorePointer(

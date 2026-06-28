@@ -14,17 +14,21 @@ fi
 
 usage() {
   cat <<'EOF'
-Usage: tool/release_mobile_tags.sh [--bump {build|patch|minor|major}] [--commit]
+Usage: tool/release_mobile_tags.sh [--bump {build|patch|minor|major}] [--commit] [--ios-only]
 
-Creates and pushes BOTH:
+Creates and pushes release tags from pubspec.yaml "version: x.y.z+build"
+(converts '+' -> '-' for the git tag).
+
+By default pushes BOTH:
   - android-<version>
   - ios-<version>
 
-Where <version> comes from pubspec.yaml "version: x.y.z+build" (converts '+' -> '-' for the git tag).
+With --ios-only, pushes only ios-<version> (TestFlight build).
 
 Options:
-  --bump <type>   Bump version first using scripts/bump_version.py (modifies files)
+  --bump <type>   Bump version first using tool/bump_version.sh (modifies files)
   --commit        Commit the version bump before tagging
+  --ios-only      Tag and push iOS only (skip Android)
 EOF
 }
 
@@ -38,6 +42,7 @@ cd "${REPO_ROOT}"
 
 BUMPTYPE=""
 DO_COMMIT="false"
+IOS_ONLY="false"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --bump)
@@ -46,6 +51,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --commit)
       DO_COMMIT="true"
+      shift
+      ;;
+    --ios-only)
+      IOS_ONLY="true"
       shift
       ;;
     -h|--help)
@@ -61,27 +70,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -n "${BUMPTYPE}" ]]; then
-  if [[ ! -f "scripts/bump_version.py" ]]; then
-    echo "Error: scripts/bump_version.py not found. Remove --bump or add the script."
-    exit 1
-  fi
-  if [[ "${BUMPTYPE}" != "build" && "${BUMPTYPE}" != "patch" && "${BUMPTYPE}" != "minor" && "${BUMPTYPE}" != "major" ]]; then
-    echo "Error: invalid --bump value: ${BUMPTYPE}"
-    usage
-    exit 2
-  fi
-
-  python3 scripts/bump_version.py "${BUMPTYPE}"
-
+  BUMP_ARGS=(--bump "${BUMPTYPE}")
   if [[ "${DO_COMMIT}" == "true" ]]; then
-    # Commit the bump so tags point to an immutable commit.
-    git add pubspec.yaml lib/base/constants/app_version.dart lib/presentation/widgets/burger_menu_widget.dart || true
-    if ! git diff --cached --quiet; then
-      NEW_VERSION="$(grep -m1 -E '^version:[[:space:]]+' pubspec.yaml | sed -E 's/^version:[[:space:]]+//; s/[[:space:]]*#.*//; s/[[:space:]]+$//')"
-      git commit -m "Bump version to ${NEW_VERSION}"
-      git push
-    fi
-  else
+    BUMP_ARGS+=(--commit --push)
+  fi
+
+  bash tool/bump_version.sh "${BUMP_ARGS[@]}"
+
+  if [[ "${DO_COMMIT}" != "true" ]]; then
     if ! git diff --quiet; then
       echo "Version was bumped but not committed."
       echo "Commit & push the bump (or rerun with --commit), then rerun this script."
@@ -135,33 +131,43 @@ IOS_TAG="ios-${TAG_SUFFIX}"
 # Avoid local/remote tag conflicts.
 git fetch --prune origin >/dev/null
 
-if git show-ref --tags --verify --quiet "refs/tags/${ANDROID_TAG}"; then
-  echo "Error: tag already exists locally: ${ANDROID_TAG}"
-  exit 1
-fi
-if git show-ref --tags --verify --quiet "refs/tags/${IOS_TAG}"; then
-  echo "Error: tag already exists locally: ${IOS_TAG}"
-  exit 1
-fi
+check_tag_available() {
+  local tag="$1"
+  if git show-ref --tags --verify --quiet "refs/tags/${tag}"; then
+    echo "Error: tag already exists locally: ${tag}"
+    exit 1
+  fi
+  if git ls-remote --tags origin "${tag}" | grep -q "${tag}"; then
+    echo "Error: tag already exists on origin: ${tag}"
+    exit 1
+  fi
+}
 
-# Check remote tags exist.
-if git ls-remote --tags origin "${ANDROID_TAG}" | grep -q "${ANDROID_TAG}"; then
-  echo "Error: tag already exists on origin: ${ANDROID_TAG}"
-  exit 1
-fi
-if git ls-remote --tags origin "${IOS_TAG}" | grep -q "${IOS_TAG}"; then
-  echo "Error: tag already exists on origin: ${IOS_TAG}"
-  exit 1
+if [[ "${IOS_ONLY}" == "true" ]]; then
+  check_tag_available "${IOS_TAG}"
+else
+  check_tag_available "${ANDROID_TAG}"
+  check_tag_available "${IOS_TAG}"
 fi
 
 SHA="$(git rev-parse --short HEAD)"
 
-echo -e "Tagging $(colored_platform_tag android) -> ${SHA}"
-git tag "${ANDROID_TAG}"
+TAGS_TO_PUSH=()
+if [[ "${IOS_ONLY}" != "true" ]]; then
+  echo -e "Tagging $(colored_platform_tag android) -> ${SHA}"
+  git tag "${ANDROID_TAG}"
+  TAGS_TO_PUSH+=("${ANDROID_TAG}")
+fi
+
 echo -e "Tagging $(colored_platform_tag ios) -> ${SHA}"
 git tag "${IOS_TAG}"
+TAGS_TO_PUSH+=("${IOS_TAG}")
 
-git push origin "${ANDROID_TAG}" "${IOS_TAG}"
+git push origin "${TAGS_TO_PUSH[@]}"
 
-echo -e "Done. Build version $(colored_pubspec_version). GitHub Actions should start Android (AAB) and iOS (TestFlight) builds."
+if [[ "${IOS_ONLY}" == "true" ]]; then
+  echo -e "Done. Build version $(colored_pubspec_version). GitHub Actions should start the iOS (TestFlight) build."
+else
+  echo -e "Done. Build version $(colored_pubspec_version). GitHub Actions should start Android (AAB) and iOS (TestFlight) builds."
+fi
 

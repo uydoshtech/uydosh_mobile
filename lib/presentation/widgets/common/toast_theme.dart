@@ -40,18 +40,25 @@ class ToastTheme {
     BorderRadius? borderRadius,
   }) {
     final r = borderRadius ?? BorderRadius.circular(_toastCornerRadius);
+    final solidSurface = UiPerformancePolicy.solidColorsPreferredForDevice;
     final surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: baseColor.withOpacity(_toastFillOpacity),
+        color: solidSurface
+            ? baseColor
+            : baseColor.withOpacity(_toastFillOpacity),
         borderRadius: r,
         border: Border.all(
-          color: Colors.white.withOpacity(0.22),
+          color: solidSurface
+              ? baseColor.withValues(alpha: 0.35)
+              : Colors.white.withOpacity(0.22),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.14),
-            blurRadius: UiPerformancePolicy.reduceEffectsForDevice ? 8 : 18,
+            blurRadius: solidSurface || UiPerformancePolicy.reduceEffectsForDevice
+                ? 8
+                : 18,
             offset: const Offset(0, 10),
             spreadRadius: 1,
           ),
@@ -63,7 +70,7 @@ class ToastTheme {
     return ClipRRect(
       borderRadius: r,
       child: LiquidGlassRendering.backdropBlur(
-        enabled: !UiPerformancePolicy.reduceEffectsForDevice,
+        enabled: !solidSurface && !UiPerformancePolicy.reduceEffectsForDevice,
         sigma: _toastBlurSigma,
         child: surface,
       ),

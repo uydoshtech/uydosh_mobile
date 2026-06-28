@@ -17,7 +17,7 @@ class ChatSecurityRibbon extends StatelessWidget {
       builder: (context, child) {
         final ts = ThemeState();
         final scheme = Theme.of(context).colorScheme;
-        final useGlass = ts.isBlueTheme;
+        final useGlass = ts.isBlueTheme && ts.usesLiquidGlassChrome;
         final bg = Color.lerp(scheme.primary, ts.cardColor, 0.86)!;
         final border = useGlass
             ? Colors.white.withValues(alpha: 0.18)

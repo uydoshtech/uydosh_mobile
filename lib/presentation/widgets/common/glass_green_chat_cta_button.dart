@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -75,13 +76,14 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
     const glassRight = Color(0xFF0F2419);
     const lightFaceLeft = Color(0xFF000000);
     const lightFaceRight = Color(0xFF1A1A1A);
+    final solidSurface = UiPerformancePolicy.solidColorsPreferredForDevice;
 
     final face = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: isDark
             ? Border.all(
-                color: strokeGreen.withValues(alpha: 0.88),
+                color: strokeGreen.withValues(alpha: solidSurface ? 1 : 0.88),
                 width: 1,
               )
             : null,
@@ -89,10 +91,12 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: isDark
-              ? [
-                  glassLeft.withValues(alpha: 0.62),
-                  glassRight.withValues(alpha: 0.48),
-                ]
+              ? solidSurface
+                  ? const [glassLeft, glassRight]
+                  : [
+                      glassLeft.withValues(alpha: 0.62),
+                      glassRight.withValues(alpha: 0.48),
+                    ]
               : const [lightFaceLeft, lightFaceRight],
         ),
       ),
@@ -163,7 +167,7 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (enableBlur)
+                      if (enableBlur && !solidSurface)
                         LiquidGlassRendering.backdropBlur(
                           enabled: enableBlur,
                           sigma: blurSigma,

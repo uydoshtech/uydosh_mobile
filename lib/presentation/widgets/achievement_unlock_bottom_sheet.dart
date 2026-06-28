@@ -6,7 +6,9 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/achievement.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
@@ -100,41 +102,49 @@ class _AchievementUnlockBottomSheetState
     Color(0xFF008F6C), // Sea Green
   ];
 
+  static bool get _reducedCelebration =>
+      UiPerformancePolicy.solidColorsPreferredForDevice;
+
   @override
   void initState() {
     super.initState();
+    final reduced = _reducedCelebration;
     _fireworksController = SimpleFireworksController(
       colors: _celebrationColors,
-      minExplosionDuration: 1.0,
-      maxExplosionDuration: 2.5,
-      minParticleCount: 80,
-      maxParticleCount: 180,
-      fadeOutDuration: 0.4,
+      minExplosionDuration: reduced ? 0.6 : 1.0,
+      maxExplosionDuration: reduced ? 1.2 : 2.5,
+      minParticleCount: reduced ? 20 : 80,
+      maxParticleCount: reduced ? 40 : 180,
+      fadeOutDuration: reduced ? 0.25 : 0.4,
     );
     _confettiController = ConfettiController(
-      duration: const Duration(seconds: 3),
+      duration: Duration(seconds: reduced ? 1 : 3),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) => _startCelebration());
   }
 
   void _startCelebration() {
     if (!mounted) return;
-    _fireworksController.fireMultipleRockets(
-      minRockets: 4,
-      maxRockets: 8,
-      launchWindow: const Duration(milliseconds: 800),
-    );
+    if (!_reducedCelebration) {
+      _fireworksController.fireMultipleRockets(
+        minRockets: 4,
+        maxRockets: 8,
+        launchWindow: const Duration(milliseconds: 800),
+      );
+    }
     _confettiController.play();
     _playFireworksHaptics();
   }
 
   void _playFireworksHaptics() {
-    const delays = [
-      Duration.zero,
-      Duration(milliseconds: 200),
-      Duration(milliseconds: 400),
-      Duration(milliseconds: 600),
-    ];
+    final delays = _reducedCelebration
+        ? const [Duration.zero, Duration(milliseconds: 250)]
+        : const [
+            Duration.zero,
+            Duration(milliseconds: 200),
+            Duration(milliseconds: 400),
+            Duration(milliseconds: 600),
+          ];
     for (var i = 0; i < delays.length; i++) {
       Future.delayed(delays[i], () {
         if (mounted) HapticFeedbackUtils.lightImpact();
@@ -204,28 +214,31 @@ class _AchievementUnlockBottomSheetState
     final description = L10n.get(descKey);
     final title = L10n.get(widget.achievement.key);
 
+    final reducedCelebration = _reducedCelebration;
+
     return SizedBox(
       width: size.width,
       height: size.height,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: SimpleFireworksDisplay(controller: _fireworksController),
+          if (!reducedCelebration)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: SimpleFireworksDisplay(controller: _fireworksController),
+              ),
             ),
-          ),
           Positioned.fill(
             child: IgnorePointer(
               child: ConfettiWidget(
                 confettiController: _confettiController,
                 canvas: size,
                 blastDirectionality: BlastDirectionality.explosive,
-                numberOfParticles: 30,
-                maxBlastForce: 30,
-                minBlastForce: 15,
-                emissionFrequency: 0.05,
-                gravity: 0.15,
+                numberOfParticles: reducedCelebration ? 10 : 30,
+                maxBlastForce: reducedCelebration ? 18 : 30,
+                minBlastForce: reducedCelebration ? 8 : 15,
+                emissionFrequency: reducedCelebration ? 0.03 : 0.05,
+                gravity: reducedCelebration ? 0.22 : 0.15,
                 colors: _celebrationColors,
                 createParticlePath: _createStarOrRibbonPath,
                 minimumSize: const Size(8, 8),
@@ -348,28 +361,33 @@ class _GlassBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final useGlassChrome = ThemeState().usesLiquidGlassChrome;
     final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     final badge = DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: isDark ? 0.10 : 0.46),
-            surfaceTint.withValues(alpha: isDark ? 0.30 : 0.40),
-          ],
-        ),
+        color: useGlassChrome ? null : surfaceTint,
+        gradient: useGlassChrome
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: isDark ? 0.10 : 0.46),
+                  surfaceTint.withValues(alpha: isDark ? 0.30 : 0.40),
+                ],
+              )
+            : null,
         border: Border.all(
-          color: Colors.white.withValues(
-            alpha: isDark ? 0.18 : 0.60,
-          ),
+          color: useGlassChrome
+              ? Colors.white.withValues(alpha: isDark ? 0.18 : 0.60)
+              : scheme.outlineVariant.withValues(alpha: 0.45),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.10),
-            blurRadius: enableGlass ? 14 : 8,
+            blurRadius: enableGlass && useGlassChrome ? 14 : 8,
             offset: const Offset(0, 6),
           ),
         ],
@@ -382,7 +400,7 @@ class _GlassBadge extends StatelessWidget {
       height: 84,
       child: ClipOval(
         child: LiquidGlassRendering.backdropBlur(
-          enabled: enableGlass,
+          enabled: enableGlass && useGlassChrome,
           sigma: isDark ? 18 : 22,
           child: badge,
         ),

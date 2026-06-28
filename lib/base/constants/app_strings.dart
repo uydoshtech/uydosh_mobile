@@ -303,8 +303,6 @@ class AppStrings {
       "open_map_view": "Open map view",
       "open_feed_view": "Open feed view",
       "map_location_prompt_title": "Show my location",
-      "map_location_prompt_body":
-          "See where you are relative to nearby listings.",
       "map_location_prompt_action": "Use location",
       "close": "Close",
       "cancel": "Cancel",
@@ -2437,8 +2435,6 @@ class AppStrings {
       "open_map_view": "Открыть карту",
       "open_feed_view": "Открыть ленту",
       "map_location_prompt_title": "Показать мою геопозицию",
-      "map_location_prompt_body":
-          "Посмотрите, где вы находитесь относительно объявлений рядом.",
       "map_location_prompt_action": "Использовать геопозицию",
       "close": "Закрыть",
       "cancel": "Отмена",
@@ -4615,8 +4611,6 @@ class AppStrings {
       "open_map_view": "Xaritani ochish",
       "open_feed_view": "Lentani ochish",
       "map_location_prompt_title": "Joylashuvimni ko‘rsatish",
-      "map_location_prompt_body":
-          "Yaqindagi e'lonlarga nisbatan qayerda ekaningizni ko‘ring.",
       "map_location_prompt_action": "Joylashuvdan foydalanish",
       "close": "Yopish",
       "cancel": "Bekor qilish",

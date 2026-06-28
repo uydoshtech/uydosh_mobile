@@ -211,14 +211,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_feed_view => 'Open feed view';
 
   @override
-  String get choose_filters => 'Choose filters';
+  String get choose_filters => 'Select a filter please';
 
   @override
   String get map_location_prompt_title => 'Show my location';
-
-  @override
-  String get map_location_prompt_body =>
-      'See where you are relative to nearby listings.';
 
   @override
   String get map_location_prompt_action => 'Use location';

@@ -222,43 +222,43 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowBlurRadius: 8,
             shadowOffset: const Offset(0, 4),
           );
+    // Metro icons are always generated (including on Android) so stations use
+    // the same placemark bitmaps as iOS instead of tiny meter-based circles.
     final metroStationIconBytes = <int, Uint8List>{};
     final selectedMetroStationIconBytes = <int, Uint8List>{};
-    if (!reduceStartupIconWork) {
-      for (final line in MetroCache.getAvailableLines()) {
-        final outlineColor = line == 4 ? Colors.black : Colors.white;
-        final iconStyle = (
-          backgroundColor: _metroLineColor(line),
-          outlineColor: outlineColor,
-          shadowColor: Colors.black.withValues(alpha: 0.28),
-          shadowBlurRadius: 9.0,
-          shadowOffset: const Offset(0, 4),
-        );
-        metroStationIconBytes[line] = await _createIconBytes(
-          Icons.directions_subway_rounded,
-          96,
-          backgroundColor: iconStyle.backgroundColor,
-          outlineColor: iconStyle.outlineColor,
-          outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
-            selected: false,
-          ),
-          shadowColor: iconStyle.shadowColor,
-          shadowBlurRadius: iconStyle.shadowBlurRadius,
-          shadowOffset: iconStyle.shadowOffset,
-        );
-        selectedMetroStationIconBytes[line] = await _createIconBytes(
-          Icons.directions_subway_rounded,
-          96,
-          backgroundColor: iconStyle.backgroundColor,
-          outlineColor: iconStyle.outlineColor,
-          outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
-            selected: true,
-          ),
-          shadowColor: iconStyle.shadowColor,
-          shadowBlurRadius: iconStyle.shadowBlurRadius,
-          shadowOffset: iconStyle.shadowOffset,
-        );
-      }
+    for (final line in MetroCache.getAvailableLines()) {
+      final outlineColor = line == 4 ? Colors.black : Colors.white;
+      final iconStyle = (
+        backgroundColor: _metroLineColor(line),
+        outlineColor: outlineColor,
+        shadowColor: Colors.black.withValues(alpha: 0.28),
+        shadowBlurRadius: 9.0,
+        shadowOffset: const Offset(0, 4),
+      );
+      metroStationIconBytes[line] = await _createIconBytes(
+        Icons.directions_subway_rounded,
+        96,
+        backgroundColor: iconStyle.backgroundColor,
+        outlineColor: iconStyle.outlineColor,
+        outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
+          selected: false,
+        ),
+        shadowColor: iconStyle.shadowColor,
+        shadowBlurRadius: iconStyle.shadowBlurRadius,
+        shadowOffset: iconStyle.shadowOffset,
+      );
+      selectedMetroStationIconBytes[line] = await _createIconBytes(
+        Icons.directions_subway_rounded,
+        96,
+        backgroundColor: iconStyle.backgroundColor,
+        outlineColor: iconStyle.outlineColor,
+        outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
+          selected: true,
+        ),
+        shadowColor: iconStyle.shadowColor,
+        shadowBlurRadius: iconStyle.shadowBlurRadius,
+        shadowOffset: iconStyle.shadowOffset,
+      );
     }
 
     return _YandexMapSharedIconBytes(

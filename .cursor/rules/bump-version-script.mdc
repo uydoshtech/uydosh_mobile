@@ -1,0 +1,25 @@
+---
+description: Use tool/bump_version.sh when the user asks to bump the app version (build number)
+alwaysApply: true
+---
+
+# Version bumping
+
+When the user asks to **bump the version** or **increase the build number**, use `tool/bump_version.sh` — do not edit `pubspec.yaml` or version files manually.
+
+Default bump type is **build** (increments `x.y.z+build` build number only).
+
+```bash
+# Bump build number only (most common)
+bash tool/bump_version.sh build
+
+# Bump + commit
+bash tool/bump_version.sh build --commit
+
+# Bump + commit + push
+bash tool/bump_version.sh build --commit --push
+```
+
+Use `patch`, `minor`, or `major` only when the user explicitly asks for a semver bump — not for routine build-number increases.
+
+For release tagging (TestFlight / Play Store), use `tool/release_mobile_tags.sh` instead; it delegates to `tool/bump_version.sh` when `--bump` is passed.

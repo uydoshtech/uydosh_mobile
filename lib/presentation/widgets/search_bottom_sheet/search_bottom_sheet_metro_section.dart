@@ -96,6 +96,11 @@ class _SearchBottomSheetMetroSectionState
       OverlayPortalController();
   final ScrollController _stationListScrollController = ScrollController();
 
+  /// CupertinoPicker children are rebuilt only when station selection badges
+  /// or locale/theme chrome change — not on unrelated parent setState calls.
+  List<Widget>? _cachedMetroLinePickerChildren;
+  Object? _metroLinePickerChildrenCacheKey;
+
   static Color _getLineColor(int line) => AppColors.getMetroLineColor(line);
 
   @override
@@ -329,15 +334,32 @@ class _SearchBottomSheetMetroSectionState
               ),
             ),
           ),
-        _buildPickersRow(context, theme),
+        RepaintBoundary(
+          child: _buildPickersRow(context, theme),
+        ),
       ],
     );
   }
 
-  Widget _buildPickersRow(BuildContext context, ThemeData theme) {
+  Object _computeMetroLinePickerCacheKey(Set<int> selectedStationIds) {
+    final sortedIds = selectedStationIds.toList()..sort();
+    return Object.hash(
+      LanguageState().currentLanguage,
+      ThemeState().isBlueTheme,
+      Object.hashAll(sortedIds),
+    );
+  }
+
+  List<Widget> _metroLinePickerChildren(Set<int> selectedStationIds) {
+    final cacheKey = _computeMetroLinePickerCacheKey(selectedStationIds);
+    if (_cachedMetroLinePickerChildren != null &&
+        _metroLinePickerChildrenCacheKey == cacheKey) {
+      return _cachedMetroLinePickerChildren!;
+    }
+
     final language = LanguageState().currentLanguage;
-    final selectedStationIds =
-        widget.searchFiltersState.selectedStationIdsList.toSet();
+    final onBlueTheme = ThemeState().isBlueTheme;
+    final labelColor = onBlueTheme ? Colors.white : Colors.black;
     final lineLabels = MetroCache.getAvailableLines().map((line) {
       final lineName = MetroCache.getLineName(line, language);
       final selectedCount = MetroCache.getStationsForLine(line)
@@ -346,6 +368,69 @@ class _SearchBottomSheetMetroSectionState
       final label = selectedCount > 0 ? "$lineName [$selectedCount]" : lineName;
       return MapEntry(line, label);
     }).toList();
+
+    final children = <Widget>[
+      Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            MLetterIcon(
+              color: Colors.black,
+              size: 20,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                L10n.get("select_metro_line"),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: labelColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+      ...lineLabels.map(
+        (lineEntry) => Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              MLetterIcon(
+                color: _getLineColor(lineEntry.key),
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  lineEntry.value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: labelColor,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+
+    _metroLinePickerChildrenCacheKey = cacheKey;
+    _cachedMetroLinePickerChildren = children;
+    return children;
+  }
+
+  Widget _buildPickersRow(BuildContext context, ThemeData theme) {
+    final selectedStationIds =
+        widget.searchFiltersState.selectedStationIdsList.toSet();
+    final metroLinePickerChildren =
+        _metroLinePickerChildren(selectedStationIds);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,61 +457,7 @@ class _SearchBottomSheetMetroSectionState
                             SendSoundUtils.playCupertinoWheelSound();
                             widget.onSubwayLineChanged(index);
                           },
-                          children: [
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  MLetterIcon(
-                                    color: Colors.black,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      L10n.get("select_metro_line"),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: ThemeState().isBlueTheme
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            ...(lineLabels.map(
-                              (lineEntry) => Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    MLetterIcon(
-                                      color: _getLineColor(lineEntry.key),
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        lineEntry.value,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: ThemeState().isBlueTheme
-                                              ? Colors.white
-                                              : Colors.black,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )),
-                          ],
+                          children: metroLinePickerChildren,
                         ),
                       ),
                     ],

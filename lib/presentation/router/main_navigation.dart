@@ -869,7 +869,7 @@ class MainNavigationState extends State<MainNavigation>
           extendBodyBehindAppBar: useLiquidGlassAppBar,
           // Draw bodies under the curved bar so notch/alpha tints show cards and
           // feed — not only [themeState.backgroundColor] (same 0xFF1E3A5F as primary).
-          extendBody: themeState.isBlueTheme,
+          extendBody: themeState.isBlueTheme && themeState.usesLiquidGlassChrome,
           appBar: UydoshAppBar(
             backgroundColor: useLiquidGlassAppBar
                 ? liquidGlassAppBarMaterialColor(context)

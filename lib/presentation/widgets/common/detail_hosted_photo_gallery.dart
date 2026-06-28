@@ -8,6 +8,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -235,27 +236,37 @@ class _PhotoGlassPill extends StatelessWidget {
       listenable: AnimationSettingsState(),
       builder: (context, _) {
         // The pill's [BackdropFilter] floats over the scrolling carousel, so it
-        // re-blurs every frame. Skip it on Android (low-end GPU cost); the
-        // translucent gradient fill keeps the pill legible without the blur.
+        // re-blurs every frame. Skip it on Android (low-end GPU cost); use a
+        // solid pill fill there instead of a translucent gradient.
         final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+        final solidSurface = UiPerformancePolicy.solidColorsPreferredForDevice;
 
         const radius = BorderRadius.all(Radius.circular(999));
 
-        final glassDecoration = BoxDecoration(
-          borderRadius: radius,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white.withValues(alpha: 0.18),
-              Colors.black.withValues(alpha: 0.38),
-            ],
-          ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.28),
-            width: 0.6,
-          ),
-        );
+        final pillDecoration = solidSurface
+            ? BoxDecoration(
+                borderRadius: radius,
+                color: const Color(0xFF2A2A2A),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 0.6,
+                ),
+              )
+            : BoxDecoration(
+                borderRadius: radius,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.18),
+                    Colors.black.withValues(alpha: 0.38),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.28),
+                  width: 0.6,
+                ),
+              );
 
         final content = Padding(
           padding: padding,
@@ -263,23 +274,31 @@ class _PhotoGlassPill extends StatelessWidget {
         );
 
         return DecoratedBox(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             borderRadius: radius,
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x4D000000),
-                blurRadius: 14,
-                offset: Offset(0, 4),
-              ),
-            ],
+            boxShadow: solidSurface
+                ? const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ]
+                : const [
+                    BoxShadow(
+                      color: Color(0x4D000000),
+                      blurRadius: 14,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
           ),
           child: ClipRRect(
             borderRadius: radius,
             child: LiquidGlassRendering.backdropBlur(
-              enabled: enableGlass,
+              enabled: enableGlass && !solidSurface,
               sigma: LiquidGlassRendering.switchGlassBlurSigma,
               child: DecoratedBox(
-                decoration: glassDecoration,
+                decoration: pillDecoration,
                 child: content,
               ),
             ),

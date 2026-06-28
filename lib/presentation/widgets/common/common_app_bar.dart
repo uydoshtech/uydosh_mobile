@@ -49,7 +49,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final appBarTheme = theme.appBarTheme;
     final defaultBg = backgroundColor ?? appBarTheme.backgroundColor;
-    final resolvedBg = liquidGlass
+    final effectiveLiquidGlass =
+        liquidGlass && ThemeState().usesLiquidGlassChrome;
+    final resolvedBg = effectiveLiquidGlass
         ? liquidGlassAppBarMaterialColor(context)
         : (defaultBg ?? Colors.transparent);
 
@@ -94,8 +96,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation ?? 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
-      forceMaterialTransparency: liquidGlass,
-      flexibleSpace: liquidGlass ? const _LiquidGlassAppBarBackground() : null,
+      forceMaterialTransparency: effectiveLiquidGlass,
+      flexibleSpace:
+          effectiveLiquidGlass ? const _LiquidGlassAppBarBackground() : null,
       automaticallyImplyLeading:
           automaticallyImplyLeading && showBackButton && !injectDefaultBack,
       leading: effectiveLeading,

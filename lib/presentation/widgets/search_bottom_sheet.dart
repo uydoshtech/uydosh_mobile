@@ -24,7 +24,6 @@ import "package:uy_dosh/domain/services/search_alert_service.dart"; // ignore: u
 import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart"; // ignore: unused_import
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
-import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
@@ -189,9 +188,6 @@ class SearchBottomSheetWidget {
                       },
                     ),
             ],
-            BlocProvider(
-              create: (context) => SubwayStationsBloc(),
-            ),
           ],
           child: _SearchBottomSheetContent(
             replaceCurrentRoute: replaceCurrentRoute,

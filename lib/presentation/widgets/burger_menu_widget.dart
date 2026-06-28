@@ -135,18 +135,24 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(
-          right: Radius.circular(20),
-        ),
-      ),
-      child: ListenableBuilder(
-        listenable: ThemeState(),
-        builder: (context, _) {
-          return _DrawerGlassSurface(
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final solidDrawer = !ThemeState().usesLiquidGlassChrome;
+        final drawerBackground = solidDrawer
+            ? (Theme.of(context).drawerTheme.backgroundColor ??
+                ThemeState().backgroundColor)
+            : Colors.transparent;
+
+        return Drawer(
+          backgroundColor: drawerBackground,
+          elevation: 0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.horizontal(
+              right: Radius.circular(20),
+            ),
+          ),
+          child: _DrawerGlassSurface(
             child: SafeArea(
               child: ListenableBuilder(
                 listenable: AuthenticationState(),
@@ -191,9 +197,9 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
                 },
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -487,7 +493,23 @@ final class _DrawerColors {
     return base.withValues(alpha: alpha);
   }
 
+  static Color surfaceFill(
+    BuildContext context, {
+    required bool effectsEnabled,
+  }) {
+    if (!ThemeState().usesLiquidGlassChrome) {
+      return Theme.of(context).drawerTheme.backgroundColor ??
+          ThemeState().backgroundColor;
+    }
+    return glassTint(context, effectsEnabled: effectsEnabled);
+  }
+
   static Color footerBackground(BuildContext context) {
+    if (!ThemeState().usesLiquidGlassChrome) {
+      return Theme.of(context).drawerTheme.backgroundColor ??
+          ThemeState().backgroundColor;
+    }
+
     final currentTheme = ThemeState().currentTheme;
     if (currentTheme == AppTheme.lightTheme) {
       return ThemeState().backgroundColor;
@@ -507,7 +529,7 @@ class _DrawerGlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectsEnabled = LiquidGlassRendering.effectsEnabled(context);
-    final tint = _DrawerColors.glassTint(
+    final tint = _DrawerColors.surfaceFill(
       context,
       effectsEnabled: effectsEnabled,
     );

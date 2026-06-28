@@ -2,6 +2,8 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/group_shortlist_state.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_flow.dart";
@@ -155,6 +157,7 @@ class _GlassShortlistPillState extends State<_GlassShortlistPill> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+    final useGlassChrome = ThemeState().usesLiquidGlassChrome;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
@@ -162,18 +165,20 @@ class _GlassShortlistPillState extends State<_GlassShortlistPill> {
       transform: Matrix4.translationValues(0, _pressed ? 1.5 : 0, 0),
       decoration: BoxDecoration(
         borderRadius: _borderRadius,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.10),
-            blurRadius: _pressed ? 8 : 14,
-            offset: Offset(0, _pressed ? 2 : 6),
-          ),
-        ],
+        boxShadow: useGlassChrome
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.24 : 0.10),
+                  blurRadius: _pressed ? 8 : 14,
+                  offset: Offset(0, _pressed ? 2 : 6),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: _borderRadius,
         child: LiquidGlassRendering.backdropBlur(
-          enabled: enableGlass,
+          enabled: enableGlass && useGlassChrome,
           sigma: LiquidGlassRendering.plateBlurSigma,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -189,11 +194,17 @@ class _GlassShortlistPillState extends State<_GlassShortlistPill> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: _borderRadius,
-                gradient: _glassGradient(context, isDark: isDark),
+                gradient: useGlassChrome
+                    ? _glassGradient(context, isDark: isDark)
+                    : null,
+                color: useGlassChrome ? null : theme.colorScheme.surface,
                 border: Border.all(
-                  color: (isDark ? Colors.white : Colors.black).withValues(
-                    alpha: isDark ? 0.42 : 0.12,
-                  ),
+                  color: useGlassChrome
+                      ? (isDark ? Colors.white : Colors.black).withValues(
+                          alpha: isDark ? 0.42 : 0.12,
+                        )
+                      : theme.colorScheme.outlineVariant
+                          .withValues(alpha: 0.45),
                   width: 0.8,
                 ),
               ),

@@ -181,6 +181,44 @@ abstract final class LiquidGlassRendering {
     return isDark ? 0.04 : 0.65;
   }
 
+  /// Frosted pill for map overlay controls (zoom slider, feed/search FABs).
+  ///
+  /// Uses light frosted chrome on a day map and dark frosted chrome on a night
+  /// map, independent of app theme brightness.
+  static LinearGradient mapOverlayPlateGradient({
+    required BuildContext context,
+    required bool mapNightModeEnabled,
+  }) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      final color = mapNightModeEnabled
+          ? const Color(0xFF1E1E1E)
+          : Theme.of(context).colorScheme.surface;
+      return LinearGradient(colors: [color, color]);
+    }
+
+    if (mapNightModeEnabled) {
+      return const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xCC3A3A3A),
+          Color(0xB3282828),
+          Color(0x990F0F0F),
+        ],
+        stops: [0.0, 0.55, 1.0],
+      );
+    }
+
+    return plateGradient(context: context, isDark: false);
+  }
+
+  static Color mapOverlayPlateBorderColor({
+    required bool mapNightModeEnabled,
+  }) =>
+      (mapNightModeEnabled ? Colors.white : Colors.black).withValues(
+        alpha: mapNightModeEnabled ? 0.12 : 0.14,
+      );
+
   /// Gradient for [LiquidGlassPlate] and similar controls.
   static LinearGradient plateGradient({
     required BuildContext context,

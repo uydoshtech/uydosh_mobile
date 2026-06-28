@@ -1138,6 +1138,7 @@ class _AdminSubwayMapScreenState extends State<AdminSubwayMapScreen>
                         SearchFloatingActionButton(
                           searchFiltersState: _searchFiltersState,
                           tooltip: L10n.get("search"),
+                          mapOverlay: true,
                           onPressed: () {
                             SearchBottomSheetWidget.show(
                               context,

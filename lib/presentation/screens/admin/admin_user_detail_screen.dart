@@ -734,7 +734,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
               materialMenuOverlay: true,
               menuOverlayColor: isBlueTheme
                   ? Colors.blue.shade600.withValues(
-                      alpha: AppTheme.menuOverlaySurfaceOpacity,
+                      alpha: AppTheme.resolvedMenuOverlaySurfaceOpacity,
                     )
                   : theme.popupMenuTheme.color,
               style: isBlueTheme

@@ -64,6 +64,7 @@ class _MapFilterRibbon extends StatelessWidget {
                 boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
               );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
+    final hasEmptyLabel = label != null;
     final filterContent = label == null
         ? AppliedSearchFiltersBar(
             onPressed: onPressed,
@@ -89,19 +90,39 @@ class _MapFilterRibbon extends StatelessWidget {
             onTap: onPressed,
             child: SizedBox(
               height: 56,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: scheme.onSurface,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    height: 1.0,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: scheme.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: orbDecoration,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.search,
+                          size: 16,
+                          color: orbIconColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -110,8 +131,10 @@ class _MapFilterRibbon extends StatelessWidget {
       children: [
         Row(
           children: [
-            const SizedBox(width: 18, height: 18),
-            const SizedBox(width: 16),
+            if (!hasEmptyLabel) ...[
+              const SizedBox(width: 32, height: 32),
+              const SizedBox(width: 12),
+            ],
             Expanded(child: filterContent),
             if (onClose != null)
               IconButton(
@@ -130,22 +153,23 @@ class _MapFilterRibbon extends StatelessWidget {
               ),
           ],
         ),
-        PositionedDirectional(
-          start: 0,
-          top: 0,
-          bottom: 0,
-          child: IgnorePointer(
+        if (!hasEmptyLabel)
+          PositionedDirectional(
+            start: 0,
+            top: 0,
+            bottom: 0,
             child: Center(
-              child: DecoratedBox(
-                decoration: orbDecoration,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.tune, size: 16, color: orbIconColor),
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: orbDecoration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.tune, size: 16, color: orbIconColor),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
 
@@ -154,27 +178,20 @@ class _MapFilterRibbon extends StatelessWidget {
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: isAndroidDevice
-            ? DecoratedBox(
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: scheme.outlineVariant),
-                ),
-                child: SizedBox(
-                  height: 56,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 6),
-                    child: content,
-                  ),
-                ),
-              )
-            : LiquidGlassPlate(
-                height: 56,
-                borderRadius: BorderRadius.circular(16),
-                padding: const EdgeInsets.only(left: 12, right: 6),
-                child: content,
-              ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: SizedBox(
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12, right: 6),
+              child: content,
+            ),
+          ),
+        ),
       ),
     );
   }

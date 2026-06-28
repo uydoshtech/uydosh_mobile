@@ -17,6 +17,7 @@ class LiquidGlassPlate extends StatelessWidget {
     this.sigma = LiquidGlassRendering.plateBlurSigma,
     this.padding,
     this.clipBehavior = Clip.antiAlias,
+    this.mapNightModeEnabled,
   });
 
   final Widget child;
@@ -26,17 +27,32 @@ class LiquidGlassPlate extends StatelessWidget {
   final double sigma;
   final EdgeInsetsGeometry? padding;
   final Clip clipBehavior;
+  final bool? mapNightModeEnabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final mapNightMode = mapNightModeEnabled;
+    final isDark = mapNightMode ?? theme.brightness == Brightness.dark;
+    final useMapOverlayStyle = mapNightMode != null;
     final content = Padding(
       padding: padding ?? EdgeInsets.zero,
       child: child,
     );
+    final borderColor = useMapOverlayStyle
+        ? LiquidGlassRendering.mapOverlayPlateBorderColor(
+            mapNightModeEnabled: mapNightMode,
+          )
+        : (isDark ? Colors.white : Colors.black).withValues(
+            alpha: isDark ? 0.12 : 0.14,
+          );
 
     if (!ThemeState().usesLiquidGlassChrome) {
+      final surfaceColor = useMapOverlayStyle
+          ? (mapNightMode
+              ? const Color(0xFF1E1E1E)
+              : theme.colorScheme.surface)
+          : theme.colorScheme.surface;
       return SizedBox(
         width: width,
         height: height,
@@ -46,11 +62,9 @@ class LiquidGlassPlate extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              color: theme.colorScheme.surface,
+              color: surfaceColor,
               border: Border.all(
-                color: (isDark ? Colors.white : Colors.black).withValues(
-                  alpha: isDark ? 0.12 : 0.14,
-                ),
+                color: borderColor,
                 width: 0.6,
               ),
             ),
@@ -71,6 +85,15 @@ class LiquidGlassPlate extends StatelessWidget {
               offset: const Offset(0, 6),
             ),
           ];
+    final plateGradient = useMapOverlayStyle
+        ? LiquidGlassRendering.mapOverlayPlateGradient(
+            context: context,
+            mapNightModeEnabled: mapNightMode,
+          )
+        : LiquidGlassRendering.plateGradient(
+            context: context,
+            isDark: isDark,
+          );
 
     return SizedBox(
       width: width,
@@ -84,14 +107,9 @@ class LiquidGlassPlate extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              gradient: LiquidGlassRendering.plateGradient(
-                context: context,
-                isDark: isDark,
-              ),
+              gradient: plateGradient,
               border: Border.all(
-                color: (isDark ? Colors.white : Colors.black).withValues(
-                  alpha: isDark ? 0.12 : 0.14,
-                ),
+                color: borderColor,
                 width: 0.6,
               ),
               boxShadow: plateShadows,

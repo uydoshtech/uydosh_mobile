@@ -19,7 +19,6 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
-import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
@@ -33,8 +32,6 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
-import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -104,6 +101,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.embeddedSearchButtonBottom = 100.0,
     this.embeddedViewToggleBottom = 168.0,
     this.onOpenEmbeddedSearch,
+    this.onDismissFilterRibbon,
   });
 
   final int listingTypeId;
@@ -118,8 +116,9 @@ class SearchResultsMapScreen extends StatefulWidget {
   final bool withPhoto;
   final void Function(
     BuildContext context,
-    SearchBottomSheetResult result,
-  )? onOpenFeed;
+    SearchBottomSheetResult result, {
+    bool mapFilterRibbonDismissed,
+  })? onOpenFeed;
   final bool embedded;
   final List<Listing> initialListings;
   final int? initialTotal;
@@ -127,6 +126,10 @@ class SearchResultsMapScreen extends StatefulWidget {
   final double embeddedSearchButtonBottom;
   final double embeddedViewToggleBottom;
   final VoidCallback? onOpenEmbeddedSearch;
+
+  /// When set (embedded home map), closing the filter ribbon also clears saved
+  /// filters in the parent so the feed ribbon does not reappear on view toggle.
+  final VoidCallback? onDismissFilterRibbon;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -217,8 +220,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedPinGroup = const [];
     _selectedUniversityMarker = null;
     _hasSelectedMetroStation = false;
-    _showFilterRibbon = true;
-    _loadResults();
+    _showFilterRibbon = _hasMapSearchFilters;
+    if (_hasMapSearchFilters) {
+      _loadResults();
+    } else {
+      _result = const _SearchMapResult(pins: [], total: 0);
+      _isLoading = false;
+    }
   }
 
   void _syncFiltersFromWidget() {
@@ -515,6 +523,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _hideFilterRibbon() {
+    widget.onDismissFilterRibbon?.call();
     _loadGeneration++;
     setState(() {
       _showFilterRibbon = false;
@@ -541,7 +550,16 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   void _openFeedView() {
     final onOpenFeed = widget.onOpenFeed;
     if (onOpenFeed != null) {
-      onOpenFeed(context, _currentSearchResult());
+      // When the user closed the map ribbon (X), tell the parent not to
+      // re-apply filters on the feed — the map keeps its own local filter
+      // copy and `_inlineSearchActive` may still be true in the parent.
+      final mapFilterRibbonDismissed =
+          widget.onDismissFilterRibbon != null && !_showFilterRibbon;
+      onOpenFeed(
+        context,
+        _currentSearchResult(),
+        mapFilterRibbonDismissed: mapFilterRibbonDismissed,
+      );
       return;
     }
     Navigator.of(context).maybePop();

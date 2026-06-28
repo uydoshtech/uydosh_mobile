@@ -91,8 +91,16 @@ Future<void> _bootstrapSearchFiltersColdStart() async {
   // [SearchFiltersState.initialize], so it can honor the toggle (when off,
   // it discards persisted local filters and skips the backend hydrate).
   await RestoreFiltersState().initialize();
+  final authenticated = await SessionManager.isAuthenticated();
+  await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+    awaitUserScope: authenticated,
+  );
+  if (HomeInlineSearchState().ribbonDismissedByUser) {
+    SearchFiltersState().markPersistedFiltersDismissed();
+  }
   await SearchFiltersState().initialize();
-  if (!await SessionManager.isAuthenticated()) return;
+  if (!authenticated) return;
+  if (HomeInlineSearchState().ribbonDismissedByUser) return;
   await SearchFiltersState().hydrateFromBackendForCurrentUser();
   // Build + persist profile-derived defaults (gender / role-derived listing
   // type / full price range) when the user has no saved filters; otherwise keep

@@ -212,14 +212,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get open_feed_view => 'Lentani ochish';
 
   @override
-  String get choose_filters => 'Filtrlarni tanlash';
+  String get choose_filters => 'Iltimos, filtr tanlang';
 
   @override
   String get map_location_prompt_title => 'Joylashuvimni ko‘rsatish';
-
-  @override
-  String get map_location_prompt_body =>
-      'Yaqindagi e\'lonlarga nisbatan qayerda ekaningizni ko‘ring.';
 
   @override
   String get map_location_prompt_action => 'Joylashuvdan foydalanish';

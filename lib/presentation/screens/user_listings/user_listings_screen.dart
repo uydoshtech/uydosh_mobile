@@ -373,7 +373,6 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
       appBar: CommonAppBar(
         title: L10n.get("menu_my_listings"),
         showBackButton: true,
-        liquidGlass: true,
       ),
       body: body,
     );
