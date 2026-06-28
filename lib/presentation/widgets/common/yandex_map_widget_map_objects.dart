@@ -38,9 +38,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   int _mapObjectsCacheKey() {
-    final districtLabelsVisible =
+    final districtLabelsVisible = widget.layerOptions.showDistrictLayer &&
         _currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom;
-    final metroWalkAreaLabelVisible = _isMetroWalkAreaLabelVisible;
+    final metroWalkAreaLabelVisible = _selectedMetroStation != null &&
+        widget.layerOptions.showMetroStationsLayer &&
+        _currentZoom >=
+            _YandexMapWidgetState._minMetroStationWalkAreaLabelZoom;
     final listingPinGroups = _groupListingPins(widget.pins);
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
@@ -59,6 +62,8 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       Object.hashAll(widget.selectedListingGroupIds),
       widget.latitude,
       widget.longitude,
+      widget.userLocationLatitude,
+      widget.userLocationLongitude,
       widget.listingDetail?.id,
       _cachedIconBytes != null,
       _cachedDarkIconBytes != null,
@@ -155,6 +160,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       ...busStopLayerObjects,
     ];
     final universityMarkerObjects = _createUniversityMarkerMapObjects();
+    final userLocationObject = _createStaticUserLocationMapObject();
     if (widget.pins.isNotEmpty) {
       final listingPinObjects = _createListingPinMapObjects();
       return [
@@ -162,16 +168,21 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         if (listingPinObjects.isNotEmpty)
           _listingPinCollection(listingPinObjects),
         ...universityMarkerObjects,
+        if (userLocationObject != null) userLocationObject,
       ];
     }
     if (universityMarkerObjects.isNotEmpty) {
       return [
         ...areaLayerObjects,
         ...universityMarkerObjects,
+        if (userLocationObject != null) userLocationObject,
       ];
     }
     if (!widget.showDefaultPlacemark) {
-      return areaLayerObjects;
+      return [
+        ...areaLayerObjects,
+        if (userLocationObject != null) userLocationObject,
+      ];
     }
 
     final coordinates = _getCoordinates();
@@ -227,7 +238,43 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return [
       ...areaLayerObjects,
       placemark,
+      if (userLocationObject != null) userLocationObject,
     ];
+  }
+
+  MapObject? _createStaticUserLocationMapObject() {
+    final latitude = widget.userLocationLatitude;
+    final longitude = widget.userLocationLongitude;
+    if (latitude == null || longitude == null) return null;
+
+    final point = Point(latitude: latitude, longitude: longitude);
+    final iconBytes = widget.nightModeEnabled
+        ? _cachedDarkUserLocationPinIconBytes
+        : _cachedUserLocationPinIconBytes;
+    if (iconBytes == null) {
+      return CircleMapObject(
+        mapId: const MapObjectId("current_user_location_circle"),
+        circle: Circle(center: point, radius: 120),
+        zIndex: _YandexMapWidgetState._selectedListingPinZIndex + 5,
+        strokeWidth: 3,
+        strokeColor: Colors.white.withValues(alpha: 0.95),
+        fillColor: AppColors.error.withValues(alpha: 0.9),
+      );
+    }
+
+    return PlacemarkMapObject(
+      mapId: const MapObjectId("current_user_location_placemark"),
+      point: point,
+      zIndex: _YandexMapWidgetState._selectedListingPinZIndex + 5,
+      opacity: 1.0,
+      icon: PlacemarkIcon.single(
+        PlacemarkIconStyle(
+          image: _bitmapDescriptorFromBytes(iconBytes),
+          anchor: const Offset(0.5, 0.5),
+          scale: 1.0,
+        ),
+      ),
+    );
   }
 
   MapObject _listingPinCollection(List<PlacemarkMapObject> placemarks) {

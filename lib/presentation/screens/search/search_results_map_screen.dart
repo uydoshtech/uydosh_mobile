@@ -3,6 +3,7 @@ import "dart:async" show unawaited;
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:geolocator/geolocator.dart" as geo;
 import "package:permission_handler/permission_handler.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
@@ -133,7 +134,7 @@ class SearchResultsMapScreen extends StatefulWidget {
 
 class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   static const int _defaultMapSearchLimit = 300;
-  static const int _androidMapSearchLimit = 150;
+  static const int _androidMapSearchLimit = 100;
   static const double _defaultMinPrice = 0;
   static const double _defaultMaxPrice = 1000;
   static const double _profileDefaultMinPrice =
@@ -160,6 +161,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _showLocationPrompt = false;
   bool _showFilterRibbon = true;
   int _userLocationRequestToken = 0;
+  int _userLocationLoadGeneration = 0;
+  double? _userLocationLatitude;
+  double? _userLocationLongitude;
 
   late int _listingTypeId;
   int? _locationId;
@@ -180,7 +184,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _metroLayerMode = !isAndroidDevice && layerDefaults.metro
         ? _MetroLayerMode.all
         : _MetroLayerMode.off;
-    _showUniversitiesLayer = layerDefaults.universities;
+    _showUniversitiesLayer = !isAndroidDevice && layerDefaults.universities;
     _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
       final initialResult = _resultFromListings(
@@ -197,7 +201,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _isLoading = false;
       _showFilterRibbon = false;
     }
-    _loadUniversityMarkers();
+    if (!isAndroidDevice || _showUniversitiesLayer) {
+      _loadUniversityMarkers();
+    }
     unawaited(_refreshLocationPromptVisibility());
   }
 
@@ -325,11 +331,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   Future<void> _refreshLocationPromptVisibility() async {
-    if (widget.embedded == false || kIsWeb) return;
+    if (kIsWeb) return;
     final status = await Permission.location.status;
     if (!mounted) return;
     setState(() {
-      _showLocationPrompt = !status.isGranted && !status.isPermanentlyDenied;
+      _showLocationPrompt =
+          _userLocationRequestToken == 0 && !status.isPermanentlyDenied;
     });
   }
 
@@ -342,6 +349,28 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _userLocationRequestToken++;
       }
     });
+    if (status.isGranted) {
+      await _loadCurrentUserLocationOnce();
+    }
+  }
+
+  Future<void> _loadCurrentUserLocationOnce() async {
+    final generation = ++_userLocationLoadGeneration;
+    try {
+      final position = await geo.Geolocator.getCurrentPosition(
+        locationSettings: const geo.LocationSettings(
+          accuracy: geo.LocationAccuracy.low,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+      if (!mounted || generation != _userLocationLoadGeneration) return;
+      setState(() {
+        _userLocationLatitude = position.latitude;
+        _userLocationLongitude = position.longitude;
+      });
+    } catch (error) {
+      logger.w("Could not load current map location: $error");
+    }
   }
 
   bool _isPlaceholderUniversityCoordinate(double latitude, double longitude) {
@@ -888,6 +917,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       showLocationPrompt: _showLocationPrompt,
       showFilterRibbon: _showFilterRibbon,
       userLocationRequestToken: _userLocationRequestToken,
+      userLocationLatitude: _userLocationLatitude,
+      userLocationLongitude: _userLocationLongitude,
       placeViewToggleAtBottom: widget.embedded,
       mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
       searchButtonBottom: widget.embeddedSearchButtonBottom,

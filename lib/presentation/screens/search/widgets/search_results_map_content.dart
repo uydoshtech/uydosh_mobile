@@ -26,6 +26,8 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.showLocationPrompt,
     required this.showFilterRibbon,
     required this.userLocationRequestToken,
+    required this.userLocationLatitude,
+    required this.userLocationLongitude,
     required this.placeViewToggleAtBottom,
     required this.mapBottomInset,
     required this.searchButtonBottom,
@@ -82,6 +84,8 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool showLocationPrompt;
   final bool showFilterRibbon;
   final int userLocationRequestToken;
+  final double? userLocationLatitude;
+  final double? userLocationLongitude;
   final bool placeViewToggleAtBottom;
   final double mapBottomInset;
   final double searchButtonBottom;
@@ -126,16 +130,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     const viewToggleGap = 8.0;
     const zoomControlsWidth = 48.0;
     const metroTooltipReservedHeight = 64.0;
-    const brandMarkSize = 42.0;
-    const brandMarkInset = 10.0;
-    const locationPromptGapAboveBrandMark = 20.0;
+    const locationPromptBottomMargin = 8.0;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
-    final brandMarkBottomInset =
+    final bottomOverlayInset =
         mapBottomInset > safeAreaBottom ? mapBottomInset : safeAreaBottom;
-    final locationPromptBottom = brandMarkBottomInset +
-        brandMarkInset +
-        brandMarkSize +
-        locationPromptGapAboveBrandMark;
+    final locationPromptBottom =
+        bottomOverlayInset + locationPromptBottomMargin;
     final zoomControlsBottom = viewToggleBottom +
         feedViewButtonHeight +
         viewToggleGap -
@@ -209,80 +209,105 @@ class _SearchResultsMapContent extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              Positioned.fill(
-                child: YandexMapWidget(
-                  apiKey: AppConfig.yandexMapsApiKey,
-                  pins: result.pins,
-                  universityMarkers: universityMarkers,
-                  selectedUniversityMarkerId: selectedUniversityMarkerId,
-                  userUniversityMarkerId: userUniversityMarkerId,
-                  selectedUniversityZoomFocusId: universityMarker?.id,
-                  selectedListingId: selectedPin?.listingId,
-                  selectedListingGroupIds: [
-                    for (final pin in pinGroup) pin.listingId,
-                  ],
-                  title: context.l10n.search_results,
-                  height: double.infinity,
-                  cameraOptions: YandexMapCameraOptions(
-                    moveOnTargetChange: result.pins.isNotEmpty,
-                    includeUniversityMarkersInCamera: false,
+              Positioned(
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: mapBottomInset,
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: mapBottomInset > 0,
+                  child: RepaintBoundary(
+                    child: YandexMapWidget(
+                    apiKey: AppConfig.yandexMapsApiKey,
+                    pins: result.pins,
+                    universityMarkers: universityMarkers,
+                    selectedUniversityMarkerId: selectedUniversityMarkerId,
+                    userUniversityMarkerId: userUniversityMarkerId,
+                    selectedUniversityZoomFocusId: universityMarker?.id,
+                    selectedListingId: selectedPin?.listingId,
+                    selectedListingGroupIds: [
+                      for (final pin in pinGroup) pin.listingId,
+                    ],
+                    title: context.l10n.search_results,
+                    height: double.infinity,
+                    cameraOptions: YandexMapCameraOptions(
+                      moveOnTargetChange:
+                          hasSearchFilters && result.pins.isNotEmpty,
+                      includeUniversityMarkersInCamera: false,
+                      fitCityWhenNoPins: !hasSearchFilters,
+                    ),
+                    showDefaultPlacemark: false,
+                    nightModeEnabled: mapNightModeEnabled,
+                    tooltipOptions: YandexMapTooltipOptions(
+                      showUniversityMarker: false,
+                      showMetroStation: !showNoResultsTile,
+                    ),
+                    layerOptions: YandexMapLayerOptions(
+                      showUserLocation: false,
+                      showDistrictLayer: showDistrictLayer,
+                      showMetroStationsLayer: metroLayerMode.showsStations,
+                      metroStationLineId: metroLayerMode.lineId,
+                      showGroceryStoresLayer: showGroceryStoresLayer,
+                      showBusStopsLayer: showBusStopsLayer,
+                    ),
+                    userLocationRequestToken: userLocationRequestToken,
+                    userLocationLatitude: userLocationLatitude,
+                    userLocationLongitude: userLocationLongitude,
+                    showLoadingPlaceholderContent: false,
+                    zoomControlsOptions: YandexMapZoomControlsOptions(
+                      right: placeViewToggleAtBottom
+                          ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                          : null,
+                      bottom: placeViewToggleAtBottom
+                          ? zoomControlsBottom.clamp(0.0, double.infinity)
+                          : null,
+                    ),
+                    onMetroStationTooltipChanged: onMetroStationTooltipChanged,
+                    onMapTap: (_) {
+                      onClearSelectedPin();
+                      onClearSelectedUniversityMarker();
+                    },
+                    onPinTap: onSelectPin,
+                    onPinGroupTap: onSelectPinGroup,
+                    onUniversityMarkerTap: onSelectUniversityMarker,
+                    ),
                   ),
-                  showDefaultPlacemark: false,
-                  nightModeEnabled: mapNightModeEnabled,
-                  tooltipOptions: YandexMapTooltipOptions(
-                    showUniversityMarker: false,
-                    showMetroStation: !showNoResultsTile,
-                  ),
-                  layerOptions: YandexMapLayerOptions(
-                    showUserLocation: true,
-                    showDistrictLayer: showDistrictLayer,
-                    showMetroStationsLayer: metroLayerMode.showsStations,
-                    metroStationLineId: metroLayerMode.lineId,
-                    showGroceryStoresLayer: showGroceryStoresLayer,
-                    showBusStopsLayer: showBusStopsLayer,
-                  ),
-                  userLocationRequestToken: userLocationRequestToken,
-                  showLoadingPlaceholderContent: false,
-                  brandMarkBottomInset: brandMarkBottomInset,
-                  zoomControlsOptions: YandexMapZoomControlsOptions(
-                    right: placeViewToggleAtBottom
-                        ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
-                        : null,
-                    bottom: placeViewToggleAtBottom
-                        ? zoomControlsBottom.clamp(0.0, double.infinity)
-                        : null,
-                  ),
-                  onMetroStationTooltipChanged: onMetroStationTooltipChanged,
-                  onMapTap: (_) {
-                    onClearSelectedPin();
-                    onClearSelectedUniversityMarker();
-                  },
-                  onPinTap: onSelectPin,
-                  onPinGroupTap: onSelectPinGroup,
-                  onUniversityMarkerTap: onSelectUniversityMarker,
                 ),
               ),
               Positioned.fill(
                 child: IgnorePointer(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    child: isLoading
-                        ? Center(
-                            key: const ValueKey("map-results-loading"),
-                            child: Transform.translate(
-                              offset: const Offset(0, -50),
-                              child: HouseLoadingIndicator(
-                                size: 44,
-                                color: mapLoaderColor,
+                  child: UiPerformancePolicy.solidColorsPreferredForDevice
+                      ? (isLoading
+                          ? Center(
+                              child: Transform.translate(
+                                offset: const Offset(0, -50),
+                                child: HouseLoadingIndicator(
+                                  size: 44,
+                                  color: mapLoaderColor,
+                                ),
                               ),
-                            ),
-                          )
-                        : const SizedBox.shrink(
-                            key: ValueKey("map-results-idle"),
-                          ),
-                  ),
+                            )
+                          : const SizedBox.shrink())
+                      : AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: isLoading
+                              ? Center(
+                                  key: const ValueKey("map-results-loading"),
+                                  child: Transform.translate(
+                                    offset: const Offset(0, -50),
+                                    child: HouseLoadingIndicator(
+                                      size: 44,
+                                      color: mapLoaderColor,
+                                    ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey("map-results-idle"),
+                                ),
+                        ),
                 ),
               ),
               Positioned(
@@ -399,7 +424,7 @@ class _SearchResultsMapContent extends StatelessWidget {
               if (showLocationPrompt)
                 Positioned(
                   left: 12,
-                  right: 88,
+                  width: MediaQuery.sizeOf(context).width * 0.75,
                   bottom: locationPromptBottom,
                   child: _MapLocationPromptCard(
                     onPressed: onRequestUserLocation,
@@ -426,15 +451,14 @@ class _MapLocationPromptCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final lightThemeForeground =
-        themeState.isLightTheme ? Colors.white : Colors.black;
+    const foregroundColor = Colors.black;
+    const iconBackgroundColor = Colors.black;
+    const iconForegroundColor = Colors.white;
     final child = Row(
       children: [
         DecoratedBox(
           decoration: BoxDecoration(
-            color: themeState.isBlueTheme
-                ? BlueThemeColors.primary
-                : scheme.primary,
+            color: iconBackgroundColor,
             shape: BoxShape.circle,
             boxShadow: solidColors
                 ? null
@@ -450,7 +474,7 @@ class _MapLocationPromptCard extends StatelessWidget {
             padding: EdgeInsets.all(8),
             child: ThemeIcon(
               Icons.my_location_rounded,
-              color: Colors.white,
+              color: iconForegroundColor,
               size: 18,
               useThemeColor: false,
             ),
@@ -467,7 +491,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  color: lightThemeForeground,
+                  color: foregroundColor,
                   fontWeight: FontWeight.w800,
                   height: 1.0,
                 ),
@@ -478,7 +502,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: lightThemeForeground,
+                  color: foregroundColor,
                   fontWeight: FontWeight.w600,
                   height: 1.15,
                 ),
@@ -494,7 +518,8 @@ class _MapLocationPromptCard extends StatelessWidget {
           width: 42,
           height: 38,
           iconSize: 19,
-          foregroundColor: lightThemeForeground,
+          backgroundColor: iconBackgroundColor,
+          foregroundColor: iconForegroundColor,
           elevation: themeState.isBlueTheme ? null : 6,
         ),
       ],

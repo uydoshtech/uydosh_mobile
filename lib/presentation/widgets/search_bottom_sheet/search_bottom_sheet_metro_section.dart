@@ -10,7 +10,9 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -65,6 +67,13 @@ class SearchBottomSheetMetroSection extends StatefulWidget {
 class _SearchBottomSheetMetroSectionState
     extends State<SearchBottomSheetMetroSection> {
   static const double _stationListItemExtent = 40;
+
+  /// Height animation while the station plate expands is costly on Android
+  /// when combined with wheel-picker repaints — snap instantly there.
+  static Duration get _metroPlateResizeDuration =>
+      isAndroidDevice || UiPerformancePolicy.reduceEffectsForDevice
+          ? Duration.zero
+          : const Duration(milliseconds: 320);
 
   /// User-dismissed flag for the "search across all stations of line X" hint.
   /// Loaded from SharedPreferences so the dismissal survives across sheet
@@ -156,7 +165,9 @@ class _SearchBottomSheetMetroSectionState
 
       if ((position.pixels - targetOffset).abs() < 0.5) return;
 
-      if (jump) {
+      if (jump ||
+          isAndroidDevice ||
+          UiPerformancePolicy.reduceEffectsForDevice) {
         _stationListScrollController.jumpTo(targetOffset);
         return;
       }
@@ -446,7 +457,7 @@ class _SearchBottomSheetMetroSectionState
               // Smoothly grow/shrink the plate (80 -> 220) when a line is
               // selected/cleared instead of snapping to the new height.
               child: AnimatedSize(
-                duration: const Duration(milliseconds: 320),
+                duration: _metroPlateResizeDuration,
                 curve: Curves.easeInOutCubic,
                 alignment: Alignment.topCenter,
                 child: widget.searchFiltersState.selectedSubwayLine > 0 &&

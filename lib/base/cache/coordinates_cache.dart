@@ -132,4 +132,28 @@ class CoordinatesCache {
   static Map<String, double> getDefaultCoordinates() {
     return {"latitude": 41.2995, "longitude": 69.2401};
   }
+
+  /// Bounding box covering greater Tashkent for default map camera when no
+  /// search filters are applied.
+  static Map<String, double> getCityBounds() {
+    var minLat = double.infinity;
+    var maxLat = -double.infinity;
+    var minLon = double.infinity;
+    var maxLon = -double.infinity;
+    for (final coords in locationCoordinates.values) {
+      final lat = coords["latitude"]!;
+      final lon = coords["longitude"]!;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+    }
+    const padding = 0.035;
+    return {
+      "minLat": minLat - padding,
+      "maxLat": maxLat + padding,
+      "minLon": minLon - padding,
+      "maxLon": maxLon + padding,
+    };
+  }
 }

@@ -176,6 +176,11 @@ class UiPerformancePolicy extends ChangeNotifier {
   }
 
   static bool backdropBlurEnabled(BuildContext context) {
+    // Backdrop blur is disproportionately expensive on Android (Impeller/Skia
+    // re-samples the layer behind every frame). Solid fills are used there
+    // instead — even high-end devices promoted to the normal effects tier
+    // should not pay for frosted chrome.
+    if (isAndroidDevice) return false;
     return decorativeAnimationsEnabled(context);
   }
 

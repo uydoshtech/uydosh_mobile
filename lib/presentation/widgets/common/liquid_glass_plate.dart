@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Lightweight “glass” plate for controls that sit on top of a blurred sheet.
@@ -29,6 +30,16 @@ class LiquidGlassPlate extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+    final plateShadows = UiPerformancePolicy.solidColorsPreferredForDevice
+        ? const <BoxShadow>[]
+        : [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.07),
+              blurRadius: isDark ? 14 : 12,
+              spreadRadius: isDark ? 0.5 : 0.2,
+              offset: const Offset(0, 6),
+            ),
+          ];
 
     final content = Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -57,14 +68,7 @@ class LiquidGlassPlate extends StatelessWidget {
                 ),
                 width: 0.6,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.07),
-                  blurRadius: isDark ? 14 : 12,
-                  spreadRadius: isDark ? 0.5 : 0.2,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+              boxShadow: plateShadows,
             ),
             child: content,
           ),

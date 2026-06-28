@@ -77,10 +77,14 @@ class YandexMapCameraOptions {
   const YandexMapCameraOptions({
     this.moveOnTargetChange = true,
     this.includeUniversityMarkersInCamera = true,
+    this.fitCityWhenNoPins = false,
   });
 
   final bool moveOnTargetChange;
   final bool includeUniversityMarkersInCamera;
+  /// When there are no listing/university camera targets, fit the full city
+  /// bounds (Tashkent) instead of a tight neighborhood zoom.
+  final bool fitCityWhenNoPins;
 }
 
 class YandexMapLayerOptions {
@@ -224,6 +228,8 @@ class YandexMapWidget extends StatefulWidget {
     this.nightModeEnabled = false,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.userLocationRequestToken = 0,
+    this.userLocationLatitude,
+    this.userLocationLongitude,
     this.onMetroStationTooltipChanged,
   });
 
@@ -257,6 +263,8 @@ class YandexMapWidget extends StatefulWidget {
   final bool nightModeEnabled;
   final YandexMapZoomControlsOptions zoomControlsOptions;
   final int userLocationRequestToken;
+  final double? userLocationLatitude;
+  final double? userLocationLongitude;
   final ValueChanged<bool>? onMetroStationTooltipChanged;
 
   @override
@@ -276,10 +284,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _metroStationWalkingRadiusMeters = 1100.0;
   static const double _minMetroStationWalkAreaLabelZoom = 12.5;
   static const double _listingPinMetroStationOffsetMeters = 45.0;
-  static const int _minClusterableListingPinGroups = 16;
+  static int get _minClusterableListingPinGroups =>
+      isAndroidDevice ? 8 : 16;
   static const double _listingClusterRadius = 44.0;
-  static const int _listingClusterMinZoom = 15;
-  static const int _minClusterableUniversityMarkers = 16;
+  static int get _listingClusterMinZoom => isAndroidDevice ? 14 : 15;
+  static int get _minClusterableUniversityMarkers => isAndroidDevice ? 8 : 16;
   static const double _universityClusterRadius = 44.0;
   static const int _universityClusterMinZoom = 15;
 
@@ -385,14 +394,20 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _syncListingGroupIconBytes();
     }
     _syncSelectedUniversityMarker();
-    if (!_mapTargetChanged(oldWidget) ||
-        !widget.cameraOptions.moveOnTargetChange) {
+    final shouldMoveForPins =
+        _mapTargetChanged(oldWidget) && widget.cameraOptions.moveOnTargetChange;
+    final shouldMoveForCity = widget.cameraOptions.fitCityWhenNoPins &&
+        widget.pins.isEmpty &&
+        (widget.cameraOptions.fitCityWhenNoPins !=
+                oldWidget.cameraOptions.fitCityWhenNoPins ||
+            _pinsChanged(oldWidget.pins, widget.pins));
+    if (!shouldMoveForPins && !shouldMoveForCity) {
       return;
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_isMapReady || _mapController == null) return;
-      _moveCameraToCurrentTarget();
+      unawaited(_moveCameraToCurrentTarget());
     });
   }
 
@@ -859,8 +874,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final arrowIconBytes = widget.nightModeEnabled
         ? _cachedDarkUserLocationArrowIconBytes
         : _cachedUserLocationArrowIconBytes;
-    final userLocationColor =
-        widget.nightModeEnabled ? Colors.white : Colors.black;
+    const userLocationColor = AppColors.error;
     final accuracyCircle = view.accuracyCircle.copyWith(
       fillColor: userLocationColor.withValues(alpha: 0.12),
       strokeColor: userLocationColor.withValues(alpha: 0.28),
@@ -1294,6 +1308,32 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   ) async {
     final generation = _mapOperationGeneration;
     final targetPoints = _targetPoints();
+    if (targetPoints.isEmpty && widget.cameraOptions.fitCityWhenNoPins) {
+      final bounds = CoordinatesCache.getCityBounds();
+      final geometry = Geometry.fromBoundingBox(
+        BoundingBox(
+          northEast: Point(
+            latitude: bounds["maxLat"]!,
+            longitude: bounds["maxLon"]!,
+          ),
+          southWest: Point(
+            latitude: bounds["minLat"]!,
+            longitude: bounds["minLon"]!,
+          ),
+        ),
+      );
+      final moved = await _moveCameraAutomatically(
+        controller,
+        CameraUpdate.newGeometry(geometry),
+      );
+      if (moved && _isCurrentMapOperation(controller, generation)) {
+        final cameraPosition = await controller.getCameraPosition();
+        if (_isCurrentMapOperation(controller, generation)) {
+          _setCurrentZoom(cameraPosition.zoom);
+        }
+      }
+      return;
+    }
     if (targetPoints.length > 1) {
       var minLat = targetPoints.first.latitude;
       var maxLat = targetPoints.first.latitude;
@@ -1428,12 +1468,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     required double oldZoom,
     required double newZoom,
   }) {
-    final districtLabelChanged = (oldZoom >= _minDistrictLabelZoom) !=
-        (newZoom >= _minDistrictLabelZoom);
-    final metroWalkAreaLabelChanged =
-        (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
-            (newZoom >= _minMetroStationWalkAreaLabelZoom);
-    return districtLabelChanged || metroWalkAreaLabelChanged;
+    if (widget.layerOptions.showDistrictLayer) {
+      final districtLabelChanged = (oldZoom >= _minDistrictLabelZoom) !=
+          (newZoom >= _minDistrictLabelZoom);
+      if (districtLabelChanged) return true;
+    }
+    if (_selectedMetroStation != null &&
+        widget.layerOptions.showMetroStationsLayer) {
+      final metroWalkAreaLabelChanged =
+          (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
+              (newZoom >= _minMetroStationWalkAreaLabelZoom);
+      if (metroWalkAreaLabelChanged) return true;
+    }
+    return false;
   }
 
   void _consumeAutomaticCameraFinish() {

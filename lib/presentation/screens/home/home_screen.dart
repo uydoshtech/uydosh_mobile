@@ -349,16 +349,35 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _activateInitialMapIfRequested() async {
+    final snapshot = _currentListingsSnapshot();
     final changed = await _mapViewState.activateInitialMapIfRequested(
       showMapInitially: widget.showMapInitially,
+      initialMapListings: snapshot.listings,
+      initialMapTotal: snapshot.total,
     );
     if (!mounted || !changed) return;
     setState(() {});
   }
 
+  ({List<Listing> listings, int? total}) _currentListingsSnapshot() {
+    return context.read<ListingsBloc>().state.maybeMap(
+      loaded: (state) => (listings: state.listings, total: state.total),
+      orElse: () => (listings: const <Listing>[], total: null),
+    );
+  }
+
+  void _openMapViewWithSnapshot(SearchBottomSheetResult result) {
+    final snapshot = _currentListingsSnapshot();
+    _mapViewState.openMap(
+      result,
+      initialMapListings: snapshot.listings,
+      initialMapTotal: snapshot.total,
+    );
+  }
+
   Future<bool> openCurrentMapViewFromExternalRequest() async {
     setState(() {
-      _mapViewState.openMap(_currentSearchResultForViewToggle());
+      _openMapViewWithSnapshot(_currentSearchResultForViewToggle());
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
       _inlineSearchSpacerExpanded = true;
@@ -554,6 +573,13 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _onSearchFiltersStateChanged() {
     if (!mounted) return;
+
+    // The embedded map screen owns its listing data; filter singleton updates
+    // (e.g. post-login hydration) should not rebuild the map subtree.
+    if (!widget.isSearchMode &&
+        _mapViewState.view == _SearchResultsView.map) {
+      return;
+    }
 
     // When the ribbon is visible, rebuild so the chips bar reflects the
     // latest values (filters are read directly off the singleton at build
@@ -904,137 +930,151 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    Widget listContent = BlocListener<ListingsBloc, ListingsState>(
-      listener: (context, state) {
-        // Reset loading flag when state changes
-        state.map(
-          initial: (_) {
-            _resetLoadMoreState();
-            _clearFeedEntriesCache();
-          },
-          loading: (_) {
-            _resetLoadMoreState();
-          },
-          loaded: (loadedState) {
-            _resetLoadMoreState();
-            _syncFeedEntriesCache(loadedState.listings);
-            final shouldUpdateSearchFlags = _searchRefreshInFlight ||
-                (widget.isSearchMode && !_searchResultsReady);
-            if (shouldUpdateSearchFlags && mounted) {
-              setState(() {
-                _searchRefreshInFlight = false;
-                if (widget.isSearchMode) {
-                  _searchResultsReady = true;
-                }
-              });
-            }
-          },
-          error: (_) {
-            _resetLoadMoreState();
-            _clearFeedEntriesCache();
-            if (_searchRefreshInFlight && mounted) {
-              setState(() => _searchRefreshInFlight = false);
-            }
-          },
-        );
-      },
-      child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
-        selector: (state) => state.map(
-          initial: (_) => _HomeScreenData(
-            isLoading: true,
-            hasError: false,
-            errorMessage: "",
-            listings: const [],
-            hasMore: false,
-            total: null,
-          ),
-          loading: (_) => const _HomeScreenData(
-            isLoading: true,
-            hasError: false,
-            errorMessage: "",
-            listings: [],
-            hasMore: false,
-            total: null,
-          ),
-          loaded: (loadedState) => _HomeScreenData(
-            isLoading: false,
-            hasError: false,
-            errorMessage: "",
-            listings: loadedState.listings,
-            hasMore: loadedState.hasMore,
-            total: loadedState.total,
-          ),
-          error: (errorState) => _HomeScreenData(
-            isLoading: false,
-            hasError: true,
-            errorMessage: errorState.message,
-            listings: [],
-            hasMore: false,
-            total: null,
-          ),
-        ),
-        builder: (context, data) {
-          if (data.isLoading) {
-            return _buildLoadingState();
-          }
-          // While the inline-search ribbon animates out we intentionally delay
-          // the actual refresh fetch. During that gap, keep the UI in a
-          // "loading" presentation to avoid flashing the welcome/empty states.
-          if (_inlineSearchClosing && data.listings.isEmpty) {
-            return _buildLoadingState();
-          }
-          if (data.hasError) {
-            return _buildErrorState(data.errorMessage);
-          }
-          if (widget.isSearchMode && !_searchResultsReady) {
-            return _buildLoadingState();
-          }
-          if (_searchRefreshInFlight &&
-              data.listings.isEmpty &&
-              (widget.isSearchMode ||
-                  _inlineSearchActive ||
-                  _inlineSearchClosing)) {
-            return _buildLoadingState();
-          }
-          if (data.listings.isEmpty) {
-            return (widget.isSearchMode ||
-                    _inlineSearchActive ||
-                    _inlineSearchClosing)
-                ? _buildEmptySearchState()
-                : _buildInitialState();
-          }
-          return _buildLoadedState(data.listings, data.hasMore);
+    final inSearchContext = widget.isSearchMode ||
+        _inlineSearchActive ||
+        _mapViewState.view == _SearchResultsView.map;
+    final isShowingEmbeddedMap =
+        inSearchContext && _mapViewState.view == _SearchResultsView.map;
+
+    Widget listContent;
+    if (isShowingEmbeddedMap) {
+      // Skip feed bloc subscriptions while the embedded map is fullscreen so
+      // background listing refreshes do not rebuild the map subtree.
+      listContent = const SizedBox.shrink();
+    } else {
+      listContent = BlocListener<ListingsBloc, ListingsState>(
+        listener: (context, state) {
+          // Reset loading flag when state changes
+          state.map(
+            initial: (_) {
+              _resetLoadMoreState();
+              _clearFeedEntriesCache();
+            },
+            loading: (_) {
+              _resetLoadMoreState();
+            },
+            loaded: (loadedState) {
+              _resetLoadMoreState();
+              _syncFeedEntriesCache(loadedState.listings);
+              final shouldUpdateSearchFlags = _searchRefreshInFlight ||
+                  (widget.isSearchMode && !_searchResultsReady);
+              if (shouldUpdateSearchFlags && mounted) {
+                setState(() {
+                  _searchRefreshInFlight = false;
+                  if (widget.isSearchMode) {
+                    _searchResultsReady = true;
+                  }
+                });
+              }
+            },
+            error: (_) {
+              _resetLoadMoreState();
+              _clearFeedEntriesCache();
+              if (_searchRefreshInFlight && mounted) {
+                setState(() => _searchRefreshInFlight = false);
+              }
+            },
+          );
         },
-      ),
-    );
+        child: BlocSelector<ListingsBloc, ListingsState, _HomeScreenData>(
+          selector: (state) => state.map(
+            initial: (_) => _HomeScreenData(
+              isLoading: true,
+              hasError: false,
+              errorMessage: "",
+              listings: const [],
+              hasMore: false,
+              total: null,
+            ),
+            loading: (_) => const _HomeScreenData(
+              isLoading: true,
+              hasError: false,
+              errorMessage: "",
+              listings: [],
+              hasMore: false,
+              total: null,
+            ),
+            loaded: (loadedState) => _HomeScreenData(
+              isLoading: false,
+              hasError: false,
+              errorMessage: "",
+              listings: loadedState.listings,
+              hasMore: loadedState.hasMore,
+              total: loadedState.total,
+            ),
+            error: (errorState) => _HomeScreenData(
+              isLoading: false,
+              hasError: true,
+              errorMessage: errorState.message,
+              listings: [],
+              hasMore: false,
+              total: null,
+            ),
+          ),
+          builder: (context, data) {
+            if (data.isLoading) {
+              return _buildLoadingState();
+            }
+            // While the inline-search ribbon animates out we intentionally delay
+            // the actual refresh fetch. During that gap, keep the UI in a
+            // "loading" presentation to avoid flashing the welcome/empty states.
+            if (_inlineSearchClosing && data.listings.isEmpty) {
+              return _buildLoadingState();
+            }
+            if (data.hasError) {
+              return _buildErrorState(data.errorMessage);
+            }
+            if (widget.isSearchMode && !_searchResultsReady) {
+              return _buildLoadingState();
+            }
+            if (_searchRefreshInFlight &&
+                data.listings.isEmpty &&
+                (widget.isSearchMode ||
+                    _inlineSearchActive ||
+                    _inlineSearchClosing)) {
+              return _buildLoadingState();
+            }
+            if (data.listings.isEmpty) {
+              return (widget.isSearchMode ||
+                      _inlineSearchActive ||
+                      _inlineSearchClosing)
+                  ? _buildEmptySearchState()
+                  : _buildInitialState();
+            }
+            return _buildLoadedState(data.listings, data.hasMore);
+          },
+        ),
+      );
+    }
 
     // In dedicated search results (isSearchMode), show the applied filters bar
     // pinned under the AppBar and push the list content down by its height.
     const searchRibbonHeight = 56.0;
-    if (widget.isSearchMode) {
+    if (widget.isSearchMode && !isShowingEmbeddedMap) {
       listContent = Padding(
         padding: const EdgeInsets.only(top: searchRibbonHeight),
         child: listContent,
       );
     }
 
-    final inSearchContext = widget.isSearchMode ||
-        _inlineSearchActive ||
-        _mapViewState.view == _SearchResultsView.map;
     final mapResult =
         _mapViewState.result ?? _currentSearchResultForViewToggle();
-    final initialMapListings = context.select<ListingsBloc, List<Listing>>(
-      (bloc) => bloc.state.maybeMap(
-        loaded: (state) => state.listings,
-        orElse: () => const <Listing>[],
-      ),
-    );
-    final initialMapTotal = context.select<ListingsBloc, int?>(
-      (bloc) => bloc.state.maybeMap(
-        loaded: (state) => state.total,
-        orElse: () => null,
-      ),
-    );
+    final initialMapListings = isShowingEmbeddedMap
+        ? _mapViewState.initialMapListings
+        : context.select<ListingsBloc, List<Listing>>(
+            (bloc) => bloc.state.maybeMap(
+              loaded: (state) => state.listings,
+              orElse: () => const <Listing>[],
+            ),
+          );
+    final initialMapTotal = isShowingEmbeddedMap
+        ? _mapViewState.initialMapTotal
+        : context.select<ListingsBloc, int?>(
+            (bloc) => bloc.state.maybeMap(
+              loaded: (state) => state.total,
+              orElse: () => null,
+            ),
+          );
     final body = _SearchResultsShell(
       listContent: listContent,
       inSearchContext: inSearchContext,
@@ -1792,7 +1832,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
       setState(() {
-        _mapViewState.openMap(result);
+        _openMapViewWithSnapshot(result);
         _inlineSearchActive = true;
         _inlineSearchClosing = false;
         _inlineSearchSpacerExpanded = true;
@@ -2037,7 +2077,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
       setState(() {
-        _mapViewState.openMap(result);
+        _openMapViewWithSnapshot(result);
       });
       return;
     }
@@ -2084,7 +2124,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _openSearchResultsMap(SearchBottomSheetResult result) async {
     if (!mounted) return;
     setState(() {
-      _mapViewState.openMap(result);
+      _openMapViewWithSnapshot(result);
       if (!widget.isSearchMode) {
         _inlineSearchActive = true;
         _inlineSearchClosing = false;

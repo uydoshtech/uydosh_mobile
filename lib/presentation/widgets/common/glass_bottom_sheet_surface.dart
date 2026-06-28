@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
 /// Frosted-glass surface for modal bottom sheets (search, achievements, pickers, etc.).
@@ -41,14 +42,16 @@ class GlassBottomSheetSurface extends StatelessWidget {
           width: 0.6,
         ),
       ),
-      boxShadow: [
-        BoxShadow(
-          color: scheme.shadow.withValues(alpha: isDark ? 0.28 : 0.18),
-          blurRadius: 24,
-          spreadRadius: 0,
-          offset: const Offset(0, -8),
-        ),
-      ],
+      boxShadow: UiPerformancePolicy.solidColorsPreferredForDevice
+          ? LiquidGlassRendering.feedTileCompactShadows(context)
+          : [
+              BoxShadow(
+                color: scheme.shadow.withValues(alpha: isDark ? 0.28 : 0.18),
+                blurRadius: 24,
+                spreadRadius: 0,
+                offset: const Offset(0, -8),
+              ),
+            ],
     );
 
     final content =

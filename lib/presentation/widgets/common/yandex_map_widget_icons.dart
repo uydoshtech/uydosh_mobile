@@ -180,20 +180,20 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowOffset: const Offset(0, 6),
           );
     final userLocationPinIconBytes = await _createUserLocationPinIconBytes(
-      foregroundColor: Colors.black,
+      foregroundColor: AppColors.error,
       outlineColor: Colors.white,
     );
     final userLocationArrowIconBytes = await _createUserLocationArrowIconBytes(
-      foregroundColor: Colors.black,
+      foregroundColor: AppColors.error,
       outlineColor: Colors.white,
     );
     final darkUserLocationPinIconBytes = await _createUserLocationPinIconBytes(
-      foregroundColor: Colors.white,
+      foregroundColor: AppColors.error,
       outlineColor: Colors.black,
     );
     final darkUserLocationArrowIconBytes =
         await _createUserLocationArrowIconBytes(
-      foregroundColor: Colors.white,
+      foregroundColor: AppColors.error,
       outlineColor: Colors.black,
     );
     final groceryStoreIconBytes = reduceStartupIconWork
