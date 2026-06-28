@@ -191,7 +191,9 @@ class _SearchResultsMapContent extends StatelessWidget {
         else
           _MapFilterRibbon(
             onPressed: onOpenFilters,
-            emptyLabel: context.l10n.choose_filters,
+            emptyLabel: hasSearchFilters
+                ? "${L10n.get("filters_bar_label")} • ${result.total}"
+                : context.l10n.choose_filters,
             listingTypeId: listingTypeId,
             gender: gender,
             locationId: locationId,

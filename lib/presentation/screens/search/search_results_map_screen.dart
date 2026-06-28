@@ -25,6 +25,7 @@ import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/university.dart";
+import "package:uy_dosh/domain/search/search_filter_defaults.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/widgets/gender_badge.dart";
@@ -135,6 +136,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   static const int _androidMapSearchLimit = 150;
   static const double _defaultMinPrice = 0;
   static const double _defaultMaxPrice = 1000;
+  static const double _profileDefaultMinPrice =
+      SearchFilterDefaultsPolicy.defaultMinPrice;
+  static const double _profileDefaultMaxPrice =
+      SearchFilterDefaultsPolicy.defaultMaxPrice;
 
   _SearchMapResult? _result;
   Object? _loadError;
@@ -250,16 +255,21 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   bool get _hasMapSearchFilters {
-    return _listingTypeId > 0 ||
-        _locationId != null ||
+    return _locationId != null ||
         _subwayStationId != null ||
         _subwayStationIds.isNotEmpty ||
         _subwayLineId != null ||
-        _gender != null ||
-        _minPrice != _defaultMinPrice ||
-        _maxPrice != _defaultMaxPrice ||
+        _hasCustomMapPriceRange(_minPrice, _maxPrice) ||
         _privateRoom ||
         _withPhoto;
+  }
+
+  bool _hasCustomMapPriceRange(double minPrice, double maxPrice) {
+    final isFullDefault =
+        minPrice == _defaultMinPrice && maxPrice == _defaultMaxPrice;
+    final isProfileDefault = minPrice == _profileDefaultMinPrice &&
+        maxPrice == _profileDefaultMaxPrice;
+    return !isFullDefault && !isProfileDefault;
   }
 
   bool _intListsEqual(List<int> a, List<int> b) {
@@ -476,18 +486,25 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _hideFilterRibbon() {
-    setState(() => _showFilterRibbon = false);
+    _loadGeneration++;
+    setState(() {
+      _showFilterRibbon = false;
+      _result = const _SearchMapResult(pins: [], total: 0);
+      _loadError = null;
+      _isLoading = false;
+      _selectedPin = null;
+      _selectedPinGroup = const [];
+      _selectedUniversityMarker = null;
+      _hasSelectedMetroStation = false;
+    });
   }
 
   bool _hasMapSearchFiltersFor(SearchBottomSheetResult result) {
-    return result.listingTypeId > 0 ||
-        result.locationId != null ||
+    return result.locationId != null ||
         result.subwayStationId != null ||
         result.subwayStationIds.isNotEmpty ||
         result.subwayLineId != null ||
-        result.gender != null ||
-        result.minPrice != _defaultMinPrice ||
-        result.maxPrice != _defaultMaxPrice ||
+        _hasCustomMapPriceRange(result.minPrice, result.maxPrice) ||
         result.privateRoom ||
         result.withPhoto;
   }
