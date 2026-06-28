@@ -111,6 +111,7 @@ class _SearchResultsMapContent extends StatelessWidget {
         hasMapTooltipSpace;
     final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
     final mapNightModeEnabled = mapNightModeOverride ?? appNightModeEnabled;
+    final mapLoaderColor = mapNightModeEnabled ? Colors.white : Colors.black;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.2;
     const feedViewButtonHeight = 34.2;
@@ -245,9 +246,9 @@ class _SearchResultsMapContent extends StatelessWidget {
                             key: const ValueKey("map-results-loading"),
                             child: Transform.translate(
                               offset: const Offset(0, -50),
-                              child: const HouseLoadingIndicator(
+                              child: HouseLoadingIndicator(
                                 size: 44,
-                                color: Colors.black,
+                                color: mapLoaderColor,
                               ),
                             ),
                           )
