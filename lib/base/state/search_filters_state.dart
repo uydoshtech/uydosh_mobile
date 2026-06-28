@@ -1044,11 +1044,9 @@ class SearchFiltersState extends ChangeNotifier {
     await clearAllFilters(persistRemote: false);
   }
 
-  // Clear all search filters
-  Future<void> clearAllFilters({
-    bool persistRemote = true,
-    bool flushRemoteImmediately = false,
-  }) async {
+  /// Resets in-memory filter fields immediately. Used when dismissing the home
+  /// map ribbon so embedded map props update in the same frame.
+  void clearAllFiltersInMemory() {
     _selectedListingTypeId = 2;
     _searchListingTypeIds = const [ListingTypeIds.roommateNeeded];
     _selectedLocationIndex = 0;
@@ -1063,6 +1061,15 @@ class SearchFiltersState extends ChangeNotifier {
     _maxPrice = 500.0;
     _privateRoom = false;
     _withPhoto = false;
+    notifyListeners();
+  }
+
+  // Clear all search filters
+  Future<void> clearAllFilters({
+    bool persistRemote = true,
+    bool flushRemoteImmediately = false,
+  }) async {
+    clearAllFiltersInMemory();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -1083,7 +1090,6 @@ class SearchFiltersState extends ChangeNotifier {
       logger.d("Error clearing search filters: $e");
     }
 
-    notifyListeners();
     if (persistRemote && !_suppressRemotePersist) {
       if (flushRemoteImmediately) {
         _remoteSaveDebounce?.cancel();

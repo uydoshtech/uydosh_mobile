@@ -208,6 +208,11 @@ class AppLocalizationsUz extends AppLocalizations {
   }
 
   @override
+  String map_walk_radius_button_label(int minutes) {
+    return '$minutes daq.';
+  }
+
+  @override
   String map_walk_radius_button_tooltip(int minutes) {
     return 'Yurish radiusi: $minutes daqiqa';
   }

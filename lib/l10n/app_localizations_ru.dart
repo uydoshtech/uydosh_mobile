@@ -208,6 +208,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String map_walk_radius_button_label(int minutes) {
+    return '$minutes мин';
+  }
+
+  @override
   String map_walk_radius_button_tooltip(int minutes) {
     return 'Радиус ходьбы: $minutes мин';
   }

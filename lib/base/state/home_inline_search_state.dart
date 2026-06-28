@@ -30,9 +30,19 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// Loaded from a scoped [ribbonUserDismissedPrefsKey] during home bootstrap.
   bool _ribbonDismissedByUser = false;
 
+  /// True while the home tab shows the embedded search-results map.
+  bool _isMapViewActive = false;
+
+  /// Unique mappable listings currently shown on the embedded map (when active).
+  int? _mapListingCount;
+
   bool get isActive => _isActive;
 
   bool get ribbonDismissedByUser => _ribbonDismissedByUser;
+
+  bool get isMapViewActive => _isMapViewActive;
+
+  int? get mapListingCount => _mapListingCount;
 
   static String _ribbonDismissedPrefsKeyForScope({required int? userId}) {
     if (userId != null) {
@@ -51,6 +61,26 @@ class HomeInlineSearchState extends ChangeNotifier {
   void setActive(bool v) {
     if (_isActive == v) return;
     _isActive = v;
+    notifyListeners();
+  }
+
+  void setMapViewActive(bool active) {
+    if (active) {
+      if (_isMapViewActive) return;
+      _isMapViewActive = true;
+      notifyListeners();
+      return;
+    }
+    if (!_isMapViewActive && _mapListingCount == null) return;
+    _isMapViewActive = false;
+    _mapListingCount = null;
+    notifyListeners();
+  }
+
+  void setMapListingCount(int count) {
+    if (!_isMapViewActive) return;
+    if (_mapListingCount == count) return;
+    _mapListingCount = count;
     notifyListeners();
   }
 
@@ -132,6 +162,7 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// signing in again.
   Future<void> clearPersistedActiveForLogout() async {
     setActive(false);
+    setMapViewActive(false);
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(activePrefsKey, false);

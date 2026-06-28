@@ -207,6 +207,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String map_walk_radius_button_label(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
   String map_walk_radius_button_tooltip(int minutes) {
     return 'Walking radius: $minutes min';
   }

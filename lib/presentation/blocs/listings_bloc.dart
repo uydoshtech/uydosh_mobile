@@ -713,6 +713,9 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       _hasMore = listings.length >= limit;
       _totalResults = response.total;
+      if (isRefresh && page == 1 && listings.length > (_totalResults ?? 0)) {
+        _totalResults = listings.length;
+      }
 
       emit(
         _loadedState(

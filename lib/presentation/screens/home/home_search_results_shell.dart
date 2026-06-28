@@ -14,6 +14,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.mapBottomInset,
     required this.initialMapListings,
     required this.initialMapTotal,
+    required this.feedListingsRevision,
     required this.alertFabBottom,
     required this.searchFiltersState,
     required this.searchButtonTutorialKey,
@@ -38,6 +39,7 @@ class _SearchResultsShell extends StatefulWidget {
   final double mapBottomInset;
   final List<Listing> initialMapListings;
   final int? initialMapTotal;
+  final int feedListingsRevision;
   final double alertFabBottom;
   final SearchFiltersState searchFiltersState;
   final GlobalKey<TutorialTargetWrapperState> searchButtonTutorialKey;
@@ -141,6 +143,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       embedded: true,
       initialListings: widget.initialMapListings,
       initialTotal: widget.initialMapTotal,
+      feedListingsRevision: widget.feedListingsRevision,
       embeddedMapBottomInset: widget.mapBottomInset,
       embeddedSearchButtonBottom: widget.alertFabBottom,
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(

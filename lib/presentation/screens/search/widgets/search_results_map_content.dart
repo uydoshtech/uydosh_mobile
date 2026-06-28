@@ -121,6 +121,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     final showSelectFiltersTile = !hasSearchFilters && !isLoading;
     final showNoResultsTile =
         hasSearchFilters && !isLoading && result.total == 0;
+    final activeMapSearch = showFilterRibbon && hasSearchFilters;
     final hasMapTooltipSpace = hasSelectedMetroStation &&
         !showSelectFiltersTile &&
         !showNoResultsTile;
@@ -133,7 +134,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     final mapNightModeEnabled = mapNightModeOverride ?? appNightModeEnabled;
     final mapLoaderColor = mapNightModeEnabled ? Colors.white : Colors.black;
     const viewToggleTop = 4.0;
-    const viewToggleWidth = 61.2;
+    const viewToggleWidth = 61.0;
     const feedViewButtonHeight = 34.2;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
@@ -154,6 +155,7 @@ class _SearchResultsMapContent extends StatelessWidget {
         viewToggleGap -
         safeAreaBottom;
     const mapOverlayPanelColor = Colors.white;
+    const mapOverlayButtonBorder = BorderSide(color: Colors.black, width: 1);
     final feedViewButton = SearchFloatingActionButton(
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
@@ -163,6 +165,7 @@ class _SearchResultsMapContent extends StatelessWidget {
       iconSize: 22.5,
       backgroundColor: mapOverlayPanelColor,
       foregroundColor: Colors.black,
+      borderSide: mapOverlayButtonBorder,
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
@@ -179,7 +182,7 @@ class _SearchResultsMapContent extends StatelessWidget {
       iconSize: 18,
       backgroundColor: mapNightModeEnabled ? Colors.black : Colors.white,
       foregroundColor: mapNightModeEnabled ? Colors.white : Colors.black,
-      borderSide: const BorderSide(color: Colors.black, width: 1),
+      borderSide: mapOverlayButtonBorder,
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
@@ -246,11 +249,11 @@ class _SearchResultsMapContent extends StatelessWidget {
                     title: context.l10n.search_results,
                     height: double.infinity,
                     cameraOptions: YandexMapCameraOptions(
-                      moveOnTargetChange: hasSearchFilters &&
+                      moveOnTargetChange: activeMapSearch &&
                           (result.pins.isNotEmpty ||
                               (locationId != null && locationId! > 0)),
                       includeUniversityMarkersInCamera: false,
-                      fitCityWhenNoPins: !hasSearchFilters,
+                      fitCityWhenNoPins: !activeMapSearch,
                     ),
                     showDefaultPlacemark: false,
                     nightModeEnabled: mapNightModeEnabled,
@@ -263,10 +266,11 @@ class _SearchResultsMapContent extends StatelessWidget {
                     layerOptions: YandexMapLayerOptions(
                       showUserLocation: false,
                       showDistrictLayer: showDistrictLayer,
-                      highlightedLocationId:
-                          locationId != null && locationId! > 0
-                              ? locationId
-                              : null,
+                      highlightedLocationId: activeMapSearch &&
+                              locationId != null &&
+                              locationId! > 0
+                          ? locationId
+                          : null,
                       showMetroStationsLayer: metroLayerMode.showsStations,
                       metroStationLineId: metroLayerMode.lineId,
                       showGroceryStoresLayer: showGroceryStoresLayer,
@@ -397,31 +401,45 @@ class _SearchResultsMapContent extends StatelessWidget {
                           child: mapThemeButton,
                         ),
                         const Spacer(),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            if (!placeViewToggleAtBottom) ...[
-                              feedViewButton,
-                              const SizedBox(height: viewToggleGap),
-                            ],
-                            _MapLayerToggleButtons(
-                              walkRadiusMinutes: walkRadiusMinutes,
-                              walkRadiusActive: hasSelectedMetroStation ||
-                                  universityMarker != null,
-                              metroLayerMode: metroLayerMode,
-                              showDistrictLayer: showDistrictLayer,
-                              showUniversitiesLayer: showUniversitiesLayer,
-                              onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
-                              onToggleMetroLayerMode: onToggleMetroLayerMode,
-                              onToggleDistrictLayer: onToggleDistrictLayer,
-                              onToggleUniversitiesLayer:
-                                  onToggleUniversitiesLayer,
-                              width: viewToggleWidth,
-                              height: viewToggleHeight,
-                              gap: viewToggleGap,
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (!placeViewToggleAtBottom) ...[
+                                  feedViewButton,
+                                  const SizedBox(height: viewToggleGap),
+                                ],
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  child: _MapLayerToggleButtons(
+                                    walkRadiusMinutes: walkRadiusMinutes,
+                                    walkRadiusActive:
+                                        hasSelectedMetroStation ||
+                                            universityMarker != null,
+                                    metroLayerMode: metroLayerMode,
+                                    showDistrictLayer: showDistrictLayer,
+                                    showUniversitiesLayer:
+                                        showUniversitiesLayer,
+                                    onToggleWalkRadiusMinutes:
+                                        onToggleWalkRadiusMinutes,
+                                    onToggleMetroLayerMode:
+                                        onToggleMetroLayerMode,
+                                    onToggleDistrictLayer:
+                                        onToggleDistrictLayer,
+                                    onToggleUniversitiesLayer:
+                                        onToggleUniversitiesLayer,
+                                    width: viewToggleWidth,
+                                    height: viewToggleHeight,
+                                    gap: viewToggleGap,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -448,6 +466,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                       iconSize: 22.5,
                       backgroundColor: mapOverlayPanelColor,
                       foregroundColor: Colors.black,
+                      borderSide: mapOverlayButtonBorder,
                       mapOverlay: true,
                       elevation: ThemeState().isBlueTheme ? null : 8,
                     ),
@@ -681,7 +700,6 @@ class _MapLayerToggleButtons extends StatelessWidget {
           _WalkRadiusMinutesButton(
             minutes: walkRadiusMinutes.minutes,
             active: true,
-            width: width,
             height: height,
             borderSide: _border,
             onPressed: onToggleWalkRadiusMinutes,
@@ -836,7 +854,6 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
   const _WalkRadiusMinutesButton({
     required this.minutes,
     required this.active,
-    required this.width,
     required this.height,
     required this.borderSide,
     required this.onPressed,
@@ -844,13 +861,13 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
 
   final int minutes;
   final bool active;
-  final double width;
   final double height;
   final BorderSide borderSide;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final label = context.l10n.map_walk_radius_button_label(minutes);
     final tooltip = context.l10n.map_walk_radius_button_tooltip(minutes);
     final radius = BorderRadius.circular(height / 2);
     final backgroundColor = active ? Colors.black : Colors.white;
@@ -873,8 +890,8 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
             overlayColor: const WidgetStatePropertyAll(Colors.transparent),
             onTap: onPressed,
             child: Container(
-              width: width,
               height: height,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 borderRadius: radius,
                 border: Border.fromBorderSide(borderSide),
@@ -898,12 +915,12 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
                     size: 14,
                     color: foregroundColor,
                   ),
-                  const SizedBox(width: 3),
+                  const SizedBox(width: 4),
                   Text(
-                    "$minutes",
+                    label,
                     style: TextStyle(
                       color: foregroundColor,
-                      fontSize: 15,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),

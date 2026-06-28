@@ -383,6 +383,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _mapViewState.resetToList();
       });
     }
+    HomeInlineSearchState().setMapViewActive(false);
     HomeInlineSearchState().setActive(false);
     try {
       final p = await SharedPreferences.getInstance();
@@ -408,6 +409,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       initialMapTotal: snapshot.total,
     );
     if (!mounted || !changed) return;
+    HomeInlineSearchState().setMapViewActive(true);
     setState(() {});
   }
 
@@ -425,6 +427,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       initialMapListings: snapshot.listings,
       initialMapTotal: snapshot.total,
     );
+    HomeInlineSearchState().setMapViewActive(true);
   }
 
   Future<bool> openCurrentMapViewFromExternalRequest() async {
@@ -673,6 +676,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     // (e.g. post-login hydration) should not rebuild the map subtree.
     if (!widget.isSearchMode &&
         _mapViewState.view == _SearchResultsView.map) {
+      if (_searchFiltersState.persistedFiltersDismissed) {
+        _mapViewState.result = null;
+        setState(() {});
+      }
       return;
     }
 
@@ -1166,22 +1173,26 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
     final mapResult =
         _mapViewState.result ?? _currentSearchResultForViewToggle();
-    final initialMapListings = isShowingEmbeddedMap
-        ? _mapViewState.initialMapListings
-        : context.select<ListingsBloc, List<Listing>>(
-            (bloc) => bloc.state.maybeMap(
-              loaded: (state) => state.listings,
-              orElse: () => const <Listing>[],
-            ),
-          );
-    final initialMapTotal = isShowingEmbeddedMap
-        ? _mapViewState.initialMapTotal
-        : context.select<ListingsBloc, int?>(
-            (bloc) => bloc.state.maybeMap(
-              loaded: (state) => state.total,
-              orElse: () => null,
-            ),
-          );
+    final initialMapListings = context.select<ListingsBloc, List<Listing>>(
+      (bloc) => bloc.state.maybeMap(
+        loaded: (state) => state.listings,
+        orElse: () => isShowingEmbeddedMap
+            ? _mapViewState.initialMapListings
+            : const <Listing>[],
+      ),
+    );
+    final initialMapTotal = context.select<ListingsBloc, int?>(
+      (bloc) => bloc.state.maybeMap(
+        loaded: (state) => state.total,
+        orElse: () => isShowingEmbeddedMap ? _mapViewState.initialMapTotal : null,
+      ),
+    );
+    final feedListingsRevision = context.select<ListingsBloc, int>(
+      (bloc) => bloc.state.maybeMap(
+        loaded: (state) => state.revision,
+        orElse: () => -1,
+      ),
+    );
     final body = _SearchResultsShell(
       listContent: listContent,
       inSearchContext: inSearchContext,
@@ -1195,6 +1206,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       mapBottomInset: _blueShellExtendBodyBottomInset(context),
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
+      feedListingsRevision: feedListingsRevision,
       alertFabBottom: _searchAlertFabStackBottom(context),
       searchFiltersState: _searchFiltersState,
       searchButtonTutorialKey: _searchButtonTutorialKey,
@@ -1948,6 +1960,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchSpacerExpanded = true;
       _mapViewState.openFeed(result);
     });
+    HomeInlineSearchState().setMapViewActive(false);
     HomeInlineSearchState().setActive(true);
     unawaited(() async {
       try {
@@ -1977,6 +1990,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       _inlineSearchSpacerExpanded = false;
       _mapViewState.resetToList();
     });
+    HomeInlineSearchState().setMapViewActive(false);
     HomeInlineSearchState().setActive(false);
     _lastDispatchedSearchFilters = null;
     unawaited(_persistInlineSearchDismissed());
@@ -2002,6 +2016,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Clears saved filters and deactivates inline search without leaving map view.
   void _dismissInlineSearchFromMap() {
     _markInlineSearchDismissedSync();
+    _searchFiltersState.clearAllFiltersInMemory();
+    _mapViewState.result = null;
     if (mounted) {
       setState(() {
         _inlineSearchActive = false;
@@ -2036,6 +2052,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _mapViewState.resetToList();
       });
     }
+    HomeInlineSearchState().setMapViewActive(false);
     HomeInlineSearchState().setActive(false);
     _lastDispatchedSearchFilters = null;
     if (recordRibbonDismissed) {
@@ -2309,6 +2326,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     setState(() {
       _mapViewState.openFeed(result);
     });
+    HomeInlineSearchState().setMapViewActive(false);
   }
 
   /// Perform search using current filters

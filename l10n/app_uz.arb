@@ -97,6 +97,14 @@
       }
     }
   },
+  "map_walk_radius_button_label": "{minutes} daq.",
+  "@map_walk_radius_button_label": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "map_walk_radius_button_tooltip": "Yurish radiusi: {minutes} daqiqa",
   "@map_walk_radius_button_tooltip": {
     "placeholders": {

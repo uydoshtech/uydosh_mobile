@@ -472,6 +472,12 @@ abstract class AppLocalizations {
   /// **'{minutes} min walk area'**
   String metro_station_walk_area_label(int minutes);
 
+  /// No description provided for @map_walk_radius_button_label.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String map_walk_radius_button_label(int minutes);
+
   /// No description provided for @map_walk_radius_button_tooltip.
   ///
   /// In en, this message translates to:

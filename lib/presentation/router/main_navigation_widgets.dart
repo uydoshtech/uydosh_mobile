@@ -90,55 +90,66 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
               _totalFor(previous) != _totalFor(current) ||
               _revisionFor(previous) != _revisionFor(current),
           builder: (context, state) {
-            final total = _totalFor(state);
-            final showCount =
-                _inlineActive && _countReady && total != null && total > 0;
+            return ListenableBuilder(
+              listenable: HomeInlineSearchState(),
+              builder: (context, _) {
+                final blocTotal = _totalFor(state);
+                final mapActive = HomeInlineSearchState().isMapViewActive;
+                final mapCount = HomeInlineSearchState().mapListingCount;
+                final total = mapActive && mapCount != null && mapCount > 0
+                    ? mapCount
+                    : blocTotal;
+                final showCount =
+                    _inlineActive && _countReady && total != null && total > 0;
 
-            // “•” uses title size; digits are smaller for hierarchy.
-            final titleFs = widget.titleStyle.fontSize ?? 20;
-            final countStyle = widget.titleStyle.copyWith(
-              fontWeight: FontWeight.w600,
-              color: widget.titleStyle.color?.withValues(alpha: 0.72),
-            );
-            final countNumberStyle = countStyle.copyWith(fontSize: titleFs - 5);
+                // “•” uses title size; digits are smaller for hierarchy.
+                final titleFs = widget.titleStyle.fontSize ?? 20;
+                final countStyle = widget.titleStyle.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: widget.titleStyle.color?.withValues(alpha: 0.72),
+                );
+                final countNumberStyle =
+                    countStyle.copyWith(fontSize: titleFs - 5);
 
-            return Text.rich(
-              TextSpan(
-                children: [
+                return Text.rich(
                   TextSpan(
-                    text: L10n.get("nav_housing"),
-                    style: widget.titleStyle,
+                    children: [
+                      TextSpan(
+                        text: L10n.get("nav_housing"),
+                        style: widget.titleStyle,
+                      ),
+                      if (showCount) ...[
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Transform.translate(
+                            offset: const Offset(0, _bulletDiscDy),
+                            child: Text(
+                              " \u2022 ",
+                              style: countStyle,
+                            ),
+                          ),
+                        ),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Transform.translate(
+                            offset: const Offset(0, _countTallyDy),
+                            child: Text(
+                              "$total",
+                              style: countNumberStyle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  if (showCount) ...[
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Transform.translate(
-                        offset: const Offset(0, _bulletDiscDy),
-                        child: Text(
-                          " \u2022 ",
-                          style: countStyle,
-                        ),
-                      ),
-                    ),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Transform.translate(
-                        offset: const Offset(0, _countTallyDy),
-                        child: Text(
-                          "$total",
-                          style: countNumberStyle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              strutStyle: StrutStyle.fromTextStyle(
-                widget.titleStyle,
-                forceStrutHeight: true,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+                  strutStyle: StrutStyle.fromTextStyle(
+                    widget.titleStyle,
+                    forceStrutHeight: true,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
             );
           },
         );

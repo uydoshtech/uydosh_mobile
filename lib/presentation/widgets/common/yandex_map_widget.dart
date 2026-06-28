@@ -429,6 +429,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           oldWidget.selectedListingGroupIds,
           widget.selectedListingGroupIds,
         )) {
+      _invalidateMapObjectsCache();
+      _cachedListingPinGroups = null;
+      _cachedListingPinGroupsKey = null;
+      _requestMapRebuild();
       _syncListingGroupIconBytes();
     }
     _syncSelectedUniversityMarker();

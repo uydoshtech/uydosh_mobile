@@ -124,6 +124,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.embeddedViewToggleBottom = 168.0,
     this.onOpenEmbeddedSearch,
     this.onDismissFilterRibbon,
+    this.feedListingsRevision = -1,
   });
 
   final int listingTypeId;
@@ -152,6 +153,11 @@ class SearchResultsMapScreen extends StatefulWidget {
   /// When set (embedded home map), closing the filter ribbon also clears saved
   /// filters in the parent so the feed ribbon does not reappear on view toggle.
   final VoidCallback? onDismissFilterRibbon;
+
+  /// [ListingsBloc] revision for the home feed while [embedded] is true. When
+  /// this changes without filter changes, map results are refreshed so pin
+  /// counts stay aligned with the AppBar total.
+  final int feedListingsRevision;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -235,25 +241,83 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _loadUniversityMarkers();
     }
     unawaited(_refreshLocationPromptVisibility());
+    if (widget.embedded) {
+      _publishMapListingCount(_result);
+    }
   }
 
   @override
   void didUpdateWidget(covariant SearchResultsMapScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_widgetFiltersChanged(oldWidget)) return;
+    final filtersChanged = _widgetFiltersChanged(oldWidget);
+    final feedRevisionChanged = widget.embedded &&
+        widget.feedListingsRevision != oldWidget.feedListingsRevision;
 
-    _syncFiltersFromWidget();
-    _selectedPin = null;
-    _selectedPinGroup = const [];
-    _selectedUniversityMarker = null;
-    _hasSelectedMetroStation = false;
-    _filterRibbonDismissedByUser = false;
-    _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
-    if (_hasMapSearchFilters) {
-      _loadResults();
-    } else {
-      _result = const _SearchMapResult(pins: [], total: 0);
-      _isLoading = false;
+    if (filtersChanged) {
+      _syncFiltersFromWidget();
+      _selectedPin = null;
+      _selectedPinGroup = const [];
+      _selectedUniversityMarker = null;
+      _hasSelectedMetroStation = false;
+      if (!_filterRibbonDismissedByUser) {
+        _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
+      }
+      if (_hasMapSearchFilters) {
+        _loadResults();
+      } else {
+        _applyFeedListingsFromWidget();
+      }
+      return;
+    }
+
+    if (feedRevisionChanged) {
+      if (_filterRibbonDismissedByUser) {
+        _syncFiltersFromWidget();
+      }
+      if (_hasMapSearchFilters) {
+        _loadResults(showLoading: false);
+      } else {
+        _applyFeedListingsFromWidget();
+      }
+      return;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.embedded) {
+      HomeInlineSearchState().setMapViewActive(false);
+    }
+    super.dispose();
+  }
+
+  void _publishMapListingCount(_SearchMapResult? result) {
+    if (!widget.embedded) return;
+    if (result == null) {
+      HomeInlineSearchState().setMapListingCount(0);
+      return;
+    }
+    HomeInlineSearchState().setMapListingCount(_uniqueMapListingCount(result));
+  }
+
+  int _uniqueMapListingCount(_SearchMapResult result) {
+    return result.pins.map((pin) => pin.listingId).toSet().length;
+  }
+
+  void _pruneSelectionForCurrentResult() {
+    final result = _result;
+    if (result == null) return;
+    final visibleListingIds = result.pins.map((pin) => pin.listingId).toSet();
+    final selectedPin = _selectedPin;
+    if (selectedPin != null &&
+        !visibleListingIds.contains(selectedPin.listingId)) {
+      _selectedPin = null;
+    }
+    if (_selectedPinGroup.isNotEmpty &&
+        _selectedPinGroup.any(
+          (pin) => !visibleListingIds.contains(pin.listingId),
+        )) {
+      _selectedPinGroup = const [];
     }
   }
 
@@ -486,7 +550,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _selectedPin = _autoSelectedPin(result);
         _selectedPinGroup = const [];
         _hasSelectedMetroStation = false;
+        _pruneSelectionForCurrentResult();
       });
+      _publishMapListingCount(result);
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
       setState(() {
@@ -520,14 +586,18 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     required int total,
   }) {
     final pins = <ListingMapPin>[];
+    final seenListingIds = <int>{};
     for (final listing in listings) {
+      if (!seenListingIds.add(listing.id)) continue;
       final pin = _pinForListing(listing);
       if (pin == null) continue;
       pins.add(pin);
     }
+    final mappableCount = pins.length;
+    final effectiveTotal = mappableCount > total ? mappableCount : total;
     return _SearchMapResult(
       pins: pins,
-      total: total,
+      total: effectiveTotal,
     );
   }
 
@@ -586,18 +656,52 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _hideFilterRibbon() {
     widget.onDismissFilterRibbon?.call();
-    _loadGeneration++;
     setState(() {
       _filterRibbonDismissedByUser = true;
       _showFilterRibbon = false;
-      _result = const _SearchMapResult(pins: [], total: 0);
       _loadError = null;
-      _isLoading = false;
       _selectedPin = null;
       _selectedPinGroup = const [];
       _selectedUniversityMarker = null;
       _hasSelectedMetroStation = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_filterRibbonDismissedByUser) return;
+      _syncFiltersFromWidget();
+      if (_hasMapSearchFilters) {
+        _loadResults(showLoading: false);
+      } else {
+        _applyFeedListingsFromWidget();
+      }
+    });
+  }
+
+  void _applyFeedListingsFromWidget() {
+    final listings = widget.initialListings;
+    if (listings.isEmpty) {
+      _loadGeneration++;
+      setState(() {
+        _result = const _SearchMapResult(pins: [], total: 0);
+        _loadError = null;
+        _isLoading = false;
+      });
+      _publishMapListingCount(_result);
+      return;
+    }
+    final result = _resultFromListings(
+      listings,
+      total: widget.initialTotal ?? listings.length,
+    );
+    setState(() {
+      _result = result;
+      _loadError = null;
+      _isLoading = false;
+      _selectedPin = _autoSelectedPin(result);
+      _selectedPinGroup = const [];
+      _hasSelectedMetroStation = false;
+      _pruneSelectionForCurrentResult();
+    });
+    _publishMapListingCount(result);
   }
 
   bool _hasMapSearchFiltersFor(SearchBottomSheetResult result) {
