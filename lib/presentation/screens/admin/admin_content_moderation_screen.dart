@@ -70,6 +70,8 @@ class _AdminContentModerationScreenState
   bool _isSavingMapLayerDefaults = false;
   bool _adminListingConversationsEnabled = false;
   bool _isSavingAdminListingConversations = false;
+  bool _telegramMessageBridgeEnabled = true;
+  bool _isSavingTelegramMessageBridge = false;
   int _groupFormingMaxActiveMemberships = 2;
   bool _isSavingGroupFormingLimit = false;
   bool _isSavingPriceInsights = false;
@@ -157,6 +159,16 @@ class _AdminContentModerationScreenState
           "Admin listing conversations setting skipped (is the API updated?): $e",
         );
       }
+      var telegramMessageBridgeEnabled = true;
+      try {
+        final telegramBridgeRes =
+            await _settingsService.getTelegramMessageBridgeEnabledSetting();
+        telegramMessageBridgeEnabled = telegramBridgeRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Telegram message bridge setting skipped (is the API updated?): $e",
+        );
+      }
       var groupFormingMaxActiveMemberships = 2;
       try {
         final groupLimitRes =
@@ -182,6 +194,7 @@ class _AdminContentModerationScreenState
         _mapDefaultShowMetro = mapDefaultShowMetro;
         _mapDefaultShowUniversities = mapDefaultShowUniversities;
         _adminListingConversationsEnabled = adminListingConversationsEnabled;
+        _telegramMessageBridgeEnabled = telegramMessageBridgeEnabled;
         _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
         _isLoading = false;
       });
@@ -471,6 +484,26 @@ class _AdminContentModerationScreenState
     }
   }
 
+  Future<void> _onTelegramMessageBridgeEnabledChanged(bool value) async {
+    if (_isSavingTelegramMessageBridge) return;
+    setState(() => _isSavingTelegramMessageBridge = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setTelegramMessageBridgeEnabled(
+          enabled: value);
+      setStateIfMounted(() {
+        _telegramMessageBridgeEnabled = res.enabled;
+      });
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingTelegramMessageBridge = false);
+    }
+  }
+
   Future<void> _setGroupFormingLimit(int value) async {
     if (_isSavingGroupFormingLimit) return;
     final next = value < 1 ? 1 : (value > 10 ? 10 : value);
@@ -680,6 +713,15 @@ class _AdminContentModerationScreenState
           children: [
             _moderationQueueTile(context),
             _contentModerationBlurTile(context),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _settingsCategoryCard(
+          category: _SettingsCategory.telegram,
+          icon: Icons.send_outlined,
+          titleKey: "admin_settings_category_telegram",
+          children: [
+            _telegramMessageBridgeTile(context),
           ],
         ),
         const SizedBox(height: 16),
@@ -1068,6 +1110,25 @@ class _AdminContentModerationScreenState
     );
   }
 
+  Widget _telegramMessageBridgeTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.sync_alt_outlined,
+        _isSavingTelegramMessageBridge,
+      ),
+      title: Text(L10n.get("admin_app_setting_telegram_bridge_title")),
+      subtitle: Text(
+        L10n.get("admin_app_setting_telegram_bridge_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _telegramMessageBridgeEnabled,
+        enabled: !_isSavingTelegramMessageBridge,
+        onChanged: _onTelegramMessageBridgeEnabledChanged,
+      ),
+    );
+  }
+
   Widget _priceInsightsTile(BuildContext context) {
     final flags = AdminFeatureFlagsState();
     return ListTile(
@@ -1127,6 +1188,7 @@ enum _SettingsCategory {
   maps,
   listings,
   moderation,
+  telegram,
   adminTools;
 
   Color accent(BuildContext context) {
@@ -1140,6 +1202,8 @@ enum _SettingsCategory {
         return isDark ? const Color(0xFF69F0AE) : const Color(0xFF00897B);
       case _SettingsCategory.moderation:
         return isDark ? const Color(0xFFFFB74D) : const Color(0xFFE65100);
+      case _SettingsCategory.telegram:
+        return isDark ? const Color(0xFF64B5F6) : const Color(0xFF0277BD);
       case _SettingsCategory.adminTools:
         return isDark ? const Color(0xFFCE93D8) : const Color(0xFF6A1B9A);
     }

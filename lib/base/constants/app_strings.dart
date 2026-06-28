@@ -1404,6 +1404,7 @@ class AppStrings {
       "admin_settings_category_maps": "Maps",
       "admin_settings_category_listings": "Listings",
       "admin_settings_category_moderation": "Moderation & safety",
+      "admin_settings_category_telegram": "Telegram",
       "admin_settings_category_admin_tools": "Admin tools",
       "admin_map_layer_default_districts_title": "Show districts by default",
       "admin_map_layer_default_districts_subtitle":
@@ -1463,6 +1464,9 @@ class AppStrings {
           "Max active groups per user",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Includes groups the user created and groups they joined.",
+      "admin_app_setting_telegram_bridge_title": "Telegram messaging bridge",
+      "admin_app_setting_telegram_bridge_subtitle":
+          "When on, listing publishers can receive and reply to UyDosh chat messages through the bot. Off keeps classic in-app chat only.",
 
       "admin_panel_section_telegram_sync": "Data import",
       "admin_panel_section_telegram_listing_groups": "Telegram listing groups",
@@ -3555,6 +3559,7 @@ class AppStrings {
       "admin_settings_category_maps": "Карты",
       "admin_settings_category_listings": "Объявления",
       "admin_settings_category_moderation": "Модерация и безопасность",
+      "admin_settings_category_telegram": "Telegram",
       "admin_settings_category_admin_tools": "Инструменты админа",
       "admin_map_layer_default_districts_title":
           "Показывать районы по умолчанию",
@@ -3623,6 +3628,9 @@ class AppStrings {
           "Максимум активных групп на пользователя",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Учитываются группы, которые пользователь создал или к которым присоединился.",
+      "admin_app_setting_telegram_bridge_title": "Telegram-мост сообщений",
+      "admin_app_setting_telegram_bridge_subtitle":
+          "Когда включено, авторы объявлений получают сообщения из чата UyDosh в боте и могут отвечать через него. Выкл — только классический чат в приложении.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
       "admin_panel_section_telegram_listing_groups":
@@ -5734,6 +5742,7 @@ class AppStrings {
       "admin_settings_category_maps": "Xaritalar",
       "admin_settings_category_listings": "E'lonlar",
       "admin_settings_category_moderation": "Moderatsiya va xavfsizlik",
+      "admin_settings_category_telegram": "Telegram",
       "admin_settings_category_admin_tools": "Admin vositalari",
       "admin_map_layer_default_districts_title":
           "Tumanlarni sukut bo‘yicha ko‘rsatish",
@@ -5804,6 +5813,9 @@ class AppStrings {
           "Har foydalanuvchi uchun aktiv guruhlar limiti",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Foydalanuvchi yaratgan va qo'shilgan guruhlar hisobga olinadi.",
+      "admin_app_setting_telegram_bridge_title": "Telegram xabar ko‘prigi",
+      "admin_app_setting_telegram_bridge_subtitle":
+          "Yoqilganda eʼlon egalari UyDosh chat xabarlarini botda olib, bot orqali javob bera oladi. O‘chiq bo‘lsa, faqat klassik ilova chati ishlaydi.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
       "admin_panel_section_telegram_listing_groups": "Telegram e'lon guruhlari",

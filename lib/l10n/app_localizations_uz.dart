@@ -1711,6 +1711,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_settings_category_moderation => 'Moderatsiya va xavfsizlik';
 
   @override
+  String get admin_settings_category_telegram => 'Telegram';
+
+  @override
   String get admin_settings_category_admin_tools => 'Admin vositalari';
 
   @override
@@ -1811,6 +1814,14 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get admin_app_setting_listing_owner_conversations_subtitle =>
       'Yoqilganda admin e\'lon sahifasidan shu e\'lon bo\'yicha barcha in-app chatlarni ochishi mumkin.';
+
+  @override
+  String get admin_app_setting_telegram_bridge_title =>
+      'Telegram xabar ko‘prigi';
+
+  @override
+  String get admin_app_setting_telegram_bridge_subtitle =>
+      'Yoqilganda eʼlon egalari UyDosh chat xabarlarini botda olib, bot orqali javob bera oladi. O‘chiq bo‘lsa, faqat klassik ilova chati ishlaydi.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Maʼlumot importi';

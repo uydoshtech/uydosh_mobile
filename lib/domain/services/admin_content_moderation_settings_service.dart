@@ -303,6 +303,29 @@ class _PatchAdminListingConversationsEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class TelegramMessageBridgeEnabledResponse {
+  TelegramMessageBridgeEnabledResponse({required this.enabled});
+
+  factory TelegramMessageBridgeEnabledResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return TelegramMessageBridgeEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: true),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchTelegramMessageBridgeEnabledRequest implements IJsonEncodable {
+  _PatchTelegramMessageBridgeEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
 class GroupFormingMaxActiveMembershipsResponse {
   GroupFormingMaxActiveMembershipsResponse({required this.limit});
 
@@ -397,6 +420,12 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<AdminListingConversationsEnabledResponse>
       setAdminListingConversationsEnabled({required bool enabled});
+
+  Future<TelegramMessageBridgeEnabledResponse>
+      getTelegramMessageBridgeEnabledSetting();
+
+  Future<TelegramMessageBridgeEnabledResponse> setTelegramMessageBridgeEnabled(
+      {required bool enabled});
 
   Future<GroupFormingMaxActiveMembershipsResponse>
       getGroupFormingMaxActiveMembershipsSetting();
@@ -895,6 +924,49 @@ class AdminContentModerationSettingsService
     } catch (e) {
       logger
           .d("Error updating admin listing conversations enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramMessageBridgeEnabledResponse>
+      getTelegramMessageBridgeEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/telegram-message-bridge-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return TelegramMessageBridgeEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from Telegram message bridge setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading Telegram message bridge setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramMessageBridgeEnabledResponse> setTelegramMessageBridgeEnabled(
+      {required bool enabled}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/telegram-message-bridge-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchTelegramMessageBridgeEnabledRequest(enabled: enabled),
+      );
+      return TelegramMessageBridgeEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from Telegram message bridge setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating Telegram message bridge setting: $e");
       rethrow;
     }
   }

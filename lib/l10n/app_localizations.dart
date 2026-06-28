@@ -3214,6 +3214,12 @@ abstract class AppLocalizations {
   /// **'Moderation & safety'**
   String get admin_settings_category_moderation;
 
+  /// No description provided for @admin_settings_category_telegram.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram'**
+  String get admin_settings_category_telegram;
+
   /// No description provided for @admin_settings_category_admin_tools.
   ///
   /// In en, this message translates to:
@@ -3369,6 +3375,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When on, admins can open every in-app chat thread for a listing from its detail screen.'**
   String get admin_app_setting_listing_owner_conversations_subtitle;
+
+  /// No description provided for @admin_app_setting_telegram_bridge_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Telegram messaging bridge'**
+  String get admin_app_setting_telegram_bridge_title;
+
+  /// No description provided for @admin_app_setting_telegram_bridge_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When on, listing publishers can receive and reply to UyDosh chat messages through the bot. Off keeps classic in-app chat only.'**
+  String get admin_app_setting_telegram_bridge_subtitle;
 
   /// No description provided for @admin_panel_section_telegram_sync.
   ///

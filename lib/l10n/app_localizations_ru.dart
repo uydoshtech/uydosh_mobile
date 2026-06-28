@@ -1693,6 +1693,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_settings_category_moderation => 'Модерация и безопасность';
 
   @override
+  String get admin_settings_category_telegram => 'Telegram';
+
+  @override
   String get admin_settings_category_admin_tools => 'Инструменты админа';
 
   @override
@@ -1794,6 +1797,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get admin_app_setting_listing_owner_conversations_subtitle =>
       'Когда включено, админ может открыть все in-app диалоги по объявлению с его экрана.';
+
+  @override
+  String get admin_app_setting_telegram_bridge_title =>
+      'Telegram-мост сообщений';
+
+  @override
+  String get admin_app_setting_telegram_bridge_subtitle =>
+      'Когда включено, авторы объявлений получают сообщения из чата UyDosh в боте и могут отвечать через него. Выкл — только классический чат в приложении.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Импорт данных';

@@ -1689,6 +1689,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_settings_category_moderation => 'Moderation & safety';
 
   @override
+  String get admin_settings_category_telegram => 'Telegram';
+
+  @override
   String get admin_settings_category_admin_tools => 'Admin tools';
 
   @override
@@ -1787,6 +1790,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get admin_app_setting_listing_owner_conversations_subtitle =>
       'When on, admins can open every in-app chat thread for a listing from its detail screen.';
+
+  @override
+  String get admin_app_setting_telegram_bridge_title =>
+      'Telegram messaging bridge';
+
+  @override
+  String get admin_app_setting_telegram_bridge_subtitle =>
+      'When on, listing publishers can receive and reply to UyDosh chat messages through the bot. Off keeps classic in-app chat only.';
 
   @override
   String get admin_panel_section_telegram_sync => 'Data import';
