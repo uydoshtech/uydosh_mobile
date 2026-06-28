@@ -63,13 +63,6 @@ const _ratingCategories = [
     color: Color(0xFF8E5CF7),
   ),
   (
-    code: "group",
-    titleKey: "listing_rating_category_group",
-    subtitleKey: "listing_rating_category_group_subtitle",
-    icon: Icons.groups_rounded,
-    color: Color(0xFFF2994A),
-  ),
-  (
     code: "landlord",
     titleKey: "listing_rating_category_landlord",
     subtitleKey: "listing_rating_category_landlord_subtitle",

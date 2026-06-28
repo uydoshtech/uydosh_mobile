@@ -1127,6 +1127,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chat_message_edited_label => 'Изменено';
 
   @override
+  String get chat_last_message_sender_you => 'Вы';
+
+  @override
   String get view_similar_results => 'Похожие объявления';
 
   @override

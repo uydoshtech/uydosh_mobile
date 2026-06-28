@@ -179,73 +179,67 @@ class _SearchMapCanvas extends StatelessWidget {
         final mapHeight = constraints.maxHeight.isFinite
             ? constraints.maxHeight
             : MediaQuery.sizeOf(context).height;
-        return MediaQuery.removePadding(
-          context: context,
-          removeBottom: canvas.mapBottomInset > 0,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: canvas.mapBottomInset),
-            child: RepaintBoundary(
-              child: YandexMapWidget(
-                key: const ValueKey("search-results-yandex-map"),
-                apiKey: AppConfig.yandexMapsApiKey,
-                pins: canvas.result.pins,
-                universityMarkers: canvas.universityMarkers,
-                selectedUniversityMarkerId: canvas.selectedUniversityMarkerId,
-                selectedMetroStationId: canvas.selectedMetroStationId,
-                userUniversityMarkerId: canvas.userUniversityMarkerId,
-                selectedUniversityZoomFocusId:
-                    canvas.selectedUniversityZoomFocusId,
-                selectedListingId: canvas.selectedListingId,
-                selectedListingGroupIds: canvas.selectedListingGroupIds,
-                visitedListingIds: canvas.visitedListingIds,
-                title: context.l10n.search_results,
-                height: mapHeight,
-                cameraOptions: YandexMapCameraOptions(
-                  moveOnTargetChange: canvas.activeMapSearch &&
-                      (canvas.result.pins.isNotEmpty ||
-                          (canvas.locationId != null && canvas.locationId! > 0)),
-                  includeUniversityMarkersInCamera: false,
-                  fitCityWhenNoPins: !canvas.activeMapSearch,
-                ),
-                showDefaultPlacemark: false,
-                nightModeEnabled: mapNightModeEnabled,
-                walkRadiusMinutes: canvas.walkRadiusMinutes.minutes,
-                tooltipOptions: const YandexMapTooltipOptions(
-                  showUniversityMarker: false,
-                  showMetroStation: false,
-                ),
-                layerOptions: YandexMapLayerOptions(
-                  showUserLocation: false,
-                  showDistrictLayer: canvas.showDistrictLayer,
-                  highlightedLocationId: canvas.activeMapSearch &&
-                          canvas.locationId != null &&
-                          canvas.locationId! > 0
-                      ? canvas.locationId
-                      : null,
-                  showMetroStationsLayer: canvas.metroLayerMode.showsStations,
-                  metroStationLineId: canvas.metroLayerMode.lineId,
-                  showGroceryStoresLayer: canvas.showGroceryStoresLayer,
-                  showBusStopsLayer: canvas.showBusStopsLayer,
-                ),
-                userLocationRequestToken: canvas.userLocationRequestToken,
-                userLocationLatitude: canvas.userLocationLatitude,
-                userLocationLongitude: canvas.userLocationLongitude,
-                showLoadingPlaceholderContent: false,
-                zoomControlsOptions: YandexMapZoomControlsOptions(
-                  right: canvas.placeViewToggleAtBottom
-                      ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
-                      : null,
-                  bottom: canvas.placeViewToggleAtBottom
-                      ? zoomControlsBottom.clamp(0.0, double.infinity)
-                      : null,
-                ),
-                onSelectedMetroStationChanged: onSelectedMetroStationChanged,
-                onMapTap: onMapBackgroundTap,
-                onPinTap: onSelectPin,
-                onPinGroupTap: onSelectPinGroup,
-                onUniversityMarkerTap: onSelectUniversityMarker,
-              ),
+        return RepaintBoundary(
+          child: YandexMapWidget(
+            key: const ValueKey("search-results-yandex-map"),
+            apiKey: AppConfig.yandexMapsApiKey,
+            pins: canvas.result.pins,
+            universityMarkers: canvas.universityMarkers,
+            selectedUniversityMarkerId: canvas.selectedUniversityMarkerId,
+            selectedMetroStationId: canvas.selectedMetroStationId,
+            userUniversityMarkerId: canvas.userUniversityMarkerId,
+            selectedUniversityZoomFocusId:
+                canvas.selectedUniversityZoomFocusId,
+            selectedListingId: canvas.selectedListingId,
+            selectedListingGroupIds: canvas.selectedListingGroupIds,
+            visitedListingIds: canvas.visitedListingIds,
+            title: context.l10n.search_results,
+            height: mapHeight,
+            brandMarkBottomInset: canvas.mapBottomInset,
+            cameraOptions: YandexMapCameraOptions(
+              moveOnTargetChange: canvas.activeMapSearch &&
+                  (canvas.result.pins.isNotEmpty ||
+                      (canvas.locationId != null && canvas.locationId! > 0)),
+              includeUniversityMarkersInCamera: false,
+              fitCityWhenNoPins: !canvas.activeMapSearch,
             ),
+            showDefaultPlacemark: false,
+            nightModeEnabled: mapNightModeEnabled,
+            walkRadiusMinutes: canvas.walkRadiusMinutes.minutes,
+            tooltipOptions: const YandexMapTooltipOptions(
+              showUniversityMarker: false,
+              showMetroStation: false,
+            ),
+            layerOptions: YandexMapLayerOptions(
+              showUserLocation: false,
+              showDistrictLayer: canvas.showDistrictLayer,
+              highlightedLocationId: canvas.activeMapSearch &&
+                      canvas.locationId != null &&
+                      canvas.locationId! > 0
+                  ? canvas.locationId
+                  : null,
+              showMetroStationsLayer: canvas.metroLayerMode.showsStations,
+              metroStationLineId: canvas.metroLayerMode.lineId,
+              showGroceryStoresLayer: canvas.showGroceryStoresLayer,
+              showBusStopsLayer: canvas.showBusStopsLayer,
+            ),
+            userLocationRequestToken: canvas.userLocationRequestToken,
+            userLocationLatitude: canvas.userLocationLatitude,
+            userLocationLongitude: canvas.userLocationLongitude,
+            showLoadingPlaceholderContent: false,
+            zoomControlsOptions: YandexMapZoomControlsOptions(
+              right: canvas.placeViewToggleAtBottom
+                  ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                  : null,
+              bottom: canvas.placeViewToggleAtBottom
+                  ? zoomControlsBottom.clamp(0.0, double.infinity)
+                  : null,
+            ),
+            onSelectedMetroStationChanged: onSelectedMetroStationChanged,
+            onMapTap: onMapBackgroundTap,
+            onPinTap: onSelectPin,
+            onPinGroupTap: onSelectPinGroup,
+            onUniversityMarkerTap: onSelectUniversityMarker,
           ),
         );
       },

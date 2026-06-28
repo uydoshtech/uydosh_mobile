@@ -2134,6 +2134,12 @@ abstract class AppLocalizations {
   /// **'Edited'**
   String get chat_message_edited_label;
 
+  /// No description provided for @chat_last_message_sender_you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get chat_last_message_sender_you;
+
   /// No description provided for @view_similar_results.
   ///
   /// In en, this message translates to:

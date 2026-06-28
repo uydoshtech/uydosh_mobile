@@ -1127,6 +1127,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_message_edited_label => 'Edited';
 
   @override
+  String get chat_last_message_sender_you => 'You';
+
+  @override
   String get view_similar_results => 'View similar';
 
   @override

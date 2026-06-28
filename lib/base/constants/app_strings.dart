@@ -221,9 +221,6 @@ class AppStrings {
       "listing_rating_category_condition": "Housing condition",
       "listing_rating_category_condition_subtitle":
           "Renovation, cleanliness, furniture, kitchen, bathroom",
-      "listing_rating_category_group": "Group convenience",
-      "listing_rating_category_group_subtitle":
-          "Enough space, layout, private space",
       "listing_rating_category_landlord": "Terms and landlord",
       "listing_rating_category_landlord_subtitle": "Rules, trust in the owner",
       "listing_rating_label_excellent": "Excellent",
@@ -477,6 +474,7 @@ class AppStrings {
       "chat_replying_to": "Replying to {name}",
       "chat_reply_cancel": "Cancel reply",
       "chat_reply_sender_you": "You",
+      "chat_last_message_sender_you": "You",
       "chat_reply_sender_unknown": "Message",
       "chat_reply_attachment_fallback": "Attachment",
       "chat_scroll_to_bottom": "Scroll to latest message",
@@ -2351,9 +2349,6 @@ class AppStrings {
       "listing_rating_category_condition": "Состояние жилья",
       "listing_rating_category_condition_subtitle":
           "Ремонт, чистота, мебель, кухня, санузел",
-      "listing_rating_category_group": "Удобство для группы",
-      "listing_rating_category_group_subtitle":
-          "Хватит ли места всем, планировка, личное пространство",
       "listing_rating_category_landlord": "Условия и арендодатель",
       "listing_rating_category_landlord_subtitle":
           "Правила, адекватность хозяина, доверие",
@@ -2611,6 +2606,7 @@ class AppStrings {
       "chat_replying_to": "Ответ для {name}",
       "chat_reply_cancel": "Отменить ответ",
       "chat_reply_sender_you": "вас",
+      "chat_last_message_sender_you": "Вы",
       "chat_reply_sender_unknown": "Сообщение",
       "chat_reply_attachment_fallback": "Вложение",
       "chat_scroll_to_bottom": "К последнему сообщению",
@@ -4525,9 +4521,6 @@ class AppStrings {
       "listing_rating_category_condition": "Uy holati",
       "listing_rating_category_condition_subtitle":
           "Ta'mir, tozalik, mebel, oshxona, sanuzel",
-      "listing_rating_category_group": "Guruh uchun qulaylik",
-      "listing_rating_category_group_subtitle":
-          "Hammaga joy yetadimi, reja, shaxsiy hudud",
       "listing_rating_category_landlord": "Shartlar va uy egasi",
       "listing_rating_category_landlord_subtitle":
           "Qoidalar, uy egasiga ishonch",
@@ -4791,6 +4784,7 @@ class AppStrings {
       "chat_replying_to": "{name} ga javob",
       "chat_reply_cancel": "Javobni bekor qilish",
       "chat_reply_sender_you": "Siz",
+      "chat_last_message_sender_you": "Siz",
       "chat_reply_sender_unknown": "Xabar",
       "chat_reply_attachment_fallback": "Ilova",
       "chat_scroll_to_bottom": "Oxirgi xabarga o'tish",

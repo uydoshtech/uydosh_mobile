@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_info_widgets.dart";
+import "package:uy_dosh/presentation/widgets/conversation/group_tile_action_buttons.dart";
 import "package:uy_dosh/presentation/widgets/pulse_then_blink_dot_widget.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_listing_title_with_category_icon.dart";
@@ -85,9 +86,12 @@ class ConversationTile extends StatelessWidget {
     final profileState = ProfileCompletionState();
     final lastSenderMember =
         _memberForUserId(conversation, conversation.lastMessageSenderId);
-    final lastSenderDisplayName = lastSenderIsCurrentUser
+    final lastSenderRealName = lastSenderIsCurrentUser
         ? profileState.cachedName ?? lastSenderMember?.name
         : lastSenderMember?.name ?? conversation.otherUserName;
+    final lastSenderDisplayName = lastSenderIsCurrentUser
+        ? L10n.get("chat_last_message_sender_you")
+        : lastSenderRealName;
     final titleText = keepCounterpartyIdentity
         ? conversation.otherUserName ?? "Unknown User"
         : lastSenderDisplayName ?? "Unknown User";
@@ -100,8 +104,7 @@ class ConversationTile extends StatelessWidget {
         : (lastSenderIsCurrentUser
             ? profileState.effectiveAvatarUrl ?? lastSenderMember?.avatarUrl
             : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
-    final initialsName =
-        keepCounterpartyIdentity ? null : lastSenderDisplayName;
+    final initialsName = keepCounterpartyIdentity ? null : lastSenderRealName;
     final unreadBoldName = conversation.unreadCount != null &&
         conversation.unreadCount! > 0 &&
         currentUserId != null &&
@@ -503,10 +506,21 @@ class ConversationTile extends StatelessWidget {
 
     if (chatTap == null) return topTile;
 
+    final showActionButtons = GroupTileActionButtons.shouldShow(
+      conversation: conversation,
+      groupContext: groupContext,
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         topTile,
+        if (showActionButtons)
+          GroupTileActionButtons(
+            conversation: conversation,
+            groupContext: groupContext,
+            currentUserId: currentUserId,
+          ),
         Divider(
           height: 1,
           thickness: 1,

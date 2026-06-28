@@ -77,9 +77,12 @@ class OutgoingConversationTile extends StatelessWidget {
     final profileState = ProfileCompletionState();
     final lastSenderMember =
         _memberForUserId(conversation, conversation.lastMessageSenderId);
-    final lastSenderDisplayName = lastSenderIsCurrentUser
+    final lastSenderRealName = lastSenderIsCurrentUser
         ? profileState.cachedName ?? lastSenderMember?.name
         : lastSenderMember?.name ?? conversation.otherUserName;
+    final lastSenderDisplayName = lastSenderIsCurrentUser
+        ? L10n.get("chat_last_message_sender_you")
+        : lastSenderRealName;
     final titleText = keepCounterpartyIdentity
         ? conversation.otherUserName ?? "Unknown User"
         : lastSenderDisplayName ?? "Unknown User";
@@ -88,8 +91,7 @@ class OutgoingConversationTile extends StatelessWidget {
         : (lastSenderIsCurrentUser
             ? profileState.effectiveAvatarUrl ?? lastSenderMember?.avatarUrl
             : lastSenderMember?.avatarUrl ?? conversation.otherUserAvatar);
-    final initialsName =
-        keepCounterpartyIdentity ? null : lastSenderDisplayName;
+    final initialsName = keepCounterpartyIdentity ? null : lastSenderRealName;
 
     final showFullListingBanner = !isGrouped;
     final showMarketplaceCounterpartyNameOnly =

@@ -1142,6 +1142,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get chat_message_edited_label => 'Tahrirlangan';
 
   @override
+  String get chat_last_message_sender_you => 'Siz';
+
+  @override
   String get view_similar_results => 'O‘xshash e\'lonlar';
 
   @override
