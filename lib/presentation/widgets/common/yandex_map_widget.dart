@@ -13,6 +13,7 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -506,13 +507,15 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       height: widget.height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: UiPerformancePolicy.solidColorsPreferredForDevice
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -1630,8 +1633,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Widget _buildZoomControls() {
     final theme = Theme.of(context);
     final themeState = ThemeState();
-    final useLiquidGlass =
-        !isAndroidDevice && (themeState.isBlueTheme || themeState.isLightTheme);
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
+    final useLiquidGlass = !solidColors &&
+        !isAndroidDevice &&
+        (themeState.isBlueTheme || themeState.isLightTheme);
     final foregroundColor = widget.nightModeEnabled
         ? Colors.white
         : themeState.isBlueTheme
@@ -1662,14 +1667,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 child: slider,
               )
             : DecoratedBox(
-                decoration: isAndroidDevice
+                decoration: solidColors
                     ? BoxDecoration(
-                        color:
-                            theme.colorScheme.surface.withValues(alpha: 0.94),
+                        color: theme.colorScheme.surface,
                         borderRadius: borderRadius,
                         border: Border.all(
-                          color: theme.colorScheme.outlineVariant
-                              .withValues(alpha: 0.7),
+                          color: theme.colorScheme.outlineVariant,
                         ),
                       )
                     : BoxDecoration(
@@ -1692,9 +1695,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       child: SliderTheme(
         data: SliderTheme.of(context).copyWith(
           activeTrackColor: foregroundColor,
-          inactiveTrackColor: foregroundColor.withValues(alpha: 0.26),
+          inactiveTrackColor: UiPerformancePolicy.solidColorsPreferredForDevice
+              ? Theme.of(context).colorScheme.outlineVariant
+              : foregroundColor.withValues(alpha: 0.26),
           thumbColor: foregroundColor,
-          overlayColor: foregroundColor.withValues(alpha: 0.12),
+          overlayColor: UiPerformancePolicy.solidColorsPreferredForDevice
+              ? Theme.of(context).colorScheme.outlineVariant
+              : foregroundColor.withValues(alpha: 0.12),
           trackHeight: 4,
           thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
@@ -1775,6 +1782,8 @@ class MapTooltipFadeTransition extends StatelessWidget {
         duration: duration,
         reverseDuration: reverseDuration,
         transitionBuilder: (child, animation) {
+          if (UiPerformancePolicy.solidColorsPreferredForDevice) return child;
+
           final curvedAnimation = CurvedAnimation(
             parent: animation,
             curve: Curves.easeOutCubic,
@@ -1814,6 +1823,7 @@ class _MetroStationMapTooltip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final language = Localizations.localeOf(context).languageCode;
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
     final stationName = MetroCache.getStationName(
       station,
       language,
@@ -1824,18 +1834,23 @@ class _MetroStationMapTooltip extends StatelessWidget {
         : LocationCache.getLocationName(locationId, language);
 
     return Material(
-      color: Colors.transparent,
+      color: solidColors ? scheme.surface : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
+          color: solidColors
+              ? scheme.surface
+              : scheme.surface.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          boxShadow: solidColors
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
@@ -1914,19 +1929,25 @@ class _ListingDetailMapTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
     return Material(
-      color: Colors.transparent,
+      color: solidColors ? scheme.surface : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
+          color: solidColors
+              ? scheme.surface
+              : scheme.surface.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          boxShadow: solidColors
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
@@ -2003,10 +2024,13 @@ class UniversityMapTooltip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isBlueTheme = ThemeState().isBlueTheme;
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
     final iconColor = isBlueTheme ? Colors.white : AppColors.primary;
     final titleColor = isBlueTheme ? Colors.white : scheme.onSurface;
     final subtitleColor = isBlueTheme
-        ? Colors.white.withValues(alpha: 0.82)
+        ? solidColors
+            ? Colors.white
+            : Colors.white.withValues(alpha: 0.82)
         : scheme.onSurfaceVariant;
     final shortTitle = marker.title == marker.fullTitle
         ? _toTitleCase(marker.title)
@@ -2014,18 +2038,23 @@ class UniversityMapTooltip extends StatelessWidget {
     final fullTitle = _toTitleCase(marker.fullTitle);
 
     return Material(
-      color: Colors.transparent,
+      color: solidColors ? scheme.surface : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
+          color: solidColors
+              ? scheme.surface
+              : scheme.surface.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          boxShadow: solidColors
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),

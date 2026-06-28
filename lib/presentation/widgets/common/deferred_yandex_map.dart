@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -135,7 +136,8 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> with RouteAware {
       height: widget.height,
       width: double.infinity,
       child: Material(
-        color: Colors.transparent,
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
@@ -159,7 +161,9 @@ class _DeferredYandexMapState extends State<DeferredYandexMap> with RouteAware {
                 ],
               ),
               border: Border.all(
-                color: scheme.outlineVariant.withValues(alpha: 0.4),
+                color: UiPerformancePolicy.solidColorsPreferredForDevice
+                    ? scheme.outlineVariant
+                    : scheme.outlineVariant.withValues(alpha: 0.4),
               ),
             ),
             child: Stack(

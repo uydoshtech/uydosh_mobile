@@ -50,6 +50,7 @@ class UiPerformancePolicy extends ChangeNotifier {
   static Listenable get listenable => _instance;
   static UiPerformanceTier get currentTier => _instance.tier;
   static bool get reduceEffectsForDevice => _instance.reduceEffects;
+  static bool get solidColorsPreferredForDevice => isAndroidDevice;
 
   static Future<void> initialize() => _instance._initialize();
 
@@ -184,6 +185,15 @@ class UiPerformancePolicy extends ChangeNotifier {
 
   static bool compactShadowsPreferred(BuildContext context) {
     return reduceEffectsForDevice;
+  }
+
+  static Color solidColorForDevice(
+    Color color, {
+    required Color fallback,
+  }) {
+    if (!solidColorsPreferredForDevice) return color;
+    if (color.a == 0) return fallback;
+    return color.withValues(alpha: 1);
   }
 
   static MediaQueryData reducedEffectsMediaQuery(MediaQueryData data) {

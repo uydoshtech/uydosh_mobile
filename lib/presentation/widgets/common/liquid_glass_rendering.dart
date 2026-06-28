@@ -44,6 +44,13 @@ abstract final class LiquidGlassRendering {
     required Color tintColor,
     required BorderRadius borderRadius,
   }) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return BoxDecoration(
+        borderRadius: borderRadius,
+        color: tintColor,
+      );
+    }
+
     return BoxDecoration(
       borderRadius: borderRadius,
       gradient: LinearGradient(
@@ -62,12 +69,13 @@ abstract final class LiquidGlassRendering {
   }
 
   static List<BoxShadow> switchThumbGlassShadows() => [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.28),
-          blurRadius: 12,
-          spreadRadius: 0.4,
-          offset: const Offset(0, 4),
-        ),
+        if (!UiPerformancePolicy.solidColorsPreferredForDevice)
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.28),
+            blurRadius: 12,
+            spreadRadius: 0.4,
+            offset: const Offset(0, 4),
+          ),
       ];
 
   /// Frosted glass for feed/detail tiles. Blue theme keeps the switch-thumb
@@ -78,6 +86,13 @@ abstract final class LiquidGlassRendering {
     required BorderRadius borderRadius,
     required Color tintColor,
   }) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return BoxDecoration(
+        borderRadius: borderRadius,
+        color: Theme.of(context).colorScheme.surface,
+      );
+    }
+
     if (ThemeState().isLightTheme) {
       return BoxDecoration(
         borderRadius: borderRadius,
@@ -103,6 +118,8 @@ abstract final class LiquidGlassRendering {
   }
 
   static List<BoxShadow> elevatedTileGlassShadows(BuildContext context) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
     if (ThemeState().isLightTheme) {
       final lightShadow = Colors.white.withValues(
         alpha: neumorphicLightShadowAlpha(context),
@@ -141,6 +158,8 @@ abstract final class LiquidGlassRendering {
   }
 
   static List<BoxShadow> feedTileCompactShadows(BuildContext context) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
@@ -168,6 +187,12 @@ abstract final class LiquidGlassRendering {
   }) {
     final theme = Theme.of(context);
     final base = theme.colorScheme.surface;
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return LinearGradient(
+        colors: [base, base],
+      );
+    }
+
     final surfaceTint =
         Color.lerp(base, theme.colorScheme.primary, 0.10) ?? base;
 
@@ -185,8 +210,12 @@ abstract final class LiquidGlassRendering {
 
   /// Fallback fill when blur is off (reduce motion / accessibility).
   static Color bottomSheetFillColor(ColorScheme scheme,
-          {required bool isDark}) =>
-      scheme.surface.withValues(alpha: isDark ? 0.82 : 0.90);
+      {required bool isDark}) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return scheme.surface;
+    }
+    return scheme.surface.withValues(alpha: isDark ? 0.82 : 0.90);
+  }
 
   /// Gradient for large panels (bottom sheets).
   static LinearGradient panelGradient({
@@ -194,6 +223,12 @@ abstract final class LiquidGlassRendering {
     required bool isDark,
   }) {
     final baseSurface = isDark ? Colors.black : scheme.surface;
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return LinearGradient(
+        colors: [baseSurface, baseSurface],
+      );
+    }
+
     final surfaceTint =
         Color.lerp(baseSurface, scheme.primary, isDark ? 0.06 : 0.08) ??
             baseSurface;
@@ -212,26 +247,43 @@ abstract final class LiquidGlassRendering {
 
   /// Solid tint for the navigation drawer.
   static Color panelFillColor(Color base, {required bool isDark}) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return base;
+    }
     return base.withValues(alpha: isDark ? 0.32 : 0.48);
   }
 
   /// Subtle lit edge on drawer / sheet panels.
   static Color panelBorderColor(Color tint) =>
-      Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
+      UiPerformancePolicy.solidColorsPreferredForDevice
+          ? Color.lerp(tint, Colors.white, 0.65)!
+          : Color.lerp(tint, Colors.white, 0.65)!.withValues(alpha: 0.55);
 
   /// App bar / footer chrome tint.
   static Color chromeFillColor(Color base, {required bool isDark}) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) {
+      return base;
+    }
     return base.withValues(alpha: isDark ? 0.44 : 0.32);
   }
 
   static double chromeSheenAlpha({required bool isDark}) =>
-      isDark ? 0.08 : 0.05;
+      UiPerformancePolicy.solidColorsPreferredForDevice
+          ? 0
+          : isDark
+              ? 0.08
+              : 0.05;
 
   /// Nested tile fill (e.g. create-choice rows inside a sheet).
   static double nestedTileFillAlpha({required bool isDark}) =>
-      isDark ? 0.28 : 0.55;
+      UiPerformancePolicy.solidColorsPreferredForDevice
+          ? 1
+          : isDark
+              ? 0.28
+              : 0.55;
 
-  static double navigationBarAlpha(double nativeAlpha) => nativeAlpha;
+  static double navigationBarAlpha(double nativeAlpha) =>
+      UiPerformancePolicy.solidColorsPreferredForDevice ? 1 : nativeAlpha;
 
   static Widget backdropBlur({
     required bool enabled,

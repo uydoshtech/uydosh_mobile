@@ -138,10 +138,14 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final fg = widget.foregroundColor ?? Colors.black;
 
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
-    final shadows = _pressed
-        ? ThreeDSurfaceStyle.pressedShadows(context)
-        : ThreeDSurfaceStyle.elevatedShadows(context);
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
+    final useLiquidGlass =
+        !solidColors && (themeState.isBlueTheme || themeState.isLightTheme);
+    final shadows = solidColors
+        ? const <BoxShadow>[]
+        : _pressed
+            ? ThreeDSurfaceStyle.pressedShadows(context)
+            : ThreeDSurfaceStyle.elevatedShadows(context);
 
     void setPressed(bool v) {
       if (_pressed != v) setState(() => _pressed = v);
@@ -197,8 +201,13 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
       );
     }
 
+    final solidBorder = widget.borderSide ??
+        BorderSide(
+          color: theme.colorScheme.outlineVariant,
+        );
     final Widget legacyBody = Material(
-      color: Colors.transparent,
+      color: solidColors ? base : Colors.transparent,
+      borderRadius: radius,
       child: InkWell(
         borderRadius: radius,
         splashFactory: NoSplash.splashFactory,
@@ -216,9 +225,11 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: shadows,
-            border: widget.borderSide == null
-                ? null
-                : Border.fromBorderSide(widget.borderSide!),
+            border: solidColors
+                ? Border.fromBorderSide(solidBorder)
+                : widget.borderSide == null
+                    ? null
+                    : Border.fromBorderSide(widget.borderSide!),
           ),
           child: DecoratedBox(
             decoration: BoxDecoration(

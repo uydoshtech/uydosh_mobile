@@ -412,6 +412,7 @@ class _MapLocationPromptCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final themeState = ThemeState();
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
     final lightThemeForeground =
         themeState.isLightTheme ? Colors.white : Colors.black;
     final child = Row(
@@ -422,7 +423,7 @@ class _MapLocationPromptCard extends StatelessWidget {
                 ? BlueThemeColors.primary
                 : scheme.primary,
             shape: BoxShape.circle,
-            boxShadow: isAndroidDevice
+            boxShadow: solidColors
                 ? null
                 : [
                     BoxShadow(
@@ -488,7 +489,8 @@ class _MapLocationPromptCard extends StatelessWidget {
 
     if (isAndroidDevice) {
       return Material(
-        color: Colors.transparent,
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(18),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: scheme.surface,
@@ -530,7 +532,7 @@ class _NoMapResultsTile extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final borderRadius = BorderRadius.circular(18);
-    final isAndroid = isAndroidDevice;
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
     final child = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Center(
@@ -548,13 +550,14 @@ class _NoMapResultsTile extends StatelessWidget {
     );
 
     return Material(
-      color: Colors.transparent,
+      color: solidColors ? scheme.surface : Colors.transparent,
+      borderRadius: borderRadius,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.surface,
           borderRadius: borderRadius,
-          border: isAndroid ? Border.all(color: scheme.outlineVariant) : null,
-          boxShadow: isAndroid
+          border: solidColors ? Border.all(color: scheme.outlineVariant) : null,
+          boxShadow: solidColors
               ? null
               : [
                   BoxShadow(

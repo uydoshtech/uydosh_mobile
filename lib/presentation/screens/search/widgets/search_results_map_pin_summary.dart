@@ -143,8 +143,10 @@ class _MapListingTileSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeState = ThemeState();
-    final useLiquidGlass =
-        !isAndroidDevice && (themeState.isBlueTheme || themeState.isLightTheme);
+    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
+    final useLiquidGlass = !solidColors &&
+        !isAndroidDevice &&
+        (themeState.isBlueTheme || themeState.isLightTheme);
     if (useLiquidGlass) {
       return ThreeDElevatedSurface(
         baseColor: themeState.primaryColor,
@@ -176,7 +178,7 @@ class _MapListingTileSurface extends StatelessWidget {
         boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
       ),
       child: Material(
-        color: Colors.transparent,
+        color: solidColors ? bg : Colors.transparent,
         borderRadius: borderRadius,
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -695,7 +697,9 @@ class _PinSummaryPhoto extends StatelessWidget {
                 frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                   if (wasSynchronouslyLoaded || frame != null) return child;
                   return ColoredBox(
-                    color: scheme.onSurface.withValues(alpha: 0.08),
+                    color: UiPerformancePolicy.solidColorsPreferredForDevice
+                        ? scheme.surfaceContainerHighest
+                        : scheme.onSurface.withValues(alpha: 0.08),
                   );
                 },
                 errorBuilder: (context, error, stackTrace) => placeholder,

@@ -17,6 +17,8 @@ abstract final class ThreeDSurfaceStyle {
       );
 
   static List<BoxShadow> elevatedShadows(BuildContext context) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
     if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
       return [
         BoxShadow(
@@ -41,42 +43,53 @@ abstract final class ThreeDSurfaceStyle {
     ];
   }
 
-  static List<BoxShadow> pressedShadows(BuildContext context) => [
-        BoxShadow(
-          color: _darkShadowColor(context),
-          offset: const Offset(2, 2),
-          blurRadius: 8,
-        ),
-      ];
+  static List<BoxShadow> pressedShadows(BuildContext context) =>
+      UiPerformancePolicy.solidColorsPreferredForDevice
+          ? const []
+          : [
+              BoxShadow(
+                color: _darkShadowColor(context),
+                offset: const Offset(2, 2),
+                blurRadius: 8,
+              ),
+            ];
 
   /// Recessed / “pressed” look (e.g. selected language card). Uses negative
   /// [BoxShadow.spreadRadius] so shadows read as inside the rounded rect.
-  static List<BoxShadow> insetRecessedShadows(BuildContext context) => [
-        if (!UiPerformancePolicy.complexShadowsEnabled(context))
-          BoxShadow(
-            color: _darkShadowColor(context).withValues(alpha: 0.45),
-            offset: const Offset(0, 2),
-            blurRadius: 6,
-            spreadRadius: -4,
-          )
-        else ...[
-          BoxShadow(
-            color: _darkShadowColor(context),
-            offset: const Offset(4, 4),
-            blurRadius: 12,
-            spreadRadius: -6,
-          ),
-          BoxShadow(
-            color: _lightShadowColor(context),
-            offset: const Offset(-4, -4),
-            blurRadius: 12,
-            spreadRadius: -6,
-          ),
-        ],
+  static List<BoxShadow> insetRecessedShadows(BuildContext context) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
+    if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
+      return [
+        BoxShadow(
+          color: _darkShadowColor(context).withValues(alpha: 0.45),
+          offset: const Offset(0, 2),
+          blurRadius: 6,
+          spreadRadius: -4,
+        ),
       ];
+    }
+
+    return [
+      BoxShadow(
+        color: _darkShadowColor(context),
+        offset: const Offset(4, 4),
+        blurRadius: 12,
+        spreadRadius: -6,
+      ),
+      BoxShadow(
+        color: _lightShadowColor(context),
+        offset: const Offset(-4, -4),
+        blurRadius: 12,
+        spreadRadius: -6,
+      ),
+    ];
+  }
 
   /// Softer dual-shadow for flat “soft UI” buttons that match [ColorScheme.surface].
   static List<BoxShadow> neumorphicSoftRaisedShadows(BuildContext context) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
       return [
@@ -126,6 +139,8 @@ abstract final class ThreeDSurfaceStyle {
     Color base, {
     double depthScale = 1.0,
   }) {
+    if (UiPerformancePolicy.solidColorsPreferredForDevice) return const [];
+
     if (!UiPerformancePolicy.complexShadowsEnabled(context)) {
       return const [];
     }
@@ -158,10 +173,12 @@ abstract final class ThreeDSurfaceStyle {
     return BoxDecoration(
       shape: BoxShape.circle,
       gradient: surfaceGradient(context, base),
-      boxShadow: [
-        ...floatingOrbHaloShadows(context, base, depthScale: depthScale),
-        ...elevatedShadows(context),
-      ],
+      boxShadow: UiPerformancePolicy.solidColorsPreferredForDevice
+          ? null
+          : [
+              ...floatingOrbHaloShadows(context, base, depthScale: depthScale),
+              ...elevatedShadows(context),
+            ],
     );
   }
 
@@ -183,20 +200,22 @@ abstract final class ThreeDSurfaceStyle {
               stops: const [0.0, 0.38, 1.0],
             )
           : surfaceGradient(context, base),
-      boxShadow: isDarkBase
-          ? [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 12,
-                offset: const Offset(0, 5),
-              ),
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.14),
-                blurRadius: 6,
-                offset: const Offset(-2, -2),
-              ),
-            ]
-          : elevatedShadows(context),
+      boxShadow: UiPerformancePolicy.solidColorsPreferredForDevice
+          ? null
+          : isDarkBase
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.14),
+                    blurRadius: 6,
+                    offset: const Offset(-2, -2),
+                  ),
+                ]
+              : elevatedShadows(context),
     );
   }
 
@@ -259,7 +278,8 @@ abstract final class ThreeDSurfaceStyle {
     Border? border;
     if (showErrorBorder) {
       final error = t.colorScheme.error;
-      if (errorPulseT == null) {
+      if (errorPulseT == null ||
+          UiPerformancePolicy.solidColorsPreferredForDevice) {
         border = Border.all(color: error, width: 1.5);
       } else {
         final p = errorPulseT.clamp(0.0, 1.0);
@@ -271,13 +291,15 @@ abstract final class ThreeDSurfaceStyle {
           )!,
           width: 1.2 + 0.9 * p,
         );
-        shadows.add(
-          BoxShadow(
-            color: error.withValues(alpha: 0.07 + 0.26 * p),
-            blurRadius: 2 + 14 * p,
-            spreadRadius: 0.2 + 1.1 * p,
-          ),
-        );
+        if (!UiPerformancePolicy.solidColorsPreferredForDevice) {
+          shadows.add(
+            BoxShadow(
+              color: error.withValues(alpha: 0.07 + 0.26 * p),
+              blurRadius: 2 + 14 * p,
+              spreadRadius: 0.2 + 1.1 * p,
+            ),
+          );
+        }
       }
     } else if (dirtyOutlineColor != null) {
       border = Border.all(color: dirtyOutlineColor, width: 1.5);

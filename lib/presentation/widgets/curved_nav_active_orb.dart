@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
 /// Orb gradient + neumorphic depth + specular wash (no outer halo — unlike FAB).
@@ -40,20 +41,22 @@ class CurvedNavActiveOrb extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
-                    theme.brightness,
-                    highlightAlpha: ThreeDSurfaceStyle.navActiveOrbHighlightAlpha(
-                      baseColor,
+            if (!UiPerformancePolicy.solidColorsPreferredForDevice)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: ThreeDSurfaceStyle.surfaceRadialHighlightGradient(
                       theme.brightness,
+                      highlightAlpha:
+                          ThreeDSurfaceStyle.navActiveOrbHighlightAlpha(
+                        baseColor,
+                        theme.brightness,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             Center(child: child),
           ],
         ),
