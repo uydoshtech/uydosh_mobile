@@ -237,7 +237,8 @@ class YandexMapWidget extends StatefulWidget {
     this.userLocationRequestToken = 0,
     this.userLocationLatitude,
     this.userLocationLongitude,
-    this.onMetroStationTooltipChanged,
+    this.selectedMetroStationId,
+    this.onSelectedMetroStationChanged,
   });
 
   final double? latitude;
@@ -249,6 +250,7 @@ class YandexMapWidget extends StatefulWidget {
   final List<ListingMapPin> pins;
   final List<UniversityMapMarker> universityMarkers;
   final String? selectedUniversityMarkerId;
+  final int? selectedMetroStationId;
   final String? userUniversityMarkerId;
   final String? selectedUniversityZoomFocusId;
   final int? selectedListingId;
@@ -273,7 +275,7 @@ class YandexMapWidget extends StatefulWidget {
   final int userLocationRequestToken;
   final double? userLocationLatitude;
   final double? userLocationLongitude;
-  final ValueChanged<bool>? onMetroStationTooltipChanged;
+  final ValueChanged<SubwayStation?>? onSelectedMetroStationChanged;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -354,6 +356,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   bool _mapRebuildScheduled = false;
   int _poiSearchGeneration = 0;
   String? _poiSearchVisibleRegionKey;
+  int _metroViewportGeneration = 0;
+  String? _metroViewportRegionKey;
+  List<int> _visibleMetroStationIds = const [];
   List<_YandexMapPoiMarker> _groceryStoreMarkers = const [];
   List<_YandexMapPoiMarker> _busStopMarkers = const [];
   int? _cachedMapObjectsKey;
@@ -363,9 +368,35 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int _zoomSliderRequestId = 0;
   int _mapOperationGeneration = 0;
   late final ValueNotifier<double> _zoomNotifier;
+  late final MapCreatedCallback _onMapCreated = _handleMapCreated;
+  late final ArgumentCallback<Point> _onMapTap = _handleMapTap;
   late double _currentZoom;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(milliseconds: 500);
+
+  int? get _highlightedMetroStationId {
+    return widget.selectedMetroStationId ?? _selectedMetroStation?.id;
+  }
+
+  SubwayStation? get _effectiveSelectedMetroStation {
+    final selected = _selectedMetroStation;
+    if (selected != null) return selected;
+    final stationId = widget.selectedMetroStationId;
+    if (stationId == null) return null;
+    return MetroCache.getStationById(stationId);
+  }
+
+  void _clearSelectedMetroStation({required bool notify}) {
+    if (widget.onSelectedMetroStationChanged != null) {
+      if (_highlightedMetroStationId == null) return;
+      widget.onSelectedMetroStationChanged!(null);
+      if (_selectedMetroStation != null) {
+        setState(() => _selectedMetroStation = null);
+      }
+      return;
+    }
+    _setSelectedMetroStation(null, notify: notify);
+  }
 
   @override
   void initState() {
@@ -393,22 +424,23 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
     if (oldWidget.layerOptions.showMetroStationsLayer &&
         !widget.layerOptions.showMetroStationsLayer) {
-      _setSelectedMetroStation(null, notify: true);
+      _clearSelectedMetroStation(notify: true);
     }
     if (_districtLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       _invalidateMapObjectsCache();
       _requestMapRebuild();
     }
     if (_metroLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
-      final selectedStation = _selectedMetroStation;
+      final selectedStation = _effectiveSelectedMetroStation;
       final selectedLineId = widget.layerOptions.metroStationLineId;
       if (selectedStation != null &&
           selectedLineId != null &&
           selectedStation.line != selectedLineId) {
-        _setSelectedMetroStation(null, notify: true);
+        _clearSelectedMetroStation(notify: true);
       }
       _invalidateMapObjectsCache();
       _requestMapRebuild();
+      _syncMetroLayerViewport();
     }
     if (oldWidget.walkRadiusMinutes != widget.walkRadiusMinutes) {
       _invalidateMapObjectsCache();
@@ -466,6 +498,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _mapOperationGeneration++;
     _zoomSliderRequestId++;
     _poiSearchGeneration++;
+    _metroViewportGeneration++;
     unawaited(_groceryStoreSearchSession?.close());
     unawaited(_busStopSearchSession?.close());
     _mapController = null;
@@ -804,51 +837,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         tiltGesturesEnabled: !isAndroidDevice,
         fastTapEnabled: true, // Enable fast tap for better responsiveness
         nightModeEnabled: widget.nightModeEnabled,
-        onMapCreated: (controller) {
-          if (!mounted) return;
-          // Store controller for zoom controls
-          _mapController = controller;
-          _mapOperationGeneration++;
-          _areMapObjectsReady = false;
-          widget.onMapCreated?.call(controller);
-          _syncUserLocationLayer();
-
-          // Map created successfully
-          if (kDebugMode) {
-            logger.d(
-              "🗺️ Yandex Map created successfully with ${mapObjects.length} pins",
-            );
-            logger.d(
-              "📍 Pin location: ${centerPoint["latitude"]}, ${centerPoint["longitude"]}",
-            );
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              unawaited(_moveCameraToCurrentTarget());
-              _scheduleMapObjectsReady(controller);
-            }
-          });
-
-          // Map created successfully - placemarks should be visible from mapObjects
-          if (kDebugMode) {
-            logger.d("🔧 Map created with ${mapObjects.length} placemarks");
-          }
-        },
-        onMapTap: (point) {
-          if (kDebugMode) {
-            logger
-                .d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
-          }
-          if (_showListingDetailTooltip) {
-            setState(() => _showListingDetailTooltip = false);
-          }
-          if (_selectedUniversityMarker != null) {
-            setState(() => _selectedUniversityMarker = null);
-          }
-          _setSelectedMetroStation(null, notify: true);
-          widget.onMapTap?.call(point);
-        },
+        onMapCreated: _onMapCreated,
+        onMapTap: _onMapTap,
         onCameraPositionChanged: _handleCameraPositionChanged,
         onUserLocationAdded: _customizeUserLocationView,
         mapObjects: mapObjects,
@@ -922,6 +912,48 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
   }
 
+  void _handleMapCreated(YandexMapController controller) {
+    if (!mounted) return;
+    _mapController = controller;
+    _mapOperationGeneration++;
+    _areMapObjectsReady = false;
+    widget.onMapCreated?.call(controller);
+    _syncUserLocationLayer();
+
+    if (kDebugMode) {
+      final centerPoint = _getCenterPoint();
+      final mapObjectCount = _createMapObjects().length;
+      logger.d(
+        "🗺️ Yandex Map created successfully with $mapObjectCount pins",
+      );
+      logger.d(
+        "📍 Pin location: ${centerPoint["latitude"]}, ${centerPoint["longitude"]}",
+      );
+      logger.d("🔧 Map created with $mapObjectCount placemarks");
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        unawaited(_moveCameraToCurrentTarget());
+        _scheduleMapObjectsReady(controller);
+      }
+    });
+  }
+
+  void _handleMapTap(Point point) {
+    if (kDebugMode) {
+      logger.d("🗺️ Map tapped at: ${point.latitude}, ${point.longitude}");
+    }
+    if (_showListingDetailTooltip) {
+      setState(() => _showListingDetailTooltip = false);
+    }
+    if (_selectedUniversityMarker != null) {
+      setState(() => _selectedUniversityMarker = null);
+    }
+    _clearSelectedMetroStation(notify: true);
+    widget.onMapTap?.call(point);
+  }
+
   Future<UserLocationView> _customizeUserLocationView(
     UserLocationView view,
   ) async {
@@ -974,6 +1006,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _selectedUniversityMarker = null;
     }
     widget.onMapTap?.call(point);
+    if (widget.onSelectedMetroStationChanged != null) {
+      widget.onSelectedMetroStationChanged!(station);
+      return;
+    }
     _setSelectedMetroStation(station, notify: true);
   }
 
@@ -981,13 +1017,11 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     SubwayStation? station, {
     required bool notify,
   }) {
-    final wasVisible = _selectedMetroStation != null;
-    final isVisible = station != null;
     if (_selectedMetroStation?.id == station?.id) return;
 
     setState(() => _selectedMetroStation = station);
-    if (notify && wasVisible != isVisible) {
-      widget.onMetroStationTooltipChanged?.call(isVisible);
+    if (notify) {
+      widget.onSelectedMetroStationChanged?.call(station);
     }
   }
 
@@ -995,7 +1029,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
     }
-    _setSelectedMetroStation(null, notify: true);
+    _clearSelectedMetroStation(notify: true);
     widget.onMapTap?.call(point);
     final onUniversityMarkerTap = widget.onUniversityMarkerTap;
     if (onUniversityMarkerTap != null) {
@@ -1162,7 +1196,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Point? _selectedMetroStationZoomFocusPoint() {
-    final station = _selectedMetroStation;
+    final station = _effectiveSelectedMetroStation;
     if (station?.latitude == null || station?.longitude == null) return null;
     return Point(latitude: station!.latitude!, longitude: station.longitude!);
   }
@@ -1319,15 +1353,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       );
     }
 
-    final metroStation = _selectedMetroStation;
+    final metroStation = _effectiveSelectedMetroStation;
     if (widget.tooltipOptions.showMetroStation &&
         widget.layerOptions.showMetroStationsLayer &&
+        widget.onSelectedMetroStationChanged == null &&
         metroStation != null) {
-      return _MetroStationMapTooltip(
+      return MetroStationMapTooltip(
         key: ValueKey("metro-station-${metroStation.id}"),
         station: metroStation,
         lineColor: _metroLineColor(metroStation.line),
-        onClose: () => _setSelectedMetroStation(null, notify: true),
+        onClose: () => _clearSelectedMetroStation(notify: true),
       );
     }
 
@@ -1556,6 +1591,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (finished) {
       _setCurrentZoom(cameraPosition.zoom);
       _syncPoiLayers();
+      _syncMetroLayerViewport();
     }
     if (_automaticCameraFinishesToIgnore > 0) {
       if (finished) {
@@ -1602,7 +1638,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         return true;
       }
     }
-    if (_selectedMetroStation != null &&
+    if (_effectiveSelectedMetroStation != null &&
         widget.layerOptions.showMetroStationsLayer) {
       final walkAreaLabelChanged =
           (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
@@ -1683,6 +1719,52 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       return;
     }
     unawaited(_refreshVisiblePoiLayers());
+  }
+
+  void _syncMetroLayerViewport() {
+    if (!mounted || kIsWeb || !_isMapReady || _mapController == null) return;
+    if (!widget.layerOptions.showMetroStationsLayer) {
+      if (_visibleMetroStationIds.isEmpty && _metroViewportRegionKey == null) {
+        return;
+      }
+      setState(() {
+        _visibleMetroStationIds = const [];
+        _metroViewportRegionKey = null;
+      });
+      return;
+    }
+    unawaited(_refreshVisibleMetroStations());
+  }
+
+  Future<void> _refreshVisibleMetroStations() async {
+    final controller = _mapController;
+    if (controller == null || kIsWeb) return;
+    if (!widget.layerOptions.showMetroStationsLayer) return;
+
+    final generation = ++_metroViewportGeneration;
+    final mapGeneration = _mapOperationGeneration;
+    final visibleRegion = await controller.getVisibleRegion();
+    if (!_isCurrentMapOperation(controller, mapGeneration) ||
+        generation != _metroViewportGeneration) {
+      return;
+    }
+
+    final regionKey =
+        "${_metroLayerScopeKey}_${_visibleRegionSearchKey(visibleRegion)}";
+    if (_metroViewportRegionKey == regionKey) return;
+
+    final stationIds = _metroStationIdsInViewport(
+      _paddedMetroViewportBoundingBox(visibleRegion),
+    );
+    if (!mounted ||
+        !_isCurrentMapOperation(controller, mapGeneration) ||
+        generation != _metroViewportGeneration) {
+      return;
+    }
+    setState(() {
+      _metroViewportRegionKey = regionKey;
+      _visibleMetroStationIds = stationIds;
+    });
   }
 
   Future<void> _refreshVisiblePoiLayers() async {
@@ -1956,6 +2038,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (!mounted || _areMapObjectsReady) return;
     setState(() => _areMapObjectsReady = true);
     _syncPoiLayers();
+    _syncMetroLayerViewport();
   }
 }
 
@@ -2006,8 +2089,8 @@ class MapTooltipFadeTransition extends StatelessWidget {
   }
 }
 
-class _MetroStationMapTooltip extends StatelessWidget {
-  const _MetroStationMapTooltip({
+class MetroStationMapTooltip extends StatelessWidget {
+  const MetroStationMapTooltip({
     required this.station,
     required this.lineColor,
     required this.onClose,

@@ -2,6 +2,7 @@ import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/api/client/public_api_client.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:uy_dosh/domain/services/listing_crud_service.dart";
 import "package:uy_dosh/domain/services/listing_detail_service.dart";
@@ -106,6 +107,26 @@ abstract class IListingService {
   });
 
   Future<PageableResponse<Listing>> searchListings({
+    int page = 1,
+    int limit = 10,
+    bool isActive = true,
+    String? language,
+    int? listingTypeId,
+    List<int>? listingTypeIds,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+    int createdWithinDays = 30,
+    List<int>? excludeUserIds,
+  });
+
+  Future<PageableResponse<ListingMapPinData>> searchMapListings({
     int page = 1,
     int limit = 10,
     bool isActive = true,
@@ -406,6 +427,46 @@ class ListingService implements IListingService {
     List<int>? excludeUserIds,
   }) =>
       _searchService.searchListings(
+        page: page,
+        limit: limit,
+        isActive: isActive,
+        language: language,
+        listingTypeId: listingTypeId,
+        listingTypeIds: listingTypeIds,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayStationIds: subwayStationIds,
+        subwayLineId: subwayLineId,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoom: privateRoom,
+        withPhoto: withPhoto,
+        createdWithinDays: createdWithinDays,
+        excludeUserIds: excludeUserIds,
+      );
+
+  @override
+  Future<PageableResponse<ListingMapPinData>> searchMapListings({
+    int page = 1,
+    int limit = 10,
+    bool isActive = true,
+    String? language,
+    int? listingTypeId,
+    List<int>? listingTypeIds,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+    int createdWithinDays = 30,
+    List<int>? excludeUserIds,
+  }) =>
+      _searchService.searchMapListings(
         page: page,
         limit: limit,
         isActive: isActive,

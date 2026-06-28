@@ -125,6 +125,7 @@ class _AmenityToggleState extends State<AmenityToggle>
                     _getIcon(widget.amenity),
                     size: 18,
                     color: iconColor,
+                    useThemeColor: false,
                   ),
                   const SizedBox(width: 6),
                   ListenableBuilder(

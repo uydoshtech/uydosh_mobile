@@ -1,6 +1,7 @@
 import "dart:async" show unawaited;
 
 import "package:cached_network_image/cached_network_image.dart";
+import "package:flutter/foundation.dart" show ValueListenable, ValueNotifier;
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart" as geo;
@@ -27,6 +28,8 @@ import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
+import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/search/search_filter_defaults.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -44,6 +47,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
+import "package:yandex_mapkit/yandex_mapkit.dart";
 
 part "widgets/search_results_map_header.dart";
 part "widgets/search_results_map_filter_ribbon.dart";
@@ -179,8 +183,11 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
   List<ListingMapPin> _selectedPinGroup = const [];
+  List<int> _selectedListingGroupIds = const [];
   UniversityMapMarker? _selectedUniversityMarker;
-  bool _hasSelectedMetroStation = false;
+  SubwayStation? _selectedMetroStation;
+  late final ValueNotifier<_SearchMapCanvasProps> _canvasPropsNotifier;
+  late final ValueNotifier<_SearchMapOverlayProps> _overlayPropsNotifier;
   List<UniversityMapMarker> _universityMarkers = const [];
   String? _currentUserUniversityMarkerId;
   late bool _showDistrictLayer;
@@ -211,9 +218,34 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   late bool _privateRoom;
   late bool _withPhoto;
 
+  late final ArgumentCallback<Point> _onMapBackgroundTap = _handleMapBackgroundTap;
+  late final ValueChanged<ListingMapPin> _onSelectPin = _handleSelectPin;
+  late final ValueChanged<List<ListingMapPin>> _onSelectPinGroup =
+      _handleSelectPinGroup;
+  late final ValueChanged<UniversityMapMarker> _onSelectUniversityMarker =
+      _handleSelectUniversityMarker;
+  late final ValueChanged<SubwayStation?> _onSelectedMetroStationChanged =
+      _handleSelectedMetroStationChanged;
+  late final VoidCallback _onClearSelectedPin = _handleClearSelectedPin;
+  late final VoidCallback _onClearSelectedUniversityMarker =
+      _handleClearSelectedUniversityMarker;
+  late final VoidCallback _onClearSelectedMetroStation =
+      _handleClearSelectedMetroStation;
+  late final ValueChanged<ListingMapPin> _onOpenPin = _handleOpenPin;
+  late final VoidCallback _onToggleDistrictLayer = _handleToggleDistrictLayer;
+  late final VoidCallback _onToggleWalkRadiusMinutes =
+      _handleToggleWalkRadiusMinutes;
+  late final VoidCallback _onToggleMetroLayerMode = _handleToggleMetroLayerMode;
+  late final VoidCallback _onToggleUniversitiesLayer =
+      _handleToggleUniversitiesLayer;
+  late final ValueChanged<bool> _onToggleMapNightMode =
+      _handleToggleMapNightMode;
+
   @override
   void initState() {
     super.initState();
+    _canvasPropsNotifier = ValueNotifier(_buildCanvasProps());
+    _overlayPropsNotifier = ValueNotifier(_buildOverlayProps());
     final layerDefaults = ClientMapLayerDefaultsConfig.defaults.value;
     _showDistrictLayer = !isAndroidDevice && layerDefaults.districts;
     _metroLayerMode = !isAndroidDevice && layerDefaults.metro
@@ -244,6 +276,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     if (widget.embedded) {
       _publishMapListingCount(_result);
     }
+    _syncAllMapProps();
   }
 
   @override
@@ -257,8 +290,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _syncFiltersFromWidget();
       _selectedPin = null;
       _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
       _selectedUniversityMarker = null;
-      _hasSelectedMetroStation = false;
+      _selectedMetroStation = null;
       if (!_filterRibbonDismissedByUser) {
         _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
       }
@@ -285,10 +319,108 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   @override
   void dispose() {
+    _canvasPropsNotifier.dispose();
+    _overlayPropsNotifier.dispose();
     if (widget.embedded) {
       HomeInlineSearchState().setMapViewActive(false);
     }
     super.dispose();
+  }
+
+  _SearchMapCanvasProps _buildCanvasProps() {
+    final result = _result ?? const _SearchMapResult(pins: [], total: 0);
+    return _SearchMapCanvasProps(
+      result: result,
+      hasSearchFilters: _hasMapSearchFilters,
+      showFilterRibbon: _showFilterRibbon,
+      locationId: _locationId,
+      universityMarkers:
+          _showUniversitiesLayer ? _universityMarkers : const [],
+      userUniversityMarkerId: _currentUserUniversityMarkerId,
+      selectedListingId: _selectedPin?.listingId,
+      selectedListingGroupIds: _selectedListingGroupIds,
+      selectedUniversityMarkerId: _selectedUniversityMarker?.id,
+      selectedUniversityZoomFocusId: _selectedUniversityMarker?.id,
+      selectedMetroStationId: _selectedMetroStation?.id,
+      showDistrictLayer: _showDistrictLayer,
+      metroLayerMode: _metroLayerMode,
+      walkRadiusMinutes: _walkRadiusMinutes,
+      showUniversitiesLayer: _showUniversitiesLayer,
+      showGroceryStoresLayer: _showGroceryStoresLayer,
+      showBusStopsLayer: _showBusStopsLayer,
+      mapNightModeOverride: _mapNightModeOverride,
+      userLocationRequestToken: _userLocationRequestToken,
+      userLocationLatitude: _userLocationLatitude,
+      userLocationLongitude: _userLocationLongitude,
+      placeViewToggleAtBottom: widget.embedded,
+      mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
+      viewToggleBottom: widget.embeddedViewToggleBottom,
+      searchButtonBottom: widget.embeddedSearchButtonBottom,
+    );
+  }
+
+  _SearchMapOverlayProps _buildOverlayProps() {
+    final result = _result ?? const _SearchMapResult(pins: [], total: 0);
+    return _SearchMapOverlayProps(
+      isLoading: _isLoading,
+      hasSearchFilters: _hasMapSearchFilters,
+      resultTotal: result.total,
+      listingTypeId: _listingTypeId,
+      gender: _gender,
+      locationId: _locationId,
+      subwayStationId: _subwayStationId,
+      subwayStationIds: _subwayStationIds,
+      subwayLineId: _subwayLineId,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
+      privateRoom: _privateRoom,
+      withPhoto: _withPhoto,
+      selectedPin: _selectedPin,
+      selectedPinGroup: _selectedPinGroup,
+      selectedUniversityMarker: _selectedUniversityMarker,
+      selectedMetroStation: _selectedMetroStation,
+      showDistrictLayer: _showDistrictLayer,
+      metroLayerMode: _metroLayerMode,
+      walkRadiusMinutes: _walkRadiusMinutes,
+      showUniversitiesLayer: _showUniversitiesLayer,
+      mapNightModeOverride: _mapNightModeOverride,
+      showLocationPrompt: _showLocationPrompt,
+      filterRibbonEnabled: _filterRibbonEnabled,
+      showFilterRibbon: _showFilterRibbon,
+      placeViewToggleAtBottom: widget.embedded,
+      mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
+      searchButtonBottom: widget.embeddedSearchButtonBottom,
+      viewToggleBottom: widget.embeddedViewToggleBottom,
+      hasEmbeddedSearch: widget.onOpenEmbeddedSearch != null,
+    );
+  }
+
+  void _syncCanvasProps() {
+    if (_result == null) return;
+    final next = _buildCanvasProps();
+    if (_canvasPropsNotifier.value == next) return;
+    _canvasPropsNotifier.value = next;
+  }
+
+  void _syncOverlayProps() {
+    if (_result == null) return;
+    final next = _buildOverlayProps();
+    if (_overlayPropsNotifier.value == next) return;
+    _overlayPropsNotifier.value = next;
+  }
+
+  void _syncAllMapProps() {
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _invalidateMapView({bool canvas = true, bool overlay = true}) {
+    if (_result == null) {
+      if (mounted) setState(() {});
+      return;
+    }
+    if (canvas) _syncCanvasProps();
+    if (overlay) _syncOverlayProps();
   }
 
   void _publishMapListingCount(_SearchMapResult? result) {
@@ -318,6 +450,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           (pin) => !visibleListingIds.contains(pin.listingId),
         )) {
       _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
     }
   }
 
@@ -420,10 +553,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         ..sort((a, b) => a.title.compareTo(b.title));
 
       if (!mounted) return;
-      setState(() {
-        _universityMarkers = markers;
-        _currentUserUniversityMarkerId = profile?.universityId?.toString();
-      });
+      _universityMarkers = markers;
+      _currentUserUniversityMarkerId = profile?.universityId?.toString();
+      _syncCanvasProps();
     } catch (error) {
       logger.w("Could not load university markers: $error");
     }
@@ -457,15 +589,14 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final isGranted = status.isGranted || status.isLimited;
     final shouldAutoLoad = isGranted && _userLocationRequestToken == 0;
 
-    setState(() {
-      _showLocationPrompt =
-          !isGranted &&
-          _userLocationRequestToken == 0 &&
-          !status.isPermanentlyDenied;
-      if (shouldAutoLoad) {
-        _userLocationRequestToken++;
-      }
-    });
+    _showLocationPrompt =
+        !isGranted &&
+        _userLocationRequestToken == 0 &&
+        !status.isPermanentlyDenied;
+    if (shouldAutoLoad) {
+      _userLocationRequestToken++;
+    }
+    _invalidateMapView(canvas: shouldAutoLoad, overlay: true);
 
     if (shouldAutoLoad) {
       await _loadCurrentUserLocationOnce();
@@ -475,12 +606,11 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   Future<void> _requestUserLocation() async {
     final status = await Permission.location.request();
     if (!mounted) return;
-    setState(() {
-      _showLocationPrompt = false;
-      if (status.isGranted) {
-        _userLocationRequestToken++;
-      }
-    });
+    _showLocationPrompt = false;
+    if (status.isGranted) {
+      _userLocationRequestToken++;
+    }
+    _invalidateMapView(canvas: status.isGranted, overlay: true);
     if (status.isGranted) {
       await _loadCurrentUserLocationOnce();
     }
@@ -496,10 +626,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         ),
       );
       if (!mounted || generation != _userLocationLoadGeneration) return;
-      setState(() {
-        _userLocationLatitude = position.latitude;
-        _userLocationLongitude = position.longitude;
-      });
+      _userLocationLatitude = position.latitude;
+      _userLocationLongitude = position.longitude;
+      _syncCanvasProps();
     } catch (error) {
       logger.w("Could not load current map location: $error");
     }
@@ -515,54 +644,77 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }) async {
     if (!_hasMapSearchFilters) {
       _loadGeneration++;
-      setState(() {
-        _result = const _SearchMapResult(pins: [], total: 0);
-        _loadError = null;
-        _isLoading = false;
-        _selectedPin = null;
-        _selectedPinGroup = const [];
-        _selectedUniversityMarker = null;
-        _hasSelectedMetroStation = false;
-        _showFilterRibbon = false;
-      });
+      _result = const _SearchMapResult(pins: [], total: 0);
+      _loadError = null;
+      _isLoading = false;
+      _selectedPin = null;
+      _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
+      _selectedUniversityMarker = null;
+      _selectedMetroStation = null;
+      _showFilterRibbon = false;
+      _syncAllMapProps();
       return;
     }
 
     final loadGeneration = ++_loadGeneration;
     if (showLoading) {
-      setState(() {
-        _isLoading = true;
-        _loadError = null;
-        _selectedPin = null;
-        _selectedPinGroup = const [];
-        _selectedUniversityMarker = null;
-        _hasSelectedMetroStation = false;
-      });
+      _isLoading = true;
+      _loadError = null;
+      _selectedPin = null;
+      _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
+      _selectedUniversityMarker = null;
+      _selectedMetroStation = null;
+      _syncCanvasProps();
+      _syncOverlayProps();
     }
 
     try {
       final result = await _fetchResults();
       if (!mounted || loadGeneration != _loadGeneration) return;
-      setState(() {
-        _result = result;
-        _loadError = null;
-        _isLoading = false;
-        _selectedPin = _autoSelectedPin(result);
-        _selectedPinGroup = const [];
-        _hasSelectedMetroStation = false;
-        _pruneSelectionForCurrentResult();
-      });
+      final mountingMapBody = _result == null;
+      _result = result;
+      _loadError = null;
+      _isLoading = false;
+      _selectedPin = _autoSelectedPin(result);
+      _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
+      _selectedMetroStation = null;
+      _pruneSelectionForCurrentResult();
+      _syncAllMapProps();
+      if (mountingMapBody) setState(() {});
       _publishMapListingCount(result);
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
-      setState(() {
-        _loadError = error;
-        _isLoading = false;
-      });
+      _loadError = error;
+      _isLoading = false;
+      if (_result == null) {
+        setState(() {});
+      } else {
+        _syncOverlayProps();
+      }
     }
   }
 
   Future<_SearchMapResult> _fetchResults() async {
+    // TODO: re-enable GET /listings/map once backend is ready.
+    // final response = await getIt<IListingService>().searchMapListings(
+    //   page: 1,
+    //   limit: isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit,
+    //   listingTypeId: _listingTypeId,
+    //   locationId: _locationId,
+    //   subwayStationId: _subwayStationId,
+    //   subwayStationIds: _subwayStationIds,
+    //   subwayLineId: _subwayLineId,
+    //   gender: _gender,
+    //   minPrice: _minPrice,
+    //   maxPrice: _maxPrice,
+    //   privateRoom: _privateRoom,
+    //   withPhoto: _withPhoto,
+    // );
+    // return _resultFromMapPins(response.data, total: response.total);
+
     final response = await getIt<IListingService>().searchListings(
       page: 1,
       limit: isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit,
@@ -579,6 +731,110 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     );
 
     return _resultFromListings(response.data, total: response.total);
+  }
+
+  _SearchMapResult _resultFromMapPins(
+    List<ListingMapPinData> pins, {
+    required int total,
+  }) {
+    final mapPins = <ListingMapPin>[];
+    final seenListingIds = <int>{};
+    for (final pin in pins) {
+      if (!seenListingIds.add(pin.id)) continue;
+      mapPins.add(_mapPinFromData(pin));
+    }
+    final mappableCount = mapPins.length;
+    final effectiveTotal = mappableCount > total ? mappableCount : total;
+    return _SearchMapResult(
+      pins: mapPins,
+      total: effectiveTotal,
+    );
+  }
+
+  ListingMapPin _mapPinFromData(ListingMapPinData pin) {
+    final listingTypeCode =
+        pin.listingTypeCode ?? _listingTypeCodeFromId(pin.listingTypeId);
+    return ListingMapPin(
+      listingId: pin.id,
+      latitude: pin.latitude,
+      longitude: pin.longitude,
+      title: _mapPinTitle(pin),
+      subtitle: _mapPinPriceLabel(pin, listingTypeCode),
+      locationLabel: _mapPinLocationLabel(pin),
+      stationLabel: _mapPinStationLabel(pin),
+      subwayLineIds: _mapPinSubwayLineIds(pin),
+      listingTypeId: pin.listingTypeId,
+      listingTypeCode: listingTypeCode,
+      gender: pin.gender,
+      photoUrl: pin.photoUrl != null
+          ? EnvironmentUtil.hostedImageUrl(pin.photoUrl!)
+          : null,
+    );
+  }
+
+  String _mapPinTitle(ListingMapPinData pin) {
+    if (ListingUtils.usesPresetListingTitle(pin.listingTypeId)) {
+      return L10n.get(
+        ListingUtils.presetListingTitleL10nKey(
+          listingTypeId: pin.listingTypeId,
+          gender: pin.gender,
+        ),
+      );
+    }
+    return pin.title;
+  }
+
+  String _mapPinPriceLabel(ListingMapPinData pin, String listingTypeCode) {
+    final bounds = PriceRangeHelper.resolveListingDisplayBounds(
+      storedPrice: pin.price,
+      listingTypeCode: listingTypeCode,
+      minPrice: pin.minPrice,
+      maxPrice: pin.maxPrice,
+    );
+    return PriceRangeHelper.formatListingPriceRangeWithCurrencyMarker(
+      bounds.min,
+      bounds.max,
+    );
+  }
+
+  String? _mapPinLocationLabel(ListingMapPinData pin) {
+    final locationId = pin.locationId ??
+        (pin.subwayStationId != null
+            ? MetroCache.getStationById(pin.subwayStationId!)?.locationId
+            : null);
+    if (locationId == null) return null;
+    final location = LocationCache.getLocationById(locationId);
+    if (location == null) return null;
+    return _shortenDistrictSuffix(
+      _getLocalizedName(
+        nameUz: location.nameUz,
+        nameRu: location.nameRu,
+        nameEn: location.nameEn,
+      ),
+    );
+  }
+
+  String? _mapPinStationLabel(ListingMapPinData pin) {
+    final stationId = pin.subwayStationId;
+    if (stationId == null) return null;
+    final station = MetroCache.getStationById(stationId);
+    if (station == null) return null;
+    return MetroCache.formatStationLabel(
+      _getLocalizedName(
+        nameUz: station.nameUz,
+        nameRu: station.nameRu,
+        nameEn: station.nameEn,
+      ),
+      LanguageState().currentLanguage,
+    );
+  }
+
+  List<int> _mapPinSubwayLineIds(ListingMapPinData pin) {
+    if (pin.subwayLineId != null) return [pin.subwayLineId!];
+    final stationId = pin.subwayStationId;
+    if (stationId == null) return const [];
+    final station = MetroCache.getStationById(stationId);
+    return station == null ? const [] : [station.line];
   }
 
   _SearchMapResult _resultFromListings(
@@ -625,30 +881,28 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onApply: (result) {
         final hasMapFilters = _hasMapSearchFiltersFor(result);
         if (_matchesCurrentFilters(result)) {
-          setState(
-            () => _showFilterRibbon = _filterRibbonEnabled && hasMapFilters,
-          );
+          _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
+          _syncOverlayProps();
           return;
         }
 
-        setState(() {
-          _filterRibbonDismissedByUser = false;
-          _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
-          _listingTypeId = result.listingTypeId;
-          _locationId = result.locationId;
-          _subwayStationId = result.subwayStationId;
-          _subwayStationIds = List<int>.from(result.subwayStationIds);
-          _subwayLineId = result.subwayLineId;
-          _gender = result.gender;
-          _minPrice = result.minPrice;
-          _maxPrice = result.maxPrice;
-          _privateRoom = result.privateRoom;
-          _withPhoto = result.withPhoto;
-          _selectedPin = null;
-          _selectedPinGroup = const [];
-          _selectedUniversityMarker = null;
-          _hasSelectedMetroStation = false;
-        });
+        _filterRibbonDismissedByUser = false;
+        _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
+        _listingTypeId = result.listingTypeId;
+        _locationId = result.locationId;
+        _subwayStationId = result.subwayStationId;
+        _subwayStationIds = List<int>.from(result.subwayStationIds);
+        _subwayLineId = result.subwayLineId;
+        _gender = result.gender;
+        _minPrice = result.minPrice;
+        _maxPrice = result.maxPrice;
+        _privateRoom = result.privateRoom;
+        _withPhoto = result.withPhoto;
+        _selectedPin = null;
+        _selectedPinGroup = const [];
+        _selectedListingGroupIds = const [];
+        _selectedUniversityMarker = null;
+        _selectedMetroStation = null;
         _loadResults();
       },
     );
@@ -656,15 +910,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _hideFilterRibbon() {
     widget.onDismissFilterRibbon?.call();
-    setState(() {
-      _filterRibbonDismissedByUser = true;
-      _showFilterRibbon = false;
-      _loadError = null;
-      _selectedPin = null;
-      _selectedPinGroup = const [];
-      _selectedUniversityMarker = null;
-      _hasSelectedMetroStation = false;
-    });
+    _filterRibbonDismissedByUser = true;
+    _showFilterRibbon = false;
+    _loadError = null;
+    _selectedPin = null;
+    _selectedPinGroup = const [];
+    _selectedListingGroupIds = const [];
+    _selectedUniversityMarker = null;
+    _selectedMetroStation = null;
+    _syncAllMapProps();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_filterRibbonDismissedByUser) return;
       _syncFiltersFromWidget();
@@ -680,11 +934,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final listings = widget.initialListings;
     if (listings.isEmpty) {
       _loadGeneration++;
-      setState(() {
-        _result = const _SearchMapResult(pins: [], total: 0);
-        _loadError = null;
-        _isLoading = false;
-      });
+      _result = const _SearchMapResult(pins: [], total: 0);
+      _loadError = null;
+      _isLoading = false;
+      _syncAllMapProps();
       _publishMapListingCount(_result);
       return;
     }
@@ -692,15 +945,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       listings,
       total: widget.initialTotal ?? listings.length,
     );
-    setState(() {
-      _result = result;
-      _loadError = null;
-      _isLoading = false;
-      _selectedPin = _autoSelectedPin(result);
-      _selectedPinGroup = const [];
-      _hasSelectedMetroStation = false;
-      _pruneSelectionForCurrentResult();
-    });
+    _result = result;
+    _loadError = null;
+    _isLoading = false;
+    _selectedPin = _autoSelectedPin(result);
+    _selectedPinGroup = const [];
+    _selectedListingGroupIds = const [];
+    _selectedMetroStation = null;
+    _pruneSelectionForCurrentResult();
+    _syncAllMapProps();
     _publishMapListingCount(result);
   }
 
@@ -1019,26 +1272,34 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasNoResults = _result?.pins.isEmpty == true;
-    final title = hasNoResults
-        ? context.l10n.no_search_results
-        : context.l10n.search_results;
     if (widget.embedded) {
       return _buildBody(context);
     }
     return Scaffold(
-      appBar: CommonAppBar(
-        title: title,
-        titleWidget: _MapHeaderTitle(
-          title: title,
-          loading: _isLoading,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ValueListenableBuilder<_SearchMapOverlayProps>(
+          valueListenable: _overlayPropsNotifier,
+          builder: (context, _, __) {
+            final hasNoResults = _result?.pins.isEmpty == true;
+            final title = hasNoResults
+                ? context.l10n.no_search_results
+                : context.l10n.search_results;
+            return CommonAppBar(
+              title: title,
+              titleWidget: _MapHeaderTitle(
+                title: title,
+                loading: _isLoading,
+              ),
+              showBackButton: true,
+              actions: hasNoResults
+                  ? [
+                      _MapHeaderSearchButton(onPressed: _openFilters),
+                    ]
+                  : null,
+            );
+          },
         ),
-        showBackButton: true,
-        actions: hasNoResults
-            ? [
-                _MapHeaderSearchButton(onPressed: _openFilters),
-              ]
-            : null,
       ),
       body: _buildBody(context),
     );
@@ -1073,109 +1334,134 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       );
     }
 
-    return _SearchResultsMapContent(
-      result: result,
-      isLoading: _isLoading,
-      hasSearchFilters: _hasMapSearchFilters,
-      listingTypeId: _listingTypeId,
-      gender: _gender,
-      locationId: _locationId,
-      subwayStationId: _subwayStationId,
-      subwayStationIds: _subwayStationIds,
-      subwayLineId: _subwayLineId,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      privateRoom: _privateRoom,
-      withPhoto: _withPhoto,
-      selectedPin: _selectedPin,
-      selectedPinGroup: _selectedPinGroup,
-      selectedUniversityMarker: _selectedUniversityMarker,
-      hasSelectedMetroStation: _hasSelectedMetroStation,
-      universityMarkers: _showUniversitiesLayer ? _universityMarkers : const [],
-      selectedUniversityMarkerId: _selectedUniversityMarker?.id,
-      userUniversityMarkerId: _currentUserUniversityMarkerId,
-      showDistrictLayer: _showDistrictLayer,
-      metroLayerMode: _metroLayerMode,
-      walkRadiusMinutes: _walkRadiusMinutes,
-      showUniversitiesLayer: _showUniversitiesLayer,
-      showGroceryStoresLayer: _showGroceryStoresLayer,
-      showBusStopsLayer: _showBusStopsLayer,
-      mapNightModeOverride: _mapNightModeOverride,
-      showLocationPrompt: _showLocationPrompt,
-      filterRibbonEnabled: _filterRibbonEnabled,
-      showFilterRibbon: _showFilterRibbon,
-      userLocationRequestToken: _userLocationRequestToken,
-      userLocationLatitude: _userLocationLatitude,
-      userLocationLongitude: _userLocationLongitude,
-      placeViewToggleAtBottom: widget.embedded,
-      mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
-      searchButtonBottom: widget.embeddedSearchButtonBottom,
-      viewToggleBottom: widget.embeddedViewToggleBottom,
+    return _SearchResultsMapBody(
+      canvasListenable: _canvasPropsNotifier,
+      overlayListenable: _overlayPropsNotifier,
       onOpenFilters: _openFilters,
       onCloseFilterRibbon: _hideFilterRibbon,
       onOpenEmbeddedSearch: widget.onOpenEmbeddedSearch,
       onOpenFeedView: _openFeedView,
       onRequestUserLocation: _requestUserLocation,
-      onToggleDistrictLayer: () {
-        setState(() => _showDistrictLayer = !_showDistrictLayer);
-      },
-      onToggleWalkRadiusMinutes: () {
-        setState(() => _walkRadiusMinutes = _walkRadiusMinutes.next);
-      },
-      onToggleMetroLayerMode: () {
-        setState(() {
-          _metroLayerMode = _metroLayerMode.next;
-          if (!_metroLayerMode.showsStations) {
-            _hasSelectedMetroStation = false;
-          }
-        });
-      },
-      onToggleUniversitiesLayer: () {
-        setState(() {
-          _showUniversitiesLayer = !_showUniversitiesLayer;
-          if (!_showUniversitiesLayer) {
-            _selectedUniversityMarker = null;
-          }
-        });
-      },
-      onToggleMapNightMode: (enabled) {
-        setState(() => _mapNightModeOverride = enabled);
-      },
-      onMetroStationTooltipChanged: (visible) {
-        if (_hasSelectedMetroStation == visible) return;
-        setState(() => _hasSelectedMetroStation = visible);
-      },
-      onClearSelectedPin: () {
-        setState(() {
-          _selectedPin = null;
-          _selectedPinGroup = const [];
-        });
-      },
-      onClearSelectedUniversityMarker: () {
-        setState(() => _selectedUniversityMarker = null);
-      },
-      onSelectPin: (pin) {
-        setState(() {
-          _selectedPin = pin;
-          _selectedPinGroup = const [];
-          _selectedUniversityMarker = null;
-        });
-      },
-      onSelectPinGroup: (pins) {
-        setState(() {
-          _selectedPin = null;
-          _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
-          _selectedUniversityMarker = null;
-        });
-      },
-      onSelectUniversityMarker: (marker) {
-        setState(() {
-          _selectedPin = null;
-          _selectedPinGroup = const [];
-          _selectedUniversityMarker = marker;
-        });
-      },
-      onOpenPin: (pin) => context.pushListingDetail(pin.listingId),
+      onToggleDistrictLayer: _onToggleDistrictLayer,
+      onToggleWalkRadiusMinutes: _onToggleWalkRadiusMinutes,
+      onToggleMetroLayerMode: _onToggleMetroLayerMode,
+      onToggleUniversitiesLayer: _onToggleUniversitiesLayer,
+      onToggleMapNightMode: _onToggleMapNightMode,
+      onMapBackgroundTap: _onMapBackgroundTap,
+      onSelectedMetroStationChanged: _onSelectedMetroStationChanged,
+      onClearSelectedMetroStation: _onClearSelectedMetroStation,
+      onClearSelectedPin: _onClearSelectedPin,
+      onClearSelectedUniversityMarker: _onClearSelectedUniversityMarker,
+      onSelectPin: _onSelectPin,
+      onSelectPinGroup: _onSelectPinGroup,
+      onSelectUniversityMarker: _onSelectUniversityMarker,
+      onOpenPin: _onOpenPin,
     );
+  }
+
+  void _handleToggleDistrictLayer() {
+    _showDistrictLayer = !_showDistrictLayer;
+    _syncAllMapProps();
+  }
+
+  void _handleToggleWalkRadiusMinutes() {
+    _walkRadiusMinutes = _walkRadiusMinutes.next;
+    _syncAllMapProps();
+  }
+
+  void _handleToggleMetroLayerMode() {
+    _metroLayerMode = _metroLayerMode.next;
+    if (!_metroLayerMode.showsStations) {
+      _selectedMetroStation = null;
+    }
+    _syncAllMapProps();
+  }
+
+  void _handleToggleUniversitiesLayer() {
+    _showUniversitiesLayer = !_showUniversitiesLayer;
+    if (!_showUniversitiesLayer) {
+      _selectedUniversityMarker = null;
+    }
+    _syncAllMapProps();
+  }
+
+  void _handleToggleMapNightMode(bool enabled) {
+    _mapNightModeOverride = enabled;
+    _syncAllMapProps();
+  }
+
+  void _handleOpenPin(ListingMapPin pin) {
+    context.pushListingDetail(pin.listingId);
+  }
+
+  void _handleMapBackgroundTap(Point point) {
+    _handleClearSelectedPin();
+    _handleClearSelectedUniversityMarker();
+    _handleClearSelectedMetroStation();
+  }
+
+  void _handleClearSelectedPin() {
+    _selectedPin = null;
+    _selectedPinGroup = const [];
+    _selectedListingGroupIds = const [];
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleClearSelectedUniversityMarker() {
+    _selectedUniversityMarker = null;
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleClearSelectedMetroStation() {
+    _selectedMetroStation = null;
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleSelectPin(ListingMapPin pin) {
+    _selectedPin = pin;
+    _selectedPinGroup = const [];
+    _selectedListingGroupIds = const [];
+    _selectedUniversityMarker = null;
+    _selectedMetroStation = null;
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleSelectPinGroup(List<ListingMapPin> pins) {
+    _selectedPin = null;
+    _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
+    _selectedListingGroupIds = [
+      for (final pin in pins) pin.listingId,
+    ];
+    _selectedUniversityMarker = null;
+    _selectedMetroStation = null;
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleSelectUniversityMarker(UniversityMapMarker marker) {
+    _selectedPin = null;
+    _selectedPinGroup = const [];
+    _selectedListingGroupIds = const [];
+    _selectedUniversityMarker = marker;
+    _selectedMetroStation = null;
+    _syncCanvasProps();
+    _syncOverlayProps();
+  }
+
+  void _handleSelectedMetroStationChanged(SubwayStation? station) {
+    if (_selectedMetroStation?.id == station?.id) return;
+    _selectedMetroStation = station;
+    if (station != null) {
+      _selectedPin = null;
+      _selectedPinGroup = const [];
+      _selectedListingGroupIds = const [];
+      _selectedUniversityMarker = null;
+    }
+    _syncCanvasProps();
+    _syncOverlayProps();
   }
 }

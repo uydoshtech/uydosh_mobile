@@ -1,39 +1,9 @@
 part of "../search_results_map_screen.dart";
 
-class _SearchResultsMapContent extends StatelessWidget {
-  const _SearchResultsMapContent({
-    required this.result,
-    required this.isLoading,
-    required this.hasSearchFilters,
-    required this.listingTypeId,
-    required this.minPrice,
-    required this.maxPrice,
-    required this.privateRoom,
-    required this.withPhoto,
-    required this.selectedPin,
-    required this.selectedPinGroup,
-    required this.selectedUniversityMarker,
-    required this.hasSelectedMetroStation,
-    required this.universityMarkers,
-    required this.selectedUniversityMarkerId,
-    required this.userUniversityMarkerId,
-    required this.showDistrictLayer,
-    required this.metroLayerMode,
-    required this.walkRadiusMinutes,
-    required this.showUniversitiesLayer,
-    required this.showGroceryStoresLayer,
-    required this.showBusStopsLayer,
-    required this.mapNightModeOverride,
-    required this.showLocationPrompt,
-    required this.filterRibbonEnabled,
-    required this.showFilterRibbon,
-    required this.userLocationRequestToken,
-    required this.userLocationLatitude,
-    required this.userLocationLongitude,
-    required this.placeViewToggleAtBottom,
-    required this.mapBottomInset,
-    required this.searchButtonBottom,
-    required this.viewToggleBottom,
+class _SearchResultsMapBody extends StatelessWidget {
+  const _SearchResultsMapBody({
+    required this.canvasListenable,
+    required this.overlayListenable,
     required this.onOpenFilters,
     required this.onCloseFilterRibbon,
     required this.onOpenEmbeddedSearch,
@@ -46,55 +16,17 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onToggleMapNightMode,
     required this.onClearSelectedPin,
     required this.onClearSelectedUniversityMarker,
+    required this.onMapBackgroundTap,
     required this.onSelectPin,
     required this.onSelectPinGroup,
     required this.onSelectUniversityMarker,
-    required this.onMetroStationTooltipChanged,
+    required this.onClearSelectedMetroStation,
+    required this.onSelectedMetroStationChanged,
     required this.onOpenPin,
-    this.gender,
-    this.locationId,
-    this.subwayStationId,
-    this.subwayStationIds = const [],
-    this.subwayLineId,
   });
 
-  final _SearchMapResult result;
-  final bool isLoading;
-  final bool hasSearchFilters;
-  final int listingTypeId;
-  final int? gender;
-  final int? locationId;
-  final int? subwayStationId;
-  final List<int> subwayStationIds;
-  final int? subwayLineId;
-  final double minPrice;
-  final double maxPrice;
-  final bool privateRoom;
-  final bool withPhoto;
-  final ListingMapPin? selectedPin;
-  final List<ListingMapPin> selectedPinGroup;
-  final UniversityMapMarker? selectedUniversityMarker;
-  final bool hasSelectedMetroStation;
-  final List<UniversityMapMarker> universityMarkers;
-  final String? selectedUniversityMarkerId;
-  final String? userUniversityMarkerId;
-  final bool showDistrictLayer;
-  final _MetroLayerMode metroLayerMode;
-  final _WalkRadiusMinutes walkRadiusMinutes;
-  final bool showUniversitiesLayer;
-  final bool showGroceryStoresLayer;
-  final bool showBusStopsLayer;
-  final bool? mapNightModeOverride;
-  final bool showLocationPrompt;
-  final bool filterRibbonEnabled;
-  final bool showFilterRibbon;
-  final int userLocationRequestToken;
-  final double? userLocationLatitude;
-  final double? userLocationLongitude;
-  final bool placeViewToggleAtBottom;
-  final double mapBottomInset;
-  final double searchButtonBottom;
-  final double viewToggleBottom;
+  final ValueListenable<_SearchMapCanvasProps> canvasListenable;
+  final ValueListenable<_SearchMapOverlayProps> overlayListenable;
   final VoidCallback onOpenFilters;
   final VoidCallback onCloseFilterRibbon;
   final VoidCallback? onOpenEmbeddedSearch;
@@ -107,53 +39,274 @@ class _SearchResultsMapContent extends StatelessWidget {
   final ValueChanged<bool> onToggleMapNightMode;
   final VoidCallback onClearSelectedPin;
   final VoidCallback onClearSelectedUniversityMarker;
+  final ArgumentCallback<Point> onMapBackgroundTap;
   final ValueChanged<ListingMapPin> onSelectPin;
   final ValueChanged<List<ListingMapPin>> onSelectPinGroup;
   final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
-  final ValueChanged<bool> onMetroStationTooltipChanged;
+  final VoidCallback onClearSelectedMetroStation;
+  final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
   final ValueChanged<ListingMapPin> onOpenPin;
 
   @override
   Widget build(BuildContext context) {
-    final pin = selectedPin;
-    final pinGroup = selectedPinGroup;
-    final universityMarker = selectedUniversityMarker;
-    final showSelectFiltersTile = !hasSearchFilters && !isLoading;
+    return Column(
+      children: [
+        ValueListenableBuilder<_SearchMapOverlayProps>(
+          valueListenable: overlayListenable,
+          builder: (context, overlay, _) {
+            if (!overlay.filterRibbonEnabled) return const SizedBox.shrink();
+            if (overlay.showFilterRibbon) {
+              return _MapFilterRibbon(
+                onPressed: onOpenFilters,
+                onClose: onCloseFilterRibbon,
+                listingTypeId: overlay.listingTypeId,
+                gender: overlay.gender,
+                locationId: overlay.locationId,
+                subwayStationId: overlay.subwayStationId,
+                subwayStationIds: overlay.subwayStationIds,
+                subwayLineId: overlay.subwayLineId,
+                minPrice: overlay.minPrice,
+                maxPrice: overlay.maxPrice,
+                privateRoom: overlay.privateRoom,
+                withPhoto: overlay.withPhoto,
+                total: overlay.resultTotal,
+              );
+            }
+            return _MapFilterRibbon(
+              onPressed: onOpenFilters,
+              emptyLabel: overlay.hasSearchFilters
+                  ? "${L10n.get("filters_bar_label")} • ${overlay.resultTotal}"
+                  : context.l10n.choose_filters,
+              listingTypeId: overlay.listingTypeId,
+              gender: overlay.gender,
+              locationId: overlay.locationId,
+              subwayStationId: overlay.subwayStationId,
+              subwayStationIds: overlay.subwayStationIds,
+              subwayLineId: overlay.subwayLineId,
+              minPrice: overlay.minPrice,
+              maxPrice: overlay.maxPrice,
+              privateRoom: overlay.privateRoom,
+              withPhoto: overlay.withPhoto,
+              total: overlay.resultTotal,
+            );
+          },
+        ),
+        Expanded(
+          child: Stack(
+            children: [
+              ValueListenableBuilder<_SearchMapCanvasProps>(
+                valueListenable: canvasListenable,
+                builder: (context, canvas, _) {
+                  return _SearchMapCanvas(
+                    props: canvas,
+                    onMapBackgroundTap: onMapBackgroundTap,
+                    onSelectPin: onSelectPin,
+                    onSelectPinGroup: onSelectPinGroup,
+                    onSelectUniversityMarker: onSelectUniversityMarker,
+                    onSelectedMetroStationChanged: onSelectedMetroStationChanged,
+                  );
+                },
+              ),
+              ValueListenableBuilder<_SearchMapOverlayProps>(
+                valueListenable: overlayListenable,
+                builder: (context, overlay, _) {
+                  return _SearchMapOverlays(
+                    props: overlay,
+                    onOpenFeedView: onOpenFeedView,
+                    onOpenEmbeddedSearch: onOpenEmbeddedSearch,
+                    onRequestUserLocation: onRequestUserLocation,
+                    onToggleDistrictLayer: onToggleDistrictLayer,
+                    onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
+                    onToggleMetroLayerMode: onToggleMetroLayerMode,
+                    onToggleUniversitiesLayer: onToggleUniversitiesLayer,
+                    onToggleMapNightMode: onToggleMapNightMode,
+                    onClearSelectedPin: onClearSelectedPin,
+                    onClearSelectedUniversityMarker: onClearSelectedUniversityMarker,
+                    onClearSelectedMetroStation: onClearSelectedMetroStation,
+                    onOpenPin: onOpenPin,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SearchMapCanvas extends StatelessWidget {
+  const _SearchMapCanvas({
+    required this.props,
+    required this.onMapBackgroundTap,
+    required this.onSelectPin,
+    required this.onSelectPinGroup,
+    required this.onSelectUniversityMarker,
+    required this.onSelectedMetroStationChanged,
+  });
+
+  final _SearchMapCanvasProps props;
+  final ArgumentCallback<Point> onMapBackgroundTap;
+  final ValueChanged<ListingMapPin> onSelectPin;
+  final ValueChanged<List<ListingMapPin>> onSelectPinGroup;
+  final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
+  final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final canvas = props;
+    final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
+    final mapNightModeEnabled =
+        canvas.mapNightModeOverride ?? appNightModeEnabled;
+    const viewToggleWidth = 61.0;
+    const zoomControlsWidth = 48.0;
+    const viewToggleGap = 8.0;
+    const feedViewButtonHeight = 34.2;
+    final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
+    final zoomControlsBottom = canvas.viewToggleBottom +
+        feedViewButtonHeight +
+        viewToggleGap -
+        safeAreaBottom;
+
+    return Positioned(
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: canvas.mapBottomInset,
+      child: MediaQuery.removePadding(
+        context: context,
+        removeBottom: canvas.mapBottomInset > 0,
+        child: RepaintBoundary(
+          child: YandexMapWidget(
+            apiKey: AppConfig.yandexMapsApiKey,
+            pins: canvas.result.pins,
+            universityMarkers: canvas.universityMarkers,
+            selectedUniversityMarkerId: canvas.selectedUniversityMarkerId,
+            selectedMetroStationId: canvas.selectedMetroStationId,
+            userUniversityMarkerId: canvas.userUniversityMarkerId,
+            selectedUniversityZoomFocusId: canvas.selectedUniversityZoomFocusId,
+            selectedListingId: canvas.selectedListingId,
+            selectedListingGroupIds: canvas.selectedListingGroupIds,
+            title: context.l10n.search_results,
+            height: double.infinity,
+            cameraOptions: YandexMapCameraOptions(
+              moveOnTargetChange: canvas.activeMapSearch &&
+                  (canvas.result.pins.isNotEmpty ||
+                      (canvas.locationId != null && canvas.locationId! > 0)),
+              includeUniversityMarkersInCamera: false,
+              fitCityWhenNoPins: !canvas.activeMapSearch,
+            ),
+            showDefaultPlacemark: false,
+            nightModeEnabled: mapNightModeEnabled,
+            walkRadiusMinutes: canvas.walkRadiusMinutes.minutes,
+            tooltipOptions: const YandexMapTooltipOptions(
+              showUniversityMarker: false,
+              showMetroStation: false,
+            ),
+            layerOptions: YandexMapLayerOptions(
+              showUserLocation: false,
+              showDistrictLayer: canvas.showDistrictLayer,
+              highlightedLocationId: canvas.activeMapSearch &&
+                      canvas.locationId != null &&
+                      canvas.locationId! > 0
+                  ? canvas.locationId
+                  : null,
+              showMetroStationsLayer: canvas.metroLayerMode.showsStations,
+              metroStationLineId: canvas.metroLayerMode.lineId,
+              showGroceryStoresLayer: canvas.showGroceryStoresLayer,
+              showBusStopsLayer: canvas.showBusStopsLayer,
+            ),
+            userLocationRequestToken: canvas.userLocationRequestToken,
+            userLocationLatitude: canvas.userLocationLatitude,
+            userLocationLongitude: canvas.userLocationLongitude,
+            showLoadingPlaceholderContent: false,
+            zoomControlsOptions: YandexMapZoomControlsOptions(
+              right: canvas.placeViewToggleAtBottom
+                  ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                  : null,
+              bottom: canvas.placeViewToggleAtBottom
+                  ? zoomControlsBottom.clamp(0.0, double.infinity)
+                  : null,
+            ),
+            onSelectedMetroStationChanged: onSelectedMetroStationChanged,
+            onMapTap: onMapBackgroundTap,
+            onPinTap: onSelectPin,
+            onPinGroupTap: onSelectPinGroup,
+            onUniversityMarkerTap: onSelectUniversityMarker,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchMapOverlays extends StatelessWidget {
+  const _SearchMapOverlays({
+    required this.props,
+    required this.onOpenFeedView,
+    required this.onOpenEmbeddedSearch,
+    required this.onRequestUserLocation,
+    required this.onToggleDistrictLayer,
+    required this.onToggleWalkRadiusMinutes,
+    required this.onToggleMetroLayerMode,
+    required this.onToggleUniversitiesLayer,
+    required this.onToggleMapNightMode,
+    required this.onClearSelectedPin,
+    required this.onClearSelectedUniversityMarker,
+    required this.onClearSelectedMetroStation,
+    required this.onOpenPin,
+  });
+
+  final _SearchMapOverlayProps props;
+  final VoidCallback onOpenFeedView;
+  final VoidCallback? onOpenEmbeddedSearch;
+  final VoidCallback onRequestUserLocation;
+  final VoidCallback onToggleDistrictLayer;
+  final VoidCallback onToggleWalkRadiusMinutes;
+  final VoidCallback onToggleMetroLayerMode;
+  final VoidCallback onToggleUniversitiesLayer;
+  final ValueChanged<bool> onToggleMapNightMode;
+  final VoidCallback onClearSelectedPin;
+  final VoidCallback onClearSelectedUniversityMarker;
+  final VoidCallback onClearSelectedMetroStation;
+  final ValueChanged<ListingMapPin> onOpenPin;
+
+  @override
+  Widget build(BuildContext context) {
+    final overlay = props;
+    final pin = overlay.selectedPin;
+    final pinGroup = overlay.selectedPinGroup;
+    final universityMarker = overlay.selectedUniversityMarker;
+    final metroStation = overlay.selectedMetroStation;
+    final showSelectFiltersTile = !overlay.hasSearchFilters && !overlay.isLoading;
     final showNoResultsTile =
-        hasSearchFilters && !isLoading && result.total == 0;
-    final activeMapSearch = showFilterRibbon && hasSearchFilters;
-    final hasMapTooltipSpace = hasSelectedMetroStation &&
-        !showSelectFiltersTile &&
-        !showNoResultsTile;
+        overlay.hasSearchFilters && !overlay.isLoading && overlay.resultTotal == 0;
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
         showNoResultsTile ||
-        hasMapTooltipSpace;
+        (metroStation != null && !showSelectFiltersTile && !showNoResultsTile);
     final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
-    final mapNightModeEnabled = mapNightModeOverride ?? appNightModeEnabled;
+    final mapNightModeEnabled =
+        overlay.mapNightModeOverride ?? appNightModeEnabled;
     final mapLoaderColor = mapNightModeEnabled ? Colors.white : Colors.black;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.0;
     const feedViewButtonHeight = 34.2;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
-    const zoomControlsWidth = 48.0;
-    const metroTooltipReservedHeight = 64.0;
     const locationPromptBottomMargin = 8.0;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
-    final bottomOverlayInset =
-        mapBottomInset > safeAreaBottom ? mapBottomInset : safeAreaBottom;
-    final locationPromptBottom = placeViewToggleAtBottom
-        ? searchButtonBottom
+    final bottomOverlayInset = overlay.mapBottomInset > safeAreaBottom
+        ? overlay.mapBottomInset
+        : safeAreaBottom;
+    final locationPromptBottom = overlay.placeViewToggleAtBottom
+        ? overlay.searchButtonBottom
         : bottomOverlayInset + locationPromptBottomMargin;
-    final locationPromptHeight = placeViewToggleAtBottom
-        ? (viewToggleBottom - searchButtonBottom) + feedViewButtonHeight
+    final locationPromptHeight = overlay.placeViewToggleAtBottom
+        ? (overlay.viewToggleBottom - overlay.searchButtonBottom) +
+            feedViewButtonHeight
         : feedViewButtonHeight;
-    final zoomControlsBottom = viewToggleBottom +
-        feedViewButtonHeight +
-        viewToggleGap -
-        safeAreaBottom;
     const mapOverlayPanelColor = Colors.white;
     const mapOverlayButtonBorder = BorderSide(color: Colors.black, width: 1);
     final feedViewButton = SearchFloatingActionButton(
@@ -186,308 +339,200 @@ class _SearchResultsMapContent extends StatelessWidget {
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
-    return Column(
+
+    return Stack(
       children: [
-        if (filterRibbonEnabled)
-          if (showFilterRibbon)
-            _MapFilterRibbon(
-              onPressed: onOpenFilters,
-              onClose: onCloseFilterRibbon,
-              listingTypeId: listingTypeId,
-              gender: gender,
-              locationId: locationId,
-              subwayStationId: subwayStationId,
-              subwayStationIds: subwayStationIds,
-              subwayLineId: subwayLineId,
-              minPrice: minPrice,
-              maxPrice: maxPrice,
-              privateRoom: privateRoom,
-              withPhoto: withPhoto,
-              total: result.total,
-            )
-          else
-            _MapFilterRibbon(
-              onPressed: onOpenFilters,
-              emptyLabel: hasSearchFilters
-                  ? "${L10n.get("filters_bar_label")} • ${result.total}"
-                  : context.l10n.choose_filters,
-              listingTypeId: listingTypeId,
-              gender: gender,
-              locationId: locationId,
-              subwayStationId: subwayStationId,
-              subwayStationIds: subwayStationIds,
-              subwayLineId: subwayLineId,
-              minPrice: minPrice,
-              maxPrice: maxPrice,
-              privateRoom: privateRoom,
-              withPhoto: withPhoto,
-              total: result.total,
-            ),
-        Expanded(
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                right: 0,
-                bottom: mapBottomInset,
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeBottom: mapBottomInset > 0,
-                  child: RepaintBoundary(
-                    child: YandexMapWidget(
-                    apiKey: AppConfig.yandexMapsApiKey,
-                    pins: result.pins,
-                    universityMarkers: universityMarkers,
-                    selectedUniversityMarkerId: selectedUniversityMarkerId,
-                    userUniversityMarkerId: userUniversityMarkerId,
-                    selectedUniversityZoomFocusId: universityMarker?.id,
-                    selectedListingId: selectedPin?.listingId,
-                    selectedListingGroupIds: [
-                      for (final pin in pinGroup) pin.listingId,
-                    ],
-                    title: context.l10n.search_results,
-                    height: double.infinity,
-                    cameraOptions: YandexMapCameraOptions(
-                      moveOnTargetChange: activeMapSearch &&
-                          (result.pins.isNotEmpty ||
-                              (locationId != null && locationId! > 0)),
-                      includeUniversityMarkersInCamera: false,
-                      fitCityWhenNoPins: !activeMapSearch,
-                    ),
-                    showDefaultPlacemark: false,
-                    nightModeEnabled: mapNightModeEnabled,
-                    walkRadiusMinutes: walkRadiusMinutes.minutes,
-                    tooltipOptions: YandexMapTooltipOptions(
-                      showUniversityMarker: false,
-                      showMetroStation:
-                          !showSelectFiltersTile && !showNoResultsTile,
-                    ),
-                    layerOptions: YandexMapLayerOptions(
-                      showUserLocation: false,
-                      showDistrictLayer: showDistrictLayer,
-                      highlightedLocationId: activeMapSearch &&
-                              locationId != null &&
-                              locationId! > 0
-                          ? locationId
-                          : null,
-                      showMetroStationsLayer: metroLayerMode.showsStations,
-                      metroStationLineId: metroLayerMode.lineId,
-                      showGroceryStoresLayer: showGroceryStoresLayer,
-                      showBusStopsLayer: showBusStopsLayer,
-                    ),
-                    userLocationRequestToken: userLocationRequestToken,
-                    userLocationLatitude: userLocationLatitude,
-                    userLocationLongitude: userLocationLongitude,
-                    showLoadingPlaceholderContent: false,
-                    zoomControlsOptions: YandexMapZoomControlsOptions(
-                      right: placeViewToggleAtBottom
-                          ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
-                          : null,
-                      bottom: placeViewToggleAtBottom
-                          ? zoomControlsBottom.clamp(0.0, double.infinity)
-                          : null,
-                    ),
-                    onMetroStationTooltipChanged: onMetroStationTooltipChanged,
-                    onMapTap: (_) {
-                      onClearSelectedPin();
-                      onClearSelectedUniversityMarker();
-                    },
-                    onPinTap: onSelectPin,
-                    onPinGroupTap: onSelectPinGroup,
-                    onUniversityMarkerTap: onSelectUniversityMarker,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: UiPerformancePolicy.solidColorsPreferredForDevice
-                      ? (isLoading
-                          ? Center(
-                              child: Transform.translate(
-                                offset: const Offset(0, -50),
-                                child: HouseLoadingIndicator(
-                                  size: 44,
-                                  color: mapLoaderColor,
-                                ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: UiPerformancePolicy.solidColorsPreferredForDevice
+                ? (overlay.isLoading
+                    ? Center(
+                        child: Transform.translate(
+                          offset: const Offset(0, -50),
+                          child: HouseLoadingIndicator(
+                            size: 44,
+                            color: mapLoaderColor,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink())
+                : AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: overlay.isLoading
+                        ? Center(
+                            key: const ValueKey("map-results-loading"),
+                            child: Transform.translate(
+                              offset: const Offset(0, -50),
+                              child: HouseLoadingIndicator(
+                                size: 44,
+                                color: mapLoaderColor,
                               ),
+                            ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey("map-results-idle"),
+                          ),
+                  ),
+          ),
+        ),
+        Positioned(
+          left: 12,
+          right: 12,
+          top: viewToggleTop,
+          child: PointerInterceptor(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                MapTooltipFadeTransition(
+                  child: showNoResultsTile
+                      ? _NoMapResultsTile(
+                          key: const ValueKey("no-map-results"),
+                          label: L10n.get("no_results"),
+                        )
+                      : pin != null
+                          ? _PinSummaryTooltip(
+                              key: ValueKey("pin-${pin.listingId}"),
+                              pin: pin,
+                              onClose: onClearSelectedPin,
+                              onOpen: () => onOpenPin(pin),
                             )
-                          : const SizedBox.shrink())
-                      : AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 180),
-                          switchInCurve: Curves.easeOut,
-                          switchOutCurve: Curves.easeIn,
-                          child: isLoading
-                              ? Center(
-                                  key: const ValueKey("map-results-loading"),
-                                  child: Transform.translate(
-                                    offset: const Offset(0, -50),
-                                    child: HouseLoadingIndicator(
-                                      size: 44,
-                                      color: mapLoaderColor,
-                                    ),
+                          : pinGroup.isNotEmpty
+                              ? _PinGroupSummaryTooltip(
+                                  key: ValueKey(
+                                    "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
                                   ),
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey("map-results-idle"),
-                                ),
-                        ),
-                ),
-              ),
-              Positioned(
-                left: 12,
-                right: 12,
-                top: viewToggleTop,
-                child: PointerInterceptor(
-                  child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    MapTooltipFadeTransition(
-                      child: showNoResultsTile
-                          ? _NoMapResultsTile(
-                              key: const ValueKey("no-map-results"),
-                              label: L10n.get("no_results"),
-                            )
-                          : pin != null
-                              ? _PinSummaryTooltip(
-                                  key: ValueKey("pin-${pin.listingId}"),
-                                  pin: pin,
+                                  pins: pinGroup,
                                   onClose: onClearSelectedPin,
-                                  onOpen: () => onOpenPin(pin),
+                                  onOpenPin: onOpenPin,
                                 )
-                              : pinGroup.isNotEmpty
-                                  ? _PinGroupSummaryTooltip(
+                              : universityMarker != null
+                                  ? UniversityMapTooltip(
                                       key: ValueKey(
-                                        "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
+                                        "university-${universityMarker.id}",
                                       ),
-                                      pins: pinGroup,
-                                      onClose: onClearSelectedPin,
-                                      onOpenPin: onOpenPin,
+                                      marker: universityMarker,
+                                      onClose: onClearSelectedUniversityMarker,
                                     )
-                                  : universityMarker != null
-                                      ? UniversityMapTooltip(
+                                  : metroStation != null &&
+                                          !showSelectFiltersTile &&
+                                          !showNoResultsTile
+                                      ? MetroStationMapTooltip(
                                           key: ValueKey(
-                                            "university-${universityMarker.id}",
+                                            "metro-station-${metroStation.id}",
                                           ),
-                                          marker: universityMarker,
-                                          onClose:
-                                              onClearSelectedUniversityMarker,
+                                          station: metroStation,
+                                          lineColor: AppColors.getMetroLineColor(
+                                            metroStation.line,
+                                          ),
+                                          onClose: onClearSelectedMetroStation,
                                         )
-                                      : hasMapTooltipSpace
-                                          ? IgnorePointer(
-                                              child: SizedBox(
-                                                key: const ValueKey(
-                                                  "metro-station-tooltip-space",
-                                                ),
-                                                width: double.infinity,
-                                                height:
-                                                    metroTooltipReservedHeight,
-                                              ),
-                                            )
-                                          : null,
+                                      : null,
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  height: hasTopTile ? viewToggleGap : 0,
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: mapThemeButton,
                     ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      height: hasTopTile ? viewToggleGap : 0,
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: mapThemeButton,
-                        ),
-                        const Spacer(),
-                        Flexible(
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Column(
+                    const Spacer(),
+                    Flexible(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (!overlay.placeViewToggleAtBottom) ...[
+                              feedViewButton,
+                              const SizedBox(height: viewToggleGap),
+                            ],
+                            if (metroStation != null ||
+                                universityMarker != null) ...[
+                              _WalkRadiusMinutesButton(
+                                minutes: overlay.walkRadiusMinutes.minutes,
+                                active: true,
+                                height: viewToggleHeight,
+                                borderSide: mapOverlayButtonBorder,
+                                onPressed: onToggleWalkRadiusMinutes,
+                              ),
+                              const SizedBox(height: viewToggleGap),
+                            ],
+                            Row(
                               mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                if (!placeViewToggleAtBottom) ...[
-                                  feedViewButton,
-                                  const SizedBox(height: viewToggleGap),
-                                ],
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerRight,
-                                  child: _MapLayerToggleButtons(
-                                    walkRadiusMinutes: walkRadiusMinutes,
-                                    walkRadiusActive:
-                                        hasSelectedMetroStation ||
-                                            universityMarker != null,
-                                    metroLayerMode: metroLayerMode,
-                                    showDistrictLayer: showDistrictLayer,
-                                    showUniversitiesLayer:
-                                        showUniversitiesLayer,
-                                    onToggleWalkRadiusMinutes:
-                                        onToggleWalkRadiusMinutes,
-                                    onToggleMetroLayerMode:
-                                        onToggleMetroLayerMode,
-                                    onToggleDistrictLayer:
-                                        onToggleDistrictLayer,
-                                    onToggleUniversitiesLayer:
-                                        onToggleUniversitiesLayer,
-                                    width: viewToggleWidth,
-                                    height: viewToggleHeight,
-                                    gap: viewToggleGap,
-                                  ),
+                                _MapLayerToggleButtons(
+                                  metroLayerMode: overlay.metroLayerMode,
+                                  showDistrictLayer: overlay.showDistrictLayer,
+                                  showUniversitiesLayer:
+                                      overlay.showUniversitiesLayer,
+                                  onToggleMetroLayerMode:
+                                      onToggleMetroLayerMode,
+                                  onToggleDistrictLayer: onToggleDistrictLayer,
+                                  onToggleUniversitiesLayer:
+                                      onToggleUniversitiesLayer,
+                                  width: viewToggleWidth,
+                                  height: viewToggleHeight,
+                                  gap: viewToggleGap,
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-                ),
-              ),
-              if (placeViewToggleAtBottom)
-                Positioned(
-                  right: 16,
-                  bottom: viewToggleBottom,
-                  child: PointerInterceptor(child: feedViewButton),
-                ),
-              if (placeViewToggleAtBottom && onOpenEmbeddedSearch != null)
-                Positioned(
-                  right: 16,
-                  bottom: searchButtonBottom,
-                  child: PointerInterceptor(
-                    child: SearchFloatingActionButton(
-                      onPressed: onOpenEmbeddedSearch,
-                      iconData: Icons.search,
-                      width: viewToggleWidth,
-                      height: feedViewButtonHeight,
-                      iconSize: 22.5,
-                      backgroundColor: mapOverlayPanelColor,
-                      foregroundColor: Colors.black,
-                      borderSide: mapOverlayButtonBorder,
-                      mapOverlay: true,
-                      elevation: ThemeState().isBlueTheme ? null : 8,
-                    ),
-                  ),
-                ),
-              if (showLocationPrompt)
-                Positioned(
-                  left: 12,
-                  width: MediaQuery.sizeOf(context).width * 0.75,
-                  bottom: locationPromptBottom,
-                  child: PointerInterceptor(
-                    child: _MapLocationPromptCard(
-                      height: locationPromptHeight,
-                      actionButtonHeight: feedViewButtonHeight,
-                      onPressed: onRequestUserLocation,
-                    ),
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
+        if (overlay.placeViewToggleAtBottom)
+          Positioned(
+            right: 16,
+            bottom: overlay.viewToggleBottom,
+            child: PointerInterceptor(child: feedViewButton),
+          ),
+        if (overlay.placeViewToggleAtBottom && overlay.hasEmbeddedSearch)
+          Positioned(
+            right: 16,
+            bottom: overlay.searchButtonBottom,
+            child: PointerInterceptor(
+              child: SearchFloatingActionButton(
+                onPressed: onOpenEmbeddedSearch,
+                iconData: Icons.search,
+                width: viewToggleWidth,
+                height: feedViewButtonHeight,
+                iconSize: 22.5,
+                backgroundColor: mapOverlayPanelColor,
+                foregroundColor: Colors.black,
+                borderSide: mapOverlayButtonBorder,
+                mapOverlay: true,
+                elevation: ThemeState().isBlueTheme ? null : 8,
+              ),
+            ),
+          ),
+        if (overlay.showLocationPrompt)
+          Positioned(
+            left: 12,
+            width: MediaQuery.sizeOf(context).width * 0.75,
+            bottom: locationPromptBottom,
+            child: PointerInterceptor(
+              child: _MapLocationPromptCard(
+                height: locationPromptHeight,
+                actionButtonHeight: feedViewButtonHeight,
+                onPressed: onRequestUserLocation,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -661,12 +706,9 @@ class _NoMapResultsTile extends StatelessWidget {
 
 class _MapLayerToggleButtons extends StatelessWidget {
   const _MapLayerToggleButtons({
-    required this.walkRadiusMinutes,
-    required this.walkRadiusActive,
     required this.metroLayerMode,
     required this.showDistrictLayer,
     required this.showUniversitiesLayer,
-    required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
     required this.onToggleDistrictLayer,
     required this.onToggleUniversitiesLayer,
@@ -675,12 +717,9 @@ class _MapLayerToggleButtons extends StatelessWidget {
     required this.gap,
   });
 
-  final _WalkRadiusMinutes walkRadiusMinutes;
-  final bool walkRadiusActive;
   final _MetroLayerMode metroLayerMode;
   final bool showDistrictLayer;
   final bool showUniversitiesLayer;
-  final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleUniversitiesLayer;
@@ -696,16 +735,6 @@ class _MapLayerToggleButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (walkRadiusActive) ...[
-          _WalkRadiusMinutesButton(
-            minutes: walkRadiusMinutes.minutes,
-            active: true,
-            height: height,
-            borderSide: _border,
-            onPressed: onToggleWalkRadiusMinutes,
-          ),
-          SizedBox(width: gap),
-        ],
         _MetroLayerModeButton(
           mode: metroLayerMode,
           width: width,
@@ -732,26 +761,6 @@ class _MapLayerToggleButtons extends StatelessWidget {
           inactiveTooltip: context.l10n.show_universities_layer,
           onPressed: onToggleUniversitiesLayer,
         ),
-        /*
-        SizedBox(width: gap),
-        _buildLayerButton(
-          context,
-          active: showGroceryStoresLayer,
-          iconData: Icons.local_grocery_store_rounded,
-          activeTooltip: context.l10n.hide_grocery_stores_layer,
-          inactiveTooltip: context.l10n.show_grocery_stores_layer,
-          onPressed: onToggleGroceryStoresLayer,
-        ),
-        SizedBox(width: gap),
-        _buildLayerButton(
-          context,
-          active: showBusStopsLayer,
-          iconData: Icons.directions_bus_rounded,
-          activeTooltip: context.l10n.hide_bus_stops_layer,
-          inactiveTooltip: context.l10n.show_bus_stops_layer,
-          onPressed: onToggleBusStopsLayer,
-        ),
-        */
       ],
     );
   }

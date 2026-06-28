@@ -5,6 +5,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:flutter/foundation.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -56,6 +57,26 @@ abstract class IListingSearchService {
   });
 
   Future<PageableResponse<Listing>> searchListings({
+    int page = 1,
+    int limit = 10,
+    bool isActive = true,
+    String? language,
+    int? listingTypeId,
+    List<int>? listingTypeIds,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+    int createdWithinDays = 30,
+    List<int>? excludeUserIds,
+  });
+
+  Future<PageableResponse<ListingMapPinData>> searchMapListings({
     int page = 1,
     int limit = 10,
     bool isActive = true,
@@ -133,6 +154,96 @@ class ListingSearchService implements IListingSearchService {
         limit: response["limit"] as int? ?? limit,
         totalPages: response["totalPages"] as int? ?? 1,
       );
+
+  List<dynamic> _extractMapPinsData(dynamic response) {
+    if (response is Map<String, dynamic>) {
+      if (response["pins"] != null) {
+        return response["pins"] as List<dynamic>;
+      }
+    }
+    return <dynamic>[];
+  }
+
+  PageableResponse<ListingMapPinData> _toMapPinPageableResponse(
+    Map<String, dynamic> response,
+    List<ListingMapPinData> pins,
+    int page,
+    int limit,
+  ) =>
+      PageableResponse<ListingMapPinData>(
+        data: pins,
+        total: response["total"] as int? ?? pins.length,
+        page: response["page"] as int? ?? page,
+        limit: response["limit"] as int? ?? limit,
+        totalPages: response["totalPages"] as int? ?? 1,
+      );
+
+  Map<String, dynamic> _buildListingSearchQueryParams({
+    required int page,
+    required int limit,
+    required bool isActive,
+    required String language,
+    int createdWithinDays = 30,
+    int? listingTypeId,
+    List<int>? listingTypeIds,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+    List<int>? excludeUserIds,
+  }) {
+    final queryParams = <String, dynamic>{
+      "page": page,
+      "limit": limit,
+      "isActive": isActive,
+      "language": language,
+    };
+    if (createdWithinDays > 0) {
+      queryParams["createdWithinDays"] = createdWithinDays;
+    }
+    _applyListingTypeQueryParams(
+      queryParams,
+      listingTypeId: listingTypeId,
+      listingTypeIds: listingTypeIds,
+    );
+    if (locationId != null && locationId > 0) {
+      queryParams["locationId"] = locationId;
+    }
+
+    final finalStationIds = <int>[];
+    if (subwayStationId != null && subwayStationId > 0) {
+      finalStationIds.add(subwayStationId);
+    }
+    if (subwayStationIds != null && subwayStationIds.isNotEmpty) {
+      finalStationIds.addAll(subwayStationIds);
+    }
+    if (finalStationIds.isNotEmpty) {
+      final expandedStationIds =
+          MetroCache.expandWithTransferStations(finalStationIds);
+      if (expandedStationIds.length == 1) {
+        queryParams["subwayStationId"] = expandedStationIds.first;
+      } else {
+        queryParams["subwayStationIds"] = expandedStationIds.join(",");
+      }
+    }
+    if (subwayLineId != null && subwayLineId > 0) {
+      queryParams["subwayLineId"] = subwayLineId;
+    }
+    if (gender != null) queryParams["gender"] = gender;
+    if (minPrice != null) queryParams["minPrice"] = minPrice;
+    if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
+    if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
+    if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
+    if (excludeUserIds != null && excludeUserIds.isNotEmpty) {
+      queryParams["excludeUserIds"] = excludeUserIds.join(",");
+    }
+    return queryParams;
+  }
 
   @override
   Future<PageableResponse<Listing>> getListings({
@@ -374,6 +485,68 @@ class ListingSearchService implements IListingSearchService {
       return _toPageableResponse(response, listings, page, limit);
     } catch (e) {
       logger.d("Error searching listings: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PageableResponse<ListingMapPinData>> searchMapListings({
+    int page = 1,
+    int limit = 10,
+    bool isActive = true,
+    String? language,
+    int? listingTypeId,
+    List<int>? listingTypeIds,
+    int? locationId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? subwayLineId,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+    int createdWithinDays = 30,
+    List<int>? excludeUserIds,
+  }) async {
+    final currentLanguage = language ?? LanguageState().currentLanguage;
+
+    try {
+      final queryParams = _buildListingSearchQueryParams(
+        page: page,
+        limit: limit,
+        isActive: isActive,
+        language: currentLanguage,
+        createdWithinDays: createdWithinDays,
+        listingTypeId: listingTypeId,
+        listingTypeIds: listingTypeIds,
+        locationId: locationId,
+        subwayStationId: subwayStationId,
+        subwayStationIds: subwayStationIds,
+        subwayLineId: subwayLineId,
+        gender: gender,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        privateRoom: privateRoom,
+        withPhoto: withPhoto,
+        excludeUserIds: excludeUserIds,
+      );
+
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/listings/map",
+        (json) => json,
+        basePath: EnvironmentUtil.basePath,
+        queryParameters: queryParams,
+      );
+
+      final pinsData = _extractMapPinsData(response);
+      final pins = pinsData
+          .map((item) => ListingMapPinData.fromJson(item as Map<String, dynamic>))
+          .toList();
+
+      return _toMapPinPageableResponse(response, pins, page, limit);
+    } catch (e) {
+      logger.d("Error searching map listings: $e");
       rethrow;
     }
   }

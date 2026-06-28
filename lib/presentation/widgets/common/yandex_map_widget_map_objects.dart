@@ -46,7 +46,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         widget.layerOptions.highlightedLocationId != null &&
             _currentZoom >=
                 _YandexMapWidgetState._minHighlightedDistrictLabelZoom;
-    final metroWalkAreaLabelVisible = _selectedMetroStation != null &&
+    final metroWalkAreaLabelVisible = _effectiveSelectedMetroStation != null &&
         widget.layerOptions.showMetroStationsLayer &&
         _isWalkAreaLabelVisibleAtCurrentZoom;
     final universityWalkAreaLabelVisible =
@@ -68,7 +68,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       showHighlightedDistrictLabels,
       metroWalkAreaLabelVisible,
       universityWalkAreaLabelVisible,
-      _selectedMetroStation?.id,
+      _highlightedMetroStationId,
       _selectedUniversityMarker?.id,
       widget.selectedListingId,
       Object.hashAll(widget.selectedListingGroupIds),
@@ -95,9 +95,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedMetroWalkAreaLabelIconBytes.length,
       Object.hashAll(_groceryStoreMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_busStopMarkers.map(_poiMarkerCacheKey)),
+      Object.hashAll(_visibleMetroStationIds),
       Object.hashAll(listingPinGroups.map(_pinGroupCacheKey)),
       Object.hashAll(widget.universityMarkers.map(_universityMarkerCacheKey)),
       widget.selectedUniversityMarkerId,
+      widget.selectedMetroStationId,
       widget.userUniversityMarkerId,
     ]);
   }
@@ -668,17 +670,77 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   List<MapObject> _createMetroStationLayerMapObjects() {
     return [
-      if (_selectedMetroStation != null) ...[
+      if (_effectiveSelectedMetroStation != null) ...[
         _createMetroStationWalkingRadius(),
         if (_isWalkAreaLabelVisibleAtCurrentZoom)
           _createMetroStationWalkingRadiusLabel(),
       ],
-      for (final station in MetroCache.getAllStations())
-        if (station.latitude != null &&
-            station.longitude != null &&
-            _shouldShowMetroStation(station))
+      for (final stationId in _metroPlacemarkStationIds)
+        if (_metroStationForViewportId(stationId) case final station?)
           _createMetroStationPlacemark(station),
     ];
+  }
+
+  List<int> get _metroPlacemarkStationIds {
+    final selectedId = _highlightedMetroStationId;
+    if (selectedId == null) return _visibleMetroStationIds;
+    if (_visibleMetroStationIds.contains(selectedId)) {
+      return _visibleMetroStationIds;
+    }
+    return List<int>.unmodifiable([..._visibleMetroStationIds, selectedId]..sort());
+  }
+
+  SubwayStation? _metroStationForViewportId(int stationId) {
+    final station = MetroCache.getStationById(stationId);
+    if (station?.latitude == null || station?.longitude == null) return null;
+    if (!_shouldShowMetroStation(station!)) return null;
+    return station;
+  }
+
+  BoundingBox _paddedMetroViewportBoundingBox(VisibleRegion region) {
+    const paddingFraction = 0.15;
+    final box = _visibleRegionBoundingBox(region);
+    final latSpan =
+        (box.northEast.latitude - box.southWest.latitude).abs();
+    final lonSpan =
+        (box.northEast.longitude - box.southWest.longitude).abs();
+    final latPadding = latSpan * paddingFraction;
+    final lonPadding = lonSpan * paddingFraction;
+    return BoundingBox(
+      northEast: Point(
+        latitude: box.northEast.latitude + latPadding,
+        longitude: box.northEast.longitude + lonPadding,
+      ),
+      southWest: Point(
+        latitude: box.southWest.latitude - latPadding,
+        longitude: box.southWest.longitude - lonPadding,
+      ),
+    );
+  }
+
+  List<int> _metroStationIdsInViewport(BoundingBox box) {
+    final ids = <int>{};
+    final selectedId = _highlightedMetroStationId;
+    if (selectedId != null) ids.add(selectedId);
+    for (final station in MetroCache.getAllStations()) {
+      if (station.latitude == null || station.longitude == null) continue;
+      if (!_shouldShowMetroStation(station)) continue;
+      if (_pointInBoundingBox(
+        Point(latitude: station.latitude!, longitude: station.longitude!),
+        box,
+      )) {
+        ids.add(station.id);
+      }
+    }
+    final sorted = ids.toList()..sort();
+    return List<int>.unmodifiable(sorted);
+  }
+
+  bool _pointInBoundingBox(Point point, BoundingBox box) {
+    return point.latitude >= box.southWest.latitude &&
+        point.latitude <= box.northEast.latitude &&
+        point.longitude >= box.southWest.longitude &&
+        point.longitude <= box.northEast.longitude;
   }
 
   bool _shouldShowMetroStation(SubwayStation station) {
@@ -692,7 +754,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   CircleMapObject _createMetroStationWalkingRadius() {
-    final station = _selectedMetroStation!;
+    final station = _effectiveSelectedMetroStation!;
     return _createWalkingRadiusCircle(
       center: Point(
         latitude: station.latitude!,
@@ -704,7 +766,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   PlacemarkMapObject _createMetroStationWalkingRadiusLabel() {
-    final station = _selectedMetroStation!;
+    final station = _effectiveSelectedMetroStation!;
     return _createWalkAreaRadiusLabel(
       mapObjectId:
           "tashkent_metro_station_${station.id}_walking_radius_label_${widget.walkRadiusMinutes}_${_metroLayerScopeKey}",
@@ -781,7 +843,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       latitude: station.latitude!,
       longitude: station.longitude!,
     );
-    final selected = _selectedMetroStation?.id == station.id;
+    final selected = _highlightedMetroStationId == station.id;
     final iconBytes = selected
         ? _cachedSelectedMetroStationIconBytes[station.line]
         : _cachedMetroStationIconBytes[station.line];
