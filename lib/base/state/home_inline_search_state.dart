@@ -54,6 +54,14 @@ class HomeInlineSearchState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates in-memory dismiss state immediately (no disk I/O). Pair with
+  /// [setRibbonDismissedByUser] to persist before process exit.
+  void markRibbonDismissedInMemory(bool dismissed) {
+    if (_ribbonDismissedByUser == dismissed) return;
+    _ribbonDismissedByUser = dismissed;
+    notifyListeners();
+  }
+
   Future<void> hydrateRibbonDismissedFromPrefs({
     bool awaitUserScope = false,
   }) async {
@@ -65,6 +73,16 @@ class HomeInlineSearchState extends ChangeNotifier {
       final userId = await _currentRibbonDismissScopeUserId();
       final scopedKey = _ribbonDismissedPrefsKeyForScope(userId: userId);
       var dismissed = prefs.getBool(scopedKey) ?? false;
+      // Heal dismiss flags saved under the guest key before user id landed.
+      if (!dismissed && userId != null) {
+        final guestKey = _ribbonDismissedPrefsKeyForScope(userId: null);
+        final guestDismissed = prefs.getBool(guestKey) ?? false;
+        if (guestDismissed) {
+          dismissed = true;
+          await prefs.setBool(scopedKey, true);
+          await prefs.remove(guestKey);
+        }
+      }
       if (!dismissed) {
         final legacyDismissed =
             prefs.getBool(ribbonUserDismissedPrefsKey) ?? false;
@@ -88,12 +106,17 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// Persists so a cold start does not re-open the ribbon via the
   /// non-default-filters heuristic after the user dismissed it.
   Future<void> setRibbonDismissedByUser(bool dismissed) async {
-    if (_ribbonDismissedByUser == dismissed) return;
-    _ribbonDismissedByUser = dismissed;
-    notifyListeners();
+    markRibbonDismissedInMemory(dismissed);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final userId = await _currentRibbonDismissScopeUserId();
+      int? userId;
+      if (dismissed) {
+        // Wait for backend user id so dismiss survives restart (not guest key).
+        userId = await SessionManager.waitForUserId();
+        userId ??= await _currentRibbonDismissScopeUserId();
+      } else {
+        userId = await _currentRibbonDismissScopeUserId();
+      }
       final scopedKey = _ribbonDismissedPrefsKeyForScope(userId: userId);
       if (dismissed) {
         await prefs.setBool(scopedKey, true);

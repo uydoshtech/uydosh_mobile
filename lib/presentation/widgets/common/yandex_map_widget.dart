@@ -1716,11 +1716,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Widget _buildZoomControls() {
     final theme = Theme.of(context);
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final foregroundColor = widget.nightModeEnabled
-        ? Colors.white
-        : ThemeState().isBlueTheme
-            ? Colors.black
-            : theme.colorScheme.onSurface;
+    final foregroundColor = (widget.nightModeEnabled || ThemeState().isBlueTheme)
+        ? Colors.black
+        : theme.colorScheme.onSurface;
     final borderRadius = BorderRadius.circular(999);
     final safeAreaPadding = MediaQuery.paddingOf(context);
     const width = 24.0;
@@ -1728,9 +1726,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final slider = _buildZoomSlider(foregroundColor);
     final right = widget.zoomControlsOptions.right;
     final bottom = widget.zoomControlsOptions.bottom;
-    final panelColor = widget.nightModeEnabled
-        ? (solidColors ? const Color(0xFF1E1E1E) : theme.colorScheme.surface)
-        : Colors.white;
+    final panelColor = Colors.white;
 
     return Positioned(
       left: right == null ? safeAreaPadding.left + 8 : null,
@@ -1747,9 +1743,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                   color: panelColor,
                   borderRadius: borderRadius,
                   border: Border.all(
-                    color: widget.nightModeEnabled
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : theme.colorScheme.outlineVariant,
+                    color: theme.colorScheme.outlineVariant,
                   ),
                 )
               : BoxDecoration(

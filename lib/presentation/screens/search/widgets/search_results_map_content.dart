@@ -24,6 +24,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.showBusStopsLayer,
     required this.mapNightModeOverride,
     required this.showLocationPrompt,
+    required this.filterRibbonEnabled,
     required this.showFilterRibbon,
     required this.userLocationRequestToken,
     required this.userLocationLatitude,
@@ -82,6 +83,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final bool showBusStopsLayer;
   final bool? mapNightModeOverride;
   final bool showLocationPrompt;
+  final bool filterRibbonEnabled;
   final bool showFilterRibbon;
   final int userLocationRequestToken;
   final double? userLocationLatitude;
@@ -147,8 +149,7 @@ class _SearchResultsMapContent extends StatelessWidget {
         feedViewButtonHeight +
         viewToggleGap -
         safeAreaBottom;
-    final mapOverlayPanelColor =
-        mapNightModeEnabled ? null : Colors.white;
+    const mapOverlayPanelColor = Colors.white;
     final feedViewButton = SearchFloatingActionButton(
       onPressed: onOpenFeedView,
       iconData: Icons.view_list_rounded,
@@ -157,11 +158,7 @@ class _SearchResultsMapContent extends StatelessWidget {
       height: feedViewButtonHeight,
       iconSize: 22.5,
       backgroundColor: mapOverlayPanelColor,
-      foregroundColor: mapNightModeEnabled
-          ? Colors.white
-          : ThemeState().isBlueTheme
-              ? Colors.black
-              : null,
+      foregroundColor: Colors.black,
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
@@ -184,40 +181,41 @@ class _SearchResultsMapContent extends StatelessWidget {
     );
     return Column(
       children: [
-        if (showFilterRibbon)
-          _MapFilterRibbon(
-            onPressed: onOpenFilters,
-            onClose: onCloseFilterRibbon,
-            listingTypeId: listingTypeId,
-            gender: gender,
-            locationId: locationId,
-            subwayStationId: subwayStationId,
-            subwayStationIds: subwayStationIds,
-            subwayLineId: subwayLineId,
-            minPrice: minPrice,
-            maxPrice: maxPrice,
-            privateRoom: privateRoom,
-            withPhoto: withPhoto,
-            total: result.total,
-          )
-        else
-          _MapFilterRibbon(
-            onPressed: onOpenFilters,
-            emptyLabel: hasSearchFilters
-                ? "${L10n.get("filters_bar_label")} • ${result.total}"
-                : context.l10n.choose_filters,
-            listingTypeId: listingTypeId,
-            gender: gender,
-            locationId: locationId,
-            subwayStationId: subwayStationId,
-            subwayStationIds: subwayStationIds,
-            subwayLineId: subwayLineId,
-            minPrice: minPrice,
-            maxPrice: maxPrice,
-            privateRoom: privateRoom,
-            withPhoto: withPhoto,
-            total: result.total,
-          ),
+        if (filterRibbonEnabled)
+          if (showFilterRibbon)
+            _MapFilterRibbon(
+              onPressed: onOpenFilters,
+              onClose: onCloseFilterRibbon,
+              listingTypeId: listingTypeId,
+              gender: gender,
+              locationId: locationId,
+              subwayStationId: subwayStationId,
+              subwayStationIds: subwayStationIds,
+              subwayLineId: subwayLineId,
+              minPrice: minPrice,
+              maxPrice: maxPrice,
+              privateRoom: privateRoom,
+              withPhoto: withPhoto,
+              total: result.total,
+            )
+          else
+            _MapFilterRibbon(
+              onPressed: onOpenFilters,
+              emptyLabel: hasSearchFilters
+                  ? "${L10n.get("filters_bar_label")} • ${result.total}"
+                  : context.l10n.choose_filters,
+              listingTypeId: listingTypeId,
+              gender: gender,
+              locationId: locationId,
+              subwayStationId: subwayStationId,
+              subwayStationIds: subwayStationIds,
+              subwayLineId: subwayLineId,
+              minPrice: minPrice,
+              maxPrice: maxPrice,
+              privateRoom: privateRoom,
+              withPhoto: withPhoto,
+              total: result.total,
+            ),
         Expanded(
           child: Stack(
             children: [
@@ -430,8 +428,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                     height: feedViewButtonHeight,
                     iconSize: 22.5,
                     backgroundColor: mapOverlayPanelColor,
-                    foregroundColor:
-                        mapNightModeEnabled ? Colors.white : Colors.black,
+                    foregroundColor: Colors.black,
                     mapOverlay: true,
                     elevation: ThemeState().isBlueTheme ? null : 8,
                   ),
@@ -442,7 +439,6 @@ class _SearchResultsMapContent extends StatelessWidget {
                   width: MediaQuery.sizeOf(context).width * 0.75,
                   bottom: locationPromptBottom,
                   child: _MapLocationPromptCard(
-                    mapNightModeEnabled: mapNightModeEnabled,
                     height: locationPromptHeight,
                     actionButtonHeight: feedViewButtonHeight,
                     onPressed: onRequestUserLocation,
@@ -458,13 +454,11 @@ class _SearchResultsMapContent extends StatelessWidget {
 
 class _MapLocationPromptCard extends StatelessWidget {
   const _MapLocationPromptCard({
-    required this.mapNightModeEnabled,
     required this.height,
     required this.actionButtonHeight,
     required this.onPressed,
   });
 
-  final bool mapNightModeEnabled;
   final double height;
   final double actionButtonHeight;
   final VoidCallback onPressed;
@@ -475,12 +469,11 @@ class _MapLocationPromptCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final foregroundColor =
-        mapNightModeEnabled ? Colors.white : Colors.black;
+    const foregroundColor = Colors.black;
     const iconBackgroundColor = Colors.black;
     const iconForegroundColor = Colors.white;
     const borderRadius = BorderRadius.all(Radius.circular(18));
-    final base = mapNightModeEnabled ? scheme.surface : Colors.white;
+    const base = Colors.white;
     final shadows = solidColors
         ? const <BoxShadow>[]
         : ThreeDSurfaceStyle.elevatedShadows(context);

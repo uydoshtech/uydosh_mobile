@@ -17,6 +17,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -70,12 +71,12 @@ enum _MetroLayerMode {
 
   _MetroLayerMode get next {
     return switch (this) {
-      _MetroLayerMode.off => _MetroLayerMode.line1,
+      _MetroLayerMode.off => _MetroLayerMode.all,
+      _MetroLayerMode.all => _MetroLayerMode.line1,
       _MetroLayerMode.line1 => _MetroLayerMode.line2,
       _MetroLayerMode.line2 => _MetroLayerMode.line3,
       _MetroLayerMode.line3 => _MetroLayerMode.line4,
-      _MetroLayerMode.line4 => _MetroLayerMode.all,
-      _MetroLayerMode.all => _MetroLayerMode.off,
+      _MetroLayerMode.line4 => _MetroLayerMode.off,
     };
   }
 }
@@ -163,6 +164,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool? _mapNightModeOverride;
   bool _showLocationPrompt = false;
   bool _showFilterRibbon = true;
+  /// True only after the user taps X on the map filter ribbon — not when the
+  /// ribbon is hidden because filters are profile defaults only.
+  bool _filterRibbonDismissedByUser = false;
   int _userLocationRequestToken = 0;
   int _userLocationLoadGeneration = 0;
   double? _userLocationLatitude;
@@ -199,6 +203,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     }
     if (_hasMapSearchFilters) {
       _loadResults(showLoading: false);
+      _showFilterRibbon = _filterRibbonEnabled;
     } else {
       _result = const _SearchMapResult(pins: [], total: 0);
       _isLoading = false;
@@ -220,7 +225,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedPinGroup = const [];
     _selectedUniversityMarker = null;
     _hasSelectedMetroStation = false;
-    _showFilterRibbon = _hasMapSearchFilters;
+    _filterRibbonDismissedByUser = false;
+    _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
     if (_hasMapSearchFilters) {
       _loadResults();
     } else {
@@ -268,7 +274,24 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _withPhoto == result.withPhoto;
   }
 
+  bool get _filterRibbonEnabled => AuthenticationState().isAuthenticated;
+
   bool get _hasMapSearchFilters {
+    if (!_filterRibbonEnabled) {
+      return _hasExplicitUserMapFilters;
+    }
+    return _hasProfileDefaultMapFilters || _hasExplicitUserMapFilters;
+  }
+
+  /// Listing type + profile gender — the same defaults applied on the home feed.
+  bool get _hasProfileDefaultMapFilters {
+    return _listingTypeId >= 1 &&
+        _gender != null &&
+        _gender! >= 1 &&
+        _gender! <= 2;
+  }
+
+  bool get _hasExplicitUserMapFilters {
     return _locationId != null ||
         _subwayStationId != null ||
         _subwayStationIds.isNotEmpty ||
@@ -495,12 +518,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onApply: (result) {
         final hasMapFilters = _hasMapSearchFiltersFor(result);
         if (_matchesCurrentFilters(result)) {
-          setState(() => _showFilterRibbon = hasMapFilters);
+          setState(
+            () => _showFilterRibbon = _filterRibbonEnabled && hasMapFilters,
+          );
           return;
         }
 
         setState(() {
-          _showFilterRibbon = true;
+          _filterRibbonDismissedByUser = false;
+          _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
           _listingTypeId = result.listingTypeId;
           _locationId = result.locationId;
           _subwayStationId = result.subwayStationId;
@@ -515,7 +541,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _selectedPinGroup = const [];
           _selectedUniversityMarker = null;
           _hasSelectedMetroStation = false;
-          _showFilterRibbon = hasMapFilters;
         });
         _loadResults();
       },
@@ -526,6 +551,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     widget.onDismissFilterRibbon?.call();
     _loadGeneration++;
     setState(() {
+      _filterRibbonDismissedByUser = true;
       _showFilterRibbon = false;
       _result = const _SearchMapResult(pins: [], total: 0);
       _loadError = null;
@@ -538,7 +564,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   bool _hasMapSearchFiltersFor(SearchBottomSheetResult result) {
-    return result.locationId != null ||
+    final hasProfileDefaults = _filterRibbonEnabled &&
+        result.listingTypeId >= 1 &&
+        result.gender != null &&
+        result.gender! >= 1 &&
+        result.gender! <= 2;
+    return hasProfileDefaults ||
+        result.locationId != null ||
         result.subwayStationId != null ||
         result.subwayStationIds.isNotEmpty ||
         result.subwayLineId != null ||
@@ -550,15 +582,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   void _openFeedView() {
     final onOpenFeed = widget.onOpenFeed;
     if (onOpenFeed != null) {
-      // When the user closed the map ribbon (X), tell the parent not to
-      // re-apply filters on the feed — the map keeps its own local filter
-      // copy and `_inlineSearchActive` may still be true in the parent.
-      final mapFilterRibbonDismissed =
-          widget.onDismissFilterRibbon != null && !_showFilterRibbon;
       onOpenFeed(
         context,
         _currentSearchResult(),
-        mapFilterRibbonDismissed: mapFilterRibbonDismissed,
+        mapFilterRibbonDismissed: _filterRibbonDismissedByUser,
       );
       return;
     }
@@ -933,6 +960,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       showBusStopsLayer: _showBusStopsLayer,
       mapNightModeOverride: _mapNightModeOverride,
       showLocationPrompt: _showLocationPrompt,
+      filterRibbonEnabled: _filterRibbonEnabled,
       showFilterRibbon: _showFilterRibbon,
       userLocationRequestToken: _userLocationRequestToken,
       userLocationLatitude: _userLocationLatitude,

@@ -253,12 +253,13 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         ? _cachedDarkUserLocationPinIconBytes
         : _cachedUserLocationPinIconBytes;
     if (iconBytes == null) {
+      final borderColor = widget.nightModeEnabled ? Colors.white : Colors.black;
       return CircleMapObject(
         mapId: const MapObjectId("current_user_location_circle"),
         circle: Circle(center: point, radius: 120),
         zIndex: _YandexMapWidgetState._selectedListingPinZIndex + 5,
         strokeWidth: 3,
-        strokeColor: Colors.white.withValues(alpha: 0.95),
+        strokeColor: borderColor.withValues(alpha: 0.95),
         fillColor: AppColors.error.withValues(alpha: 0.9),
       );
     }

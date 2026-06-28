@@ -42,7 +42,6 @@ import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
-import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
@@ -87,25 +86,7 @@ const bool kShowRoomPlanWelcomeInsteadOfHome = false;
 const bool kShowLocationPermissionFirst = false;
 
 Future<void> _bootstrapSearchFiltersColdStart() async {
-  // Load the user's "Restore filters on app start" preference before
-  // [SearchFiltersState.initialize], so it can honor the toggle (when off,
-  // it discards persisted local filters and skips the backend hydrate).
-  await RestoreFiltersState().initialize();
-  final authenticated = await SessionManager.isAuthenticated();
-  await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
-    awaitUserScope: authenticated,
-  );
-  if (HomeInlineSearchState().ribbonDismissedByUser) {
-    SearchFiltersState().markPersistedFiltersDismissed();
-  }
-  await SearchFiltersState().initialize();
-  if (!authenticated) return;
-  if (HomeInlineSearchState().ribbonDismissedByUser) return;
-  await SearchFiltersState().hydrateFromBackendForCurrentUser();
-  // Build + persist profile-derived defaults (gender / role-derived listing
-  // type / full price range) when the user has no saved filters; otherwise keep
-  // their saved filters untouched.
-  await SearchFiltersState().ensureDefaultFiltersBuiltAndSaved();
+  await SearchFiltersState().bootstrapColdStart();
 }
 
 Future<void> _bootstrapPriceDisplayCurrencyColdStart() async {

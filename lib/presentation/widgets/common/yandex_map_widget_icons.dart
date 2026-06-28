@@ -183,20 +183,20 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
           );
     final userLocationPinIconBytes = await _createUserLocationPinIconBytes(
       foregroundColor: AppColors.error,
-      outlineColor: Colors.white,
+      outlineColor: Colors.black,
     );
     final userLocationArrowIconBytes = await _createUserLocationArrowIconBytes(
       foregroundColor: AppColors.error,
-      outlineColor: Colors.white,
+      outlineColor: Colors.black,
     );
     final darkUserLocationPinIconBytes = await _createUserLocationPinIconBytes(
       foregroundColor: AppColors.error,
-      outlineColor: Colors.black,
+      outlineColor: Colors.white,
     );
     final darkUserLocationArrowIconBytes =
         await _createUserLocationArrowIconBytes(
       foregroundColor: AppColors.error,
-      outlineColor: Colors.black,
+      outlineColor: Colors.white,
     );
     final groceryStoreIconBytes = reduceStartupIconWork
         ? iconBytes
@@ -364,7 +364,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     const size = 104;
     const center = Offset(size / 2, size / 2);
     const outerRadius = 28.0;
-    const innerRadius = 17.0;
+    const innerRadius = outerRadius - 3;
 
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -395,7 +395,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     const size = 152;
     const center = Offset(size / 2, size / 2);
     const outerRadius = 30.0;
-    const innerRadius = 17.0;
+    const innerRadius = outerRadius - 3;
 
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);

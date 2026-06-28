@@ -47,6 +47,35 @@ class SearchFiltersState extends ChangeNotifier {
   Timer? _remoteSaveDebounce;
   static const Duration _remoteSaveDelay = Duration(milliseconds: 1600);
   Future<void>? _hydrateFuture;
+  Future<void>? _initializeFuture;
+  Future<void>? _coldStartBootstrapFuture;
+
+  /// Cold-start bootstrap: hydrate dismiss prefs, load local filters, pull
+  /// server snapshot, build defaults. [main] and [HomeScreen] must share this
+  /// future so parallel callers cannot race [initialize].
+  Future<void> bootstrapColdStart() {
+    return _coldStartBootstrapFuture ??= _bootstrapColdStartImpl();
+  }
+
+  Future<void> _bootstrapColdStartImpl() async {
+    await RestoreFiltersState().initialize();
+    final authenticated = await SessionManager.isAuthenticated();
+    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+      awaitUserScope: authenticated,
+    );
+    if (HomeInlineSearchState().ribbonDismissedByUser) {
+      markPersistedFiltersDismissed();
+      // Heal a stale `users.search_filters` row left from before dismiss
+      // reliably cleared the backend (e.g. failed network, quick app kill).
+      if (authenticated) {
+        await _clearRemoteSearchFilters();
+      }
+    }
+    await initialize();
+    if (!authenticated) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) return;
+    await hydrateFromBackendForCurrentUser();
+  }
 
   /// Set when the user dismisses the home filter ribbon (X). Blocks backend
   /// hydrate, default-filter rebuild, and debounced remote saves until the user
@@ -72,12 +101,15 @@ class SearchFiltersState extends ChangeNotifier {
 
   /// Marks persisted filters as intentionally cleared (ribbon X). Synchronous
   /// so hydrate / bootstrap cannot restore stale data in the same frame.
+  /// Also kicks off an immediate backend wipe so `users.search_filters` cannot
+  /// resurrect filters on the next cold start.
   void markPersistedFiltersDismissed() {
     if (_persistedFiltersDismissed) return;
     _persistedFiltersDismissed = true;
     _remotePersistGeneration++;
     _remoteSaveDebounce?.cancel();
     _remoteSaveDebounce = null;
+    unawaited(_clearRemoteSearchFilters());
   }
 
   bool get persistedFiltersDismissed => _persistedFiltersDismissed;
@@ -131,6 +163,8 @@ class SearchFiltersState extends ChangeNotifier {
     _remoteSaveDebounce?.cancel();
     _remoteSaveDebounce = null;
     _hydrateFuture = null;
+    _initializeFuture = null;
+    _coldStartBootstrapFuture = null;
     _persistedFiltersDismissed = false;
     _remotePersistGeneration++;
   }
@@ -313,6 +347,18 @@ class SearchFiltersState extends ChangeNotifier {
     }
   }
 
+  /// PATCH `users.search_filters` → null so cold-start hydrate cannot reload
+  /// a snapshot the user explicitly dismissed.
+  Future<void> _clearRemoteSearchFilters() async {
+    if (!await SessionManager.isAuthenticated()) return;
+    try {
+      await getIt<IUserSearchFiltersService>().clearMe();
+      logger.d("SearchFiltersState: cleared remote search_filters");
+    } catch (e) {
+      logger.d("SearchFiltersState: clear remote filters failed: $e");
+    }
+  }
+
   /// Serializes SharedPreferences writes to avoid races between un-awaited
   /// setter calls (common from modal sheets) and later restores.
   Future<void> _enqueuePrefsWrite(
@@ -394,6 +440,23 @@ class SearchFiltersState extends ChangeNotifier {
 
   // Initialize and load saved search filters from storage
   Future<void> initialize() async {
+    if (_isInitialized) return;
+    if (_initializeFuture != null) {
+      await _initializeFuture;
+      return;
+    }
+    final run = _initializeImpl();
+    _initializeFuture = run;
+    try {
+      await run;
+    } finally {
+      if (_initializeFuture == run) {
+        _initializeFuture = null;
+      }
+    }
+  }
+
+  Future<void> _initializeImpl() async {
     if (_isInitialized) return;
 
     // Respect the "Restore filters on app start" setting: when disabled we
@@ -974,13 +1037,11 @@ class SearchFiltersState extends ChangeNotifier {
     await _prefsWriteChain;
     if (dismissGeneration != _remotePersistGeneration) return;
 
+    // Wipe the DB row first — server wins on cold start, so null here prevents
+    // re-hydrate even if local clear is interrupted.
+    await _clearRemoteSearchFilters();
+
     await clearAllFilters(persistRemote: false);
-    if (!await SessionManager.isAuthenticated()) return;
-    try {
-      await getIt<IUserSearchFiltersService>().clearMe();
-    } catch (e) {
-      logger.d("SearchFiltersState: clear remote filters failed: $e");
-    }
   }
 
   // Clear all search filters

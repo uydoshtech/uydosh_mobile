@@ -3,6 +3,7 @@ import "dart:math" as math;
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
 import "package:uy_dosh/presentation/blocs/listings_state.dart";
@@ -91,8 +92,11 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
               _revisionFor(previous) != _revisionFor(current),
           builder: (context, state) {
             final total = _totalFor(state);
-            final showCount =
-                _inlineActive && _countReady && total != null && total > 0;
+            final showCount = AuthenticationState().isAuthenticated &&
+                _inlineActive &&
+                _countReady &&
+                total != null &&
+                total > 0;
 
             // “•” uses title size; digits are smaller for hierarchy.
             final titleFs = widget.titleStyle.fontSize ?? 20;

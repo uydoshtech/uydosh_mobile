@@ -419,8 +419,8 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
         onTap: _pickAndUploadAvatar,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          width: 20,
-          height: 20,
+          width: 30,
+          height: 30,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -431,7 +431,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
           ),
           child: const ThemeIcon(
             Icons.photo_camera,
-            size: 12,
+            size: 18,
             color: Colors.black,
             useThemeColor: false,
           ),

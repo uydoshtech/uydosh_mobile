@@ -80,7 +80,6 @@ class _EditListingScreenState extends State<EditListingScreen>
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
-  FixedExtentScrollController? _genderScrollController;
   FixedExtentScrollController? _groupSizeScrollController;
   FixedExtentScrollController? _metroLineScrollController;
   FixedExtentScrollController? _metroStationScrollController;
@@ -299,9 +298,6 @@ class _EditListingScreenState extends State<EditListingScreen>
           .indexOf(_selectedListingTypeId)
           .clamp(0, _listingTypePickerOrder.length - 1),
     );
-    _genderScrollController = FixedExtentScrollController(
-      initialItem: [1, 2].indexOf(_selectedGender).clamp(0, 1),
-    );
     _metroLineScrollController = FixedExtentScrollController(
       initialItem: _selectedSubwayLine,
     );
@@ -496,10 +492,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     final resolved = (gender == 1 || gender == 2) ? gender! : 1;
     if (resolved == _selectedGender) return;
     setState(() => _selectedGender = resolved);
-    final idx = [1, 2].indexOf(resolved).clamp(0, 1);
-    if (_genderScrollController?.hasClients ?? false) {
-      _genderScrollController!.jumpToItem(idx);
-    }
   }
 
   /// Get profile gender (1 = male, 2 = female). Returns null if not available.
@@ -854,7 +846,6 @@ class _EditListingScreenState extends State<EditListingScreen>
     _moveInDateController.dispose();
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
-    _genderScrollController?.dispose();
     _groupSizeScrollController?.dispose();
     _metroLineScrollController?.dispose();
     _metroStationScrollController?.dispose();
@@ -1575,7 +1566,6 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   label: L10n.get("gender"),
                                   child: GenderPicker(
                                     selectedGender: _selectedGender,
-                                    scrollController: _genderScrollController,
                                     onGenderChanged: (gender) {
                                       setState(() => _selectedGender = gender);
                                       _markDirty();
