@@ -12,6 +12,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -302,6 +303,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   SearchSession? _groceryStoreSearchSession;
   SearchSession? _busStopSearchSession;
   bool _isMapReady = false;
+  bool _areMapObjectsReady = false;
   bool _isInitializing = false;
   int _retryCount = 0;
   int _automaticCameraFinishesToIgnore = 0;
@@ -459,8 +461,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   @override
   Widget build(BuildContext context) {
     final mapReadyForObjects = _isMapReady || kIsWeb;
-    final mapObjects =
-        mapReadyForObjects ? _createMapObjects() : const <MapObject>[];
+    final mapObjects = mapReadyForObjects && (_areMapObjectsReady || kIsWeb)
+        ? _createMapObjects()
+        : const <MapObject>[];
     final centerPoint = _getCenterPoint();
 
     return Container(
@@ -679,8 +682,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         // Enable all gesture interactions for better user experience
         scrollGesturesEnabled: true, // Enable pan/drag gestures with finger
         zoomGesturesEnabled: true, // Enable pinch-to-zoom
-        rotateGesturesEnabled: true, // Enable rotation gestures
-        tiltGesturesEnabled: true, // Enable tilt gestures
+        rotateGesturesEnabled: !isAndroidDevice,
+        tiltGesturesEnabled: !isAndroidDevice,
         fastTapEnabled: true, // Enable fast tap for better responsiveness
         nightModeEnabled: widget.nightModeEnabled,
         onMapCreated: (controller) {
@@ -688,9 +691,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           // Store controller for zoom controls
           _mapController = controller;
           _mapOperationGeneration++;
+          _areMapObjectsReady = false;
           widget.onMapCreated?.call(controller);
           _syncUserLocationLayer();
-          _syncPoiLayers();
 
           // Map created successfully
           logger.d(
@@ -705,7 +708,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              _moveCameraToCurrentTarget();
+              unawaited(_moveCameraToCurrentTarget());
+              _scheduleMapObjectsReady(controller);
             }
           });
 
@@ -1523,7 +1527,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Widget _buildZoomControls() {
     final theme = Theme.of(context);
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass =
+        !isAndroidDevice && (themeState.isBlueTheme || themeState.isLightTheme);
     final foregroundColor = widget.nightModeEnabled
         ? Colors.white
         : themeState.isBlueTheme
@@ -1554,14 +1559,24 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 child: slider,
               )
             : DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: borderRadius,
-                  gradient: ThreeDSurfaceStyle.surfaceGradient(
-                    context,
-                    theme.colorScheme.surface,
-                  ),
-                  boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-                ),
+                decoration: isAndroidDevice
+                    ? BoxDecoration(
+                        color:
+                            theme.colorScheme.surface.withValues(alpha: 0.94),
+                        borderRadius: borderRadius,
+                        border: Border.all(
+                          color: theme.colorScheme.outlineVariant
+                              .withValues(alpha: 0.7),
+                        ),
+                      )
+                    : BoxDecoration(
+                        borderRadius: borderRadius,
+                        gradient: ThreeDSurfaceStyle.surfaceGradient(
+                          context,
+                          theme.colorScheme.surface,
+                        ),
+                        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+                      ),
                 child: slider,
               ),
       ),
@@ -1613,6 +1628,19 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ),
       ),
     );
+  }
+
+  Future<void> _scheduleMapObjectsReady(YandexMapController controller) async {
+    final generation = _mapOperationGeneration;
+    await Future<void>.delayed(
+      isAndroidDevice
+          ? const Duration(milliseconds: 180)
+          : const Duration(milliseconds: 16),
+    );
+    if (!_isCurrentMapOperation(controller, generation)) return;
+    if (!mounted || _areMapObjectsReady) return;
+    setState(() => _areMapObjectsReady = true);
+    _syncPoiLayers();
   }
 }
 

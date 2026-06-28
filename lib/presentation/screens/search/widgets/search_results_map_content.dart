@@ -400,81 +400,104 @@ class _MapLocationPromptCard extends StatelessWidget {
     final themeState = ThemeState();
     final lightThemeForeground =
         themeState.isLightTheme ? Colors.white : Colors.black;
+    final child = Row(
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: themeState.isBlueTheme
+                ? BlueThemeColors.primary
+                : scheme.primary,
+            shape: BoxShape.circle,
+            boxShadow: isAndroidDevice
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.16),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(8),
+            child: ThemeIcon(
+              Icons.my_location_rounded,
+              color: Colors.white,
+              size: 18,
+              useThemeColor: false,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                L10n.get("map_location_prompt_title"),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: lightThemeForeground,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                L10n.get("map_location_prompt_body"),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: lightThemeForeground,
+                  fontWeight: FontWeight.w600,
+                  height: 1.15,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        SearchFloatingActionButton(
+          onPressed: onPressed,
+          iconData: Icons.near_me_rounded,
+          tooltip: L10n.get("map_location_prompt_action"),
+          width: 42,
+          height: 38,
+          iconSize: 19,
+          foregroundColor: lightThemeForeground,
+          elevation: themeState.isBlueTheme ? null : 6,
+        ),
+      ],
+    );
+
+    if (isAndroidDevice) {
+      return Material(
+        color: Colors.transparent,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: child,
+          ),
+        ),
+      );
+    }
+
     return Material(
       color: Colors.transparent,
       child: LiquidGlassPlate(
         borderRadius: BorderRadius.circular(18),
         sigma: 18,
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        child: Row(
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: themeState.isBlueTheme
-                    ? BlueThemeColors.primary
-                    : scheme.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.16),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(8),
-                child: ThemeIcon(
-                  Icons.my_location_rounded,
-                  color: Colors.white,
-                  size: 18,
-                  useThemeColor: false,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    L10n.get("map_location_prompt_title"),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: lightThemeForeground,
-                      fontWeight: FontWeight.w800,
-                      height: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    L10n.get("map_location_prompt_body"),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: lightThemeForeground,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            SearchFloatingActionButton(
-              onPressed: onPressed,
-              iconData: Icons.near_me_rounded,
-              tooltip: L10n.get("map_location_prompt_action"),
-              width: 42,
-              height: 38,
-              iconSize: 19,
-              foregroundColor: lightThemeForeground,
-              elevation: themeState.isBlueTheme ? null : 6,
-            ),
-          ],
-        ),
+        child: child,
       ),
     );
   }

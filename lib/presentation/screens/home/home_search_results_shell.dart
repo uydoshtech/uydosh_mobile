@@ -152,27 +152,31 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
           );
 
     final isShowingMap = widget.searchResultsView == _SearchResultsView.map;
+    final shouldMountMap =
+        isShowingMap && (widget.isSearchMode || widget.isHomeTabActive);
+    if (!shouldMountMap) {
+      return Stack(
+        children: [
+          listView,
+          if (!isShowingMap)
+            _SearchResultsFabStack(
+              inSearchContext: widget.inSearchContext,
+              bottom: widget.alertFabBottom,
+              searchFiltersState: widget.searchFiltersState,
+              searchButtonTutorialKey: widget.searchButtonTutorialKey,
+              isHomeTabActive: widget.isHomeTabActive,
+              isSearchMode: widget.isSearchMode,
+              showViewToggle: true,
+              onOpenMapView: widget.onOpenMapView,
+              onOpenInlineSearch: widget.onOpenInlineSearch,
+            ),
+        ],
+      );
+    }
+
     return Stack(
       children: [
-        IndexedStack(
-          index: isShowingMap ? 1 : 0,
-          children: [
-            listView,
-            paddedMapView,
-          ],
-        ),
-        if (!isShowingMap)
-          _SearchResultsFabStack(
-            inSearchContext: widget.inSearchContext,
-            bottom: widget.alertFabBottom,
-            searchFiltersState: widget.searchFiltersState,
-            searchButtonTutorialKey: widget.searchButtonTutorialKey,
-            isHomeTabActive: widget.isHomeTabActive,
-            isSearchMode: widget.isSearchMode,
-            showViewToggle: true,
-            onOpenMapView: widget.onOpenMapView,
-            onOpenInlineSearch: widget.onOpenInlineSearch,
-          ),
+        paddedMapView,
       ],
     );
   }

@@ -20,6 +20,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/university.dart";
@@ -97,7 +98,8 @@ class SearchResultsMapScreen extends StatefulWidget {
 }
 
 class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
-  static const int _mapSearchLimit = 300;
+  static const int _defaultMapSearchLimit = 300;
+  static const int _androidMapSearchLimit = 150;
 
   _SearchMapResult? _result;
   Object? _loadError;
@@ -133,8 +135,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   void initState() {
     super.initState();
     final layerDefaults = ClientMapLayerDefaultsConfig.defaults.value;
-    _showDistrictLayer = layerDefaults.districts;
-    _showMetroStationsLayer = layerDefaults.metro;
+    _showDistrictLayer = !isAndroidDevice && layerDefaults.districts;
+    _showMetroStationsLayer = !isAndroidDevice && layerDefaults.metro;
     _showUniversitiesLayer = layerDefaults.universities;
     _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
@@ -317,7 +319,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   Future<_SearchMapResult> _fetchResults() async {
     final response = await getIt<IListingService>().searchListings(
       page: 1,
-      limit: _mapSearchLimit,
+      limit: isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit,
       listingTypeId: _listingTypeId,
       locationId: _locationId,
       subwayStationId: _subwayStationId,

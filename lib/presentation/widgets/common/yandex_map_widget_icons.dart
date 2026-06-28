@@ -69,135 +69,153 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
   }
 
   Future<_YandexMapSharedIconBytes> _createSharedIconBytes() async {
+    final reduceStartupIconWork = isAndroidDevice;
     final iconBytes = await _createIconBytes(
       Icons.home,
-      100,
+      reduceStartupIconWork ? 84 : 100,
       outlineColor: Colors.white,
-      outlineWidth: 7,
+      outlineWidth: reduceStartupIconWork ? 5 : 7,
     );
     final darkIconBytes = await _createIconBytes(
       Icons.home,
-      100,
+      reduceStartupIconWork ? 84 : 100,
       backgroundColor: BlueThemeColors.primaryDark,
       outlineColor: Colors.white,
-      outlineWidth: 7,
+      outlineWidth: reduceStartupIconWork ? 5 : 7,
     );
     final selectedIconBytes = await _createIconBytes(
       Icons.home,
-      124,
+      reduceStartupIconWork ? 100 : 124,
       backgroundColor: AppColors.primary,
       outlineColor: Colors.white,
-      outlineWidth: 7,
+      outlineWidth: reduceStartupIconWork ? 6 : 7,
       shadowColor: Colors.black.withValues(alpha: 0.35),
-      shadowBlurRadius: 10,
-      shadowOffset: const Offset(0, 5),
+      shadowBlurRadius: reduceStartupIconWork ? 6 : 10,
+      shadowOffset:
+          reduceStartupIconWork ? const Offset(0, 3) : const Offset(0, 5),
     );
     final listingTypeIconBytes = <String, Uint8List>{};
     final darkListingTypeIconBytes = <String, Uint8List>{};
     final selectedListingTypeIconBytes = <String, Uint8List>{};
-    for (final code in ListingTypeHelper.getAllCodes()) {
-      final icon = ListingTypeHelper.getIcon(code);
-      listingTypeIconBytes[code] = await _createIconBytes(
-        icon,
-        100,
-        outlineColor: Colors.white,
-        outlineWidth: 7,
-      );
-      darkListingTypeIconBytes[code] = await _createIconBytes(
-        icon,
-        100,
-        backgroundColor: BlueThemeColors.primaryDark,
-        outlineColor: Colors.white,
-        outlineWidth: 7,
-      );
-      selectedListingTypeIconBytes[code] = await _createIconBytes(
-        icon,
-        124,
-        backgroundColor: AppColors.primary,
-        outlineColor: Colors.white,
-        outlineWidth: 7,
-        shadowColor: Colors.black.withValues(alpha: 0.35),
-        shadowBlurRadius: 10,
-        shadowOffset: const Offset(0, 5),
-      );
+    if (!reduceStartupIconWork) {
+      for (final code in ListingTypeHelper.getAllCodes()) {
+        final icon = ListingTypeHelper.getIcon(code);
+        listingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          100,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+        );
+        darkListingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          100,
+          backgroundColor: BlueThemeColors.primaryDark,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+        );
+        selectedListingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          124,
+          backgroundColor: AppColors.primary,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+          shadowColor: Colors.black.withValues(alpha: 0.35),
+          shadowBlurRadius: 10,
+          shadowOffset: const Offset(0, 5),
+        );
+      }
     }
-    final universityIconBytes = await _createIconBytes(
-      Icons.school_rounded,
-      112,
-      backgroundColor: AppColors.success,
-      outlineColor: Colors.white,
-      outlineWidth: 7,
-      shadowColor: Colors.black.withValues(alpha: 0.32),
-      shadowBlurRadius: 10,
-      shadowOffset: const Offset(0, 5),
-    );
-    final selectedUniversityIconBytes = await _createIconBytes(
-      Icons.school_rounded,
-      124,
-      backgroundColor: AppColors.primary,
-      iconColor: Colors.white,
-      outlineColor: Colors.white,
-      outlineWidth: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.38),
-      shadowBlurRadius: 12,
-      shadowOffset: const Offset(0, 6),
-    );
-    final userUniversityIconBytes = await _createIconBytes(
-      Icons.school_rounded,
-      112,
-      backgroundColor: AppColors.error,
-      outlineColor: Colors.white,
-      outlineWidth: 7,
-      shadowColor: Colors.black.withValues(alpha: 0.32),
-      shadowBlurRadius: 10,
-      shadowOffset: const Offset(0, 5),
-    );
-    final selectedUserUniversityIconBytes = await _createIconBytes(
-      Icons.school_rounded,
-      124,
-      backgroundColor: AppColors.error,
-      iconColor: Colors.white,
-      outlineColor: Colors.white,
-      outlineWidth: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.38),
-      shadowBlurRadius: 12,
-      shadowOffset: const Offset(0, 6),
-    );
+    final universityIconBytes = reduceStartupIconWork
+        ? iconBytes
+        : await _createIconBytes(
+            Icons.school_rounded,
+            112,
+            backgroundColor: AppColors.success,
+            outlineColor: Colors.white,
+            outlineWidth: 7,
+            shadowColor: Colors.black.withValues(alpha: 0.32),
+            shadowBlurRadius: 10,
+            shadowOffset: const Offset(0, 5),
+          );
+    final selectedUniversityIconBytes = reduceStartupIconWork
+        ? selectedIconBytes
+        : await _createIconBytes(
+            Icons.school_rounded,
+            124,
+            backgroundColor: AppColors.primary,
+            iconColor: Colors.white,
+            outlineColor: Colors.white,
+            outlineWidth: 8,
+            shadowColor: Colors.black.withValues(alpha: 0.38),
+            shadowBlurRadius: 12,
+            shadowOffset: const Offset(0, 6),
+          );
+    final userUniversityIconBytes = reduceStartupIconWork
+        ? selectedIconBytes
+        : await _createIconBytes(
+            Icons.school_rounded,
+            112,
+            backgroundColor: AppColors.error,
+            outlineColor: Colors.white,
+            outlineWidth: 7,
+            shadowColor: Colors.black.withValues(alpha: 0.32),
+            shadowBlurRadius: 10,
+            shadowOffset: const Offset(0, 5),
+          );
+    final selectedUserUniversityIconBytes = reduceStartupIconWork
+        ? selectedIconBytes
+        : await _createIconBytes(
+            Icons.school_rounded,
+            124,
+            backgroundColor: AppColors.error,
+            iconColor: Colors.white,
+            outlineColor: Colors.white,
+            outlineWidth: 8,
+            shadowColor: Colors.black.withValues(alpha: 0.38),
+            shadowBlurRadius: 12,
+            shadowOffset: const Offset(0, 6),
+          );
     final userLocationPinIconBytes = await _createUserLocationPinIconBytes();
     final userLocationArrowIconBytes =
         await _createUserLocationArrowIconBytes();
-    final groceryStoreIconBytes = await _createIconBytes(
-      Icons.local_grocery_store_rounded,
-      88,
-      backgroundColor: const Color(0xFF2E7D32),
-      outlineColor: Colors.white,
-      outlineWidth: 6,
-      shadowColor: Colors.black.withValues(alpha: 0.22),
-      shadowBlurRadius: 8,
-      shadowOffset: const Offset(0, 4),
-    );
-    final busStopIconBytes = await _createIconBytes(
-      Icons.directions_bus_rounded,
-      88,
-      backgroundColor: const Color(0xFF6A1B9A),
-      outlineColor: Colors.white,
-      outlineWidth: 6,
-      shadowColor: Colors.black.withValues(alpha: 0.22),
-      shadowBlurRadius: 8,
-      shadowOffset: const Offset(0, 4),
-    );
+    final groceryStoreIconBytes = reduceStartupIconWork
+        ? iconBytes
+        : await _createIconBytes(
+            Icons.local_grocery_store_rounded,
+            88,
+            backgroundColor: const Color(0xFF2E7D32),
+            outlineColor: Colors.white,
+            outlineWidth: 6,
+            shadowColor: Colors.black.withValues(alpha: 0.22),
+            shadowBlurRadius: 8,
+            shadowOffset: const Offset(0, 4),
+          );
+    final busStopIconBytes = reduceStartupIconWork
+        ? iconBytes
+        : await _createIconBytes(
+            Icons.directions_bus_rounded,
+            88,
+            backgroundColor: const Color(0xFF6A1B9A),
+            outlineColor: Colors.white,
+            outlineWidth: 6,
+            shadowColor: Colors.black.withValues(alpha: 0.22),
+            shadowBlurRadius: 8,
+            shadowOffset: const Offset(0, 4),
+          );
     final metroStationIconBytes = <int, Uint8List>{};
-    for (final line in MetroCache.getAvailableLines()) {
-      metroStationIconBytes[line] = await _createIconBytes(
-        Icons.directions_subway_rounded,
-        96,
-        backgroundColor: _metroLineColor(line),
-        outlineColor: line == 4 ? Colors.black : Colors.white,
-        outlineWidth: 7,
-        shadowColor: Colors.black.withValues(alpha: 0.28),
-        shadowBlurRadius: 9,
-        shadowOffset: const Offset(0, 4),
-      );
+    if (!reduceStartupIconWork) {
+      for (final line in MetroCache.getAvailableLines()) {
+        metroStationIconBytes[line] = await _createIconBytes(
+          Icons.directions_subway_rounded,
+          96,
+          backgroundColor: _metroLineColor(line),
+          outlineColor: line == 4 ? Colors.black : Colors.white,
+          outlineWidth: 7,
+          shadowColor: Colors.black.withValues(alpha: 0.28),
+          shadowBlurRadius: 9,
+          shadowOffset: const Offset(0, 4),
+        );
+      }
     }
 
     return _YandexMapSharedIconBytes(
