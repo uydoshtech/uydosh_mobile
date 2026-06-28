@@ -1,5 +1,7 @@
 part of "yandex_map_widget.dart";
 
+enum _DistrictPolygonStyle { normal, dimmed, emphasized }
+
 final Map<String, Polygon> _cachedDistrictPolygons = {};
 final Map<String, Polygon> _cachedSimplifiedDistrictPolygons = {};
 final Map<int, Point> _cachedDistrictLabelPoints = {};
@@ -38,15 +40,22 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   int _mapObjectsCacheKey() {
-    final districtLabelsVisible = widget.layerOptions.showDistrictLayer &&
+    final showAllDistrictLabels = widget.layerOptions.showDistrictLayer &&
         _currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom;
+    final showHighlightedDistrictLabels =
+        widget.layerOptions.highlightedLocationId != null &&
+            _currentZoom >=
+                _YandexMapWidgetState._minHighlightedDistrictLabelZoom;
     final metroWalkAreaLabelVisible = _selectedMetroStation != null &&
         widget.layerOptions.showMetroStationsLayer &&
-        _currentZoom >=
-            _YandexMapWidgetState._minMetroStationWalkAreaLabelZoom;
+        _isWalkAreaLabelVisibleAtCurrentZoom;
+    final universityWalkAreaLabelVisible =
+        _selectedUniversityForWalkRadius != null &&
+            _isWalkAreaLabelVisibleAtCurrentZoom;
     final listingPinGroups = _groupListingPins(widget.pins);
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
+      widget.layerOptions.highlightedLocationId,
       widget.layerOptions.showMetroStationsLayer,
       widget.layerOptions.metroStationLineId,
       widget.layerOptions.showGroceryStoresLayer,
@@ -55,8 +64,10 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.nightModeEnabled,
       widget.walkRadiusMinutes,
       Localizations.localeOf(context).languageCode,
-      districtLabelsVisible,
+      showAllDistrictLabels,
+      showHighlightedDistrictLabels,
       metroWalkAreaLabelVisible,
+      universityWalkAreaLabelVisible,
       _selectedMetroStation?.id,
       _selectedUniversityMarker?.id,
       widget.selectedListingId,
@@ -133,9 +144,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   List<MapObject> _buildMapObjects() {
-    final districtLayerObjects = widget.layerOptions.showDistrictLayer
-        ? _createDistrictLayerMapObjects()
-        : const <MapObject>[];
+    final districtLayerObjects = _createDistrictLayerMapObjects();
     final metroStationLayerObjects = widget.layerOptions.showMetroStationsLayer
         ? _createMetroStationLayerMapObjects()
         : const <MapObject>[];
@@ -352,28 +361,94 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   List<MapObject> _createDistrictLayerMapObjects() {
-    return [
-      for (final district in TashkentDistrictBoundaryCache.districts)
-        for (var polygonIndex = 0;
-            polygonIndex < district.polygons.length;
-            polygonIndex++)
-          PolygonMapObject(
-            mapId: MapObjectId(
-              "tashkent_district_${district.locationId}_$polygonIndex",
-            ),
-            polygon: _districtPolygon(district, polygonIndex),
-            zIndex: 0.1,
-            strokeWidth: 2.0,
-            strokeColor: _districtLayerColor(
-              district.locationId,
-            ).withValues(alpha: 0.78),
-            fillColor: _districtLayerColor(
-              district.locationId,
-            ).withValues(alpha: 0.22),
+    final highlightedId = widget.layerOptions.highlightedLocationId;
+    final showAllDistricts = widget.layerOptions.showDistrictLayer;
+    if (!showAllDistricts && highlightedId == null) {
+      return const [];
+    }
+
+    final objects = <MapObject>[];
+
+    if (showAllDistricts) {
+      for (final district in TashkentDistrictBoundaryCache.districts) {
+        if (district.locationId == highlightedId) continue;
+        objects.addAll(
+          _createDistrictPolygonMapObjects(
+            district,
+            style: highlightedId != null
+                ? _DistrictPolygonStyle.dimmed
+                : _DistrictPolygonStyle.normal,
           ),
-      if (_currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom)
-        ..._createDistrictLabelMapObjects(),
+        );
+      }
+    }
+
+    if (highlightedId != null) {
+      final district =
+          TashkentDistrictBoundaryCache.findByLocationId(highlightedId);
+      if (district != null) {
+        objects.addAll(
+          _createDistrictPolygonMapObjects(
+            district,
+            style: _DistrictPolygonStyle.emphasized,
+          ),
+        );
+      }
+    }
+
+    objects.addAll(_createDistrictLabelMapObjects());
+    return objects;
+  }
+
+  List<MapObject> _createDistrictPolygonMapObjects(
+    TashkentDistrictBoundary district, {
+    required _DistrictPolygonStyle style,
+  }) {
+    final colors = _districtPolygonColors(district.locationId, style);
+    return [
+      for (var polygonIndex = 0;
+          polygonIndex < district.polygons.length;
+          polygonIndex++)
+        PolygonMapObject(
+          mapId: MapObjectId(
+            "tashkent_district_${district.locationId}_$polygonIndex",
+          ),
+          polygon: _districtPolygon(district, polygonIndex),
+          zIndex: colors.zIndex,
+          strokeWidth: colors.strokeWidth,
+          strokeColor: colors.strokeColor,
+          fillColor: colors.fillColor,
+        ),
     ];
+  }
+
+  ({
+    double zIndex,
+    double strokeWidth,
+    Color strokeColor,
+    Color fillColor,
+  }) _districtPolygonColors(int locationId, _DistrictPolygonStyle style) {
+    final baseColor = _districtLayerColor(locationId);
+    return switch (style) {
+      _DistrictPolygonStyle.normal => (
+          zIndex: 0.1,
+          strokeWidth: 2.0,
+          strokeColor: baseColor.withValues(alpha: 0.78),
+          fillColor: baseColor.withValues(alpha: 0.22),
+        ),
+      _DistrictPolygonStyle.dimmed => (
+          zIndex: 0.08,
+          strokeWidth: 1.5,
+          strokeColor: baseColor.withValues(alpha: 0.34),
+          fillColor: baseColor.withValues(alpha: 0.08),
+        ),
+      _DistrictPolygonStyle.emphasized => (
+          zIndex: 0.18,
+          strokeWidth: 3.0,
+          strokeColor: baseColor.withValues(alpha: 0.95),
+          fillColor: baseColor.withValues(alpha: 0.34),
+        ),
+    };
   }
 
   Polygon _districtPolygon(
@@ -422,6 +497,15 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   List<MapObject> _createDistrictLabelMapObjects() {
+    final highlightedId = widget.layerOptions.highlightedLocationId;
+    final showAllLabels = widget.layerOptions.showDistrictLayer &&
+        _currentZoom >= _YandexMapWidgetState._minDistrictLabelZoom;
+    final showHighlightedLabel = highlightedId != null &&
+        _currentZoom >= _YandexMapWidgetState._minHighlightedDistrictLabelZoom;
+    if (!showAllLabels && !showHighlightedLabel) {
+      return const [];
+    }
+
     final language = Localizations.localeOf(context).languageCode;
     final textColor =
         widget.nightModeEnabled ? Colors.white : const Color(0xFF111111);
@@ -429,25 +513,27 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         widget.nightModeEnabled ? Colors.white : const Color(0xFF111111);
     return [
       for (final district in TashkentDistrictBoundaryCache.districts)
-        PlacemarkMapObject(
-          mapId: MapObjectId("tashkent_district_${district.locationId}_label"),
-          point: _districtLabelPoint(district),
-          zIndex: 1.0,
-          opacity: 1.0,
-          text: PlacemarkText(
-            text: LocationCache.getLocationShortName(
-              district.locationId,
-              language,
-            ),
-            style: PlacemarkTextStyle(
-              placement: TextStylePlacement.center,
-              color: textColor,
-              outlineColor: outlineColor,
-              size: 11,
-              textOptional: true,
+        if (showAllLabels || district.locationId == highlightedId)
+          PlacemarkMapObject(
+            mapId:
+                MapObjectId("tashkent_district_${district.locationId}_label"),
+            point: _districtLabelPoint(district),
+            zIndex: district.locationId == highlightedId ? 1.2 : 1.0,
+            opacity: 1.0,
+            text: PlacemarkText(
+              text: LocationCache.getLocationShortName(
+                district.locationId,
+                language,
+              ),
+              style: PlacemarkTextStyle(
+                placement: TextStylePlacement.center,
+                color: textColor,
+                outlineColor: outlineColor,
+                size: district.locationId == highlightedId ? 12 : 11,
+                textOptional: true,
+              ),
             ),
           ),
-        ),
     ];
   }
 
@@ -584,7 +670,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return [
       if (_selectedMetroStation != null) ...[
         _createMetroStationWalkingRadius(),
-        if (_isMetroWalkAreaLabelVisible)
+        if (_isWalkAreaLabelVisibleAtCurrentZoom)
           _createMetroStationWalkingRadiusLabel(),
       ],
       for (final station in MetroCache.getAllStations())
@@ -600,7 +686,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return selectedLineId == null || station.line == selectedLineId;
   }
 
-  bool get _isMetroWalkAreaLabelVisible {
+  bool get _isWalkAreaLabelVisibleAtCurrentZoom {
     return _currentZoom >=
         _YandexMapWidgetState._minMetroStationWalkAreaLabelZoom;
   }
@@ -619,21 +705,34 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   PlacemarkMapObject _createMetroStationWalkingRadiusLabel() {
     final station = _selectedMetroStation!;
+    return _createWalkAreaRadiusLabel(
+      mapObjectId:
+          "tashkent_metro_station_${station.id}_walking_radius_label_${widget.walkRadiusMinutes}_${_metroLayerScopeKey}",
+      latitude: station.latitude!,
+      longitude: station.longitude!,
+    );
+  }
+
+  PlacemarkMapObject _createWalkAreaRadiusLabel({
+    required String mapObjectId,
+    required double latitude,
+    required double longitude,
+  }) {
     final label = context.l10n.metro_station_walk_area_label(
       widget.walkRadiusMinutes,
     );
     _ensureMetroWalkAreaLabelIconBytes(label);
-    final iconBytes = _cachedMetroWalkAreaLabelIconBytes[label];
+    final iconBytes =
+        _cachedMetroWalkAreaLabelIconBytes[_metroWalkAreaLabelIconCacheKey(label)];
+    final labelColor = _metroWalkAreaLabelColor();
     final labelPoint = _pointOffsetNorth(
-      latitude: station.latitude!,
-      longitude: station.longitude!,
+      latitude: latitude,
+      longitude: longitude,
       meters: _walkingRadiusMeters * 0.56,
     );
     if (iconBytes != null) {
       return PlacemarkMapObject(
-        mapId: MapObjectId(
-          "tashkent_metro_station_${station.id}_walking_radius_label_${_metroLayerScopeKey}",
-        ),
+        mapId: MapObjectId(mapObjectId),
         point: labelPoint,
         zIndex: 1.1,
         opacity: 1.0,
@@ -648,18 +747,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     }
 
     return PlacemarkMapObject(
-      mapId: MapObjectId(
-        "tashkent_metro_station_${station.id}_walking_radius_label_${_metroLayerScopeKey}",
-      ),
+      mapId: MapObjectId(mapObjectId),
       point: labelPoint,
       zIndex: 1.1,
       opacity: 1.0,
       text: PlacemarkText(
         text: label,
-        style: const PlacemarkTextStyle(
+        style: PlacemarkTextStyle(
           placement: TextStylePlacement.center,
-          color: Color(0xFF1565C0),
-          outlineColor: Colors.white,
+          color: labelColor,
+          outlineColor: labelColor,
           size: 12,
           textOptional: false,
         ),
@@ -829,6 +926,13 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           mapObjectId:
               "university_${marker.id}_walking_radius_${widget.walkRadiusMinutes}",
         ),
+        if (_isWalkAreaLabelVisibleAtCurrentZoom)
+          _createWalkAreaRadiusLabel(
+            mapObjectId:
+                "university_${marker.id}_walking_radius_label_${widget.walkRadiusMinutes}",
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+          ),
       ],
       ...regularLayer,
       if (highlightedPlacemark != null) highlightedPlacemark,

@@ -132,11 +132,12 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       }
     }
     final universityIconBytes = reduceStartupIconWork
-        ? iconBytes
+        ? selectedIconBytes
         : await _createIconBytes(
             Icons.school_rounded,
             112,
-            backgroundColor: AppColors.success,
+            backgroundColor: AppColors.primary,
+            iconColor: Colors.white,
             outlineColor: Colors.white,
             outlineWidth: 7,
             shadowColor: Colors.black.withValues(alpha: 0.32),
@@ -144,11 +145,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowOffset: const Offset(0, 5),
           );
     final selectedUniversityIconBytes = reduceStartupIconWork
-        ? selectedIconBytes
+        ? iconBytes
         : await _createIconBytes(
             Icons.school_rounded,
             124,
-            backgroundColor: AppColors.primary,
+            backgroundColor: Colors.black,
             iconColor: Colors.white,
             outlineColor: Colors.white,
             outlineWidth: 8,
@@ -162,6 +163,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             Icons.school_rounded,
             112,
             backgroundColor: AppColors.error,
+            iconColor: Colors.white,
             outlineColor: Colors.white,
             outlineWidth: 7,
             shadowColor: Colors.black.withValues(alpha: 0.32),
@@ -169,11 +171,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowOffset: const Offset(0, 5),
           );
     final selectedUserUniversityIconBytes = reduceStartupIconWork
-        ? selectedIconBytes
+        ? iconBytes
         : await _createIconBytes(
             Icons.school_rounded,
             124,
-            backgroundColor: AppColors.error,
+            backgroundColor: Colors.black,
             iconColor: Colors.white,
             outlineColor: Colors.white,
             outlineWidth: 8,
@@ -458,30 +460,40 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     }
   }
 
+  String _metroWalkAreaLabelIconCacheKey(String label) {
+    return "${widget.nightModeEnabled ? "dark" : "light"}|$label";
+  }
+
+  Color _metroWalkAreaLabelColor() {
+    return widget.nightModeEnabled ? Colors.white : Colors.black;
+  }
+
   void _ensureMetroWalkAreaLabelIconBytes(String label) {
-    if (_cachedMetroWalkAreaLabelIconBytes.containsKey(label) ||
-        _pendingMetroWalkAreaLabelIconKeys.contains(label)) {
+    final cacheKey = _metroWalkAreaLabelIconCacheKey(label);
+    if (_cachedMetroWalkAreaLabelIconBytes.containsKey(cacheKey) ||
+        _pendingMetroWalkAreaLabelIconKeys.contains(cacheKey)) {
       return;
     }
 
-    _pendingMetroWalkAreaLabelIconKeys.add(label);
+    _pendingMetroWalkAreaLabelIconKeys.add(cacheKey);
     _createMetroWalkAreaLabelIconBytes(label).then((bytes) {
-      _pendingMetroWalkAreaLabelIconKeys.remove(label);
+      _pendingMetroWalkAreaLabelIconKeys.remove(cacheKey);
       if (!mounted) return;
-      _cachedMetroWalkAreaLabelIconBytes[label] = bytes;
+      _cachedMetroWalkAreaLabelIconBytes[cacheKey] = bytes;
       _requestMapRebuild();
     }).catchError((Object error) {
-      _pendingMetroWalkAreaLabelIconKeys.remove(label);
+      _pendingMetroWalkAreaLabelIconKeys.remove(cacheKey);
       logger.w("Could not create metro walk area label icon: $error");
     });
   }
 
   Future<Uint8List> _createMetroWalkAreaLabelIconBytes(String label) async {
+    final textColor = _metroWalkAreaLabelColor();
     final textPainter = TextPainter(
       text: TextSpan(
         text: label,
-        style: const TextStyle(
-          color: Color(0xFF1565C0),
+        style: TextStyle(
+          color: textColor,
           fontSize: 42,
           fontWeight: FontWeight.w800,
           height: 1.0,
@@ -496,24 +508,6 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
     final offset = Offset(horizontalPadding, verticalPadding);
-
-    final outlinePainter = TextPainter(
-      text: TextSpan(
-        text: label,
-        style: TextStyle(
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 6
-            ..strokeJoin = StrokeJoin.round
-            ..color = Colors.white,
-          fontSize: 42,
-          fontWeight: FontWeight.w800,
-          height: 1.0,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    outlinePainter.paint(canvas, offset);
     textPainter.paint(canvas, offset);
 
     return _createPngBytesFromPicture(pictureRecorder, width, height);

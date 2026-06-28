@@ -246,8 +246,9 @@ class _SearchResultsMapContent extends StatelessWidget {
                     title: context.l10n.search_results,
                     height: double.infinity,
                     cameraOptions: YandexMapCameraOptions(
-                      moveOnTargetChange:
-                          hasSearchFilters && result.pins.isNotEmpty,
+                      moveOnTargetChange: hasSearchFilters &&
+                          (result.pins.isNotEmpty ||
+                              (locationId != null && locationId! > 0)),
                       includeUniversityMarkersInCamera: false,
                       fitCityWhenNoPins: !hasSearchFilters,
                     ),
@@ -262,6 +263,10 @@ class _SearchResultsMapContent extends StatelessWidget {
                     layerOptions: YandexMapLayerOptions(
                       showUserLocation: false,
                       showDistrictLayer: showDistrictLayer,
+                      highlightedLocationId:
+                          locationId != null && locationId! > 0
+                              ? locationId
+                              : null,
                       showMetroStationsLayer: metroLayerMode.showsStations,
                       metroStationLineId: metroLayerMode.lineId,
                       showGroceryStoresLayer: showGroceryStoresLayer,

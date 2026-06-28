@@ -91,6 +91,7 @@ class YandexMapLayerOptions {
   const YandexMapLayerOptions({
     this.showUserLocation = false,
     this.showDistrictLayer = false,
+    this.highlightedLocationId,
     this.showMetroStationsLayer = false,
     this.metroStationLineId,
     this.showGroceryStoresLayer = false,
@@ -99,6 +100,11 @@ class YandexMapLayerOptions {
 
   final bool showUserLocation;
   final bool showDistrictLayer;
+
+  /// When set, always draws a search-focus overlay for this district.
+  /// Independent of [showDistrictLayer]; other districts stay hidden when
+  /// the layer is off and render dimmed when the layer is on.
+  final int? highlightedLocationId;
   final bool showMetroStationsLayer;
   final int? metroStationLineId;
   final bool showGroceryStoresLayer;
@@ -278,16 +284,17 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _maxZoom = 20.0;
   static const double _maxMultiPinAutoZoom = 13.25;
   static const double _minDistrictLabelZoom = 11.5;
+  static const double _minHighlightedDistrictLabelZoom = 10.0;
   static const double _brandMarkSize = 42.0;
   static const double _brandMarkInset = 10.0;
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
   static const double _walkingSpeedMetersPerMinute = 110.0;
-  static const double _minMetroStationWalkAreaLabelZoom = 12.5;
+  static const double _minMetroStationWalkAreaLabelZoom = 14.0;
   static const double _listingPinMetroStationOffsetMeters = 45.0;
-  static const double _metroStationPlacemarkScale = 0.62;
-  static const double _selectedMetroStationPlacemarkScale = 0.93;
+  static const double _metroStationPlacemarkScale = 70 / 96;
+  static const double _selectedMetroStationPlacemarkScale = 100 / 96;
   static const double _metroStationBorderPx = 1.0;
   static const double _selectedMetroStationBorderPx = 4.0;
   static double _metroStationIconOutlineWidth({required bool selected}) {
@@ -388,6 +395,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         !widget.layerOptions.showMetroStationsLayer) {
       _setSelectedMetroStation(null, notify: true);
     }
+    if (_districtLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
+      _invalidateMapObjectsCache();
+      _requestMapRebuild();
+    }
     if (_metroLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       final selectedStation = _selectedMetroStation;
       final selectedLineId = widget.layerOptions.metroStationLineId;
@@ -407,6 +418,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _syncPoiLayers();
     }
     if (oldWidget.nightModeEnabled != widget.nightModeEnabled) {
+      _cachedMetroWalkAreaLabelIconBytes.clear();
+      _pendingMetroWalkAreaLabelIconKeys.clear();
+      _invalidateMapObjectsCache();
+      _requestMapRebuild();
       unawaited(_refreshUserLocationLayerAppearance());
     }
     if (_pinsChanged(oldWidget.pins, widget.pins) ||
@@ -419,12 +434,20 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _syncSelectedUniversityMarker();
     final shouldMoveForPins =
         _mapTargetChanged(oldWidget) && widget.cameraOptions.moveOnTargetChange;
+    final shouldMoveForHighlightedDistrict =
+        widget.layerOptions.highlightedLocationId != null &&
+        widget.cameraOptions.moveOnTargetChange &&
+        oldWidget.layerOptions.highlightedLocationId !=
+            widget.layerOptions.highlightedLocationId;
     final shouldMoveForCity = widget.cameraOptions.fitCityWhenNoPins &&
         widget.pins.isEmpty &&
+        widget.layerOptions.highlightedLocationId == null &&
         (widget.cameraOptions.fitCityWhenNoPins !=
                 oldWidget.cameraOptions.fitCityWhenNoPins ||
             _pinsChanged(oldWidget.pins, widget.pins));
-    if (!shouldMoveForPins && !shouldMoveForCity) {
+    if (!shouldMoveForPins &&
+        !shouldMoveForHighlightedDistrict &&
+        !shouldMoveForCity) {
       return;
     }
 
@@ -602,7 +625,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       bottom: _brandMarkInset + bottomInset,
       child: IgnorePointer(
         child: Image.asset(
-          "assets/icon/components/brand_mark.png",
+          widget.nightModeEnabled
+              ? "assets/icon/components/brand_mark.png"
+              : "assets/icon/components/brand_mark_light.png",
           width: _brandMarkSize,
           height: _brandMarkSize,
           fit: BoxFit.contain,
@@ -1198,6 +1223,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   bool _mapTargetChanged(YandexMapWidget oldWidget) {
     if (_pinsChanged(oldWidget.pins, widget.pins)) return true;
+    if (oldWidget.layerOptions.highlightedLocationId !=
+        widget.layerOptions.highlightedLocationId) {
+      return true;
+    }
     if (widget.cameraOptions.includeUniversityMarkersInCamera &&
         _universityMarkersChanged(
           oldWidget.universityMarkers,
@@ -1330,11 +1359,103 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _selectedUniversityMarker = null;
   }
 
+  Future<bool> _fitCameraToLatLonBounds({
+    required YandexMapController controller,
+    required int generation,
+    required double minLat,
+    required double maxLat,
+    required double minLon,
+    required double maxLon,
+    required bool includePins,
+  }) async {
+    var boundsMinLat = minLat;
+    var boundsMaxLat = maxLat;
+    var boundsMinLon = minLon;
+    var boundsMaxLon = maxLon;
+
+    if (includePins) {
+      for (final pin in widget.pins) {
+        boundsMinLat =
+            pin.latitude < boundsMinLat ? pin.latitude : boundsMinLat;
+        boundsMaxLat =
+            pin.latitude > boundsMaxLat ? pin.latitude : boundsMaxLat;
+        boundsMinLon =
+            pin.longitude < boundsMinLon ? pin.longitude : boundsMinLon;
+        boundsMaxLon =
+            pin.longitude > boundsMaxLon ? pin.longitude : boundsMaxLon;
+      }
+    }
+
+    final latPadding =
+        ((boundsMaxLat - boundsMinLat).abs() * 0.18).clamp(0.008, 0.06);
+    final lonPadding =
+        ((boundsMaxLon - boundsMinLon).abs() * 0.18).clamp(0.008, 0.06);
+    final boundsCenter = Point(
+      latitude: (boundsMinLat + boundsMaxLat) / 2,
+      longitude: (boundsMinLon + boundsMaxLon) / 2,
+    );
+    final geometry = Geometry.fromBoundingBox(
+      BoundingBox(
+        northEast: Point(
+          latitude: boundsMaxLat + latPadding,
+          longitude: boundsMaxLon + lonPadding,
+        ),
+        southWest: Point(
+          latitude: boundsMinLat - latPadding,
+          longitude: boundsMinLon - lonPadding,
+        ),
+      ),
+    );
+    final moved = await _moveCameraAutomatically(
+      controller,
+      CameraUpdate.newGeometry(geometry),
+    );
+    if (!moved || !_isCurrentMapOperation(controller, generation)) return false;
+
+    final cameraPosition = await controller.getCameraPosition();
+    if (!_isCurrentMapOperation(controller, generation)) return false;
+    if (cameraPosition.zoom > _maxMultiPinAutoZoom) {
+      final capped = await _moveCameraAutomatically(
+        controller,
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: boundsCenter,
+            zoom: _maxMultiPinAutoZoom,
+            azimuth: cameraPosition.azimuth,
+            tilt: cameraPosition.tilt,
+          ),
+        ),
+      );
+      if (capped) _setCurrentZoom(_maxMultiPinAutoZoom);
+    } else {
+      _setCurrentZoom(cameraPosition.zoom);
+    }
+    return true;
+  }
+
   Future<void> _moveInitialCamera(
     YandexMapController controller,
     Map<String, double> centerPoint,
   ) async {
     final generation = _mapOperationGeneration;
+    final highlightedLocationId = widget.layerOptions.highlightedLocationId;
+    if (highlightedLocationId != null) {
+      final bounds =
+          TashkentDistrictBoundaryCache.boundsForLocationId(highlightedLocationId);
+      if (bounds != null) {
+        final moved = await _fitCameraToLatLonBounds(
+          controller: controller,
+          generation: generation,
+          minLat: bounds["minLat"]!,
+          maxLat: bounds["maxLat"]!,
+          minLon: bounds["minLon"]!,
+          maxLon: bounds["maxLon"]!,
+          includePins: true,
+        );
+        if (moved) return;
+      }
+    }
+
     final targetPoints = _targetPoints();
     if (targetPoints.isEmpty && widget.cameraOptions.fitCityWhenNoPins) {
       final bounds = CoordinatesCache.getCityBounds();
@@ -1374,49 +1495,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         maxLon = point.longitude > maxLon ? point.longitude : maxLon;
       }
 
-      final latPadding = ((maxLat - minLat).abs() * 0.18).clamp(0.008, 0.06);
-      final lonPadding = ((maxLon - minLon).abs() * 0.18).clamp(0.008, 0.06);
-      final boundsCenter = Point(
-        latitude: (minLat + maxLat) / 2,
-        longitude: (minLon + maxLon) / 2,
+      final moved = await _fitCameraToLatLonBounds(
+        controller: controller,
+        generation: generation,
+        minLat: minLat,
+        maxLat: maxLat,
+        minLon: minLon,
+        maxLon: maxLon,
+        includePins: false,
       );
-      final geometry = Geometry.fromBoundingBox(
-        BoundingBox(
-          northEast: Point(
-            latitude: maxLat + latPadding,
-            longitude: maxLon + lonPadding,
-          ),
-          southWest: Point(
-            latitude: minLat - latPadding,
-            longitude: minLon - lonPadding,
-          ),
-        ),
-      );
-      final moved = await _moveCameraAutomatically(
-        controller,
-        CameraUpdate.newGeometry(geometry),
-      );
-      if (!moved || !_isCurrentMapOperation(controller, generation)) return;
-
-      final cameraPosition = await controller.getCameraPosition();
-      if (!_isCurrentMapOperation(controller, generation)) return;
-      if (cameraPosition.zoom > _maxMultiPinAutoZoom) {
-        final moved = await _moveCameraAutomatically(
-          controller,
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: boundsCenter,
-              zoom: _maxMultiPinAutoZoom,
-              azimuth: cameraPosition.azimuth,
-              tilt: cameraPosition.tilt,
-            ),
-          ),
-        );
-        if (moved) _setCurrentZoom(_maxMultiPinAutoZoom);
-      } else {
-        _setCurrentZoom(cameraPosition.zoom);
-      }
-      return;
+      if (moved) return;
     }
 
     final zoom = _initialZoom();
@@ -1496,17 +1584,32 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     required double oldZoom,
     required double newZoom,
   }) {
-    if (widget.layerOptions.showDistrictLayer) {
-      final districtLabelChanged = (oldZoom >= _minDistrictLabelZoom) !=
-          (newZoom >= _minDistrictLabelZoom);
-      if (districtLabelChanged) return true;
+    if (widget.layerOptions.showDistrictLayer ||
+        widget.layerOptions.highlightedLocationId != null) {
+      final allDistrictLabelsChanged =
+          widget.layerOptions.showDistrictLayer &&
+              ((oldZoom >= _minDistrictLabelZoom) !=
+                  (newZoom >= _minDistrictLabelZoom));
+      final highlightedDistrictLabelsChanged =
+          widget.layerOptions.highlightedLocationId != null &&
+              ((oldZoom >= _minHighlightedDistrictLabelZoom) !=
+                  (newZoom >= _minHighlightedDistrictLabelZoom));
+      if (allDistrictLabelsChanged || highlightedDistrictLabelsChanged) {
+        return true;
+      }
     }
     if (_selectedMetroStation != null &&
         widget.layerOptions.showMetroStationsLayer) {
-      final metroWalkAreaLabelChanged =
+      final walkAreaLabelChanged =
           (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
               (newZoom >= _minMetroStationWalkAreaLabelZoom);
-      if (metroWalkAreaLabelChanged) return true;
+      if (walkAreaLabelChanged) return true;
+    }
+    if (_selectedUniversityForWalkRadius != null) {
+      final walkAreaLabelChanged =
+          (oldZoom >= _minMetroStationWalkAreaLabelZoom) !=
+              (newZoom >= _minMetroStationWalkAreaLabelZoom);
+      if (walkAreaLabelChanged) return true;
     }
     return false;
   }
@@ -1533,6 +1636,14 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     return oldOptions.showGroceryStoresLayer !=
             newOptions.showGroceryStoresLayer ||
         oldOptions.showBusStopsLayer != newOptions.showBusStopsLayer;
+  }
+
+  bool _districtLayerOptionsChanged(
+    YandexMapLayerOptions oldOptions,
+    YandexMapLayerOptions newOptions,
+  ) {
+    return oldOptions.showDistrictLayer != newOptions.showDistrictLayer ||
+        oldOptions.highlightedLocationId != newOptions.highlightedLocationId;
   }
 
   bool _metroLayerOptionsChanged(

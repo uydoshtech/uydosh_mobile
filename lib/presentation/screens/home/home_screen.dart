@@ -1634,7 +1634,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       HomeEmptySearchPlaceholder(
         homeIconColor: _getHomeIconColor(),
         titleColor: _getWelcomeTitleColor(),
-        onClearFilters: _handleClearFiltersFromEmptyState,
         onNotifyMe: _isCreatingSearchAlert
             ? null
             : () => unawaited(_subscribeToSearchAlerts()),
@@ -1643,19 +1642,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       extraBottomPadding: _emptySearchExtraBottomScrollPadding(context),
       allowUserScroll: false,
     );
-  }
-
-  Future<void> _handleClearFiltersFromEmptyState() async {
-    if (!mounted) return;
-    await _searchFiltersState.clearAllFilters(flushRemoteImmediately: true);
-    if (!mounted) return;
-    if (widget.isSearchMode) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      return;
-    }
-    _exitInlineSearch(recordRibbonDismissed: false);
   }
 
   void _maybeShowNoResultsAlertBellTutorial() {

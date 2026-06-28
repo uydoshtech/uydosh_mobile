@@ -58,12 +58,11 @@ class HomeWelcomePlaceholder extends StatelessWidget {
   }
 }
 
-/// Empty search results with clear-filters + notify CTAs.
+/// Empty search results with notify CTA.
 class HomeEmptySearchPlaceholder extends StatelessWidget {
   const HomeEmptySearchPlaceholder({
     required this.homeIconColor,
     required this.titleColor,
-    required this.onClearFilters,
     required this.onNotifyMe,
     required this.emptySearchCtaHeight,
     super.key,
@@ -71,7 +70,6 @@ class HomeEmptySearchPlaceholder extends StatelessWidget {
 
   final Color homeIconColor;
   final Color titleColor;
-  final VoidCallback onClearFilters;
   final VoidCallback? onNotifyMe;
   final double emptySearchCtaHeight;
 
@@ -103,15 +101,6 @@ class HomeEmptySearchPlaceholder extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GhostButtonFactory.iconText(
-                  onPressed: onClearFilters,
-                  icon: Icons.filter_alt_off,
-                  text: L10n.get("search_clear_filters"),
-                  height: emptySearchCtaHeight,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  neumorphicSoftUi: true,
-                ),
-                const SizedBox(height: 12),
                 NotifySearchAlertGhostButton(
                   height: emptySearchCtaHeight,
                   label: L10n.get("search_alert_notify_me"),

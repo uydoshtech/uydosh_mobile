@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 /// Tashkent city district boundary polygons used by the map overlay.
 ///
 /// Source: akbartus/GeoJSON-Uzbekistan `geojson/tashkent_districts.geojson`,
@@ -4886,6 +4888,55 @@ class TashkentDistrictBoundaryCache {
       ],
     ),
   ];
+
+  static TashkentDistrictBoundary? findByLocationId(int locationId) {
+    for (final district in districts) {
+      if (district.locationId == locationId) return district;
+    }
+    return null;
+  }
+
+  /// Lat/lon bounds for [locationId], or null when the district is unknown.
+  static Map<String, double>? boundsForLocationId(int locationId) {
+    final district = findByLocationId(locationId);
+    if (district == null) return null;
+
+    double? minLat;
+    double? maxLat;
+    double? minLon;
+    double? maxLon;
+
+    for (final polygon in district.polygons) {
+      for (final point in polygon.outerRing) {
+        minLat = minLat == null
+            ? point.latitude
+            : math.min(minLat, point.latitude);
+        maxLat = maxLat == null
+            ? point.latitude
+            : math.max(maxLat, point.latitude);
+        minLon = minLon == null
+            ? point.longitude
+            : math.min(minLon, point.longitude);
+        maxLon = maxLon == null
+            ? point.longitude
+            : math.max(maxLon, point.longitude);
+      }
+    }
+
+    if (minLat == null ||
+        maxLat == null ||
+        minLon == null ||
+        maxLon == null) {
+      return null;
+    }
+
+    return {
+      "minLat": minLat,
+      "maxLat": maxLat,
+      "minLon": minLon,
+      "maxLon": maxLon,
+    };
+  }
 }
 
 class TashkentDistrictBoundary {
