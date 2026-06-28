@@ -1194,7 +1194,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
             visited: !group.pins.any(
                   (pin) => selectedListingIds.contains(pin.listingId),
                 ) &&
-                group.pins.any(
+                group.pins.every(
                   (pin) => visitedListingIds.contains(pin.listingId),
                 ),
           )

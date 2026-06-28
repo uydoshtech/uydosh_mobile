@@ -179,12 +179,14 @@ class _PinGroupSummaryTooltip extends StatefulWidget {
     required this.pins,
     required this.onClose,
     required this.onOpenPin,
+    required this.onAllListingsViewedInCarousel,
     super.key,
   });
 
   final List<ListingMapPin> pins;
   final VoidCallback onClose;
   final ValueChanged<ListingMapPin> onOpenPin;
+  final ValueChanged<List<ListingMapPin>> onAllListingsViewedInCarousel;
 
   @override
   State<_PinGroupSummaryTooltip> createState() =>
@@ -193,17 +195,30 @@ class _PinGroupSummaryTooltip extends StatefulWidget {
 
 class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
   late final PageController _pageController;
+  final Set<int> _viewedPageIndices = {};
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _recordPageViewed(0);
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _recordPageViewed(int index) {
+    if (index < 0 || index >= widget.pins.length) return;
+    if (!_viewedPageIndices.add(index)) return;
+    if (_viewedPageIndices.length == widget.pins.length) {
+      widget.onAllListingsViewedInCarousel(widget.pins);
+    }
   }
 
   @override
@@ -242,6 +257,7 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
                   child: PageView.builder(
                     controller: _pageController,
                     physics: const BouncingScrollPhysics(),
+                    onPageChanged: _recordPageViewed,
                     itemCount: widget.pins.length,
                     itemBuilder: (context, index) {
                       final pin = widget.pins[index];

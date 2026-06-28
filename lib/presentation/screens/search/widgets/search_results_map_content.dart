@@ -23,6 +23,7 @@ class _SearchResultsMapBody extends StatelessWidget {
     required this.onClearSelectedMetroStation,
     required this.onSelectedMetroStationChanged,
     required this.onOpenPin,
+    required this.onAllListingsViewedInCarousel,
   });
 
   final ValueListenable<_SearchMapCanvasProps> canvasListenable;
@@ -46,6 +47,7 @@ class _SearchResultsMapBody extends StatelessWidget {
   final VoidCallback onClearSelectedMetroStation;
   final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
   final ValueChanged<ListingMapPin> onOpenPin;
+  final ValueChanged<List<ListingMapPin>> onAllListingsViewedInCarousel;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +131,8 @@ class _SearchResultsMapBody extends StatelessWidget {
                           onClearSelectedUniversityMarker,
                       onClearSelectedMetroStation: onClearSelectedMetroStation,
                       onOpenPin: onOpenPin,
+                      onAllListingsViewedInCarousel:
+                          onAllListingsViewedInCarousel,
                     );
                   },
                 ),
@@ -262,6 +266,7 @@ class _SearchMapOverlays extends StatelessWidget {
     required this.onClearSelectedUniversityMarker,
     required this.onClearSelectedMetroStation,
     required this.onOpenPin,
+    required this.onAllListingsViewedInCarousel,
   });
 
   final _SearchMapOverlayProps props;
@@ -277,6 +282,7 @@ class _SearchMapOverlays extends StatelessWidget {
   final VoidCallback onClearSelectedUniversityMarker;
   final VoidCallback onClearSelectedMetroStation;
   final ValueChanged<ListingMapPin> onOpenPin;
+  final ValueChanged<List<ListingMapPin>> onAllListingsViewedInCarousel;
 
   @override
   Widget build(BuildContext context) {
@@ -414,6 +420,8 @@ class _SearchMapOverlays extends StatelessWidget {
                                   pins: pinGroup,
                                   onClose: onClearSelectedPin,
                                   onOpenPin: onOpenPin,
+                                  onAllListingsViewedInCarousel:
+                                      onAllListingsViewedInCarousel,
                                 )
                               : universityMarker != null
                                   ? UniversityMapTooltip(

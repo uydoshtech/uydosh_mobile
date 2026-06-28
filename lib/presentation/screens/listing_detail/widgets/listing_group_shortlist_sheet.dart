@@ -10,6 +10,7 @@ import "package:uy_dosh/base/util/error_message_helper.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
@@ -30,6 +31,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 
 String? _listingOwnerNameFromProfile(UserProfile profile) {
   final name = profile.name?.trim();
@@ -938,8 +940,8 @@ class _ShortlistStatusLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final color = scheme.primary;
+    final style =
+        ListingTypeHelper.getBadgeStyle(ListingTypeCodes.groupForming);
 
     return Container(
       constraints: BoxConstraints(
@@ -947,14 +949,14 @@ class _ShortlistStatusLabel extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
+        color: style.background,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.22)),
+        border: Border.all(color: style.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timeline_rounded, size: 15, color: color),
+          Icon(Icons.timeline_rounded, size: 15, color: style.foreground),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
@@ -962,7 +964,7 @@ class _ShortlistStatusLabel extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: color,
+                color: style.foreground,
                 fontWeight: FontWeight.w800,
                 height: 1,
               ),

@@ -233,6 +233,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   late final VoidCallback _onClearSelectedMetroStation =
       _handleClearSelectedMetroStation;
   late final ValueChanged<ListingMapPin> _onOpenPin = _handleOpenPin;
+  late final ValueChanged<List<ListingMapPin>>
+      _onAllListingsViewedInCarousel = _handleAllListingsViewedInCarousel;
   late final VoidCallback _onToggleDistrictLayer = _handleToggleDistrictLayer;
   late final VoidCallback _onToggleWalkRadiusMinutes =
       _handleToggleWalkRadiusMinutes;
@@ -1361,6 +1363,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onSelectPinGroup: _onSelectPinGroup,
       onSelectUniversityMarker: _onSelectUniversityMarker,
       onOpenPin: _onOpenPin,
+      onAllListingsViewedInCarousel: _onAllListingsViewedInCarousel,
     );
   }
 
@@ -1405,10 +1408,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _syncCanvasProps();
   }
 
-  void _markListingsVisited(Iterable<int> listingIds) {
+  void _handleAllListingsViewedInCarousel(List<ListingMapPin> pins) {
     var changed = false;
-    for (final listingId in listingIds) {
-      changed |= _visitedListingIds.add(listingId);
+    for (final pin in pins) {
+      changed |= _visitedListingIds.add(pin.listingId);
     }
     if (changed) _syncCanvasProps();
   }
@@ -1451,7 +1454,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _handleSelectPinGroup(List<ListingMapPin> pins) {
-    _markListingsVisited(pins.map((pin) => pin.listingId));
     _selectedPin = null;
     _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
     _selectedListingGroupIds = [
