@@ -41,6 +41,7 @@ class _SearchMapCanvasProps {
     required this.userUniversityMarkerId,
     required this.selectedListingId,
     required this.selectedListingGroupIds,
+    required this.visitedListingIds,
     required this.selectedUniversityMarkerId,
     required this.selectedUniversityZoomFocusId,
     required this.selectedMetroStationId,
@@ -68,6 +69,7 @@ class _SearchMapCanvasProps {
   final String? userUniversityMarkerId;
   final int? selectedListingId;
   final List<int> selectedListingGroupIds;
+  final Set<int> visitedListingIds;
   final String? selectedUniversityMarkerId;
   final String? selectedUniversityZoomFocusId;
   final int? selectedMetroStationId;
@@ -100,6 +102,7 @@ class _SearchMapCanvasProps {
             userUniversityMarkerId == other.userUniversityMarkerId &&
             selectedListingId == other.selectedListingId &&
             _intListsEqual(selectedListingGroupIds, other.selectedListingGroupIds) &&
+            _intSetsEqual(visitedListingIds, other.visitedListingIds) &&
             selectedUniversityMarkerId == other.selectedUniversityMarkerId &&
             selectedUniversityZoomFocusId == other.selectedUniversityZoomFocusId &&
             selectedMetroStationId == other.selectedMetroStationId &&
@@ -129,6 +132,7 @@ class _SearchMapCanvasProps {
         userUniversityMarkerId,
         selectedListingId,
         Object.hashAll(selectedListingGroupIds),
+        Object.hashAll(visitedListingIds),
         selectedUniversityMarkerId,
         selectedUniversityZoomFocusId,
         selectedMetroStationId,
@@ -292,6 +296,15 @@ bool _intListsEqual(List<int> a, List<int> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _intSetsEqual(Set<int> a, Set<int> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (final value in a) {
+    if (!b.contains(value)) return false;
   }
   return true;
 }

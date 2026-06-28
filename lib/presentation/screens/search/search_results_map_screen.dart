@@ -184,6 +184,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   ListingMapPin? _selectedPin;
   List<ListingMapPin> _selectedPinGroup = const [];
   List<int> _selectedListingGroupIds = const [];
+  final Set<int> _visitedListingIds = {};
   UniversityMapMarker? _selectedUniversityMarker;
   SubwayStation? _selectedMetroStation;
   late final ValueNotifier<_SearchMapCanvasProps> _canvasPropsNotifier;
@@ -342,6 +343,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       userUniversityMarkerId: _currentUserUniversityMarkerId,
       selectedListingId: _selectedPin?.listingId,
       selectedListingGroupIds: _selectedListingGroupIds,
+      visitedListingIds: _visitedListingIds,
       selectedUniversityMarkerId: _selectedUniversityMarker?.id,
       selectedUniversityZoomFocusId: _selectedUniversityMarker?.id,
       selectedMetroStationId: _selectedMetroStation?.id,
@@ -1394,7 +1396,21 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _handleOpenPin(ListingMapPin pin) {
+    _markListingVisited(pin.listingId);
     context.pushListingDetail(pin.listingId);
+  }
+
+  void _markListingVisited(int listingId) {
+    if (!_visitedListingIds.add(listingId)) return;
+    _syncCanvasProps();
+  }
+
+  void _markListingsVisited(Iterable<int> listingIds) {
+    var changed = false;
+    for (final listingId in listingIds) {
+      changed |= _visitedListingIds.add(listingId);
+    }
+    if (changed) _syncCanvasProps();
   }
 
   void _handleMapBackgroundTap(Point point) {
@@ -1424,6 +1440,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _handleSelectPin(ListingMapPin pin) {
+    _markListingVisited(pin.listingId);
     _selectedPin = pin;
     _selectedPinGroup = const [];
     _selectedListingGroupIds = const [];
@@ -1434,6 +1451,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _handleSelectPinGroup(List<ListingMapPin> pins) {
+    _markListingsVisited(pins.map((pin) => pin.listingId));
     _selectedPin = null;
     _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
     _selectedListingGroupIds = [

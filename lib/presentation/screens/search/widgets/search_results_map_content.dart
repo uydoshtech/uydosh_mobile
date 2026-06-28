@@ -197,6 +197,7 @@ class _SearchMapCanvas extends StatelessWidget {
                     canvas.selectedUniversityZoomFocusId,
                 selectedListingId: canvas.selectedListingId,
                 selectedListingGroupIds: canvas.selectedListingGroupIds,
+                visitedListingIds: canvas.visitedListingIds,
                 title: context.l10n.search_results,
                 height: mapHeight,
                 cameraOptions: YandexMapCameraOptions(

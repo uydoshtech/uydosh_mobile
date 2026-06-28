@@ -14,6 +14,8 @@ class _YandexMapSharedIconBytes {
   const _YandexMapSharedIconBytes({
     required this.defaultIconBytes,
     required this.darkDefaultIconBytes,
+    required this.visitedIconBytes,
+    required this.darkVisitedIconBytes,
     required this.selectedIconBytes,
     required this.universityIconBytes,
     required this.userUniversityIconBytes,
@@ -27,6 +29,8 @@ class _YandexMapSharedIconBytes {
     required this.busStopIconBytes,
     required this.listingTypeIconBytes,
     required this.darkListingTypeIconBytes,
+    required this.visitedListingTypeIconBytes,
+    required this.darkVisitedListingTypeIconBytes,
     required this.selectedListingTypeIconBytes,
     required this.metroStationIconBytes,
     required this.selectedMetroStationIconBytes,
@@ -34,6 +38,8 @@ class _YandexMapSharedIconBytes {
 
   final Uint8List defaultIconBytes;
   final Uint8List darkDefaultIconBytes;
+  final Uint8List visitedIconBytes;
+  final Uint8List darkVisitedIconBytes;
   final Uint8List selectedIconBytes;
   final Uint8List universityIconBytes;
   final Uint8List userUniversityIconBytes;
@@ -47,12 +53,17 @@ class _YandexMapSharedIconBytes {
   final Uint8List busStopIconBytes;
   final Map<String, Uint8List> listingTypeIconBytes;
   final Map<String, Uint8List> darkListingTypeIconBytes;
+  final Map<String, Uint8List> visitedListingTypeIconBytes;
+  final Map<String, Uint8List> darkVisitedListingTypeIconBytes;
   final Map<String, Uint8List> selectedListingTypeIconBytes;
   final Map<int, Uint8List> metroStationIconBytes;
   final Map<int, Uint8List> selectedMetroStationIconBytes;
 }
 
 extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
+  static const Color _visitedPinBackground = Color(0xFF9E9E9E);
+  static const Color _visitedPinBackgroundDark = Color(0xFF757575);
+
   Future<_YandexMapSharedIconBytes> _loadSharedIconBytes() async {
     final cached = _sharedYandexMapIconBytes;
     if (cached != null) return cached;
@@ -89,6 +100,20 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       outlineColor: Colors.white,
       outlineWidth: reduceStartupIconWork ? 5 : 7,
     );
+    final visitedIconBytes = await _createIconBytes(
+      Icons.home,
+      reduceStartupIconWork ? 84 : 100,
+      backgroundColor: _visitedPinBackground,
+      outlineColor: Colors.white,
+      outlineWidth: reduceStartupIconWork ? 5 : 7,
+    );
+    final darkVisitedIconBytes = await _createIconBytes(
+      Icons.home,
+      reduceStartupIconWork ? 84 : 100,
+      backgroundColor: _visitedPinBackgroundDark,
+      outlineColor: Colors.white,
+      outlineWidth: reduceStartupIconWork ? 5 : 7,
+    );
     final selectedIconBytes = await _createIconBytes(
       Icons.home,
       reduceStartupIconWork ? 100 : 124,
@@ -102,6 +127,8 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
     final listingTypeIconBytes = <String, Uint8List>{};
     final darkListingTypeIconBytes = <String, Uint8List>{};
+    final visitedListingTypeIconBytes = <String, Uint8List>{};
+    final darkVisitedListingTypeIconBytes = <String, Uint8List>{};
     final selectedListingTypeIconBytes = <String, Uint8List>{};
     if (!reduceStartupIconWork) {
       for (final code in ListingTypeHelper.getAllCodes()) {
@@ -116,6 +143,20 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
           icon,
           100,
           backgroundColor: BlueThemeColors.primaryDark,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+        );
+        visitedListingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          100,
+          backgroundColor: _visitedPinBackground,
+          outlineColor: Colors.white,
+          outlineWidth: 7,
+        );
+        darkVisitedListingTypeIconBytes[code] = await _createIconBytes(
+          icon,
+          100,
+          backgroundColor: _visitedPinBackgroundDark,
           outlineColor: Colors.white,
           outlineWidth: 7,
         );
@@ -266,6 +307,8 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     return _YandexMapSharedIconBytes(
       defaultIconBytes: iconBytes,
       darkDefaultIconBytes: darkIconBytes,
+      visitedIconBytes: visitedIconBytes,
+      darkVisitedIconBytes: darkVisitedIconBytes,
       selectedIconBytes: selectedIconBytes,
       universityIconBytes: universityIconBytes,
       userUniversityIconBytes: userUniversityIconBytes,
@@ -279,6 +322,9 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       busStopIconBytes: busStopIconBytes,
       listingTypeIconBytes: Map.unmodifiable(listingTypeIconBytes),
       darkListingTypeIconBytes: Map.unmodifiable(darkListingTypeIconBytes),
+      visitedListingTypeIconBytes: Map.unmodifiable(visitedListingTypeIconBytes),
+      darkVisitedListingTypeIconBytes:
+          Map.unmodifiable(darkVisitedListingTypeIconBytes),
       selectedListingTypeIconBytes: Map.unmodifiable(
         selectedListingTypeIconBytes,
       ),
@@ -646,6 +692,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       _ensureListingGroupIconBytes(
         group.pins.length,
         listingTypeCode: listingTypeCode,
+        visited: true,
+      );
+      _ensureListingGroupIconBytes(
+        group.pins.length,
+        listingTypeCode: listingTypeCode,
         selected: true,
       );
     }
@@ -655,13 +706,15 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     int count, {
     String? listingTypeCode,
     bool selected = false,
+    bool visited = false,
   }) {
     if (_cachedIconBytes == null || _cachedSelectedIconBytes == null) return;
-    final darkMap = widget.nightModeEnabled && !selected;
+    final darkMap = widget.nightModeEnabled && !selected && !visited;
     final key = _listingGroupIconKey(
       count,
       listingTypeCode: listingTypeCode,
       selected: selected,
+      visited: visited,
       darkMap: darkMap,
     );
     final sharedBytes = _sharedListingGroupIconBytes[key];
@@ -681,6 +734,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         count,
         listingTypeCode: listingTypeCode,
         selected: selected,
+        visited: visited,
         darkMap: darkMap,
       ).then((bytes) {
         _sharedListingGroupIconBytes[key] = bytes;
@@ -706,19 +760,23 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     int count, {
     required String? listingTypeCode,
     required bool selected,
+    required bool visited,
     required bool darkMap,
   }) {
     final state = selected
         ? "selected"
-        : darkMap
-            ? "dark"
-            : "default";
+        : visited
+            ? "visited"
+            : darkMap
+                ? "dark"
+                : "default";
     return "${state}_${listingTypeCode ?? "mixed"}_$count";
   }
 
   Future<Uint8List> _createListingGroupIconBytes(
     int count, {
     required bool selected,
+    required bool visited,
     required bool darkMap,
     String? listingTypeCode,
   }) async {
@@ -758,9 +816,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     final pillPaint = Paint()
       ..color = selected
           ? AppColors.primary
-          : darkMap
-              ? BlueThemeColors.primaryDark
-              : Colors.black
+          : visited
+              ? _visitedPinBackground
+              : darkMap
+                  ? BlueThemeColors.primaryDark
+                  : Colors.black
       ..style = PaintingStyle.fill;
     canvas.drawRRect(pillRRect, pillPaint);
 

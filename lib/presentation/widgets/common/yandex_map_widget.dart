@@ -216,6 +216,7 @@ class YandexMapWidget extends StatefulWidget {
     this.selectedUniversityZoomFocusId,
     this.selectedListingId,
     this.selectedListingGroupIds = const [],
+    this.visitedListingIds = const {},
     this.onPinTap,
     this.onPinGroupTap,
     this.onUniversityMarkerTap,
@@ -255,6 +256,7 @@ class YandexMapWidget extends StatefulWidget {
   final String? selectedUniversityZoomFocusId;
   final int? selectedListingId;
   final List<int> selectedListingGroupIds;
+  final Set<int> visitedListingIds;
   final ValueChanged<ListingMapPin>? onPinTap;
   final ValueChanged<List<ListingMapPin>>? onPinGroupTap;
   final ValueChanged<UniversityMapMarker>? onUniversityMarkerTap;
@@ -320,6 +322,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedDarkIconBytes;
+  Uint8List? _cachedVisitedIconBytes;
+  Uint8List? _cachedDarkVisitedIconBytes;
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
   Uint8List? _cachedUserUniversityIconBytes;
@@ -333,6 +337,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedBusStopIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedDarkListingTypeIconBytes = {};
+  final Map<String, Uint8List> _cachedVisitedListingTypeIconBytes = {};
+  final Map<String, Uint8List> _cachedDarkVisitedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
@@ -515,6 +521,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       final sharedIcons = await _loadSharedIconBytes();
       _cachedIconBytes = sharedIcons.defaultIconBytes;
       _cachedDarkIconBytes = sharedIcons.darkDefaultIconBytes;
+      _cachedVisitedIconBytes = sharedIcons.visitedIconBytes;
+      _cachedDarkVisitedIconBytes = sharedIcons.darkVisitedIconBytes;
       _cachedSelectedIconBytes = sharedIcons.selectedIconBytes;
       _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
       _cachedUserUniversityIconBytes = sharedIcons.userUniversityIconBytes;
@@ -537,6 +545,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedDarkListingTypeIconBytes
         ..clear()
         ..addAll(sharedIcons.darkListingTypeIconBytes);
+      _cachedVisitedListingTypeIconBytes
+        ..clear()
+        ..addAll(sharedIcons.visitedListingTypeIconBytes);
+      _cachedDarkVisitedListingTypeIconBytes
+        ..clear()
+        ..addAll(sharedIcons.darkVisitedListingTypeIconBytes);
       _cachedSelectedListingTypeIconBytes
         ..clear()
         ..addAll(sharedIcons.selectedListingTypeIconBytes);
@@ -2136,9 +2150,8 @@ class MetroStationMapTooltip extends StatelessWidget {
                 ],
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
           child: Stack(
-            clipBehavior: Clip.none,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -2181,8 +2194,8 @@ class MetroStationMapTooltip extends StatelessWidget {
                 ],
               ),
               Positioned(
-                top: -10,
-                right: -40,
+                top: 4,
+                right: 4,
                 child: IconButton(
                   onPressed: onClose,
                   icon: const Icon(Icons.close),
@@ -2233,9 +2246,8 @@ class _ListingDetailMapTooltip extends StatelessWidget {
                 ],
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
           child: Stack(
-            clipBehavior: Clip.none,
             children: [
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2262,8 +2274,8 @@ class _ListingDetailMapTooltip extends StatelessWidget {
                 ],
               ),
               Positioned(
-                top: -10,
-                right: -40,
+                top: 4,
+                right: 4,
                 child: IconButton(
                   onPressed: onClose,
                   icon: const Icon(Icons.close),
@@ -2340,9 +2352,8 @@ class UniversityMapTooltip extends StatelessWidget {
                 ],
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 44, 12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
           child: Stack(
-            clipBehavior: Clip.none,
             children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -2384,8 +2395,8 @@ class UniversityMapTooltip extends StatelessWidget {
                 ],
               ),
               Positioned(
-                top: -10,
-                right: -40,
+                top: 4,
+                right: 4,
                 child: IconButton(
                   onPressed: onClose,
                   icon: const Icon(Icons.close),

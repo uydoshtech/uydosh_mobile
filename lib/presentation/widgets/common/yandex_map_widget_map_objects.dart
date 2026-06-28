@@ -72,6 +72,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _selectedUniversityMarker?.id,
       widget.selectedListingId,
       Object.hashAll(widget.selectedListingGroupIds),
+      Object.hashAll(widget.visitedListingIds),
       widget.latitude,
       widget.longitude,
       widget.userLocationLatitude,
@@ -79,6 +80,8 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.listingDetail?.id,
       _cachedIconBytes != null,
       _cachedDarkIconBytes != null,
+      _cachedVisitedIconBytes != null,
+      _cachedDarkVisitedIconBytes != null,
       _cachedSelectedIconBytes != null,
       _cachedUniversityIconBytes != null,
       _cachedUserUniversityIconBytes != null,
@@ -88,6 +91,8 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedBusStopIconBytes != null,
       _cachedListingTypeIconBytes.length,
       _cachedDarkListingTypeIconBytes.length,
+      _cachedVisitedListingTypeIconBytes.length,
+      _cachedDarkVisitedListingTypeIconBytes.length,
       _cachedSelectedListingTypeIconBytes.length,
       _cachedListingGroupIconBytes.length,
       _cachedMetroStationIconBytes.length,
@@ -1166,6 +1171,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       if (widget.selectedListingId != null) widget.selectedListingId!,
       ...widget.selectedListingGroupIds,
     };
+    final visitedListingIds = widget.visitedListingIds;
     final groups = _groupListingPins(widget.pins);
     final orderedGroups = <_ListingPinGroup>[
       for (final group in groups)
@@ -1185,17 +1191,28 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
             selected: group.pins.any(
               (pin) => selectedListingIds.contains(pin.listingId),
             ),
+            visited: !group.pins.any(
+                  (pin) => selectedListingIds.contains(pin.listingId),
+                ) &&
+                group.pins.any(
+                  (pin) => visitedListingIds.contains(pin.listingId),
+                ),
           )
         else if (selectedListingIds.contains(group.pins.first.listingId))
           _createListingPlacemark(group.pins.first, selected: true)
         else
-          _createListingPlacemark(group.pins.first, selected: false),
+          _createListingPlacemark(
+            group.pins.first,
+            selected: false,
+            visited: visitedListingIds.contains(group.pins.first.listingId),
+          ),
     ];
   }
 
   PlacemarkMapObject _createListingPlacemark(
     ListingMapPin pin, {
     required bool selected,
+    bool visited = false,
   }) {
     final zIndex = selected
         ? _YandexMapWidgetState._selectedListingPinZIndex
@@ -1211,7 +1228,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       consumeTapEvents: true,
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
-          image: _listingPinIconDescriptor(pin, selected: selected),
+          image: _listingPinIconDescriptor(
+            pin,
+            selected: selected,
+            visited: visited && !selected,
+          ),
           anchor: const Offset(0.5, 0.5),
           zIndex: zIndex,
           scale: selected ? 1.0 : 1.17,
@@ -1228,6 +1249,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   PlacemarkMapObject _createListingGroupPlacemark(
     _ListingPinGroup group, {
     required bool selected,
+    bool visited = false,
   }) {
     final count = group.pins.length;
     final listingTypeCode = _listingGroupTypeCode(group.pins);
@@ -1235,13 +1257,24 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       count,
       listingTypeCode: listingTypeCode,
       selected: selected,
+      visited: visited && !selected,
     );
     final groupIconBytes = _cachedListingGroupIconBytes[_listingGroupIconKey(
       count,
       listingTypeCode: listingTypeCode,
       selected: selected,
-      darkMap: widget.nightModeEnabled && !selected,
+      visited: visited && !selected,
+      darkMap: widget.nightModeEnabled && !selected && !visited,
     )];
+    final fallbackBytes = selected
+        ? _cachedSelectedIconBytes!
+        : visited
+            ? widget.nightModeEnabled
+                ? _cachedDarkVisitedIconBytes ?? _cachedDarkIconBytes!
+                : _cachedVisitedIconBytes ?? _cachedIconBytes!
+            : widget.nightModeEnabled
+                ? _cachedDarkIconBytes!
+                : _cachedIconBytes!;
     return PlacemarkMapObject(
       mapId: MapObjectId("listing_group_${group.key}_placemark"),
       point: _listingPlacemarkPoint(
@@ -1256,13 +1289,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
           image: groupIconBytes == null
-              ? _bitmapDescriptorFromBytes(
-                  selected
-                      ? _cachedSelectedIconBytes!
-                      : widget.nightModeEnabled
-                          ? _cachedDarkIconBytes!
-                          : _cachedIconBytes!,
-                )
+              ? _bitmapDescriptorFromBytes(fallbackBytes)
               : _bitmapDescriptorFromBytes(groupIconBytes),
           anchor: const Offset(0.5, 0.5),
           zIndex: selected
@@ -1287,11 +1314,13 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   BitmapDescriptor _listingPinIconDescriptor(
     ListingMapPin pin, {
     bool selected = false,
+    bool visited = false,
   }) {
     return _listingTypeIconDescriptor(
       listingTypeCode: pin.listingTypeCode,
       listingTypeId: pin.listingTypeId,
       selected: selected,
+      visited: visited,
     );
   }
 
@@ -1299,17 +1328,30 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     String? listingTypeCode,
     int? listingTypeId,
     bool selected = false,
+    bool visited = false,
   }) {
     final fallbackBytes = selected
         ? _cachedSelectedIconBytes
-        : widget.nightModeEnabled
-            ? _cachedDarkIconBytes
-            : _cachedIconBytes;
+        : visited
+            ? widget.nightModeEnabled
+                ? _cachedDarkVisitedIconBytes ?? _cachedDarkIconBytes
+                : _cachedVisitedIconBytes ?? _cachedIconBytes
+            : widget.nightModeEnabled
+                ? _cachedDarkIconBytes
+                : _cachedIconBytes;
     final bytesByCode = selected
         ? _cachedSelectedListingTypeIconBytes
-        : widget.nightModeEnabled
-            ? _cachedDarkListingTypeIconBytes
-            : _cachedListingTypeIconBytes;
+        : visited
+            ? widget.nightModeEnabled
+                ? _cachedDarkVisitedListingTypeIconBytes.isNotEmpty
+                    ? _cachedDarkVisitedListingTypeIconBytes
+                    : _cachedDarkListingTypeIconBytes
+                : _cachedVisitedListingTypeIconBytes.isNotEmpty
+                    ? _cachedVisitedListingTypeIconBytes
+                    : _cachedListingTypeIconBytes
+            : widget.nightModeEnabled
+                ? _cachedDarkListingTypeIconBytes
+                : _cachedListingTypeIconBytes;
     final resolvedCode = _resolveListingTypeCode(
       listingTypeCode: listingTypeCode,
       listingTypeId: listingTypeId,
