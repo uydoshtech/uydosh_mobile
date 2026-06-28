@@ -17,6 +17,8 @@ class HouseLoadingIndicator extends StatefulWidget {
     this.textStyle,
     this.showText = false,
     this.rotationDuration,
+    this.outlineColor,
+    this.outlineWidth = 2.0,
   });
 
   /// Creates a house loading indicator with text below it
@@ -29,6 +31,8 @@ class HouseLoadingIndicator extends StatefulWidget {
     this.textStyle,
     this.showText = true,
     this.rotationDuration,
+    this.outlineColor,
+    this.outlineWidth = 2.0,
   });
 
   final double? size;
@@ -38,6 +42,8 @@ class HouseLoadingIndicator extends StatefulWidget {
   final TextStyle? textStyle;
   final bool showText;
   final Duration? rotationDuration;
+  final Color? outlineColor;
+  final double outlineWidth;
 
   @override
   State<HouseLoadingIndicator> createState() => _HouseLoadingIndicatorState();
@@ -106,14 +112,29 @@ class _HouseLoadingIndicatorState extends State<HouseLoadingIndicator>
     Widget indicator = AnimatedBuilder(
       animation: _rotationAnimation,
       builder: (context, child) {
+        final icon = ThemeIcon(
+          Icons.home,
+          size: effectiveSize,
+          color: effectiveColor,
+          useThemeColor: widget.color == null,
+        );
+
         return Transform.rotate(
           angle: _rotationAnimation.value * 2 * 3.14159, // Full 360° rotation
-          child: ThemeIcon(
-            Icons.home,
-            size: effectiveSize,
-            color: effectiveColor,
-            useThemeColor: widget.color == null,
-          ),
+          child: widget.outlineColor == null
+              ? icon
+              : Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ThemeIcon(
+                      Icons.home,
+                      size: effectiveSize + widget.outlineWidth,
+                      color: widget.outlineColor,
+                      useThemeColor: false,
+                    ),
+                    icon,
+                  ],
+                ),
         );
       },
     );
@@ -126,8 +147,7 @@ class _HouseLoadingIndicatorState extends State<HouseLoadingIndicator>
           const SizedBox(height: 16),
           Text(
             widget.text!,
-            style:
-                widget.textStyle ??
+            style: widget.textStyle ??
                 TextStyle(
                   color: effectiveColor,
                   fontSize: 16,
@@ -155,6 +175,8 @@ class CenteredHouseLoadingIndicator extends StatelessWidget {
     this.text,
     this.textStyle,
     this.rotationDuration,
+    this.outlineColor,
+    this.outlineWidth = 2.0,
   });
 
   final double? size;
@@ -162,6 +184,8 @@ class CenteredHouseLoadingIndicator extends StatelessWidget {
   final String? text;
   final TextStyle? textStyle;
   final Duration? rotationDuration;
+  final Color? outlineColor;
+  final double outlineWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -179,6 +203,8 @@ class CenteredHouseLoadingIndicator extends StatelessWidget {
         text: text,
         textStyle: textStyle,
         rotationDuration: rotationDuration,
+        outlineColor: outlineColor,
+        outlineWidth: outlineWidth,
       ),
     );
   }

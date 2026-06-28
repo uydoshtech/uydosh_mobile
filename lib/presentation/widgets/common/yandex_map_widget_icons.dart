@@ -67,11 +67,18 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
   }
 
   Future<_YandexMapSharedIconBytes> _createSharedIconBytes() async {
-    final iconBytes = await _createIconBytes(Icons.home, 100);
+    final iconBytes = await _createIconBytes(
+      Icons.home,
+      100,
+      outlineColor: Colors.white,
+      outlineWidth: 7,
+    );
     final darkIconBytes = await _createIconBytes(
       Icons.home,
       100,
-      backgroundColor: BlueThemeColors.primary,
+      backgroundColor: BlueThemeColors.primaryDark,
+      outlineColor: Colors.white,
+      outlineWidth: 7,
     );
     final selectedIconBytes = await _createIconBytes(
       Icons.home,
@@ -88,11 +95,18 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     final selectedListingTypeIconBytes = <String, Uint8List>{};
     for (final code in ListingTypeHelper.getAllCodes()) {
       final icon = ListingTypeHelper.getIcon(code);
-      listingTypeIconBytes[code] = await _createIconBytes(icon, 100);
+      listingTypeIconBytes[code] = await _createIconBytes(
+        icon,
+        100,
+        outlineColor: Colors.white,
+        outlineWidth: 7,
+      );
       darkListingTypeIconBytes[code] = await _createIconBytes(
         icon,
         100,
-        backgroundColor: BlueThemeColors.primary,
+        backgroundColor: BlueThemeColors.primaryDark,
+        outlineColor: Colors.white,
+        outlineWidth: 7,
       );
       selectedListingTypeIconBytes[code] = await _createIconBytes(
         icon,
@@ -654,7 +668,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       ..color = selected
           ? AppColors.primary
           : darkMap
-              ? BlueThemeColors.primary
+              ? BlueThemeColors.primaryDark
               : Colors.black
       ..style = PaintingStyle.fill;
     canvas.drawRRect(pillRRect, pillPaint);

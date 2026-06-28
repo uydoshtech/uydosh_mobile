@@ -322,6 +322,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   List<MapObject> _createDistrictLabelMapObjects() {
     final language = Localizations.localeOf(context).languageCode;
+    final textColor = widget.nightModeEnabled
+        ? Colors.white
+        : const Color(0xFF111111);
+    final outlineColor = widget.nightModeEnabled
+        ? Colors.white
+        : const Color(0xFF111111);
     return [
       for (final district in TashkentDistrictBoundaryCache.districts)
         PlacemarkMapObject(
@@ -334,10 +340,10 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
               district.locationId,
               language,
             ),
-            style: const PlacemarkTextStyle(
+            style: PlacemarkTextStyle(
               placement: TextStylePlacement.center,
-              color: Color(0xFF111111),
-              outlineColor: Colors.white,
+              color: textColor,
+              outlineColor: outlineColor,
               size: 11,
               textOptional: true,
             ),
@@ -480,7 +486,9 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       latitude: station.latitude!,
       longitude: station.longitude!,
     );
-    const radiusColor = Color(0xFF1E88E5);
+    final radiusColor = widget.nightModeEnabled
+        ? Colors.white
+        : const Color(0xFF1E88E5);
     return CircleMapObject(
       mapId: MapObjectId("tashkent_metro_station_${station.id}_walking_radius"),
       circle: Circle(
@@ -810,8 +818,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     logger.d("📍 Creating ${widget.pins.length} listing map pins");
 
     final iconBytes = _cachedIconBytes;
+    final darkIconBytes = _cachedDarkIconBytes;
     final selectedIconBytes = _cachedSelectedIconBytes;
-    if (iconBytes == null || selectedIconBytes == null) {
+    if (iconBytes == null ||
+        selectedIconBytes == null ||
+        (widget.nightModeEnabled && darkIconBytes == null)) {
       logger.w("📍 Listing pin icon is not ready yet");
       return [];
     }
@@ -867,7 +878,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           image: _listingPinIconDescriptor(pin, selected: selected),
           anchor: const Offset(0.5, 0.5),
           zIndex: zIndex,
-          scale: selected ? 1.0 : 0.9,
+          scale: selected ? 1.0 : 1.17,
         ),
       ),
       onTap: (_, __) {
@@ -910,7 +921,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         PlacemarkIconStyle(
           image: groupIconBytes == null
               ? BitmapDescriptor.fromBytes(
-                  selected ? _cachedSelectedIconBytes! : _cachedIconBytes!,
+                  selected
+                      ? _cachedSelectedIconBytes!
+                      : widget.nightModeEnabled
+                          ? _cachedDarkIconBytes!
+                          : _cachedIconBytes!,
                 )
               : BitmapDescriptor.fromBytes(groupIconBytes),
           anchor: const Offset(0.5, 0.5),
@@ -949,12 +964,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     int? listingTypeId,
     bool selected = false,
   }) {
-    final fallbackBytes =
-        selected
-            ? _cachedSelectedIconBytes
-            : widget.nightModeEnabled
-                ? _cachedDarkIconBytes
-                : _cachedIconBytes;
+    final fallbackBytes = selected
+        ? _cachedSelectedIconBytes
+        : widget.nightModeEnabled
+            ? _cachedDarkIconBytes
+            : _cachedIconBytes;
     final bytesByCode = selected
         ? _cachedSelectedListingTypeIconBytes
         : widget.nightModeEnabled

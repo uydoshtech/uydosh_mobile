@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_state_builder.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
@@ -167,7 +169,18 @@ class HomeFeedLoadMoreFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final useOutlinedDarkLoader = !ThemeState().isLightTheme;
+
     return CenteredHouseLoadingIndicator(
+      color: useOutlinedDarkLoader ? AppColors.textDark : null,
+      outlineColor: useOutlinedDarkLoader ? AppColors.textLight : null,
+      textStyle: useOutlinedDarkLoader
+          ? const TextStyle(
+              color: AppColors.textLight,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            )
+          : null,
       text: L10n.get("loading_listings"),
     );
   }

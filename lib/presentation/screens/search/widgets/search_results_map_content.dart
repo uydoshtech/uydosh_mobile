@@ -142,6 +142,22 @@ class _SearchResultsMapContent extends StatelessWidget {
               : null,
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
+    final mapThemeButton = SearchFloatingActionButton(
+      onPressed: () => onToggleMapNightMode(!mapNightModeEnabled),
+      iconData: mapNightModeEnabled
+          ? Icons.light_mode_rounded
+          : Icons.dark_mode_rounded,
+      tooltip: mapNightModeEnabled
+          ? context.l10n.switch_to_light_map
+          : context.l10n.switch_to_dark_map,
+      width: viewToggleWidth,
+      height: viewToggleHeight,
+      iconSize: 18,
+      backgroundColor: mapNightModeEnabled ? Colors.black : Colors.white,
+      foregroundColor: mapNightModeEnabled ? Colors.white : Colors.black,
+      borderSide: const BorderSide(color: Colors.black, width: 1),
+      elevation: ThemeState().isBlueTheme ? null : 8,
+    );
     return Column(
       children: [
         _MapFilterRibbon(
@@ -237,34 +253,12 @@ class _SearchResultsMapContent extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 16,
-                top: viewToggleTop,
-                child: SearchFloatingActionButton(
-                  onPressed: () => onToggleMapNightMode(!mapNightModeEnabled),
-                  iconData: mapNightModeEnabled
-                      ? Icons.light_mode_rounded
-                      : Icons.dark_mode_rounded,
-                  tooltip: mapNightModeEnabled
-                      ? context.l10n.switch_to_light_map
-                      : context.l10n.switch_to_dark_map,
-                  width: viewToggleWidth,
-                  height: viewToggleHeight,
-                  iconSize: 18,
-                  backgroundColor:
-                      mapNightModeEnabled ? Colors.black : Colors.white,
-                  foregroundColor:
-                      mapNightModeEnabled ? Colors.white : Colors.black,
-                  borderSide: const BorderSide(color: Colors.black, width: 1),
-                  elevation: ThemeState().isBlueTheme ? null : 8,
-                ),
-              ),
-              Positioned(
                 left: 12,
                 right: 12,
                 top: viewToggleTop,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     MapTooltipFadeTransition(
                       child: showNoResultsTile
@@ -313,20 +307,38 @@ class _SearchResultsMapContent extends StatelessWidget {
                       curve: Curves.easeOutCubic,
                       height: hasTopTile ? viewToggleGap : 0,
                     ),
-                    if (!placeViewToggleAtBottom) ...[
-                      feedViewButton,
-                      const SizedBox(height: viewToggleGap),
-                    ],
-                    _MapLayerToggleButtons(
-                      showMetroStationsLayer: showMetroStationsLayer,
-                      showDistrictLayer: showDistrictLayer,
-                      showUniversitiesLayer: showUniversitiesLayer,
-                      onToggleMetroStationsLayer: onToggleMetroStationsLayer,
-                      onToggleDistrictLayer: onToggleDistrictLayer,
-                      onToggleUniversitiesLayer: onToggleUniversitiesLayer,
-                      width: viewToggleWidth,
-                      height: viewToggleHeight,
-                      gap: viewToggleGap,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: mapThemeButton,
+                        ),
+                        const Spacer(),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (!placeViewToggleAtBottom) ...[
+                              feedViewButton,
+                              const SizedBox(height: viewToggleGap),
+                            ],
+                            _MapLayerToggleButtons(
+                              showMetroStationsLayer: showMetroStationsLayer,
+                              showDistrictLayer: showDistrictLayer,
+                              showUniversitiesLayer: showUniversitiesLayer,
+                              onToggleMetroStationsLayer:
+                                  onToggleMetroStationsLayer,
+                              onToggleDistrictLayer: onToggleDistrictLayer,
+                              onToggleUniversitiesLayer:
+                                  onToggleUniversitiesLayer,
+                              width: viewToggleWidth,
+                              height: viewToggleHeight,
+                              gap: viewToggleGap,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
