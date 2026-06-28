@@ -278,6 +278,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const int _universityClusterMinZoom = 15;
 
   Uint8List? _cachedIconBytes;
+  Uint8List? _cachedDarkIconBytes;
   Uint8List? _cachedSelectedIconBytes;
   Uint8List? _cachedUniversityIconBytes;
   Uint8List? _cachedUserUniversityIconBytes;
@@ -287,6 +288,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   Uint8List? _cachedGroceryStoreIconBytes;
   Uint8List? _cachedBusStopIconBytes;
   final Map<String, Uint8List> _cachedListingTypeIconBytes = {};
+  final Map<String, Uint8List> _cachedDarkListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
@@ -383,6 +385,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     try {
       final sharedIcons = await _loadSharedIconBytes();
       _cachedIconBytes = sharedIcons.defaultIconBytes;
+      _cachedDarkIconBytes = sharedIcons.darkDefaultIconBytes;
       _cachedSelectedIconBytes = sharedIcons.selectedIconBytes;
       _cachedUniversityIconBytes = sharedIcons.universityIconBytes;
       _cachedUserUniversityIconBytes = sharedIcons.userUniversityIconBytes;
@@ -396,6 +399,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedListingTypeIconBytes
         ..clear()
         ..addAll(sharedIcons.listingTypeIconBytes);
+      _cachedDarkListingTypeIconBytes
+        ..clear()
+        ..addAll(sharedIcons.darkListingTypeIconBytes);
       _cachedSelectedListingTypeIconBytes
         ..clear()
         ..addAll(sharedIcons.selectedListingTypeIconBytes);

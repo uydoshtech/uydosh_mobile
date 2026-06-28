@@ -36,6 +36,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.layerOptions.showGroceryStoresLayer,
       widget.layerOptions.showBusStopsLayer,
       widget.showDefaultPlacemark,
+      widget.nightModeEnabled,
       Localizations.localeOf(context).languageCode,
       districtLabelsVisible,
       metroWalkAreaLabelVisible,
@@ -47,6 +48,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.longitude,
       widget.listingDetail?.id,
       _cachedIconBytes != null,
+      _cachedDarkIconBytes != null,
       _cachedSelectedIconBytes != null,
       _cachedUniversityIconBytes != null,
       _cachedUserUniversityIconBytes != null,
@@ -54,6 +56,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedGroceryStoreIconBytes != null,
       _cachedBusStopIconBytes != null,
       _cachedListingTypeIconBytes.length,
+      _cachedDarkListingTypeIconBytes.length,
       _cachedSelectedListingTypeIconBytes.length,
       _cachedListingGroupIconBytes.length,
       _cachedMetroStationIconBytes.length,
@@ -724,7 +727,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     ClusterizedPlacemarkCollection self,
     Cluster cluster,
   ) async {
-    final iconBytes = await _listingClusterIconBytes(cluster.size);
+    final iconBytes = await _universityClusterIconBytes(cluster.size);
     return cluster.copyWith(
       appearance: cluster.appearance.copyWith(
         zIndex: 9,
@@ -890,6 +893,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       count,
       listingTypeCode: listingTypeCode,
       selected: selected,
+      darkMap: widget.nightModeEnabled && !selected,
     )];
     return PlacemarkMapObject(
       mapId: MapObjectId("listing_group_${group.key}_placemark"),
@@ -946,10 +950,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     bool selected = false,
   }) {
     final fallbackBytes =
-        selected ? _cachedSelectedIconBytes : _cachedIconBytes;
+        selected
+            ? _cachedSelectedIconBytes
+            : widget.nightModeEnabled
+                ? _cachedDarkIconBytes
+                : _cachedIconBytes;
     final bytesByCode = selected
         ? _cachedSelectedListingTypeIconBytes
-        : _cachedListingTypeIconBytes;
+        : widget.nightModeEnabled
+            ? _cachedDarkListingTypeIconBytes
+            : _cachedListingTypeIconBytes;
     final resolvedCode = _resolveListingTypeCode(
       listingTypeCode: listingTypeCode,
       listingTypeId: listingTypeId,

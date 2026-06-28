@@ -6,10 +6,14 @@ final Map<String, Uint8List> _sharedListingGroupIconBytes = {};
 final Map<String, Future<Uint8List>> _pendingSharedListingGroupIconBytes = {};
 final Map<String, Uint8List> _sharedListingClusterIconBytes = {};
 final Map<String, Future<Uint8List>> _pendingSharedListingClusterIconBytes = {};
+final Map<String, Uint8List> _sharedUniversityClusterIconBytes = {};
+final Map<String, Future<Uint8List>> _pendingSharedUniversityClusterIconBytes =
+    {};
 
 class _YandexMapSharedIconBytes {
   const _YandexMapSharedIconBytes({
     required this.defaultIconBytes,
+    required this.darkDefaultIconBytes,
     required this.selectedIconBytes,
     required this.universityIconBytes,
     required this.userUniversityIconBytes,
@@ -19,11 +23,13 @@ class _YandexMapSharedIconBytes {
     required this.groceryStoreIconBytes,
     required this.busStopIconBytes,
     required this.listingTypeIconBytes,
+    required this.darkListingTypeIconBytes,
     required this.selectedListingTypeIconBytes,
     required this.metroStationIconBytes,
   });
 
   final Uint8List defaultIconBytes;
+  final Uint8List darkDefaultIconBytes;
   final Uint8List selectedIconBytes;
   final Uint8List universityIconBytes;
   final Uint8List userUniversityIconBytes;
@@ -33,6 +39,7 @@ class _YandexMapSharedIconBytes {
   final Uint8List groceryStoreIconBytes;
   final Uint8List busStopIconBytes;
   final Map<String, Uint8List> listingTypeIconBytes;
+  final Map<String, Uint8List> darkListingTypeIconBytes;
   final Map<String, Uint8List> selectedListingTypeIconBytes;
   final Map<int, Uint8List> metroStationIconBytes;
 }
@@ -61,6 +68,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
 
   Future<_YandexMapSharedIconBytes> _createSharedIconBytes() async {
     final iconBytes = await _createIconBytes(Icons.home, 100);
+    final darkIconBytes = await _createIconBytes(
+      Icons.home,
+      100,
+      backgroundColor: BlueThemeColors.primary,
+    );
     final selectedIconBytes = await _createIconBytes(
       Icons.home,
       124,
@@ -72,10 +84,16 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       shadowOffset: const Offset(0, 5),
     );
     final listingTypeIconBytes = <String, Uint8List>{};
+    final darkListingTypeIconBytes = <String, Uint8List>{};
     final selectedListingTypeIconBytes = <String, Uint8List>{};
     for (final code in ListingTypeHelper.getAllCodes()) {
       final icon = ListingTypeHelper.getIcon(code);
       listingTypeIconBytes[code] = await _createIconBytes(icon, 100);
+      darkListingTypeIconBytes[code] = await _createIconBytes(
+        icon,
+        100,
+        backgroundColor: BlueThemeColors.primary,
+      );
       selectedListingTypeIconBytes[code] = await _createIconBytes(
         icon,
         124,
@@ -157,6 +175,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
 
     return _YandexMapSharedIconBytes(
       defaultIconBytes: iconBytes,
+      darkDefaultIconBytes: darkIconBytes,
       selectedIconBytes: selectedIconBytes,
       universityIconBytes: universityIconBytes,
       userUniversityIconBytes: userUniversityIconBytes,
@@ -166,6 +185,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       groceryStoreIconBytes: groceryStoreIconBytes,
       busStopIconBytes: busStopIconBytes,
       listingTypeIconBytes: Map.unmodifiable(listingTypeIconBytes),
+      darkListingTypeIconBytes: Map.unmodifiable(darkListingTypeIconBytes),
       selectedListingTypeIconBytes: Map.unmodifiable(
         selectedListingTypeIconBytes,
       ),
@@ -423,6 +443,37 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
   }
 
   Future<Uint8List> _createListingClusterIconBytes(String label) async {
+    return _createClusterIconBytes(label, backgroundColor: Colors.black);
+  }
+
+  Future<Uint8List> _universityClusterIconBytes(int count) {
+    final cappedCount = count > 99 ? 99 : count;
+    final key =
+        cappedCount == 99 && count > 99 ? "99+" : cappedCount.toString();
+    final cached = _sharedUniversityClusterIconBytes[key];
+    if (cached != null) return Future.value(cached);
+
+    return _pendingSharedUniversityClusterIconBytes.putIfAbsent(
+      key,
+      () => _createUniversityClusterIconBytes(key).then((bytes) {
+        _sharedUniversityClusterIconBytes[key] = bytes;
+        _pendingSharedUniversityClusterIconBytes.remove(key);
+        return bytes;
+      }).catchError((Object error, StackTrace stackTrace) {
+        _pendingSharedUniversityClusterIconBytes.remove(key);
+        Error.throwWithStackTrace(error, stackTrace);
+      }),
+    );
+  }
+
+  Future<Uint8List> _createUniversityClusterIconBytes(String label) async {
+    return _createClusterIconBytes(label, backgroundColor: AppColors.success);
+  }
+
+  Future<Uint8List> _createClusterIconBytes(
+    String label, {
+    required Color backgroundColor,
+  }) async {
     const size = 112;
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -441,7 +492,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     canvas.drawCircle(center, radius + 7, outlinePaint);
 
     final circlePaint = Paint()
-      ..color = Colors.black
+      ..color = backgroundColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, circlePaint);
 
@@ -501,10 +552,12 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     bool selected = false,
   }) {
     if (_cachedIconBytes == null || _cachedSelectedIconBytes == null) return;
+    final darkMap = widget.nightModeEnabled && !selected;
     final key = _listingGroupIconKey(
       count,
       listingTypeCode: listingTypeCode,
       selected: selected,
+      darkMap: darkMap,
     );
     final sharedBytes = _sharedListingGroupIconBytes[key];
     if (sharedBytes != null) {
@@ -523,6 +576,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         count,
         listingTypeCode: listingTypeCode,
         selected: selected,
+        darkMap: darkMap,
       ).then((bytes) {
         _sharedListingGroupIconBytes[key] = bytes;
         _pendingSharedListingGroupIconBytes.remove(key);
@@ -547,13 +601,20 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     int count, {
     required String? listingTypeCode,
     required bool selected,
+    required bool darkMap,
   }) {
-    return "${selected ? "selected" : "default"}_${listingTypeCode ?? "mixed"}_$count";
+    final state = selected
+        ? "selected"
+        : darkMap
+            ? "dark"
+            : "default";
+    return "${state}_${listingTypeCode ?? "mixed"}_$count";
   }
 
   Future<Uint8List> _createListingGroupIconBytes(
     int count, {
     required bool selected,
+    required bool darkMap,
     String? listingTypeCode,
   }) async {
     const width = 148;
@@ -590,7 +651,11 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
 
     final pillPaint = Paint()
-      ..color = selected ? AppColors.primary : Colors.black
+      ..color = selected
+          ? AppColors.primary
+          : darkMap
+              ? BlueThemeColors.primary
+              : Colors.black
       ..style = PaintingStyle.fill;
     canvas.drawRRect(pillRRect, pillPaint);
 
