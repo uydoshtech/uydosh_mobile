@@ -4,6 +4,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   const _SearchResultsMapContent({
     required this.result,
     required this.isLoading,
+    required this.hasSearchFilters,
     required this.listingTypeId,
     required this.minPrice,
     required this.maxPrice,
@@ -54,6 +55,7 @@ class _SearchResultsMapContent extends StatelessWidget {
 
   final _SearchMapResult result;
   final bool isLoading;
+  final bool hasSearchFilters;
   final int listingTypeId;
   final int? gender;
   final int? locationId;
@@ -106,13 +108,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     final pin = selectedPin;
     final pinGroup = selectedPinGroup;
     final universityMarker = selectedUniversityMarker;
-    final showNoResultsTile = !isLoading && result.total == 0;
-    final showChooseFiltersTile = !showFilterRibbon;
+    final showNoResultsTile =
+        hasSearchFilters && !isLoading && result.total == 0;
     final hasMapTooltipSpace = hasSelectedMetroStation && !showNoResultsTile;
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
-        showChooseFiltersTile ||
         showNoResultsTile ||
         hasMapTooltipSpace;
     final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
@@ -175,6 +176,22 @@ class _SearchResultsMapContent extends StatelessWidget {
           _MapFilterRibbon(
             onPressed: onOpenFilters,
             onClose: onCloseFilterRibbon,
+            listingTypeId: listingTypeId,
+            gender: gender,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayStationIds: subwayStationIds,
+            subwayLineId: subwayLineId,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            privateRoom: privateRoom,
+            withPhoto: withPhoto,
+            total: result.total,
+          )
+        else
+          _MapFilterRibbon(
+            onPressed: onOpenFilters,
+            emptyLabel: context.l10n.choose_filters,
             listingTypeId: listingTypeId,
             gender: gender,
             locationId: locationId,
@@ -275,52 +292,46 @@ class _SearchResultsMapContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     MapTooltipFadeTransition(
-                      child: showChooseFiltersTile
+                      child: showNoResultsTile
                           ? _NoMapResultsTile(
-                              key: const ValueKey("choose-map-filters"),
-                              label: context.l10n.choose_filters,
-                              onPressed: onOpenFilters,
+                              key: const ValueKey("no-map-results"),
+                              label: L10n.get("no_results"),
                             )
-                          : showNoResultsTile
-                              ? _NoMapResultsTile(
-                                  key: const ValueKey("no-map-results"),
-                                  label: L10n.get("no_results"),
+                          : pin != null
+                              ? _PinSummaryTooltip(
+                                  key: ValueKey("pin-${pin.listingId}"),
+                                  pin: pin,
+                                  onClose: onClearSelectedPin,
+                                  onOpen: () => onOpenPin(pin),
                                 )
-                              : pin != null
-                                  ? _PinSummaryTooltip(
-                                      key: ValueKey("pin-${pin.listingId}"),
-                                      pin: pin,
+                              : pinGroup.isNotEmpty
+                                  ? _PinGroupSummaryTooltip(
+                                      key: ValueKey(
+                                        "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
+                                      ),
+                                      pins: pinGroup,
                                       onClose: onClearSelectedPin,
-                                      onOpen: () => onOpenPin(pin),
+                                      onOpenPin: onOpenPin,
                                     )
-                                  : pinGroup.isNotEmpty
-                                      ? _PinGroupSummaryTooltip(
+                                  : universityMarker != null
+                                      ? UniversityMapTooltip(
                                           key: ValueKey(
-                                            "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
+                                            "university-${universityMarker.id}",
                                           ),
-                                          pins: pinGroup,
-                                          onClose: onClearSelectedPin,
-                                          onOpenPin: onOpenPin,
+                                          marker: universityMarker,
+                                          onClose:
+                                              onClearSelectedUniversityMarker,
                                         )
-                                      : universityMarker != null
-                                          ? UniversityMapTooltip(
+                                      : hasMapTooltipSpace
+                                          ? const SizedBox(
                                               key: ValueKey(
-                                                "university-${universityMarker.id}",
+                                                "metro-station-tooltip-space",
                                               ),
-                                              marker: universityMarker,
-                                              onClose:
-                                                  onClearSelectedUniversityMarker,
+                                              width: double.infinity,
+                                              height:
+                                                  metroTooltipReservedHeight,
                                             )
-                                          : hasMapTooltipSpace
-                                              ? const SizedBox(
-                                                  key: ValueKey(
-                                                    "metro-station-tooltip-space",
-                                                  ),
-                                                  width: double.infinity,
-                                                  height:
-                                                      metroTooltipReservedHeight,
-                                                )
-                                              : null,
+                                          : null,
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
@@ -520,12 +531,10 @@ class _MapLocationPromptCard extends StatelessWidget {
 class _NoMapResultsTile extends StatelessWidget {
   const _NoMapResultsTile({
     required this.label,
-    this.onPressed,
     super.key,
   });
 
   final String label;
-  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -567,13 +576,7 @@ class _NoMapResultsTile extends StatelessWidget {
                   ),
                 ],
         ),
-        child: onPressed == null
-            ? child
-            : InkWell(
-                borderRadius: borderRadius,
-                onTap: onPressed,
-                child: child,
-              ),
+        child: child,
       ),
     );
   }

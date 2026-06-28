@@ -3,13 +3,14 @@ part of "../search_results_map_screen.dart";
 class _MapFilterRibbon extends StatelessWidget {
   const _MapFilterRibbon({
     required this.onPressed,
-    required this.onClose,
     required this.listingTypeId,
     required this.minPrice,
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
     required this.total,
+    this.onClose,
+    this.emptyLabel,
     this.gender,
     this.locationId,
     this.subwayStationId,
@@ -18,7 +19,8 @@ class _MapFilterRibbon extends StatelessWidget {
   });
 
   final VoidCallback onPressed;
-  final VoidCallback onClose;
+  final VoidCallback? onClose;
+  final String? emptyLabel;
   final int listingTypeId;
   final int? gender;
   final int? locationId;
@@ -35,6 +37,7 @@ class _MapFilterRibbon extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isBlue = ThemeState().isBlueTheme;
+    final label = emptyLabel;
     final orbDecoration = isAndroidDevice
         ? BoxDecoration(
             color: isBlue
@@ -61,6 +64,47 @@ class _MapFilterRibbon extends StatelessWidget {
                 boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
               );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
+    final filterContent = label == null
+        ? AppliedSearchFiltersBar(
+            onPressed: onPressed,
+            listingTypeId: listingTypeId,
+            gender: gender,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayStationIds: subwayStationIds,
+            subwayLineId: subwayLineId,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            privateRoom: privateRoom,
+            withPhoto: withPhoto,
+            total: total,
+            showLabel: false,
+            alignRight: false,
+            height: 56,
+            endPadding: onClose == null ? 0 : 56,
+            alwaysShowPriceRange: true,
+          )
+        : GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onPressed,
+            child: SizedBox(
+              height: 56,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: scheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          );
     final content = Stack(
       clipBehavior: Clip.none,
       children: [
@@ -68,41 +112,22 @@ class _MapFilterRibbon extends StatelessWidget {
           children: [
             const SizedBox(width: 18, height: 18),
             const SizedBox(width: 16),
-            Expanded(
-              child: AppliedSearchFiltersBar(
-                onPressed: onPressed,
-                listingTypeId: listingTypeId,
-                gender: gender,
-                locationId: locationId,
-                subwayStationId: subwayStationId,
-                subwayStationIds: subwayStationIds,
-                subwayLineId: subwayLineId,
-                minPrice: minPrice,
-                maxPrice: maxPrice,
-                privateRoom: privateRoom,
-                withPhoto: withPhoto,
-                total: total,
-                showLabel: false,
-                alignRight: false,
-                height: 56,
-                endPadding: 56,
-                alwaysShowPriceRange: true,
-              ),
-            ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              padding: const EdgeInsets.all(6),
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              icon: DecoratedBox(
-                decoration: orbDecoration,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.close, size: 16, color: orbIconColor),
+            Expanded(child: filterContent),
+            if (onClose != null)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                icon: DecoratedBox(
+                  decoration: orbDecoration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.close, size: 16, color: orbIconColor),
+                  ),
                 ),
+                onPressed: onClose,
+                tooltip: L10n.get("close"),
               ),
-              onPressed: onClose,
-              tooltip: L10n.get("close"),
-            ),
           ],
         ),
         PositionedDirectional(

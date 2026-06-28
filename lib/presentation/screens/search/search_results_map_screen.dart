@@ -133,6 +133,8 @@ class SearchResultsMapScreen extends StatefulWidget {
 class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   static const int _defaultMapSearchLimit = 300;
   static const int _androidMapSearchLimit = 150;
+  static const double _defaultMinPrice = 0;
+  static const double _defaultMaxPrice = 1000;
 
   _SearchMapResult? _result;
   Object? _loadError;
@@ -183,7 +185,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _result = initialResult;
       _selectedPin = _autoSelectedPin(initialResult);
     }
-    _loadResults(showLoading: false);
+    if (_hasMapSearchFilters) {
+      _loadResults(showLoading: false);
+    } else {
+      _result = const _SearchMapResult(pins: [], total: 0);
+      _isLoading = false;
+      _showFilterRibbon = false;
+    }
     _loadUniversityMarkers();
     unawaited(_refreshLocationPromptVisibility());
   }
@@ -239,6 +247,19 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _maxPrice == result.maxPrice &&
         _privateRoom == result.privateRoom &&
         _withPhoto == result.withPhoto;
+  }
+
+  bool get _hasMapSearchFilters {
+    return _listingTypeId > 0 ||
+        _locationId != null ||
+        _subwayStationId != null ||
+        _subwayStationIds.isNotEmpty ||
+        _subwayLineId != null ||
+        _gender != null ||
+        _minPrice != _defaultMinPrice ||
+        _maxPrice != _defaultMaxPrice ||
+        _privateRoom ||
+        _withPhoto;
   }
 
   bool _intListsEqual(List<int> a, List<int> b) {
@@ -321,6 +342,21 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   Future<void> _loadResults({
     bool showLoading = true,
   }) async {
+    if (!_hasMapSearchFilters) {
+      _loadGeneration++;
+      setState(() {
+        _result = const _SearchMapResult(pins: [], total: 0);
+        _loadError = null;
+        _isLoading = false;
+        _selectedPin = null;
+        _selectedPinGroup = const [];
+        _selectedUniversityMarker = null;
+        _hasSelectedMetroStation = false;
+        _showFilterRibbon = false;
+      });
+      return;
+    }
+
     final loadGeneration = ++_loadGeneration;
     if (showLoading) {
       setState(() {
@@ -410,8 +446,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       primaryIcon: Icons.check,
       primaryAction: SearchBottomSheetAction.map,
       onApply: (result) {
+        final hasMapFilters = _hasMapSearchFiltersFor(result);
         if (_matchesCurrentFilters(result)) {
-          setState(() => _showFilterRibbon = true);
+          setState(() => _showFilterRibbon = hasMapFilters);
           return;
         }
 
@@ -431,6 +468,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _selectedPinGroup = const [];
           _selectedUniversityMarker = null;
           _hasSelectedMetroStation = false;
+          _showFilterRibbon = hasMapFilters;
         });
         _loadResults();
       },
@@ -439,6 +477,19 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _hideFilterRibbon() {
     setState(() => _showFilterRibbon = false);
+  }
+
+  bool _hasMapSearchFiltersFor(SearchBottomSheetResult result) {
+    return result.listingTypeId > 0 ||
+        result.locationId != null ||
+        result.subwayStationId != null ||
+        result.subwayStationIds.isNotEmpty ||
+        result.subwayLineId != null ||
+        result.gender != null ||
+        result.minPrice != _defaultMinPrice ||
+        result.maxPrice != _defaultMaxPrice ||
+        result.privateRoom ||
+        result.withPhoto;
   }
 
   void _openFeedView() {
@@ -793,6 +844,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     return _SearchResultsMapContent(
       result: result,
       isLoading: _isLoading,
+      hasSearchFilters: _hasMapSearchFilters,
       listingTypeId: _listingTypeId,
       gender: _gender,
       locationId: _locationId,
