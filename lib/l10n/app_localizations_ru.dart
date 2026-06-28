@@ -203,7 +203,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get map_web_preview => 'Веб-предпросмотр';
 
   @override
-  String get metro_station_walk_area_label => '10 минут пешком';
+  String metro_station_walk_area_label(int minutes) {
+    return '$minutes мин пешком';
+  }
+
+  @override
+  String map_walk_radius_button_tooltip(int minutes) {
+    return 'Радиус ходьбы: $minutes мин';
+  }
 
   @override
   String get open_map_view => 'Открыть карту';

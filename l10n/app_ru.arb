@@ -89,7 +89,22 @@
   "loading_regions": "Загрузка районов...",
   "loading_map": "Загрузка карты...",
   "map_web_preview": "Веб-предпросмотр",
-  "metro_station_walk_area_label": "10 минут пешком",
+  "metro_station_walk_area_label": "{minutes} мин пешком",
+  "@metro_station_walk_area_label": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "map_walk_radius_button_tooltip": "Радиус ходьбы: {minutes} мин",
+  "@map_walk_radius_button_tooltip": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "open_map_view": "Открыть карту",
   "open_feed_view": "Открыть ленту",
   "choose_filters": "Пожалуйста, выберите фильтр",

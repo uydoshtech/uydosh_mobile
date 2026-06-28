@@ -52,7 +52,8 @@ final class SunCompassOverlayView: UIControl {
 
   override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
     guard acceptsOrientationTaps else { return false }
-    return bounds.contains(point)
+    // Slightly larger target than the 88×88 widget — taps near the edge still open adjust.
+    return bounds.insetBy(dx: -12, dy: -12).contains(point)
   }
 
   private func setup() {

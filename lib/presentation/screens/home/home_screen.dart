@@ -346,6 +346,12 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       return;
     }
     if (!await SessionManager.isAuthenticated()) {
+      if (_shouldSkipInlineSearchBootstrap()) {
+        await _resetAnonymousHomeSearchState();
+        return;
+      }
+      final restored = await _restoreInlineSearchModeFromPrefs();
+      if (restored) return;
       await _resetAnonymousHomeSearchState();
       return;
     }
@@ -363,8 +369,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  /// Inline filter ribbon + persisted search mode are signed-in only. Guests
-  /// browse unfiltered and do not restore a previous account's filter prefs.
+  /// Inline filter ribbon for guests is only restored when they previously
+  /// committed a search ([HomeInlineSearchState.activePrefsKey]); otherwise
+  /// stale logged-in prefs are cleared.
   Future<void> _resetAnonymousHomeSearchState() async {
     _lastDispatchedSearchFilters = null;
     await _searchFiltersState.clearAllFilters(persistRemote: false);
@@ -508,16 +515,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   /// Returns true when the persisted prefs flag was set and we activated the
-  /// ribbon; false otherwise. Inline search restore is signed-in only.
+  /// ribbon; false otherwise. Works for signed-in users and guests who
+  /// committed a search in this install (logout clears the pref).
   Future<bool> _restoreInlineSearchModeFromPrefs() async {
     if (widget.isSearchMode) return false;
-    if (!await SessionManager.isAuthenticated()) {
-      try {
-        final p = await SharedPreferences.getInstance();
-        await p.setBool(HomeInlineSearchState.activePrefsKey, false);
-      } catch (_) {}
-      return false;
-    }
     final prefs = await SharedPreferences.getInstance();
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return false;
@@ -528,8 +529,38 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       } catch (_) {}
       return false;
     }
-    _activateInlineSearch(persistActiveFlag: false);
+    if (await SessionManager.isAuthenticated()) {
+      _activateInlineSearch(persistActiveFlag: false);
+    } else {
+      _showGuestInlineSearchRibbon();
+    }
     return true;
+  }
+
+  /// Re-shows the feed ribbon after navigation when the global inline-search
+  /// flag is still set but local [State] was rebuilt (e.g. tab switch).
+  void _syncInlineSearchUiFromSession() {
+    if (widget.isSearchMode) return;
+    if (HomeInlineSearchState().ribbonDismissedByUser) return;
+    if (!HomeInlineSearchState().isActive) return;
+    if (_inlineSearchActive && !_inlineSearchClosing) return;
+    if (!mounted) return;
+    setState(() {
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+    });
+  }
+
+  void _showGuestInlineSearchRibbon({bool keepStaleWhileRibbonAnimates = false}) {
+    if (!mounted) return;
+    setState(() {
+      _inlineSearchActive = true;
+      _inlineSearchClosing = false;
+      _inlineSearchSpacerExpanded = true;
+    });
+    HomeInlineSearchState().setActive(true);
+    _performSearch(keepStaleWhileRibbonAnimates: keepStaleWhileRibbonAnimates);
   }
 
   /// Flips the home into inline-search mode, animates the ribbon in, and
@@ -777,6 +808,14 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isHomeTabActive && widget.isHomeTabActive) {
+      _syncInlineSearchUiFromSession();
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Subscribe to route changes using global route observer
@@ -810,6 +849,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   void didPopNext() {
     // Called when returning to this screen from another screen
     debugPrint("🏠 HomeScreen: Returning from another screen");
+    _syncInlineSearchUiFromSession();
     _checkAndRefreshIfNeeded();
     // Re-check tutorial when returning (e.g. user may have turned onboarding ON in settings)
     Future.delayed(const Duration(milliseconds: 300), _maybeShowSearchTutorial);
@@ -832,6 +872,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   void didPush() {
     // Called when this screen is pushed
     debugPrint("🏠 HomeScreen: Home screen was pushed");
+    _syncInlineSearchUiFromSession();
     _checkAndRefreshIfNeeded();
   }
 

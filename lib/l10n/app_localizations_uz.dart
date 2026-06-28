@@ -203,7 +203,14 @@ class AppLocalizationsUz extends AppLocalizations {
   String get map_web_preview => 'Veb koʻrinish';
 
   @override
-  String get metro_station_walk_area_label => '10 daqiqa piyoda hududi';
+  String metro_station_walk_area_label(int minutes) {
+    return '$minutes daqiqa piyoda hududi';
+  }
+
+  @override
+  String map_walk_radius_button_tooltip(int minutes) {
+    return 'Yurish radiusi: $minutes daqiqa';
+  }
 
   @override
   String get open_map_view => 'Xaritani ochish';

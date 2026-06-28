@@ -63,6 +63,15 @@ final class FloorPlanTab: UIView {
     orientationCompass.isOrientationEditable = enabled
   }
 
+  func setNorthAdjustActive(_ active: Bool) {
+    orientationCompass.layer.borderWidth = active ? 1.5 : 1
+    orientationCompass.layer.borderColor = (
+      active
+        ? UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.85).cgColor
+        : UIColor.white.withAlphaComponent(0.12).cgColor
+    )
+  }
+
   private func setupViews() {
     translatesAutoresizingMaskIntoConstraints = false
     backgroundColor = .white
@@ -124,6 +133,7 @@ final class FloorPlanTab: UIView {
 
     applyControlLabels()
     updateToggleStates()
+    bringSubviewToFront(orientationCompass)
   }
 
   private func configureControlButton(_ button: UIButton, symbol: String, action: Selector) {

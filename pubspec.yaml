@@ -133,6 +133,7 @@ dependencies:
   package_info_plus: ^9.0.1
   record: ^6.2.0
   geolocator: ^14.0.2
+  pointer_interceptor: ^0.10.1+2
 
 dev_dependencies:
   flutter_test:

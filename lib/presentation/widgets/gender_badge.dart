@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
 class GenderBadge extends StatelessWidget {
@@ -23,20 +24,21 @@ class GenderBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getGenderColor(gender);
+    final accentColor = _getGenderAccentColor(gender);
+    final foregroundColor = _getGenderForegroundColor(gender);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: accentColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: color, width: 1.0),
+        border: Border.all(color: accentColor, width: 1.0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           ThemeIcon(
             _getGenderIcon(gender),
-            color: color,
+            color: foregroundColor,
             size: size,
           ),
           if (label != null && label!.isNotEmpty) ...[
@@ -46,7 +48,7 @@ class GenderBadge extends StatelessWidget {
               style: TextStyle(
                 fontSize: labelFontSize,
                 fontWeight: FontWeight.w600,
-                color: color,
+                color: foregroundColor,
               ),
             ),
           ],
@@ -55,7 +57,7 @@ class GenderBadge extends StatelessWidget {
     );
   }
 
-  Color _getGenderColor(int gender) {
+  Color _getGenderAccentColor(int gender) {
     switch (gender) {
       case 1: // Male
         return AppColors.genderMale;
@@ -64,6 +66,13 @@ class GenderBadge extends StatelessWidget {
       default:
         return AppColors.genderOther;
     }
+  }
+
+  Color _getGenderForegroundColor(int gender) {
+    if (ThemeState().isLightTheme && gender == 1) {
+      return AppColors.genderMaleLightForeground;
+    }
+    return _getGenderAccentColor(gender);
   }
 
   IconData _getGenderIcon(int gender) {

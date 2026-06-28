@@ -89,7 +89,22 @@
   "loading_regions": "Tumanlar yuklanmoqda...",
   "loading_map": "Xarita yuklanmoqda...",
   "map_web_preview": "Veb koʻrinish",
-  "metro_station_walk_area_label": "10 daqiqa piyoda hududi",
+  "metro_station_walk_area_label": "{minutes} daqiqa piyoda hududi",
+  "@metro_station_walk_area_label": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "map_walk_radius_button_tooltip": "Yurish radiusi: {minutes} daqiqa",
+  "@map_walk_radius_button_tooltip": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "open_map_view": "Xaritani ochish",
   "open_feed_view": "Lentani ochish",
   "choose_filters": "Iltimos, filtr tanlang",

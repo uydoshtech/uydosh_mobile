@@ -542,15 +542,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       ]
     }()
 
-    let northPanelBottom = northOrientationPanel.bottomAnchor.constraint(
-      equalTo: modeMaterialsToolbarContainer.topAnchor,
-      constant: -10
-    )
-    northPanelTopConstraint = northPanelBottom
-
     NSLayoutConstraint.activate(
       [
-        northPanelBottom,
         northOrientationPanel.leadingAnchor.constraint(
           equalTo: view.safeAreaLayoutGuide.leadingAnchor,
           constant: 16
@@ -622,6 +615,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
       ]
         + modeMaterialsToolbarPlacement
     )
+    updateNorthPanelTopAnchor()
 
     // Pan / pinch from launch so a drag or pinch ends intro auto-rotation (tap-only was too limiting).
     installManualOrbitGestures()
@@ -646,7 +640,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   override func viewDidLayoutSubviews() {
     super.viewDidLayoutSubviews()
     updateViewerTabSelection(animated: false)
-    if viewerTab == .threeD {
+    if isNorthPanelExpanded {
+      updateNorthPanelTopAnchor()
+    }
+    if viewerTab == .threeD || isNorthPanelExpanded {
       bringInteractiveOverlaysToFront()
     }
     refreshZoomControlsNeumorphicShadowPaths()
@@ -1916,6 +1913,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         ? UIColor(red: 1, green: 0.78, blue: 0.35, alpha: 0.85).cgColor
         : UIColor.white.withAlphaComponent(0.12).cgColor
     )
+    floorPlanTabView?.setNorthAdjustActive(active)
   }
 
   private func northPanelCallbacks() -> (
@@ -1947,12 +1945,19 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
 
   private func updateNorthPanelTopAnchor() {
     northPanelTopConstraint?.isActive = false
-    let bottom = northOrientationPanel.bottomAnchor.constraint(
-      equalTo: modeMaterialsToolbarContainer.topAnchor,
-      constant: -10
-    )
-    northPanelTopConstraint = bottom
-    bottom.isActive = true
+    let anchor: NSLayoutYAxisAnchor
+    switch viewerTab {
+    case .threeD where !sunCompassOverlay.isHidden:
+      anchor = sunCompassOverlay.bottomAnchor
+    case .floorPlan:
+      anchor = floorPlanTabView?.orientationCompass.bottomAnchor
+        ?? view.safeAreaLayoutGuide.topAnchor
+    case .threeD:
+      anchor = view.safeAreaLayoutGuide.topAnchor
+    }
+    let top = northOrientationPanel.topAnchor.constraint(equalTo: anchor, constant: 8)
+    northPanelTopConstraint = top
+    top.isActive = true
   }
 
   private func showNorthCorrectionPanel() {
@@ -1962,6 +1967,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     northOrientationPanel.beginSession(committedCorrection: northPanelCommittedCorrection)
     northOrientationPanel.isHidden = false
     northOrientationPanel.alpha = 1
+    view.layoutIfNeeded()
     bringInteractiveOverlaysToFront()
     updateNorthPanelAppearance()
   }

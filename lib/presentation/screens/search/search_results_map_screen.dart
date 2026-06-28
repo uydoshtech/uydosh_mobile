@@ -5,6 +5,7 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart" as geo;
 import "package:permission_handler/permission_handler.dart";
+import "package:pointer_interceptor/pointer_interceptor.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
@@ -34,6 +35,7 @@ import "package:uy_dosh/presentation/widgets/gender_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/search_floating_action_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -49,6 +51,24 @@ part "widgets/search_results_map_content.dart";
 part "widgets/search_results_map_models.dart";
 part "widgets/search_results_map_pin_summary.dart";
 part "widgets/search_results_map_controls.dart";
+
+enum _WalkRadiusMinutes {
+  min10(10),
+  min20(20),
+  min30(30);
+
+  const _WalkRadiusMinutes(this.minutes);
+
+  final int minutes;
+
+  _WalkRadiusMinutes get next {
+    return switch (this) {
+      _WalkRadiusMinutes.min10 => _WalkRadiusMinutes.min20,
+      _WalkRadiusMinutes.min20 => _WalkRadiusMinutes.min30,
+      _WalkRadiusMinutes.min30 => _WalkRadiusMinutes.min10,
+    };
+  }
+}
 
 enum _MetroLayerMode {
   off,
@@ -159,6 +179,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   String? _currentUserUniversityMarkerId;
   late bool _showDistrictLayer;
   late _MetroLayerMode _metroLayerMode;
+  _WalkRadiusMinutes _walkRadiusMinutes = _WalkRadiusMinutes.min10;
   late bool _showUniversitiesLayer;
   bool _showGroceryStoresLayer = false;
   bool _showBusStopsLayer = false;
@@ -971,6 +992,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       userUniversityMarkerId: _currentUserUniversityMarkerId,
       showDistrictLayer: _showDistrictLayer,
       metroLayerMode: _metroLayerMode,
+      walkRadiusMinutes: _walkRadiusMinutes,
       showUniversitiesLayer: _showUniversitiesLayer,
       showGroceryStoresLayer: _showGroceryStoresLayer,
       showBusStopsLayer: _showBusStopsLayer,
@@ -992,6 +1014,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onRequestUserLocation: _requestUserLocation,
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
+      },
+      onToggleWalkRadiusMinutes: () {
+        setState(() => _walkRadiusMinutes = _walkRadiusMinutes.next);
       },
       onToggleMetroLayerMode: () {
         setState(() {

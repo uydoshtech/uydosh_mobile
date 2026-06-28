@@ -3,6 +3,7 @@ import "dart:typed_data";
 import "dart:ui" as ui;
 import "package:flutter/foundation.dart" show kDebugMode, kIsWeb;
 import "package:flutter/material.dart";
+import "package:pointer_interceptor/pointer_interceptor.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:uy_dosh/base/cache/coordinates_cache.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
@@ -225,6 +226,7 @@ class YandexMapWidget extends StatefulWidget {
     this.brandMarkBottomInset = 0,
     this.showZoomControls = true,
     this.nightModeEnabled = false,
+    this.walkRadiusMinutes = 10,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.userLocationRequestToken = 0,
     this.userLocationLatitude,
@@ -260,6 +262,7 @@ class YandexMapWidget extends StatefulWidget {
   final double brandMarkBottomInset;
   final bool showZoomControls;
   final bool nightModeEnabled;
+  final int walkRadiusMinutes;
   final YandexMapZoomControlsOptions zoomControlsOptions;
   final int userLocationRequestToken;
   final double? userLocationLatitude;
@@ -280,7 +283,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
-  static const double _metroStationWalkingRadiusMeters = 1100.0;
+  static const double _walkingSpeedMetersPerMinute = 110.0;
   static const double _minMetroStationWalkAreaLabelZoom = 12.5;
   static const double _listingPinMetroStationOffsetMeters = 45.0;
   static const double _metroStationPlacemarkScale = 0.62;
@@ -302,6 +305,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static int get _minClusterableUniversityMarkers => isAndroidDevice ? 8 : 16;
   static const double _universityClusterRadius = 44.0;
   static const int _universityClusterMinZoom = 15;
+
+  double get _walkingRadiusMeters =>
+      widget.walkRadiusMinutes * _walkingSpeedMetersPerMinute;
 
   Uint8List? _cachedIconBytes;
   Uint8List? _cachedDarkIconBytes;
@@ -390,6 +396,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           selectedStation.line != selectedLineId) {
         _setSelectedMetroStation(null, notify: true);
       }
+      _invalidateMapObjectsCache();
+      _requestMapRebuild();
+    }
+    if (oldWidget.walkRadiusMinutes != widget.walkRadiusMinutes) {
       _invalidateMapObjectsCache();
       _requestMapRebuild();
     }
@@ -568,7 +578,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               left: 8,
               right: 8,
               top: 8,
-              child: MapTooltipFadeTransition(child: _activeMapTooltip()),
+              child: PointerInterceptor(
+                child: MapTooltipFadeTransition(child: _activeMapTooltip()),
+              ),
             ),
             if (widget.showBrandMark) _buildMapBrandMark(),
             // Zoom controls (only when map is ready)
@@ -1734,7 +1746,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       bottom: bottom == null
           ? 44 + safeAreaPadding.bottom
           : safeAreaPadding.bottom + bottom,
-      child: SizedBox(
+      child: PointerInterceptor(
+        child: SizedBox(
         width: width,
         height: height,
         child: DecoratedBox(
@@ -1756,6 +1769,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 ),
           child: slider,
         ),
+      ),
       ),
     );
   }

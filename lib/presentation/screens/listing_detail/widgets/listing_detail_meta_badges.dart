@@ -229,7 +229,7 @@ class ListingDetailMetaBadges extends StatelessWidget {
                             children: [
                               ThemeIconFactory.detail(
                                 icon: _genderIcon(listingDetail.gender!),
-                                color: ListingDetailThemeHelper.genderColor(
+                                color: ListingDetailThemeHelper.genderForegroundColor(
                                   listingDetail.gender!,
                                 ),
                                 size: 18,
@@ -240,7 +240,7 @@ class ListingDetailMetaBadges extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: ListingDetailThemeHelper.genderColor(
+                                  color: ListingDetailThemeHelper.genderForegroundColor(
                                     listingDetail.gender!,
                                   ),
                                 ),

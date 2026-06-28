@@ -202,7 +202,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map_web_preview => 'Web preview';
 
   @override
-  String get metro_station_walk_area_label => '10 min walk area';
+  String metro_station_walk_area_label(int minutes) {
+    return '$minutes min walk area';
+  }
+
+  @override
+  String map_walk_radius_button_tooltip(int minutes) {
+    return 'Walking radius: $minutes min';
+  }
 
   @override
   String get open_map_view => 'Open map view';

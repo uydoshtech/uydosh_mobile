@@ -107,4 +107,12 @@ class ListingDetailThemeHelper {
         return AppColors.textGrey;
     }
   }
+
+  /// Icon and label color for gender badges (higher contrast on light theme).
+  static Color genderForegroundColor(int gender) {
+    if (ThemeState().isLightTheme && gender == 1) {
+      return AppColors.genderMaleLightForeground;
+    }
+    return genderColor(gender);
+  }
 }

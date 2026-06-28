@@ -89,7 +89,22 @@
   "loading_regions": "Loading regions...",
   "loading_map": "Loading map...",
   "map_web_preview": "Web preview",
-  "metro_station_walk_area_label": "10 min walk area",
+  "metro_station_walk_area_label": "{minutes} min walk area",
+  "@metro_station_walk_area_label": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "map_walk_radius_button_tooltip": "Walking radius: {minutes} min",
+  "@map_walk_radius_button_tooltip": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "open_map_view": "Open map view",
   "open_feed_view": "Open feed view",
   "choose_filters": "Select a filter please",

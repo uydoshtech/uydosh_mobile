@@ -53,6 +53,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.layerOptions.showBusStopsLayer,
       widget.showDefaultPlacemark,
       widget.nightModeEnabled,
+      widget.walkRadiusMinutes,
       Localizations.localeOf(context).languageCode,
       districtLabelsVisible,
       metroWalkAreaLabelVisible,
@@ -560,6 +561,25 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return colors[(locationId - 1).abs() % colors.length];
   }
 
+  CircleMapObject _createWalkingRadiusCircle({
+    required Point center,
+    required String mapObjectId,
+  }) {
+    final radiusColor =
+        widget.nightModeEnabled ? Colors.white : const Color(0xFF1E88E5);
+    return CircleMapObject(
+      mapId: MapObjectId(mapObjectId),
+      circle: Circle(
+        center: center,
+        radius: _walkingRadiusMeters,
+      ),
+      zIndex: 1.05,
+      strokeWidth: 2.0,
+      strokeColor: radiusColor.withValues(alpha: 0.42),
+      fillColor: radiusColor.withValues(alpha: 0.16),
+    );
+  }
+
   List<MapObject> _createMetroStationLayerMapObjects() {
     return [
       if (_selectedMetroStation != null) ...[
@@ -587,36 +607,27 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   CircleMapObject _createMetroStationWalkingRadius() {
     final station = _selectedMetroStation!;
-    final point = Point(
-      latitude: station.latitude!,
-      longitude: station.longitude!,
-    );
-    final radiusColor =
-        widget.nightModeEnabled ? Colors.white : const Color(0xFF1E88E5);
-    return CircleMapObject(
-      mapId: MapObjectId(
-        "tashkent_metro_station_${station.id}_walking_radius_${_metroLayerScopeKey}",
+    return _createWalkingRadiusCircle(
+      center: Point(
+        latitude: station.latitude!,
+        longitude: station.longitude!,
       ),
-      circle: Circle(
-        center: point,
-        radius: _YandexMapWidgetState._metroStationWalkingRadiusMeters,
-      ),
-      zIndex: 1.05,
-      strokeWidth: 2.0,
-      strokeColor: radiusColor.withValues(alpha: 0.42),
-      fillColor: radiusColor.withValues(alpha: 0.16),
+      mapObjectId:
+          "tashkent_metro_station_${station.id}_walking_radius_${widget.walkRadiusMinutes}_${_metroLayerScopeKey}",
     );
   }
 
   PlacemarkMapObject _createMetroStationWalkingRadiusLabel() {
     final station = _selectedMetroStation!;
-    final label = context.l10n.metro_station_walk_area_label;
+    final label = context.l10n.metro_station_walk_area_label(
+      widget.walkRadiusMinutes,
+    );
     _ensureMetroWalkAreaLabelIconBytes(label);
     final iconBytes = _cachedMetroWalkAreaLabelIconBytes[label];
     final labelPoint = _pointOffsetNorth(
       latitude: station.latitude!,
       longitude: station.longitude!,
-      meters: _YandexMapWidgetState._metroStationWalkingRadiusMeters * 0.56,
+      meters: _walkingRadiusMeters * 0.56,
     );
     if (iconBytes != null) {
       return PlacemarkMapObject(
@@ -809,9 +820,28 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         : [_universityMarkerCollection(regularPlacemarks)];
 
     return [
+      if (_selectedUniversityForWalkRadius case final marker?) ...[
+        _createWalkingRadiusCircle(
+          center: Point(
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+          ),
+          mapObjectId:
+              "university_${marker.id}_walking_radius_${widget.walkRadiusMinutes}",
+        ),
+      ],
       ...regularLayer,
       if (highlightedPlacemark != null) highlightedPlacemark,
     ];
+  }
+
+  UniversityMapMarker? get _selectedUniversityForWalkRadius {
+    final markerId = _highlightedUniversityMarkerId;
+    if (markerId == null) return null;
+    for (final marker in widget.universityMarkers) {
+      if (marker.id == markerId) return marker;
+    }
+    return null;
   }
 
   String? get _highlightedUniversityMarkerId {

@@ -19,6 +19,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.userUniversityMarkerId,
     required this.showDistrictLayer,
     required this.metroLayerMode,
+    required this.walkRadiusMinutes,
     required this.showUniversitiesLayer,
     required this.showGroceryStoresLayer,
     required this.showBusStopsLayer,
@@ -39,6 +40,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onOpenFeedView,
     required this.onRequestUserLocation,
     required this.onToggleDistrictLayer,
+    required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
     required this.onToggleUniversitiesLayer,
     required this.onToggleMapNightMode,
@@ -78,6 +80,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final String? userUniversityMarkerId;
   final bool showDistrictLayer;
   final _MetroLayerMode metroLayerMode;
+  final _WalkRadiusMinutes walkRadiusMinutes;
   final bool showUniversitiesLayer;
   final bool showGroceryStoresLayer;
   final bool showBusStopsLayer;
@@ -98,6 +101,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final VoidCallback onOpenFeedView;
   final VoidCallback onRequestUserLocation;
   final VoidCallback onToggleDistrictLayer;
+  final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleUniversitiesLayer;
   final ValueChanged<bool> onToggleMapNightMode;
@@ -249,6 +253,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                     ),
                     showDefaultPlacemark: false,
                     nightModeEnabled: mapNightModeEnabled,
+                    walkRadiusMinutes: walkRadiusMinutes.minutes,
                     tooltipOptions: YandexMapTooltipOptions(
                       showUniversityMarker: false,
                       showMetroStation:
@@ -325,7 +330,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                 left: 12,
                 right: 12,
                 top: viewToggleTop,
-                child: Column(
+                child: PointerInterceptor(
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -361,13 +367,15 @@ class _SearchResultsMapContent extends StatelessWidget {
                                               onClearSelectedUniversityMarker,
                                         )
                                       : hasMapTooltipSpace
-                                          ? const SizedBox(
-                                              key: ValueKey(
-                                                "metro-station-tooltip-space",
+                                          ? IgnorePointer(
+                                              child: SizedBox(
+                                                key: const ValueKey(
+                                                  "metro-station-tooltip-space",
+                                                ),
+                                                width: double.infinity,
+                                                height:
+                                                    metroTooltipReservedHeight,
                                               ),
-                                              width: double.infinity,
-                                              height:
-                                                  metroTooltipReservedHeight,
                                             )
                                           : null,
                     ),
@@ -393,9 +401,13 @@ class _SearchResultsMapContent extends StatelessWidget {
                               const SizedBox(height: viewToggleGap),
                             ],
                             _MapLayerToggleButtons(
+                              walkRadiusMinutes: walkRadiusMinutes,
+                              walkRadiusActive: hasSelectedMetroStation ||
+                                  universityMarker != null,
                               metroLayerMode: metroLayerMode,
                               showDistrictLayer: showDistrictLayer,
                               showUniversitiesLayer: showUniversitiesLayer,
+                              onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
                               onToggleMetroLayerMode: onToggleMetroLayerMode,
                               onToggleDistrictLayer: onToggleDistrictLayer,
                               onToggleUniversitiesLayer:
@@ -410,27 +422,30 @@ class _SearchResultsMapContent extends StatelessWidget {
                     ),
                   ],
                 ),
+                ),
               ),
               if (placeViewToggleAtBottom)
                 Positioned(
                   right: 16,
                   bottom: viewToggleBottom,
-                  child: feedViewButton,
+                  child: PointerInterceptor(child: feedViewButton),
                 ),
               if (placeViewToggleAtBottom && onOpenEmbeddedSearch != null)
                 Positioned(
                   right: 16,
                   bottom: searchButtonBottom,
-                  child: SearchFloatingActionButton(
-                    onPressed: onOpenEmbeddedSearch,
-                    iconData: Icons.search,
-                    width: viewToggleWidth,
-                    height: feedViewButtonHeight,
-                    iconSize: 22.5,
-                    backgroundColor: mapOverlayPanelColor,
-                    foregroundColor: Colors.black,
-                    mapOverlay: true,
-                    elevation: ThemeState().isBlueTheme ? null : 8,
+                  child: PointerInterceptor(
+                    child: SearchFloatingActionButton(
+                      onPressed: onOpenEmbeddedSearch,
+                      iconData: Icons.search,
+                      width: viewToggleWidth,
+                      height: feedViewButtonHeight,
+                      iconSize: 22.5,
+                      backgroundColor: mapOverlayPanelColor,
+                      foregroundColor: Colors.black,
+                      mapOverlay: true,
+                      elevation: ThemeState().isBlueTheme ? null : 8,
+                    ),
                   ),
                 ),
               if (showLocationPrompt)
@@ -438,10 +453,12 @@ class _SearchResultsMapContent extends StatelessWidget {
                   left: 12,
                   width: MediaQuery.sizeOf(context).width * 0.75,
                   bottom: locationPromptBottom,
-                  child: _MapLocationPromptCard(
-                    height: locationPromptHeight,
-                    actionButtonHeight: feedViewButtonHeight,
-                    onPressed: onRequestUserLocation,
+                  child: PointerInterceptor(
+                    child: _MapLocationPromptCard(
+                      height: locationPromptHeight,
+                      actionButtonHeight: feedViewButtonHeight,
+                      onPressed: onRequestUserLocation,
+                    ),
                   ),
                 ),
             ],
@@ -620,9 +637,12 @@ class _NoMapResultsTile extends StatelessWidget {
 
 class _MapLayerToggleButtons extends StatelessWidget {
   const _MapLayerToggleButtons({
+    required this.walkRadiusMinutes,
+    required this.walkRadiusActive,
     required this.metroLayerMode,
     required this.showDistrictLayer,
     required this.showUniversitiesLayer,
+    required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
     required this.onToggleDistrictLayer,
     required this.onToggleUniversitiesLayer,
@@ -631,9 +651,12 @@ class _MapLayerToggleButtons extends StatelessWidget {
     required this.gap,
   });
 
+  final _WalkRadiusMinutes walkRadiusMinutes;
+  final bool walkRadiusActive;
   final _MetroLayerMode metroLayerMode;
   final bool showDistrictLayer;
   final bool showUniversitiesLayer;
+  final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleUniversitiesLayer;
@@ -649,6 +672,15 @@ class _MapLayerToggleButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        _WalkRadiusMinutesButton(
+          minutes: walkRadiusMinutes.minutes,
+          active: walkRadiusActive,
+          width: width,
+          height: height,
+          borderSide: _border,
+          onPressed: onToggleWalkRadiusMinutes,
+        ),
+        SizedBox(width: gap),
         _MetroLayerModeButton(
           mode: metroLayerMode,
           width: width,
@@ -791,4 +823,90 @@ Color _modeForegroundColor(_MetroLayerMode mode) {
   return mode == _MetroLayerMode.off || mode == _MetroLayerMode.line4
       ? Colors.black
       : Colors.white;
+}
+
+class _WalkRadiusMinutesButton extends StatelessWidget {
+  const _WalkRadiusMinutesButton({
+    required this.minutes,
+    required this.active,
+    required this.width,
+    required this.height,
+    required this.borderSide,
+    required this.onPressed,
+  });
+
+  final int minutes;
+  final bool active;
+  final double width;
+  final double height;
+  final BorderSide borderSide;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final tooltip = context.l10n.map_walk_radius_button_tooltip(minutes);
+    final radius = BorderRadius.circular(height / 2);
+    final backgroundColor = active ? Colors.black : Colors.white;
+    final foregroundColor = active ? Colors.white : Colors.black;
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        label: tooltip,
+        child: Material(
+          color: backgroundColor,
+          borderRadius: radius,
+          child: InkWell(
+            borderRadius: radius,
+            splashFactory: NoSplash.splashFactory,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            onTap: onPressed,
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                border: Border.fromBorderSide(borderSide),
+                boxShadow: ThemeState().isBlueTheme
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: foregroundColor,
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    "$minutes",
+                    style: TextStyle(
+                      color: foregroundColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
