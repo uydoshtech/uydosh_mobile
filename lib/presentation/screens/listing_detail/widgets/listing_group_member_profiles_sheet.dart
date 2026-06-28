@@ -41,7 +41,7 @@ const _sheetFullGroupHeaderExtraHeight = 55.0;
 const _sheetHeaderExtraNameLineHeight = 20.0;
 const _sheetListBottomPadding = 16.0;
 const _sheetCardGap = 10.0;
-const _sheetMeasurementSlack = 8.0;
+const _sheetMeasurementSlack = 12.0;
 const _sheetPendingSectionHeaderHeight = 46.0;
 const _sheetLoadingRequestsHeight = 48.0;
 const _memberCardBaseHeight = 82.0;
@@ -849,7 +849,7 @@ class _ListingGroupMemberProfilesSheetState
                 child: SingleChildScrollView(
                   physics: shouldScroll
                       ? const BouncingScrollPhysics()
-                      : const NeverScrollableScrollPhysics(),
+                      : const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,

@@ -24,7 +24,6 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
-import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -629,9 +628,40 @@ class _ListingDetailCompatibilitySectionState
     return _getDescriptionTextColor().withValues(alpha: 0.04);
   }
 
-  Color _matrixHeaderSurfaceColor() {
-    final cardBase = Theme.of(context).cardTheme.color ??
-        Theme.of(context).colorScheme.surface;
+  /// Opaque fill for the pinned matrix header overlay. The overlay lives outside
+  /// the listing-detail tile shell, so translucent glass + backdrop blur reads
+  /// a different shade than the transparent matrix cells scrolling beneath it.
+  Color _matrixStickyHeaderBackgroundColor() {
+    final theme = Theme.of(context);
+    final cardBase = theme.cardTheme.color ?? theme.colorScheme.surface;
+    final themeState = ThemeState();
+    final canvas = themeState.backgroundColor;
+
+    if (ListingDetailThemeHelper.useGlassTiles) {
+      if (themeState.isLightTheme) {
+        final base = theme.colorScheme.surface;
+        final surfaceTint =
+            Color.lerp(base, theme.colorScheme.primary, 0.10) ?? base;
+        // Opaque listing-detail glass tile face (no backdrop blur).
+        return Color.alphaBlend(
+          surfaceTint.withValues(alpha: 0.74),
+          Color.alphaBlend(
+            Colors.white.withValues(alpha: 0.46),
+            canvas,
+          ),
+        );
+      }
+
+      if (themeState.isBlueTheme) {
+        final tintColor = themeState.primaryColor;
+        // Opaque blue-theme glass tile face (no backdrop blur).
+        return Color.alphaBlend(
+          tintColor.withValues(alpha: 0.58),
+          Color.alphaBlend(tintColor.withValues(alpha: 0.38), canvas),
+        );
+      }
+    }
+
     return Color.alphaBlend(_matrixCardTintColor(), cardBase);
   }
 
@@ -659,7 +689,7 @@ class _ListingDetailCompatibilitySectionState
         type: MaterialType.transparency,
         child: ListenableBuilder(
           listenable: ThemeState(),
-          builder: (context, _) => _buildMatrixStickyHeaderGlassShell(
+          builder: (context, _) => _buildMatrixStickyHeaderPlateShell(
             borderColor: borderColor,
             // The plate spans the full viewport, but the avatar / text columns
             // stay pinned to the original table geometry so they don't drift.
@@ -747,65 +777,37 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildMatrixStickyHeaderBackground({
-    required bool isLightTheme,
-    required bool enableGlass,
     required BorderRadius borderRadius,
   }) {
-    // When frosted-glass effects are off (reduce motion / accessibility) there
-    // is no backdrop blur to read through, so fall back to an opaque surface
-    // that keeps the header text legible over scrolling content.
-    if (!enableGlass) {
-      return ColoredBox(color: _matrixHeaderSurfaceColor());
-    }
-
-    // Translucent plate over the glass-shell's backdrop blur so the scrolling
-    // content shows through — matching the see-through in-flow header instead
-    // of a flat opaque slab.
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        gradient: LiquidGlassRendering.plateGradient(
-          context: context,
-          isDark: isDark && !isLightTheme,
-        ),
+        color: _matrixStickyHeaderBackgroundColor(),
       ),
     );
   }
 
-  Widget _buildMatrixStickyHeaderGlassShell({
+  Widget _buildMatrixStickyHeaderPlateShell({
     required Color borderColor,
     required Widget child,
   }) {
     const topRadius = BorderRadius.vertical(
       top: Radius.circular(_matrixTableCornerRadius),
     );
-    final themeState = ThemeState();
-    final isLightTheme = themeState.isLightTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
 
     return ClipRRect(
       borderRadius: topRadius,
       clipBehavior: Clip.hardEdge,
-      child: LiquidGlassRendering.backdropBlur(
-        enabled: enableGlass,
-        sigma: isLightTheme ? 22.0 : (isDark ? 18.0 : 22.0),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _buildMatrixStickyHeaderBackground(
-              isLightTheme: isLightTheme,
-              enableGlass: enableGlass,
-              borderRadius: topRadius,
-            ),
-            child,
-            _buildMatrixStickyHeaderBorderOverlay(
-              borderColor: borderColor,
-              borderRadius: topRadius,
-            ),
-          ],
-        ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildMatrixStickyHeaderBackground(borderRadius: topRadius),
+          child,
+          _buildMatrixStickyHeaderBorderOverlay(
+            borderColor: borderColor,
+            borderRadius: topRadius,
+          ),
+        ],
       ),
     );
   }
@@ -861,6 +863,7 @@ class _ListingDetailCompatibilitySectionState
   static Widget? _buildMatrixValueIcon(
     String iconKey, {
     required Color color,
+    bool compactRatingDisplay = false,
   }) {
     final parts = iconKey.split(":");
     if (parts.length != 2) return null;
@@ -877,6 +880,19 @@ class _ListingDetailCompatibilitySectionState
         children: [
           for (var i = 0; i < count; i++) Icon(icon, size: 12, color: color),
         ],
+      );
+    }
+
+    Widget ratingLabel(int count) {
+      return Text(
+        "$count/5",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+          height: 1,
+        ),
       );
     }
 
@@ -940,7 +956,8 @@ class _ListingDetailCompatibilitySectionState
       case "noise":
       case "sociability":
         final count = ratingValue();
-        return count == null ? null : ratingDots(count);
+        if (count == null) return null;
+        return compactRatingDisplay ? ratingLabel(count) : ratingDots(count);
       case "alcohol":
         switch (value) {
           case "non-drinker":
@@ -1352,11 +1369,12 @@ class _ListingDetailCompatibilitySectionState
     final isLightTheme = themeState.isLightTheme;
     final isBlueTheme = themeState.isBlueTheme;
     final useValueClusterFills = isLightTheme;
-    // Blue theme keeps the default container background and signals status via
+    // Light and blue themes keep plain cell backgrounds and signal status via
     // green/orange/red icon colors instead of tinted cell fills.
-    final useStatusIconColors = isBlueTheme;
+    final useStatusIconColors = isBlueTheme || isLightTheme;
     final notSpecifiedLabel = L10n.get("not_specified");
     final orderedUserIds = _orderedMatrixUserIds();
+    final compactMatrixRatings = orderedUserIds.length > 4;
     final cellsByRowAndUserId = {
       for (final row in widget.groupPreferenceMatrix)
         row: {
@@ -1547,6 +1565,7 @@ class _ListingDetailCompatibilitySectionState
       final visual = _buildMatrixValueIcon(
         iconKey,
         color: iconColor,
+        compactRatingDisplay: compactMatrixRatings,
       );
       if (visual == null) return valueText(value, status: status);
 
@@ -1564,6 +1583,16 @@ class _ListingDetailCompatibilitySectionState
           child: ExcludeSemantics(child: visual),
         ),
       );
+    }
+
+    Color matrixRowAlignmentSummaryColor(Color? accentColor) {
+      final base = accentColor ?? textColor;
+      // Light surfaces wash out faded accent tints — keep subtitle at full
+      // accent strength (warningDark / successDark) for readable contrast.
+      if (isLightTheme && accentColor != null) {
+        return accentColor;
+      }
+      return base.withValues(alpha: 0.75);
     }
 
     Widget matrixRowHeader(GroupPreferenceMatrixRow row) {
@@ -1614,9 +1643,7 @@ class _ListingDetailCompatibilitySectionState
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: (accentColor ?? textColor).withValues(
-                          alpha: 0.75,
-                        ),
+                        color: matrixRowAlignmentSummaryColor(accentColor),
                       ),
                     ),
                   ],

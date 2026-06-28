@@ -185,7 +185,9 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
 
     return Stack(
       children: [
-        paddedMapView,
+        Positioned.fill(
+          child: paddedMapView,
+        ),
       ],
     );
   }

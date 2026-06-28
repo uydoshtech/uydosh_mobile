@@ -322,7 +322,7 @@ class ConversationTile extends StatelessWidget {
     final groupTitleStyle = TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 15,
-      color: secondaryTextColor,
+      color: textColor,
     );
     final groupParticipantNames = _groupParticipantNames(
       conversation,
@@ -332,7 +332,7 @@ class ConversationTile extends StatelessWidget {
         ? Text(
             groupParticipantNames,
             style: groupTitleStyle,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )
         : ConversationListingTitleWithCategoryIcon(
@@ -539,10 +539,10 @@ class ConversationTile extends StatelessWidget {
                   PulseThenBlinkDotWidget(
                     trigger: conversation.unreadCount ?? 0,
                     color: unreadColor,
-                    size: 11,
+                    size: 22,
                     blinkDuration: const Duration(milliseconds: 750),
                     borderColor: Theme.of(context).colorScheme.surface,
-                    borderWidth: 1.5,
+                    borderWidth: 3,
                   ),
                   const SizedBox(width: 10),
                 ],

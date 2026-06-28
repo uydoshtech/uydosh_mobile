@@ -244,8 +244,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   @override
   void initState() {
     super.initState();
-    _canvasPropsNotifier = ValueNotifier(_buildCanvasProps());
-    _overlayPropsNotifier = ValueNotifier(_buildOverlayProps());
     final layerDefaults = ClientMapLayerDefaultsConfig.defaults.value;
     _showDistrictLayer = !isAndroidDevice && layerDefaults.districts;
     _metroLayerMode = !isAndroidDevice && layerDefaults.metro
@@ -264,11 +262,16 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     if (_hasMapSearchFilters) {
       _loadResults(showLoading: false);
       _showFilterRibbon = _filterRibbonEnabled;
+    } else if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
+      _isLoading = false;
+      _showFilterRibbon = false;
     } else {
       _result = const _SearchMapResult(pins: [], total: 0);
       _isLoading = false;
       _showFilterRibbon = false;
     }
+    _canvasPropsNotifier = ValueNotifier(_buildCanvasProps());
+    _overlayPropsNotifier = ValueNotifier(_buildOverlayProps());
     if (!isAndroidDevice || _showUniversitiesLayer) {
       _loadUniversityMarkers();
     }
@@ -1273,7 +1276,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.embedded) {
-      return _buildBody(context);
+      return SizedBox.expand(child: _buildBody(context));
     }
     return Scaffold(
       appBar: PreferredSize(

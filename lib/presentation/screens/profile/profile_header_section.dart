@@ -129,6 +129,28 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
     return "@$username";
   }
 
+  InlineSpan _profileHeaderDotSeparator(BuildContext context) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: SizedBox(
+          width: 4,
+          height: 4,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurfaceVariant
+                  .withValues(alpha: 0.45),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _pickAndUploadAvatar() async {
     if (_uploadingAvatar || widget.userBlocked) return;
     HapticFeedbackUtils.impact();
@@ -248,66 +270,50 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                   ],
                 ),
               ),
-              if (displayName.isNotEmpty) ...[
+              if (displayName.isNotEmpty || telegramHandle != null) ...[
                 const SizedBox(height: 8),
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
-                        text: "#${widget.profile.userId}",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant
-                              .withValues(alpha: 0.72),
-                        ),
-                      ),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: SizedBox(
-                            width: 4,
-                            height: 4,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant
-                                    .withValues(alpha: 0.45),
-                              ),
-                            ),
+                      if (displayName.isNotEmpty) ...[
+                        TextSpan(
+                          text: "#${widget.profile.userId}",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.72),
                           ),
                         ),
-                      ),
-                      TextSpan(
-                        text: displayName,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        _profileHeaderDotSeparator(context),
+                        TextSpan(
+                          text: displayName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
-                      ),
+                      ],
+                      if (telegramHandle != null) ...[
+                        if (displayName.isNotEmpty)
+                          _profileHeaderDotSeparator(context),
+                        TextSpan(
+                          text: telegramHandle,
+                          style: TextStyle(
+                            fontSize: displayName.isNotEmpty ? 18 : 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   textAlign: TextAlign.center,
                 ),
-              ],
-              if (telegramHandle != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  telegramHandle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                if (telegramHandle != null) const SizedBox(height: 10),
               ],
               SizedBox(
                 height: _followCountsRowHeight,

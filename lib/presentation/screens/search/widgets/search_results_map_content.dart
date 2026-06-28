@@ -94,38 +94,44 @@ class _SearchResultsMapBody extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              ValueListenableBuilder<_SearchMapCanvasProps>(
-                valueListenable: canvasListenable,
-                builder: (context, canvas, _) {
-                  return _SearchMapCanvas(
-                    props: canvas,
-                    onMapBackgroundTap: onMapBackgroundTap,
-                    onSelectPin: onSelectPin,
-                    onSelectPinGroup: onSelectPinGroup,
-                    onSelectUniversityMarker: onSelectUniversityMarker,
-                    onSelectedMetroStationChanged: onSelectedMetroStationChanged,
-                  );
-                },
+              Positioned.fill(
+                child: ValueListenableBuilder<_SearchMapCanvasProps>(
+                  valueListenable: canvasListenable,
+                  builder: (context, canvas, _) {
+                    return _SearchMapCanvas(
+                      props: canvas,
+                      onMapBackgroundTap: onMapBackgroundTap,
+                      onSelectPin: onSelectPin,
+                      onSelectPinGroup: onSelectPinGroup,
+                      onSelectUniversityMarker: onSelectUniversityMarker,
+                      onSelectedMetroStationChanged:
+                          onSelectedMetroStationChanged,
+                    );
+                  },
+                ),
               ),
-              ValueListenableBuilder<_SearchMapOverlayProps>(
-                valueListenable: overlayListenable,
-                builder: (context, overlay, _) {
-                  return _SearchMapOverlays(
-                    props: overlay,
-                    onOpenFeedView: onOpenFeedView,
-                    onOpenEmbeddedSearch: onOpenEmbeddedSearch,
-                    onRequestUserLocation: onRequestUserLocation,
-                    onToggleDistrictLayer: onToggleDistrictLayer,
-                    onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
-                    onToggleMetroLayerMode: onToggleMetroLayerMode,
-                    onToggleUniversitiesLayer: onToggleUniversitiesLayer,
-                    onToggleMapNightMode: onToggleMapNightMode,
-                    onClearSelectedPin: onClearSelectedPin,
-                    onClearSelectedUniversityMarker: onClearSelectedUniversityMarker,
-                    onClearSelectedMetroStation: onClearSelectedMetroStation,
-                    onOpenPin: onOpenPin,
-                  );
-                },
+              Positioned.fill(
+                child: ValueListenableBuilder<_SearchMapOverlayProps>(
+                  valueListenable: overlayListenable,
+                  builder: (context, overlay, _) {
+                    return _SearchMapOverlays(
+                      props: overlay,
+                      onOpenFeedView: onOpenFeedView,
+                      onOpenEmbeddedSearch: onOpenEmbeddedSearch,
+                      onRequestUserLocation: onRequestUserLocation,
+                      onToggleDistrictLayer: onToggleDistrictLayer,
+                      onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
+                      onToggleMetroLayerMode: onToggleMetroLayerMode,
+                      onToggleUniversitiesLayer: onToggleUniversitiesLayer,
+                      onToggleMapNightMode: onToggleMapNightMode,
+                      onClearSelectedPin: onClearSelectedPin,
+                      onClearSelectedUniversityMarker:
+                          onClearSelectedUniversityMarker,
+                      onClearSelectedMetroStation: onClearSelectedMetroStation,
+                      onOpenPin: onOpenPin,
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -168,74 +174,80 @@ class _SearchMapCanvas extends StatelessWidget {
         viewToggleGap -
         safeAreaBottom;
 
-    return Positioned(
-      left: 0,
-      top: 0,
-      right: 0,
-      bottom: canvas.mapBottomInset,
-      child: MediaQuery.removePadding(
-        context: context,
-        removeBottom: canvas.mapBottomInset > 0,
-        child: RepaintBoundary(
-          child: YandexMapWidget(
-            apiKey: AppConfig.yandexMapsApiKey,
-            pins: canvas.result.pins,
-            universityMarkers: canvas.universityMarkers,
-            selectedUniversityMarkerId: canvas.selectedUniversityMarkerId,
-            selectedMetroStationId: canvas.selectedMetroStationId,
-            userUniversityMarkerId: canvas.userUniversityMarkerId,
-            selectedUniversityZoomFocusId: canvas.selectedUniversityZoomFocusId,
-            selectedListingId: canvas.selectedListingId,
-            selectedListingGroupIds: canvas.selectedListingGroupIds,
-            title: context.l10n.search_results,
-            height: double.infinity,
-            cameraOptions: YandexMapCameraOptions(
-              moveOnTargetChange: canvas.activeMapSearch &&
-                  (canvas.result.pins.isNotEmpty ||
-                      (canvas.locationId != null && canvas.locationId! > 0)),
-              includeUniversityMarkersInCamera: false,
-              fitCityWhenNoPins: !canvas.activeMapSearch,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mapHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.sizeOf(context).height;
+        return MediaQuery.removePadding(
+          context: context,
+          removeBottom: canvas.mapBottomInset > 0,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: canvas.mapBottomInset),
+            child: RepaintBoundary(
+              child: YandexMapWidget(
+                key: const ValueKey("search-results-yandex-map"),
+                apiKey: AppConfig.yandexMapsApiKey,
+                pins: canvas.result.pins,
+                universityMarkers: canvas.universityMarkers,
+                selectedUniversityMarkerId: canvas.selectedUniversityMarkerId,
+                selectedMetroStationId: canvas.selectedMetroStationId,
+                userUniversityMarkerId: canvas.userUniversityMarkerId,
+                selectedUniversityZoomFocusId:
+                    canvas.selectedUniversityZoomFocusId,
+                selectedListingId: canvas.selectedListingId,
+                selectedListingGroupIds: canvas.selectedListingGroupIds,
+                title: context.l10n.search_results,
+                height: mapHeight,
+                cameraOptions: YandexMapCameraOptions(
+                  moveOnTargetChange: canvas.activeMapSearch &&
+                      (canvas.result.pins.isNotEmpty ||
+                          (canvas.locationId != null && canvas.locationId! > 0)),
+                  includeUniversityMarkersInCamera: false,
+                  fitCityWhenNoPins: !canvas.activeMapSearch,
+                ),
+                showDefaultPlacemark: false,
+                nightModeEnabled: mapNightModeEnabled,
+                walkRadiusMinutes: canvas.walkRadiusMinutes.minutes,
+                tooltipOptions: const YandexMapTooltipOptions(
+                  showUniversityMarker: false,
+                  showMetroStation: false,
+                ),
+                layerOptions: YandexMapLayerOptions(
+                  showUserLocation: false,
+                  showDistrictLayer: canvas.showDistrictLayer,
+                  highlightedLocationId: canvas.activeMapSearch &&
+                          canvas.locationId != null &&
+                          canvas.locationId! > 0
+                      ? canvas.locationId
+                      : null,
+                  showMetroStationsLayer: canvas.metroLayerMode.showsStations,
+                  metroStationLineId: canvas.metroLayerMode.lineId,
+                  showGroceryStoresLayer: canvas.showGroceryStoresLayer,
+                  showBusStopsLayer: canvas.showBusStopsLayer,
+                ),
+                userLocationRequestToken: canvas.userLocationRequestToken,
+                userLocationLatitude: canvas.userLocationLatitude,
+                userLocationLongitude: canvas.userLocationLongitude,
+                showLoadingPlaceholderContent: false,
+                zoomControlsOptions: YandexMapZoomControlsOptions(
+                  right: canvas.placeViewToggleAtBottom
+                      ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
+                      : null,
+                  bottom: canvas.placeViewToggleAtBottom
+                      ? zoomControlsBottom.clamp(0.0, double.infinity)
+                      : null,
+                ),
+                onSelectedMetroStationChanged: onSelectedMetroStationChanged,
+                onMapTap: onMapBackgroundTap,
+                onPinTap: onSelectPin,
+                onPinGroupTap: onSelectPinGroup,
+                onUniversityMarkerTap: onSelectUniversityMarker,
+              ),
             ),
-            showDefaultPlacemark: false,
-            nightModeEnabled: mapNightModeEnabled,
-            walkRadiusMinutes: canvas.walkRadiusMinutes.minutes,
-            tooltipOptions: const YandexMapTooltipOptions(
-              showUniversityMarker: false,
-              showMetroStation: false,
-            ),
-            layerOptions: YandexMapLayerOptions(
-              showUserLocation: false,
-              showDistrictLayer: canvas.showDistrictLayer,
-              highlightedLocationId: canvas.activeMapSearch &&
-                      canvas.locationId != null &&
-                      canvas.locationId! > 0
-                  ? canvas.locationId
-                  : null,
-              showMetroStationsLayer: canvas.metroLayerMode.showsStations,
-              metroStationLineId: canvas.metroLayerMode.lineId,
-              showGroceryStoresLayer: canvas.showGroceryStoresLayer,
-              showBusStopsLayer: canvas.showBusStopsLayer,
-            ),
-            userLocationRequestToken: canvas.userLocationRequestToken,
-            userLocationLatitude: canvas.userLocationLatitude,
-            userLocationLongitude: canvas.userLocationLongitude,
-            showLoadingPlaceholderContent: false,
-            zoomControlsOptions: YandexMapZoomControlsOptions(
-              right: canvas.placeViewToggleAtBottom
-                  ? 16 + ((viewToggleWidth - zoomControlsWidth) / 2)
-                  : null,
-              bottom: canvas.placeViewToggleAtBottom
-                  ? zoomControlsBottom.clamp(0.0, double.infinity)
-                  : null,
-            ),
-            onSelectedMetroStationChanged: onSelectedMetroStationChanged,
-            onMapTap: onMapBackgroundTap,
-            onPinTap: onSelectPin,
-            onPinGroupTap: onSelectPinGroup,
-            onUniversityMarkerTap: onSelectUniversityMarker,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -443,10 +455,9 @@ class _SearchMapOverlays extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 4),
                       child: mapThemeButton,
                     ),
-                    const Spacer(),
-                    Flexible(
+                    Expanded(
                       child: Align(
-                        alignment: Alignment.centerRight,
+                        alignment: Alignment.topRight,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -455,35 +466,23 @@ class _SearchMapOverlays extends StatelessWidget {
                               feedViewButton,
                               const SizedBox(height: viewToggleGap),
                             ],
-                            if (metroStation != null ||
-                                universityMarker != null) ...[
-                              _WalkRadiusMinutesButton(
-                                minutes: overlay.walkRadiusMinutes.minutes,
-                                active: true,
-                                height: viewToggleHeight,
-                                borderSide: mapOverlayButtonBorder,
-                                onPressed: onToggleWalkRadiusMinutes,
-                              ),
-                              const SizedBox(height: viewToggleGap),
-                            ],
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _MapLayerToggleButtons(
-                                  metroLayerMode: overlay.metroLayerMode,
-                                  showDistrictLayer: overlay.showDistrictLayer,
-                                  showUniversitiesLayer:
-                                      overlay.showUniversitiesLayer,
-                                  onToggleMetroLayerMode:
-                                      onToggleMetroLayerMode,
-                                  onToggleDistrictLayer: onToggleDistrictLayer,
-                                  onToggleUniversitiesLayer:
-                                      onToggleUniversitiesLayer,
-                                  width: viewToggleWidth,
-                                  height: viewToggleHeight,
-                                  gap: viewToggleGap,
-                                ),
-                              ],
+                            _MapLayerToggleButtons(
+                              walkRadiusMinutes: overlay.walkRadiusMinutes,
+                              walkRadiusActive: metroStation != null ||
+                                  universityMarker != null,
+                              metroLayerMode: overlay.metroLayerMode,
+                              showDistrictLayer: overlay.showDistrictLayer,
+                              showUniversitiesLayer:
+                                  overlay.showUniversitiesLayer,
+                              onToggleWalkRadiusMinutes:
+                                  onToggleWalkRadiusMinutes,
+                              onToggleMetroLayerMode: onToggleMetroLayerMode,
+                              onToggleDistrictLayer: onToggleDistrictLayer,
+                              onToggleUniversitiesLayer:
+                                  onToggleUniversitiesLayer,
+                              width: viewToggleWidth,
+                              height: viewToggleHeight,
+                              gap: viewToggleGap,
                             ),
                           ],
                         ),
@@ -706,9 +705,12 @@ class _NoMapResultsTile extends StatelessWidget {
 
 class _MapLayerToggleButtons extends StatelessWidget {
   const _MapLayerToggleButtons({
+    required this.walkRadiusMinutes,
+    required this.walkRadiusActive,
     required this.metroLayerMode,
     required this.showDistrictLayer,
     required this.showUniversitiesLayer,
+    required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
     required this.onToggleDistrictLayer,
     required this.onToggleUniversitiesLayer,
@@ -717,9 +719,12 @@ class _MapLayerToggleButtons extends StatelessWidget {
     required this.gap,
   });
 
+  final _WalkRadiusMinutes walkRadiusMinutes;
+  final bool walkRadiusActive;
   final _MetroLayerMode metroLayerMode;
   final bool showDistrictLayer;
   final bool showUniversitiesLayer;
+  final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleUniversitiesLayer;
@@ -735,6 +740,17 @@ class _MapLayerToggleButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (walkRadiusActive) ...[
+          _WalkRadiusMinutesButton(
+            minutes: walkRadiusMinutes.minutes,
+            active: true,
+            width: width,
+            height: height,
+            borderSide: _border,
+            onPressed: onToggleWalkRadiusMinutes,
+          ),
+          SizedBox(width: gap),
+        ],
         _MetroLayerModeButton(
           mode: metroLayerMode,
           width: width,
@@ -863,6 +879,7 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
   const _WalkRadiusMinutesButton({
     required this.minutes,
     required this.active,
+    required this.width,
     required this.height,
     required this.borderSide,
     required this.onPressed,
@@ -870,13 +887,13 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
 
   final int minutes;
   final bool active;
+  final double width;
   final double height;
   final BorderSide borderSide;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final label = context.l10n.map_walk_radius_button_label(minutes);
     final tooltip = context.l10n.map_walk_radius_button_tooltip(minutes);
     final radius = BorderRadius.circular(height / 2);
     final backgroundColor = active ? Colors.black : Colors.white;
@@ -899,8 +916,8 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
             overlayColor: const WidgetStatePropertyAll(Colors.transparent),
             onTap: onPressed,
             child: Container(
+              width: width,
               height: height,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 borderRadius: radius,
                 border: Border.fromBorderSide(borderSide),
@@ -924,12 +941,12 @@ class _WalkRadiusMinutesButton extends StatelessWidget {
                     size: 14,
                     color: foregroundColor,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 3),
                   Text(
-                    label,
+                    "$minutes",
                     style: TextStyle(
                       color: foregroundColor,
-                      fontSize: 12,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),

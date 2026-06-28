@@ -320,15 +320,15 @@ class _FloatingGroupChatButton extends StatelessWidget {
         ),
         if (hasUnread)
           Positioned(
-            right: 2,
-            top: -2,
+            right: -3,
+            top: -7,
             child: PulseThenBlinkDotWidget(
               trigger: unreadTrigger,
               color: unreadColor,
-              size: 10,
+              size: 20,
               blinkDuration: const Duration(milliseconds: 750),
               borderColor: surface,
-              borderWidth: 1.5,
+              borderWidth: 3,
             ),
           ),
       ],
