@@ -5,11 +5,13 @@ class _CenteredMapStatus extends StatelessWidget {
     required this.icon,
     required this.title,
     this.loading = false,
+    this.loaderColor,
   });
 
   final IconData icon;
   final String title;
   final bool loading;
+  final Color? loaderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class _CenteredMapStatus extends StatelessWidget {
             if (loading)
               HouseLoadingIndicator(
                 size: 40,
-                color: Colors.black,
+                color: loaderColor,
               )
             else
               ThemeIcon(icon, size: 48, color: theme.colorScheme.primary),

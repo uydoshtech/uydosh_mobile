@@ -718,11 +718,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   Widget _buildBody(BuildContext context) {
     final result = _result;
+    final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
+    final mapNightModeEnabled = _mapNightModeOverride ?? appNightModeEnabled;
+    final mapLoaderColor = mapNightModeEnabled ? Colors.white : Colors.black;
     if (_isLoading && result == null) {
       return _CenteredMapStatus(
         icon: Icons.map_outlined,
         title: context.l10n.loading_map,
         loading: true,
+        loaderColor: mapLoaderColor,
       );
     }
 
@@ -737,6 +741,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         icon: Icons.map_outlined,
         title: context.l10n.loading_map,
         loading: true,
+        loaderColor: mapLoaderColor,
       );
     }
 
