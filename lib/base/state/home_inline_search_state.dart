@@ -17,11 +17,11 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// guests without a backend session; logout clears the pref).
   static const String activePrefsKey = "home_inline_search_active";
 
-  /// When true, the user closed the filter-chip ribbon while filters may still
-  /// be non-default. [HomeScreen] skips the post-start heuristic that would
-  /// otherwise reopen the ribbon; cleared when they commit from the search
-  /// sheet or we restore `activePrefsKey` from prefs. Scoped per user (or
-  /// guest) so logout/login does not forget a deliberate dismiss.
+  /// When true, the user closed the filter-chip ribbon. [HomeScreen] skips the
+  /// post-start heuristic that would otherwise reopen the ribbon; cleared when
+  /// they commit from the search sheet or we restore `activePrefsKey` from
+  /// prefs. Scoped per user (or guest) so logout/login does not forget a
+  /// deliberate dismiss.
   static const String ribbonUserDismissedPrefsKey =
       "home_inline_search_ribbon_user_dismissed";
 
@@ -42,7 +42,9 @@ class HomeInlineSearchState extends ChangeNotifier {
   }
 
   Future<int?> _currentRibbonDismissScopeUserId() async {
-    if (!await SessionManager.isAuthenticated()) return null;
+    // Keyed by backend user id whenever it is in prefs — do not gate on
+    // [SessionManager.isAuthenticated], which needs token + last_login and
+    // can lag behind Firebase auth during login.
     return SessionManager.getUserId();
   }
 
@@ -52,7 +54,12 @@ class HomeInlineSearchState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> hydrateRibbonDismissedFromPrefs() async {
+  Future<void> hydrateRibbonDismissedFromPrefs({
+    bool awaitUserScope = false,
+  }) async {
+    if (awaitUserScope) {
+      await SessionManager.waitForUserId();
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = await _currentRibbonDismissScopeUserId();

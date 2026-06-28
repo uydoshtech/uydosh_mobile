@@ -2,6 +2,7 @@ import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -145,7 +146,7 @@ class _LocationPickerState extends State<LocationPicker> {
       final loadingChild = Center(
         child: CircularProgressIndicator(color: theme.colorScheme.primary),
       );
-      if (widget.useGlassPlate) {
+      if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
         return LiquidGlassPlate(
           height: widget.height,
           borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
@@ -317,7 +318,7 @@ class _LocationPickerState extends State<LocationPicker> {
       );
     }
 
-    if (widget.useGlassPlate) {
+    if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
       return LiquidGlassPlate(
         key: widget.containerKey != null ? ValueKey(widget.containerKey) : null,
         height: widget.height,

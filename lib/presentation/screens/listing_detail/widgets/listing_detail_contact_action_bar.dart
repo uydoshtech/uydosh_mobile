@@ -103,9 +103,7 @@ class ListingDetailContactActionBar extends StatelessWidget {
   // On Android (especially low-end devices) that's a heavy per-frame GPU cost,
   // so fall back to the opaque bar there — same trade-off the feed already
   // makes for Android glass surfaces.
-  bool _useLiquidGlass() =>
-      !isAndroidDevice &&
-      (ThemeState().isBlueTheme || ThemeState().isLightTheme);
+  bool _useLiquidGlass() => ThemeState().usesLiquidGlassChrome;
 
   Color _getOpaqueSurfaceColor(BuildContext context) =>
       Theme.of(context).colorScheme.surface;

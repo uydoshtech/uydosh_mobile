@@ -153,7 +153,9 @@ class NeumorphicSegmentedSwitch<T> extends StatelessWidget {
         final isLightTheme = themeState.isLightTheme;
         // Default light-theme controls stay pale unless a caller explicitly
         // asks for the frosted glass plate.
-        final useGlassPlate = liquidGlass && (forceGlassPlate || !isLightTheme);
+        final useGlassPlate = liquidGlass &&
+            themeState.usesLiquidGlassChrome &&
+            (forceGlassPlate || !isLightTheme);
         final selectedTextColor = themeState.selectedTabTextColor;
         final unselectedTextColor = themeState.unselectedTabTextColor;
 

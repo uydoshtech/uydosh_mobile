@@ -3,6 +3,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
@@ -447,7 +448,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           );
         }
 
-        if (widget.useGlassPlate) {
+        if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
           Widget plate = LiquidGlassPlate(
             borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
             child: content,

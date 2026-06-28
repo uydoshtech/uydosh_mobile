@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -219,7 +220,7 @@ class _GenderPickerState extends State<GenderPicker> {
         ],
       );
 
-    if (widget.useGlassPlate) {
+    if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
       return LiquidGlassPlate(
         height: widget.height,
         borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,

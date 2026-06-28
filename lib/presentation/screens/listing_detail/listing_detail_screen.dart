@@ -2525,7 +2525,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           final theme = Theme.of(context);
           final appBarTheme = theme.appBarTheme;
           final useLiquidGlassAppBar =
-              themeState.isBlueTheme || themeState.isLightTheme;
+              themeState.usesLiquidGlassChrome;
           return Scaffold(
             extendBodyBehindAppBar: useLiquidGlassAppBar,
             // Mirror [extendBodyBehindAppBar] for the bottom bar so the

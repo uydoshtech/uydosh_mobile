@@ -861,7 +861,7 @@ class MainNavigationState extends State<MainNavigation>
       builder: (context, _) {
         final themeState = ThemeState();
         final useLiquidGlassAppBar =
-            themeState.isBlueTheme || themeState.isLightTheme;
+            themeState.usesLiquidGlassChrome;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
           key: _scaffoldKey,

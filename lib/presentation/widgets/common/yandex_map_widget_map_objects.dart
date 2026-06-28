@@ -79,6 +79,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedSelectedListingTypeIconBytes.length,
       _cachedListingGroupIconBytes.length,
       _cachedMetroStationIconBytes.length,
+      _cachedSelectedMetroStationIconBytes.length,
       _cachedMetroWalkAreaLabelIconBytes.length,
       Object.hashAll(_groceryStoreMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_busStopMarkers.map(_poiMarkerCacheKey)),
@@ -592,7 +593,9 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final radiusColor =
         widget.nightModeEnabled ? Colors.white : const Color(0xFF1E88E5);
     return CircleMapObject(
-      mapId: MapObjectId("tashkent_metro_station_${station.id}_walking_radius"),
+      mapId: MapObjectId(
+        "tashkent_metro_station_${station.id}_walking_radius_${_metroLayerScopeKey}",
+      ),
       circle: Circle(
         center: point,
         radius: _YandexMapWidgetState._metroStationWalkingRadiusMeters,
@@ -617,7 +620,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     if (iconBytes != null) {
       return PlacemarkMapObject(
         mapId: MapObjectId(
-          "tashkent_metro_station_${station.id}_walking_radius_label",
+          "tashkent_metro_station_${station.id}_walking_radius_label_${_metroLayerScopeKey}",
         ),
         point: labelPoint,
         zIndex: 1.1,
@@ -634,7 +637,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
     return PlacemarkMapObject(
       mapId: MapObjectId(
-        "tashkent_metro_station_${station.id}_walking_radius_label",
+        "tashkent_metro_station_${station.id}_walking_radius_label_${_metroLayerScopeKey}",
       ),
       point: labelPoint,
       zIndex: 1.1,
@@ -670,14 +673,20 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       longitude: station.longitude!,
     );
     final selected = _selectedMetroStation?.id == station.id;
-    final iconBytes = _cachedMetroStationIconBytes[station.line];
+    final iconBytes = selected
+        ? _cachedSelectedMetroStationIconBytes[station.line]
+        : _cachedMetroStationIconBytes[station.line];
     if (iconBytes == null) {
       return CircleMapObject(
-        mapId: MapObjectId("tashkent_metro_station_${station.id}_circle"),
+        mapId: MapObjectId(
+          "tashkent_metro_station_${station.id}_circle_${_metroLayerScopeKey}",
+        ),
         circle: Circle(center: point, radius: selected ? 270 : 180),
         zIndex: selected ? 1.35 : 1.15,
         consumeTapEvents: true,
-        strokeWidth: selected ? 4.5 : 3.0,
+        strokeWidth: selected
+            ? _YandexMapWidgetState._selectedMetroStationBorderPx
+            : _YandexMapWidgetState._metroStationBorderPx,
         strokeColor: (station.line == 4 ? Colors.black : Colors.white)
             .withValues(alpha: 0.95),
         fillColor: _metroLineColor(station.line).withValues(alpha: 0.9),
@@ -686,11 +695,13 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     }
 
     final key =
-        "${station.id}_${station.line}_${selected ? "selected" : "base"}";
+        "${_metroLayerScopeKey}_${station.id}_${station.line}_${selected ? "selected" : "base"}";
     final template = _cachedMetroStationPlacemarkTemplates.putIfAbsent(
       key,
       () => PlacemarkMapObject(
-        mapId: MapObjectId("tashkent_metro_station_${station.id}_placemark"),
+        mapId: MapObjectId(
+          "tashkent_metro_station_${station.id}_placemark_${_metroLayerScopeKey}",
+        ),
         point: point,
         zIndex: selected ? 1.35 : 1.2,
         opacity: 1.0,
@@ -699,7 +710,9 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           PlacemarkIconStyle(
             image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
-            scale: selected ? 0.93 : 0.62,
+            scale: selected
+                ? _YandexMapWidgetState._selectedMetroStationPlacemarkScale
+                : _YandexMapWidgetState._metroStationPlacemarkScale,
           ),
         ),
       ),

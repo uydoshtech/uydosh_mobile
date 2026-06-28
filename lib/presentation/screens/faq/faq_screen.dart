@@ -88,7 +88,7 @@ class _FaqScreenState extends State<FaqScreen> {
   @override
   Widget build(BuildContext context) {
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final appBarTheme = Theme.of(context).appBarTheme;
     final topInset =
         useLiquidGlass ? (MediaQuery.paddingOf(context).top + kToolbarHeight) : 0.0;

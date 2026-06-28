@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 
@@ -29,6 +31,35 @@ class LiquidGlassPlate extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final content = Padding(
+      padding: padding ?? EdgeInsets.zero,
+      child: child,
+    );
+
+    if (!ThemeState().usesLiquidGlassChrome) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          clipBehavior: clipBehavior,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              color: theme.colorScheme.surface,
+              border: Border.all(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: isDark ? 0.12 : 0.14,
+                ),
+                width: 0.6,
+              ),
+            ),
+            child: content,
+          ),
+        ),
+      );
+    }
+
     final enableGlass = LiquidGlassRendering.effectsEnabled(context);
     final plateShadows = UiPerformancePolicy.solidColorsPreferredForDevice
         ? const <BoxShadow>[]
@@ -40,11 +71,6 @@ class LiquidGlassPlate extends StatelessWidget {
               offset: const Offset(0, 6),
             ),
           ];
-
-    final content = Padding(
-      padding: padding ?? EdgeInsets.zero,
-      child: child,
-    );
 
     return SizedBox(
       width: width,

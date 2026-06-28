@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 
 /// Shared theme/color helpers for listing detail widgets.
 /// Centralizes theme-dependent color logic for consistent styling.
@@ -30,8 +31,7 @@ class ListingDetailThemeHelper {
   }
 
   /// Frosted glass tiles on listing detail (matches inbox + alerts).
-  static bool get useGlassTiles =>
-      ThemeState().isBlueTheme || ThemeState().isLightTheme;
+  static bool get useGlassTiles => ThemeState().usesLiquidGlassChrome;
 
   static Color get locationTextColor {
     if (ThemeState().isBlueTheme) return AppColors.textLight;

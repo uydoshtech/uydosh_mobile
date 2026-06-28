@@ -931,10 +931,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
       },
-      onSelectMetroLayerMode: (mode) {
+      onToggleMetroLayerMode: () {
         setState(() {
-          _metroLayerMode = mode;
-          if (!mode.showsStations) {
+          _metroLayerMode = _metroLayerMode.next;
+          if (!_metroLayerMode.showsStations) {
             _hasSelectedMetroStation = false;
           }
         });

@@ -899,6 +899,21 @@ class SearchFiltersState extends ChangeNotifier {
     if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
+  /// Clears local filter prefs and the backend snapshot when the user dismisses
+  /// the home filter ribbon (X). Profile-derived defaults are rebuilt on the
+  /// next [ensureDefaultFiltersBuiltAndSaved] call.
+  Future<void> dismissPersistedSearchFilters() async {
+    _remoteSaveDebounce?.cancel();
+    _remoteSaveDebounce = null;
+    await clearAllFilters(persistRemote: false);
+    if (!await SessionManager.isAuthenticated()) return;
+    try {
+      await getIt<IUserSearchFiltersService>().clearMe();
+    } catch (e) {
+      logger.d("SearchFiltersState: clear remote filters failed: $e");
+    }
+  }
+
   // Clear all search filters
   Future<void> clearAllFilters({
     bool persistRemote = true,

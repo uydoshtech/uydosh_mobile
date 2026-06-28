@@ -1437,7 +1437,7 @@ class _EditListingScreenState extends State<EditListingScreen>
       builder: (context, _) {
         final themeState = ThemeState();
         final useLiquidGlassAppBar =
-            themeState.isBlueTheme || themeState.isLightTheme;
+            themeState.usesLiquidGlassChrome;
         final appBarTheme = theme.appBarTheme;
         // When [extendBodyBehindAppBar] is true the body starts at y=0, so the
         // top padding must clear both the status bar (mainShellGlassExtraTopInset)

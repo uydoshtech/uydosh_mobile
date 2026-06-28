@@ -58,7 +58,7 @@ class PushedMessagesInboxScaffold extends StatelessWidget {
       builder: (context, _) {
         final themeState = ThemeState();
         final useLiquidGlassAppBar =
-            themeState.isBlueTheme || themeState.isLightTheme;
+            themeState.usesLiquidGlassChrome;
         final appBarTheme = Theme.of(context).appBarTheme;
         return Scaffold(
           backgroundColor: themeState.backgroundColor,

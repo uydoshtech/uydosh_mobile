@@ -661,7 +661,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final effectiveProfile = data.profile ?? _cachedUserProfile;
               final themeState = ThemeState();
               final useLiquidGlassAppBar =
-                  themeState.isBlueTheme || themeState.isLightTheme;
+                  themeState.usesLiquidGlassChrome;
 
               if (effectiveProfile == null &&
                   data.isLoading &&

@@ -1285,8 +1285,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     final tooltipsEnabled = TooltipsState().enabled;
     final push = getIt<IPushNotificationService>();
     final themeState = ThemeState();
-    final useLiquidGlassAppBar =
-        themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlassAppBar = themeState.usesLiquidGlassChrome;
     final showPushEnableCard = _forceShowPushEnableCard ||
         (push.isSupported &&
             _pushStatus != null &&
@@ -1394,8 +1393,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                                   _itemsBeingRemoved.contains(a.id);
                               const duration = Duration(milliseconds: 300);
 
-                              final useLiquidGlass = themeState.isBlueTheme ||
-                                  themeState.isLightTheme;
+                              final useLiquidGlass =
+                                  themeState.usesLiquidGlassChrome;
                               final surfaceColor = themeState.isLightTheme
                                   ? themeState.cardColor
                                   : (themeState.isBlueTheme

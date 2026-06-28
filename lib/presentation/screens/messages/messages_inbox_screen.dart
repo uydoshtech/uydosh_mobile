@@ -793,7 +793,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
         return Scaffold(
           extendBodyBehindAppBar: widget.showCustomHeader &&
-              (themeState.isBlueTheme || themeState.isLightTheme),
+              themeState.usesLiquidGlassChrome,
           backgroundColor: backgroundColor,
           appBar: widget.showCustomHeader ? _buildCustomHeader() : null,
           body: _buildContent(),
@@ -879,7 +879,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
 
   PreferredSizeWidget _buildCustomHeader() {
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final appBarTheme = Theme.of(context).appBarTheme;
     final appBarBackgroundColor =
         appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface;
@@ -1065,7 +1065,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
         enableInboxToggleAnim ? inboxToggleAnimDuration : Duration.zero;
 
     final shellGlassTop = widget.showCustomHeader
-        ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
+        ? (ThemeState().usesLiquidGlassChrome
             // When we render a liquid-glass app bar (transparent + blurred),
             // allow content to scroll behind it (like Home) so the header
             // actually blurs real content instead of a flat background.
@@ -1158,7 +1158,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     List<ConversationSummary> conversations,
   ) {
     final shellGlassTop = widget.showCustomHeader
-        ? ((ThemeState().isBlueTheme || ThemeState().isLightTheme)
+        ? (ThemeState().usesLiquidGlassChrome
             ? ThemeState().mainShellGlassExtraTopInset(context)
             : 0.0)
         : ThemeState().mainShellGlassExtraTopInset(context);
@@ -1210,7 +1210,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
           cardColor: cardColor,
         );
 
-        if (!(themeState.isBlueTheme || themeState.isLightTheme)) {
+        if (!themeState.usesLiquidGlassChrome) {
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: switcher,
@@ -1282,7 +1282,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen>
     const height = 48.0;
     const thumbInset = 2.0;
     const innerRadius = 22.0;
-    final useGlassPlate = themeState.isBlueTheme || themeState.isLightTheme;
+    final useGlassPlate = themeState.usesLiquidGlassChrome;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1843,7 +1843,7 @@ class _PendingLandlordInviteInboxCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final title = invite.housingListingTitle?.trim();
     final fallbackTitle = invite.groupListingTitle?.trim();
     final bodyTextColor = themeState.isLightTheme

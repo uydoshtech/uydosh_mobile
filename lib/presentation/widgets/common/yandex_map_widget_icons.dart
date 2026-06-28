@@ -29,6 +29,7 @@ class _YandexMapSharedIconBytes {
     required this.darkListingTypeIconBytes,
     required this.selectedListingTypeIconBytes,
     required this.metroStationIconBytes,
+    required this.selectedMetroStationIconBytes,
   });
 
   final Uint8List defaultIconBytes;
@@ -48,6 +49,7 @@ class _YandexMapSharedIconBytes {
   final Map<String, Uint8List> darkListingTypeIconBytes;
   final Map<String, Uint8List> selectedListingTypeIconBytes;
   final Map<int, Uint8List> metroStationIconBytes;
+  final Map<int, Uint8List> selectedMetroStationIconBytes;
 }
 
 extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
@@ -221,17 +223,40 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
             shadowOffset: const Offset(0, 4),
           );
     final metroStationIconBytes = <int, Uint8List>{};
+    final selectedMetroStationIconBytes = <int, Uint8List>{};
     if (!reduceStartupIconWork) {
       for (final line in MetroCache.getAvailableLines()) {
+        final outlineColor = line == 4 ? Colors.black : Colors.white;
+        final iconStyle = (
+          backgroundColor: _metroLineColor(line),
+          outlineColor: outlineColor,
+          shadowColor: Colors.black.withValues(alpha: 0.28),
+          shadowBlurRadius: 9.0,
+          shadowOffset: const Offset(0, 4),
+        );
         metroStationIconBytes[line] = await _createIconBytes(
           Icons.directions_subway_rounded,
           96,
-          backgroundColor: _metroLineColor(line),
-          outlineColor: line == 4 ? Colors.black : Colors.white,
-          outlineWidth: 7,
-          shadowColor: Colors.black.withValues(alpha: 0.28),
-          shadowBlurRadius: 9,
-          shadowOffset: const Offset(0, 4),
+          backgroundColor: iconStyle.backgroundColor,
+          outlineColor: iconStyle.outlineColor,
+          outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
+            selected: false,
+          ),
+          shadowColor: iconStyle.shadowColor,
+          shadowBlurRadius: iconStyle.shadowBlurRadius,
+          shadowOffset: iconStyle.shadowOffset,
+        );
+        selectedMetroStationIconBytes[line] = await _createIconBytes(
+          Icons.directions_subway_rounded,
+          96,
+          backgroundColor: iconStyle.backgroundColor,
+          outlineColor: iconStyle.outlineColor,
+          outlineWidth: _YandexMapWidgetState._metroStationIconOutlineWidth(
+            selected: true,
+          ),
+          shadowColor: iconStyle.shadowColor,
+          shadowBlurRadius: iconStyle.shadowBlurRadius,
+          shadowOffset: iconStyle.shadowOffset,
         );
       }
     }
@@ -256,6 +281,8 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         selectedListingTypeIconBytes,
       ),
       metroStationIconBytes: Map.unmodifiable(metroStationIconBytes),
+      selectedMetroStationIconBytes:
+          Map.unmodifiable(selectedMetroStationIconBytes),
     );
   }
 

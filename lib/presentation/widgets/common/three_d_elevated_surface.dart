@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/state/animation_settings_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 
@@ -36,11 +36,8 @@ class ThreeDElevatedSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (useLiquidGlass) {
-      final disableAnimations =
-          MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-      final enableGlass = AnimationSettingsState().uiAnimationsEnabled &&
-          !disableAnimations &&
+    if (useLiquidGlass && !isAndroidDevice) {
+      final enableGlass = LiquidGlassRendering.effectsEnabled(context) &&
           enableBackdropBlur;
 
       return Container(

@@ -466,7 +466,7 @@ class _AdminListingModerationQueueScreenState
       builder: (context, child) {
         final themeState = ThemeState();
         final useLiquidGlass =
-            themeState.isBlueTheme || themeState.isLightTheme;
+            themeState.usesLiquidGlassChrome;
         final cardColor = themeState.cardColor;
         final textColor = themeState.cardTextColor;
         final secondaryTextColor = themeState.cardSecondaryTextColor;

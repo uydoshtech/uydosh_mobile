@@ -2,6 +2,7 @@ import "dart:math" as math;
 
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 
 class AnimatedFeaturedBorder extends StatefulWidget {
@@ -41,7 +42,8 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final shouldTick = TickerMode.of(context) &&
+    final shouldTick = !isAndroidDevice &&
+        TickerMode.of(context) &&
         UiPerformancePolicy.decorativeAnimationsEnabled(context);
     if (shouldTick && !_retained) {
       SharedFeaturedSweep.instance.retain();
@@ -63,6 +65,19 @@ class _AnimatedFeaturedBorderState extends State<AnimatedFeaturedBorder> {
 
   @override
   Widget build(BuildContext context) {
+    if (isAndroidDevice) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: widget.borderRadius,
+          border: Border.all(
+            width: widget.borderWidth,
+            color: Colors.orange.shade600,
+          ),
+        ),
+        child: widget.child,
+      );
+    }
+
     // The inner card (margin + child) doesn't depend on the animation tick,
     // so we hoist it into the AnimatedBuilder `child` slot. This means each
     // ~16ms frame only rebuilds the two outer DecoratedBox widgets (one

@@ -103,6 +103,22 @@ class SessionManager {
     return prefs.getInt(_userIdKey);
   }
 
+  /// Waits until [getUserId] returns non-null or [timeout] elapses.
+  ///
+  /// Used after login before reading prefs scoped by backend user id (e.g.
+  /// ribbon-dismiss flags) — Firebase auth can flip before the session write.
+  static Future<int?> waitForUserId({
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      final userId = await getUserId();
+      if (userId != null) return userId;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    return getUserId();
+  }
+
   // Get current user email
   static Future<String?> getUserEmail() async {
     final prefs = await SharedPreferences.getInstance();

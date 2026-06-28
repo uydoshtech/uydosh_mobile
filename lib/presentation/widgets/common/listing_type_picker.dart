@@ -5,6 +5,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
@@ -283,7 +284,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
         ],
       );
 
-    if (widget.useGlassPlate) {
+    if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
       return LiquidGlassPlate(
         height: widget.height,
         borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,

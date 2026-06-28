@@ -108,7 +108,7 @@ class _AdminListingOwnerConversationsScreenState
       builder: (context, child) {
         final themeState = ThemeState();
         final useLiquidGlass =
-            themeState.isBlueTheme || themeState.isLightTheme;
+            themeState.usesLiquidGlassChrome;
         final appBarBg = useLiquidGlass
             ? liquidGlassAppBarMaterialColor(context)
             : themeState.appBarBackgroundColor;

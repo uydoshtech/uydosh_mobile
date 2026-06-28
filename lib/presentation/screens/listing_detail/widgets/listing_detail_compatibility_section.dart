@@ -11,6 +11,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
@@ -826,7 +827,7 @@ class _ListingDetailCompatibilitySectionState
   static double _listingDetailScrollTopInset(BuildContext ctx) {
     final themeState = ThemeState();
     final useLiquidGlassAppBar =
-        themeState.isBlueTheme || themeState.isLightTheme;
+        themeState.usesLiquidGlassChrome;
     if (!useLiquidGlassAppBar) return 0;
     return MediaQuery.paddingOf(ctx).top + kToolbarHeight;
   }

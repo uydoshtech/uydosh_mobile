@@ -218,6 +218,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// Blocks [_onSearchFiltersStateChanged] from auto-opening the ribbon until
   /// the scoped dismiss flag is hydrated (logout clears session before prefs).
   bool _postLoginRibbonDismissHydrating = false;
+
+  /// True while [_rebootstrapAfterLogin] is running; blocks post-hydrate ribbon
+  /// auto-activation until dismiss prefs and feed bootstrap have finished.
+  bool _postLoginRebootstrapInFlight = false;
   // Tracks the previous value of [AuthenticationState.isAuthenticated] so
   // we react only to real transitions. Without this guard, the Firebase
   // auth listener firing during logout (local session is briefly still
@@ -315,7 +319,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Future<void> _bootstrapHomeSearchFilters() async {
-    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
+    final authenticated = await SessionManager.isAuthenticated();
+    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+      awaitUserScope: authenticated,
+    );
     await _searchFiltersState.initialize();
     if (!mounted) return;
     if (await SessionManager.isAuthenticated()) {
@@ -401,35 +408,42 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _rebootstrapAfterLogin() async {
     if (!mounted) return;
     if (!await SessionManager.isAuthenticated()) return;
-    await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
-    if (!mounted) return;
-    await _searchFiltersState.hydrateFromBackendForCurrentUser();
-    unawaited(PriceDisplaySettingsState().hydrateFromBackendForCurrentUser());
-    if (!mounted) return;
-    final builtDefaults =
-        await _searchFiltersState.ensureDefaultFiltersBuiltAndSaved();
-    if (!mounted) return;
-    final restored = await _restoreInlineSearchModeFromPrefs();
-    if (restored) {
-      _postLoginActivationDeadline = null;
-      return;
-    }
-    if (!mounted) return;
-    if (HomeInlineSearchState().ribbonDismissedByUser) {
-      _postLoginActivationDeadline = null;
-      _ensureUnfilteredBrowseFeed();
-      return;
-    }
-    if (widget.isSearchMode) return;
-    if (_inlineSearchActive || _inlineSearchClosing) return;
-    // Apply the current filters to the feed: freshly built defaults or the
-    // user's saved filters. If neither produced filters (e.g. hydrate hasn't
-    // landed yet), leave the post-login window open so
-    // [_onSearchFiltersStateChanged] can activate when a delayed hydrate
-    // notification arrives.
-    if (builtDefaults || _hasUserAppliedSearchCriteria()) {
-      _postLoginActivationDeadline = null;
-      _activateInlineSearch(persistActiveFlag: true);
+    _postLoginRebootstrapInFlight = true;
+    try {
+      await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+        awaitUserScope: true,
+      );
+      if (!mounted) return;
+      await _searchFiltersState.hydrateFromBackendForCurrentUser();
+      unawaited(PriceDisplaySettingsState().hydrateFromBackendForCurrentUser());
+      if (!mounted) return;
+      final builtDefaults =
+          await _searchFiltersState.ensureDefaultFiltersBuiltAndSaved();
+      if (!mounted) return;
+      final restored = await _restoreInlineSearchModeFromPrefs();
+      if (restored) {
+        _postLoginActivationDeadline = null;
+        return;
+      }
+      if (!mounted) return;
+      if (HomeInlineSearchState().ribbonDismissedByUser) {
+        _postLoginActivationDeadline = null;
+        _ensureUnfilteredBrowseFeed();
+        return;
+      }
+      if (widget.isSearchMode) return;
+      if (_inlineSearchActive || _inlineSearchClosing) return;
+      // Apply the current filters to the feed: freshly built defaults or the
+      // user's saved filters. If neither produced filters (e.g. hydrate hasn't
+      // landed yet), leave the post-login window open so
+      // [_onSearchFiltersStateChanged] can activate when a delayed hydrate
+      // notification arrives.
+      if (builtDefaults || _hasUserAppliedSearchCriteria()) {
+        _postLoginActivationDeadline = null;
+        _activateInlineSearch(persistActiveFlag: true);
+      }
+    } finally {
+      _postLoginRebootstrapInFlight = false;
     }
   }
 
@@ -537,7 +551,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _postLoginRibbonDismissHydrating = true;
         setState(() {});
         unawaited(() async {
-          await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs();
+          await HomeInlineSearchState().hydrateRibbonDismissedFromPrefs(
+            awaitUserScope: true,
+          );
           if (!mounted) return;
           _postLoginRibbonDismissHydrating = false;
           await _rebootstrapAfterLogin();
@@ -563,6 +579,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     // with the previous user's chips cached on the outgoing child.
     _postLoginActivationDeadline = null;
     _postLoginRibbonDismissHydrating = false;
+    _postLoginRebootstrapInFlight = false;
     if (_inlineSearchActive) {
       _exitInlineSearch(animated: false, recordRibbonDismissed: false);
     } else {
@@ -612,6 +629,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final deadline = _postLoginActivationDeadline;
     if (deadline == null || DateTime.now().isAfter(deadline)) return;
     if (_postLoginRibbonDismissHydrating) return;
+    if (_postLoginRebootstrapInFlight) return;
     if (!AuthenticationState().isAuthenticated) return;
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
@@ -1868,13 +1886,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }());
   }
 
-  /// Resets filters to defaults (local + server when logged in) so a later
-  /// cold start does not restore the previous search, then closes inline mode.
-  /// The Settings toggle "Restore filters on app start" is unchanged.
-  // NOTE: Closing the ribbon hides it and reloads the unfiltered browse feed.
-  // Filter selections stay in [SearchFiltersState] for the search sheet; they
-  // apply again only when the user re-opens the ribbon (search / apply).
-
+  /// Clears persisted search filters (local + server when logged in), then
+  /// closes inline mode. The Settings toggle "Restore filters on app start" is
+  /// unchanged.
   void _exitInlineSearch({
     bool animated = true,
     bool recordRibbonDismissed = true,
@@ -1896,7 +1910,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     HomeInlineSearchState().setActive(false);
     _lastDispatchedSearchFilters = null;
     if (recordRibbonDismissed) {
-      unawaited(HomeInlineSearchState().setRibbonDismissedByUser(true));
+      unawaited(() async {
+        await _searchFiltersState.dismissPersistedSearchFilters();
+        await HomeInlineSearchState().setRibbonDismissedByUser(true);
+      }());
     }
     SharedPreferences.getInstance().then((p) async {
       await p.setBool(HomeInlineSearchState.activePrefsKey, false);

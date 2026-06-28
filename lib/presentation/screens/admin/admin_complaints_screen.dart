@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -220,7 +221,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
         builder: (context, _) {
           final themeState = ThemeState();
           return NeumorphicSegmentedSwitch<String>(
-            liquidGlass: themeState.isBlueTheme || themeState.isLightTheme,
+            liquidGlass: themeState.usesLiquidGlassChrome,
             height: _filterSwitchHeight,
             value: status,
             onChanged: (next) {

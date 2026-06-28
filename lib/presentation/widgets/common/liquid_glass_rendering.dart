@@ -4,6 +4,7 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/feed_scroll_scope.dart";
 
@@ -290,7 +291,7 @@ abstract final class LiquidGlassRendering {
     required double sigma,
     required Widget child,
   }) {
-    if (!enabled || sigma <= 0) return child;
+    if (!enabled || sigma <= 0 || isAndroidDevice) return child;
     return BackdropFilter(
       filter: blurFilter(sigma),
       child: child,
@@ -303,7 +304,7 @@ abstract final class LiquidGlassRendering {
     required List<double> saturationMatrix,
     required Widget child,
   }) {
-    if (!enabled || sigma <= 0) return child;
+    if (!enabled || sigma <= 0 || isAndroidDevice) return child;
     return BackdropFilter(
       filter: ColorFilter.matrix(saturationMatrix),
       child: backdropBlur(enabled: true, sigma: sigma, child: child),

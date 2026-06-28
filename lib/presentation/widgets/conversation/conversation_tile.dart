@@ -317,7 +317,7 @@ class ConversationTile extends StatelessWidget {
         ? BorderRadius.circular(12)
         : const BorderRadius.all(Radius.circular(20));
     final useLiquidGlass = useFeedTileSurface &&
-        (themeState.isBlueTheme || themeState.isLightTheme);
+        (themeState.usesLiquidGlassChrome);
 
     final groupTitleStyle = TextStyle(
       fontWeight: FontWeight.w600,

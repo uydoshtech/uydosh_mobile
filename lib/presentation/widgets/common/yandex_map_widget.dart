@@ -12,6 +12,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -284,6 +285,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _metroStationWalkingRadiusMeters = 1100.0;
   static const double _minMetroStationWalkAreaLabelZoom = 12.5;
   static const double _listingPinMetroStationOffsetMeters = 45.0;
+  static const double _metroStationPlacemarkScale = 0.62;
+  static const double _selectedMetroStationPlacemarkScale = 0.93;
+  static const double _metroStationBorderPx = 1.0;
+  static const double _selectedMetroStationBorderPx = 4.0;
+  static double _metroStationIconOutlineWidth({required bool selected}) {
+    final borderPx =
+        selected ? _selectedMetroStationBorderPx : _metroStationBorderPx;
+    final scale = selected
+        ? _selectedMetroStationPlacemarkScale
+        : _metroStationPlacemarkScale;
+    return borderPx / scale;
+  }
   static int get _minClusterableListingPinGroups =>
       isAndroidDevice ? 8 : 16;
   static const double _listingClusterRadius = 44.0;
@@ -310,6 +323,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
+  final Map<int, Uint8List> _cachedSelectedMetroStationIconBytes = {};
   final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
   final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
@@ -370,8 +384,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         !widget.layerOptions.showMetroStationsLayer) {
       _setSelectedMetroStation(null, notify: true);
     }
-    if (oldWidget.layerOptions.metroStationLineId !=
-        widget.layerOptions.metroStationLineId) {
+    if (_metroLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       final selectedStation = _selectedMetroStation;
       final selectedLineId = widget.layerOptions.metroStationLineId;
       if (selectedStation != null &&
@@ -379,6 +392,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           selectedStation.line != selectedLineId) {
         _setSelectedMetroStation(null, notify: true);
       }
+      _invalidateMapObjectsCache();
+      _requestMapRebuild();
     }
     if (_poiLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       _syncPoiLayers();
@@ -460,6 +475,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedMetroStationIconBytes
         ..clear()
         ..addAll(sharedIcons.metroStationIconBytes);
+      _cachedSelectedMetroStationIconBytes
+        ..clear()
+        ..addAll(sharedIcons.selectedMetroStationIconBytes);
       _syncListingGroupIconBytes();
       unawaited(_refreshUserLocationLayerAppearance());
       if (kDebugMode) {
@@ -1507,6 +1525,26 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         oldOptions.showBusStopsLayer != newOptions.showBusStopsLayer;
   }
 
+  bool _metroLayerOptionsChanged(
+    YandexMapLayerOptions oldOptions,
+    YandexMapLayerOptions newOptions,
+  ) {
+    return oldOptions.showMetroStationsLayer !=
+            newOptions.showMetroStationsLayer ||
+        oldOptions.metroStationLineId != newOptions.metroStationLineId;
+  }
+
+  void _invalidateMapObjectsCache() {
+    _cachedMapObjects = null;
+    _cachedMapObjectsKey = null;
+  }
+
+  String get _metroLayerScopeKey {
+    if (!widget.layerOptions.showMetroStationsLayer) return "off";
+    final lineId = widget.layerOptions.metroStationLineId;
+    return lineId == null ? "all" : "line$lineId";
+  }
+
   void _syncPoiLayers() {
     if (!mounted || kIsWeb || !_isMapReady || _mapController == null) return;
     if (!widget.layerOptions.showGroceryStoresLayer &&
@@ -1681,9 +1719,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final theme = Theme.of(context);
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final useLiquidGlass = !solidColors &&
-        !isAndroidDevice &&
-        (themeState.isBlueTheme || themeState.isLightTheme);
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final foregroundColor = widget.nightModeEnabled
         ? Colors.white
         : themeState.isBlueTheme

@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
@@ -140,7 +141,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
     final gallery = useTileShell
         ? ListingDetailTileShell(
             useLiquidGlass:
-                ThemeState().isBlueTheme || ThemeState().isLightTheme,
+                ThemeState().usesLiquidGlassChrome,
             child: content,
           )
         : content;

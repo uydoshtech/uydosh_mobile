@@ -38,7 +38,7 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.onOpenFeedView,
     required this.onRequestUserLocation,
     required this.onToggleDistrictLayer,
-    required this.onSelectMetroLayerMode,
+    required this.onToggleMetroLayerMode,
     required this.onToggleUniversitiesLayer,
     required this.onToggleMapNightMode,
     required this.onClearSelectedPin,
@@ -96,7 +96,7 @@ class _SearchResultsMapContent extends StatelessWidget {
   final VoidCallback onOpenFeedView;
   final VoidCallback onRequestUserLocation;
   final VoidCallback onToggleDistrictLayer;
-  final ValueChanged<_MetroLayerMode> onSelectMetroLayerMode;
+  final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleUniversitiesLayer;
   final ValueChanged<bool> onToggleMapNightMode;
   final VoidCallback onClearSelectedPin;
@@ -385,7 +385,7 @@ class _SearchResultsMapContent extends StatelessWidget {
                               metroLayerMode: metroLayerMode,
                               showDistrictLayer: showDistrictLayer,
                               showUniversitiesLayer: showUniversitiesLayer,
-                              onSelectMetroLayerMode: onSelectMetroLayerMode,
+                              onToggleMetroLayerMode: onToggleMetroLayerMode,
                               onToggleDistrictLayer: onToggleDistrictLayer,
                               onToggleUniversitiesLayer:
                                   onToggleUniversitiesLayer,
@@ -614,7 +614,7 @@ class _MapLayerToggleButtons extends StatelessWidget {
     required this.metroLayerMode,
     required this.showDistrictLayer,
     required this.showUniversitiesLayer,
-    required this.onSelectMetroLayerMode,
+    required this.onToggleMetroLayerMode,
     required this.onToggleDistrictLayer,
     required this.onToggleUniversitiesLayer,
     required this.width,
@@ -625,7 +625,7 @@ class _MapLayerToggleButtons extends StatelessWidget {
   final _MetroLayerMode metroLayerMode;
   final bool showDistrictLayer;
   final bool showUniversitiesLayer;
-  final ValueChanged<_MetroLayerMode> onSelectMetroLayerMode;
+  final VoidCallback onToggleMetroLayerMode;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleUniversitiesLayer;
   final double width;
@@ -646,7 +646,7 @@ class _MapLayerToggleButtons extends StatelessWidget {
           height: height,
           iconSize: _iconSize,
           borderSide: _border,
-          onSelected: onSelectMetroLayerMode,
+          onPressed: onToggleMetroLayerMode,
         ),
         SizedBox(width: gap),
         _buildLayerButton(
@@ -720,7 +720,7 @@ class _MetroLayerModeButton extends StatelessWidget {
     required this.height,
     required this.iconSize,
     required this.borderSide,
-    required this.onSelected,
+    required this.onPressed,
   });
 
   final _MetroLayerMode mode;
@@ -728,14 +728,14 @@ class _MetroLayerModeButton extends StatelessWidget {
   final double height;
   final double iconSize;
   final BorderSide borderSide;
-  final ValueChanged<_MetroLayerMode> onSelected;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final backgroundColor = _modeBackgroundColor(mode);
     final foregroundColor = _modeForegroundColor(mode);
     return SearchFloatingActionButton(
-      onPressed: () => onSelected(mode.next),
+      onPressed: onPressed,
       iconData: Icons.directions_subway_rounded,
       tooltip: _modeTooltip(context, mode),
       width: width,

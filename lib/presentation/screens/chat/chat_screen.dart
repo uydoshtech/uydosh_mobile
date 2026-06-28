@@ -1390,8 +1390,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   builder: (context, _) {
                     final themeState = ThemeState();
                     return NeumorphicSegmentedSwitch<String>(
-                      liquidGlass:
-                          themeState.isBlueTheme || themeState.isLightTheme,
+                      liquidGlass: themeState.usesLiquidGlassChrome,
                       forceGlassPlate: true,
                       height: _translateTargetSwitchHeight,
                       value:

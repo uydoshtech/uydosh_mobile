@@ -393,7 +393,7 @@ class _ListingTileState extends State<ListingTile> {
     final bg = scheme.surface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final darkShadow = Colors.black.withValues(
       alpha: isDark ? 0.45 : 0.20,
     );

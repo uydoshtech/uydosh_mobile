@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 
 /// Resolves the shared “screen canvas” fill from theme flags only (no [ThemeState]
 /// singleton). [ThemeHelper.backgroundColor] and [ThemeHelper.appBarBackgroundColor]
@@ -70,6 +71,13 @@ Color avatarCircleBorderColor(BuildContext context, {Color? background}) {
 extension ThemeHelper on ThemeState {
   ThemePalette get _palette =>
       ThemePalette(isLightTheme: isLightTheme, isBlueTheme: isBlueTheme);
+
+  /// Frosted-glass chrome (app bars, feed tiles, bottom-sheet plates).
+  /// Blue/light themes on iOS/web; flat [ColorScheme.surface] cards on Android.
+  bool get usesLiquidGlassChrome {
+    if (isAndroidDevice) return false;
+    return isBlueTheme || isLightTheme;
+  }
 
   /// Screen/scaffold background color
   Color get backgroundColor => _palette.screenCanvasColor;
@@ -211,7 +219,7 @@ extension ThemeHelper on ThemeState {
     // MainNavigation enables liquid-glass AppBar for both blue and light themes.
     // When enabled, body is rendered behind the AppBar, so lists must offset by
     // the device top padding to avoid content appearing under the header.
-    if (!(isBlueTheme || isLightTheme)) return 0;
+    if (!usesLiquidGlassChrome) return 0;
     // Only account for the status bar / notch. Screens add their own
     // content spacing; adding an additional constant here tended to create a
     // visible "dead strip" under the shell header on some devices.

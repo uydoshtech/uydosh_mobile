@@ -649,7 +649,7 @@ class _GroupedConversationsListState extends State<GroupedConversationsList> {
 
     final groupUnreadCount = _getGroupUnreadCount(conversations);
 
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final glassTintColor = themeState.primaryColor;
 
     return ThreeDElevatedSurface(

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
@@ -139,8 +140,7 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
 
     final themeState = ThemeState();
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final useLiquidGlass =
-        !solidColors && (themeState.isBlueTheme || themeState.isLightTheme);
+    final useLiquidGlass = themeState.usesLiquidGlassChrome;
     final shadows = solidColors
         ? const <BoxShadow>[]
         : _pressed

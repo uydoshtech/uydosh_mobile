@@ -218,8 +218,8 @@ class UiPerformancePolicy extends ChangeNotifier {
   }
 }
 
-/// Uses Flutter's normal platform transitions except on reduced-effects
-/// devices, where page routes swap immediately.
+/// Uses Flutter's normal platform transitions except on Android and on
+/// reduced-effects devices, where page routes swap immediately.
 class UiPerformancePageTransitionsTheme extends PageTransitionsTheme {
   const UiPerformancePageTransitionsTheme();
 
@@ -231,7 +231,9 @@ class UiPerformancePageTransitionsTheme extends PageTransitionsTheme {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (UiPerformancePolicy.reduceEffectsForDevice) return child;
+    if (UiPerformancePolicy.reduceEffectsForDevice || isAndroidDevice) {
+      return child;
+    }
     return super.buildTransitions(
       route,
       context,
