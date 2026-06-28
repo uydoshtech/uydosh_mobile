@@ -484,6 +484,12 @@ abstract class AppLocalizations {
   /// **'Open feed view'**
   String get open_feed_view;
 
+  /// No description provided for @choose_filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose filters'**
+  String get choose_filters;
+
   /// No description provided for @map_location_prompt_title.
   ///
   /// In en, this message translates to:
@@ -549,6 +555,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide metro stations'**
   String get hide_metro_stations_layer;
+
+  /// No description provided for @metro_layer_select_line.
+  ///
+  /// In en, this message translates to:
+  /// **'Select metro line'**
+  String get metro_layer_select_line;
+
+  /// No description provided for @metro_layer_off.
+  ///
+  /// In en, this message translates to:
+  /// **'No metro stations'**
+  String get metro_layer_off;
+
+  /// No description provided for @metro_layer_all_stations.
+  ///
+  /// In en, this message translates to:
+  /// **'All metro stations'**
+  String get metro_layer_all_stations;
+
+  /// No description provided for @metro_line_1.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 1'**
+  String get metro_line_1;
+
+  /// No description provided for @metro_line_2.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 2'**
+  String get metro_line_2;
+
+  /// No description provided for @metro_line_3.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 3'**
+  String get metro_line_3;
+
+  /// No description provided for @metro_line_4.
+  ///
+  /// In en, this message translates to:
+  /// **'Line 4'**
+  String get metro_line_4;
 
   /// No description provided for @show_universities_layer.
   ///

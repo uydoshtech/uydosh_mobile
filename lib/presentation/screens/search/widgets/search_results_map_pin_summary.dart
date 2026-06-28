@@ -143,7 +143,8 @@ class _MapListingTileSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeState = ThemeState();
-    final useLiquidGlass = themeState.isBlueTheme || themeState.isLightTheme;
+    final useLiquidGlass =
+        !isAndroidDevice && (themeState.isBlueTheme || themeState.isLightTheme);
     if (useLiquidGlass) {
       return ThreeDElevatedSurface(
         baseColor: themeState.primaryColor,

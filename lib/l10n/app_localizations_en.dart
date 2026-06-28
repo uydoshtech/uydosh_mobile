@@ -211,6 +211,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get open_feed_view => 'Open feed view';
 
   @override
+  String get choose_filters => 'Choose filters';
+
+  @override
   String get map_location_prompt_title => 'Show my location';
 
   @override
@@ -245,6 +248,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Hide metro stations';
+
+  @override
+  String get metro_layer_select_line => 'Select metro line';
+
+  @override
+  String get metro_layer_off => 'No metro stations';
+
+  @override
+  String get metro_layer_all_stations => 'All metro stations';
+
+  @override
+  String get metro_line_1 => 'Line 1';
+
+  @override
+  String get metro_line_2 => 'Line 2';
+
+  @override
+  String get metro_line_3 => 'Line 3';
+
+  @override
+  String get metro_line_4 => 'Line 4';
 
   @override
   String get show_universities_layer => 'Show universities';

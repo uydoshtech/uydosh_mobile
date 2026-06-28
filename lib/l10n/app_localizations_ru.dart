@@ -212,6 +212,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_feed_view => 'Открыть ленту';
 
   @override
+  String get choose_filters => 'Выбрать фильтры';
+
+  @override
   String get map_location_prompt_title => 'Показать мою геопозицию';
 
   @override
@@ -246,6 +249,27 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Скрыть станции метро';
+
+  @override
+  String get metro_layer_select_line => 'Выбрать линию метро';
+
+  @override
+  String get metro_layer_off => 'Без станций метро';
+
+  @override
+  String get metro_layer_all_stations => 'Все станции метро';
+
+  @override
+  String get metro_line_1 => 'Линия 1';
+
+  @override
+  String get metro_line_2 => 'Линия 2';
+
+  @override
+  String get metro_line_3 => 'Линия 3';
+
+  @override
+  String get metro_line_4 => 'Линия 4';
 
   @override
   String get show_universities_layer => 'Показать университеты';

@@ -35,99 +35,121 @@ class _MapFilterRibbon extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isBlue = ThemeState().isBlueTheme;
-    final orbDecoration = isBlue
+    final orbDecoration = isAndroidDevice
         ? BoxDecoration(
-            color: BlueThemeColors.primary,
+            color: isBlue
+                ? BlueThemeColors.primary
+                : scheme.surfaceContainerHighest,
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.22),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           )
-        : BoxDecoration(
-            shape: BoxShape.circle,
-            gradient:
-                ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
-            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-          );
+        : isBlue
+            ? BoxDecoration(
+                color: BlueThemeColors.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              )
+            : BoxDecoration(
+                shape: BoxShape.circle,
+                gradient:
+                    ThreeDSurfaceStyle.surfaceGradient(context, scheme.surface),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
+    final content = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 18, height: 18),
+            const SizedBox(width: 16),
+            Expanded(
+              child: AppliedSearchFiltersBar(
+                onPressed: onPressed,
+                listingTypeId: listingTypeId,
+                gender: gender,
+                locationId: locationId,
+                subwayStationId: subwayStationId,
+                subwayStationIds: subwayStationIds,
+                subwayLineId: subwayLineId,
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                privateRoom: privateRoom,
+                withPhoto: withPhoto,
+                total: total,
+                showLabel: false,
+                alignRight: false,
+                height: 56,
+                endPadding: 56,
+                alwaysShowPriceRange: true,
+              ),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.all(6),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              icon: DecoratedBox(
+                decoration: orbDecoration,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.close, size: 16, color: orbIconColor),
+                ),
+              ),
+              onPressed: onClose,
+              tooltip: L10n.get("close"),
+            ),
+          ],
+        ),
+        PositionedDirectional(
+          start: 0,
+          top: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Center(
+              child: DecoratedBox(
+                decoration: orbDecoration,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.tune, size: 16, color: orbIconColor),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
 
     return SafeArea(
       top: false,
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: LiquidGlassPlate(
-          height: 56,
-          borderRadius: BorderRadius.circular(16),
-          padding: const EdgeInsets.only(left: 12, right: 6),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Row(
-                children: [
-                  const SizedBox(width: 18, height: 18),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: AppliedSearchFiltersBar(
-                      onPressed: onPressed,
-                      listingTypeId: listingTypeId,
-                      gender: gender,
-                      locationId: locationId,
-                      subwayStationId: subwayStationId,
-                      subwayStationIds: subwayStationIds,
-                      subwayLineId: subwayLineId,
-                      minPrice: minPrice,
-                      maxPrice: maxPrice,
-                      privateRoom: privateRoom,
-                      withPhoto: withPhoto,
-                      total: total,
-                      showLabel: false,
-                      alignRight: false,
-                      height: 56,
-                      endPadding: 56,
-                      alwaysShowPriceRange: true,
-                    ),
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(6),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                    icon: DecoratedBox(
-                      decoration: orbDecoration,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(Icons.close, size: 16, color: orbIconColor),
-                      ),
-                    ),
-                    onPressed: onClose,
-                    tooltip: L10n.get("close"),
-                  ),
-                ],
-              ),
-              PositionedDirectional(
-                start: 0,
-                top: 0,
-                bottom: 0,
-                child: IgnorePointer(
-                  child: Center(
-                    child: DecoratedBox(
-                      decoration: orbDecoration,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(Icons.tune, size: 16, color: orbIconColor),
-                      ),
-                    ),
+        child: isAndroidDevice
+            ? DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+                child: SizedBox(
+                  height: 56,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12, right: 6),
+                    child: content,
                   ),
                 ),
+              )
+            : LiquidGlassPlate(
+                height: 56,
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.only(left: 12, right: 6),
+                child: content,
               ),
-            ],
-          ),
-        ),
       ),
     );
   }

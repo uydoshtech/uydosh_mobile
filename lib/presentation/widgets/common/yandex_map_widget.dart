@@ -87,6 +87,7 @@ class YandexMapLayerOptions {
     this.showUserLocation = false,
     this.showDistrictLayer = false,
     this.showMetroStationsLayer = false,
+    this.metroStationLineId,
     this.showGroceryStoresLayer = false,
     this.showBusStopsLayer = false,
   });
@@ -94,6 +95,7 @@ class YandexMapLayerOptions {
   final bool showUserLocation;
   final bool showDistrictLayer;
   final bool showMetroStationsLayer;
+  final int? metroStationLineId;
   final bool showGroceryStoresLayer;
   final bool showBusStopsLayer;
 }
@@ -357,6 +359,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (oldWidget.layerOptions.showMetroStationsLayer &&
         !widget.layerOptions.showMetroStationsLayer) {
       _setSelectedMetroStation(null, notify: true);
+    }
+    if (oldWidget.layerOptions.metroStationLineId !=
+        widget.layerOptions.metroStationLineId) {
+      final selectedStation = _selectedMetroStation;
+      final selectedLineId = widget.layerOptions.metroStationLineId;
+      if (selectedStation != null &&
+          selectedLineId != null &&
+          selectedStation.line != selectedLineId) {
+        _setSelectedMetroStation(null, notify: true);
+      }
     }
     if (_poiLayerOptionsChanged(oldWidget.layerOptions, widget.layerOptions)) {
       _syncPoiLayers();
@@ -1802,7 +1814,7 @@ class _MetroStationMapTooltip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final language = Localizations.localeOf(context).languageCode;
-    final stationName = MetroCache.getStationLabelFromStation(
+    final stationName = MetroCache.getStationName(
       station,
       language,
     );

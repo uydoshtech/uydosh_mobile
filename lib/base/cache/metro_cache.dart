@@ -164,7 +164,7 @@ class MetroCache {
         line: 1,
         ordinal: 14,
         nameUz: "A. Temur Xiyoboni",
-        nameRu: "Сквер А. Темура",
+        nameRu: "Сквер Амира Темура",
         nameEn: "A. Temur Square",
         latitude: 41.31267380,
         longitude: 69.28326910,

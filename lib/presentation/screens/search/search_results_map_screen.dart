@@ -48,6 +48,38 @@ part "widgets/search_results_map_models.dart";
 part "widgets/search_results_map_pin_summary.dart";
 part "widgets/search_results_map_controls.dart";
 
+enum _MetroLayerMode {
+  off,
+  line1,
+  line2,
+  line3,
+  line4,
+  all;
+
+  int? get lineId {
+    return switch (this) {
+      _MetroLayerMode.line1 => 1,
+      _MetroLayerMode.line2 => 2,
+      _MetroLayerMode.line3 => 3,
+      _MetroLayerMode.line4 => 4,
+      _MetroLayerMode.off || _MetroLayerMode.all => null,
+    };
+  }
+
+  bool get showsStations => this != _MetroLayerMode.off;
+
+  _MetroLayerMode get next {
+    return switch (this) {
+      _MetroLayerMode.off => _MetroLayerMode.line1,
+      _MetroLayerMode.line1 => _MetroLayerMode.line2,
+      _MetroLayerMode.line2 => _MetroLayerMode.line3,
+      _MetroLayerMode.line3 => _MetroLayerMode.line4,
+      _MetroLayerMode.line4 => _MetroLayerMode.all,
+      _MetroLayerMode.all => _MetroLayerMode.off,
+    };
+  }
+}
+
 class SearchResultsMapScreen extends StatefulWidget {
   const SearchResultsMapScreen({
     required this.listingTypeId,
@@ -112,12 +144,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   List<UniversityMapMarker> _universityMarkers = const [];
   String? _currentUserUniversityMarkerId;
   late bool _showDistrictLayer;
-  late bool _showMetroStationsLayer;
+  late _MetroLayerMode _metroLayerMode;
   late bool _showUniversitiesLayer;
   bool _showGroceryStoresLayer = false;
   bool _showBusStopsLayer = false;
   bool? _mapNightModeOverride;
   bool _showLocationPrompt = false;
+  bool _showFilterRibbon = true;
   int _userLocationRequestToken = 0;
 
   late int _listingTypeId;
@@ -136,7 +169,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     super.initState();
     final layerDefaults = ClientMapLayerDefaultsConfig.defaults.value;
     _showDistrictLayer = !isAndroidDevice && layerDefaults.districts;
-    _showMetroStationsLayer = !isAndroidDevice && layerDefaults.metro;
+    _metroLayerMode = !isAndroidDevice && layerDefaults.metro
+        ? _MetroLayerMode.all
+        : _MetroLayerMode.off;
     _showUniversitiesLayer = layerDefaults.universities;
     _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
@@ -162,6 +197,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedPinGroup = const [];
     _selectedUniversityMarker = null;
     _hasSelectedMetroStation = false;
+    _showFilterRibbon = true;
     _loadResults();
   }
 
@@ -373,9 +409,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       primaryIcon: Icons.check,
       primaryAction: SearchBottomSheetAction.map,
       onApply: (result) {
-        if (_matchesCurrentFilters(result)) return;
+        if (_matchesCurrentFilters(result)) {
+          setState(() => _showFilterRibbon = true);
+          return;
+        }
 
         setState(() {
+          _showFilterRibbon = true;
           _listingTypeId = result.listingTypeId;
           _locationId = result.locationId;
           _subwayStationId = result.subwayStationId;
@@ -394,6 +434,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _loadResults();
       },
     );
+  }
+
+  void _hideFilterRibbon() {
+    setState(() => _showFilterRibbon = false);
   }
 
   void _openFeedView() {
@@ -766,28 +810,30 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       selectedUniversityMarkerId: _selectedUniversityMarker?.id,
       userUniversityMarkerId: _currentUserUniversityMarkerId,
       showDistrictLayer: _showDistrictLayer,
-      showMetroStationsLayer: _showMetroStationsLayer,
+      metroLayerMode: _metroLayerMode,
       showUniversitiesLayer: _showUniversitiesLayer,
       showGroceryStoresLayer: _showGroceryStoresLayer,
       showBusStopsLayer: _showBusStopsLayer,
       mapNightModeOverride: _mapNightModeOverride,
       showLocationPrompt: _showLocationPrompt,
+      showFilterRibbon: _showFilterRibbon,
       userLocationRequestToken: _userLocationRequestToken,
       placeViewToggleAtBottom: widget.embedded,
       mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
       searchButtonBottom: widget.embeddedSearchButtonBottom,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       onOpenFilters: _openFilters,
+      onCloseFilterRibbon: _hideFilterRibbon,
       onOpenEmbeddedSearch: widget.onOpenEmbeddedSearch,
       onOpenFeedView: _openFeedView,
       onRequestUserLocation: _requestUserLocation,
       onToggleDistrictLayer: () {
         setState(() => _showDistrictLayer = !_showDistrictLayer);
       },
-      onToggleMetroStationsLayer: () {
+      onSelectMetroLayerMode: (mode) {
         setState(() {
-          _showMetroStationsLayer = !_showMetroStationsLayer;
-          if (!_showMetroStationsLayer) {
+          _metroLayerMode = mode;
+          if (!mode.showsStations) {
             _hasSelectedMetroStation = false;
           }
         });

@@ -10,6 +10,16 @@ final Set<String> _metroStationCoordinateKeys = {
     if (station.latitude != null && station.longitude != null)
       _mapCoordinateKey(station.latitude!, station.longitude!),
 };
+final Map<String, Set<int>> _metroStationCoordinateLineIds = {
+  for (final station in MetroCache.getAllStations())
+    if (station.latitude != null && station.longitude != null)
+      _mapCoordinateKey(station.latitude!, station.longitude!): {
+        for (final matchingStation in MetroCache.getAllStations())
+          if (matchingStation.latitude == station.latitude &&
+              matchingStation.longitude == station.longitude)
+            matchingStation.line,
+      },
+};
 
 String _mapCoordinateKey(double latitude, double longitude) {
   return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
@@ -35,6 +45,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
       widget.layerOptions.showMetroStationsLayer,
+      widget.layerOptions.metroStationLineId,
       widget.layerOptions.showGroceryStoresLayer,
       widget.layerOptions.showBusStopsLayer,
       widget.showDefaultPlacemark,
@@ -508,9 +519,16 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           _createMetroStationWalkingRadiusLabel(),
       ],
       for (final station in MetroCache.getAllStations())
-        if (station.latitude != null && station.longitude != null)
+        if (station.latitude != null &&
+            station.longitude != null &&
+            _shouldShowMetroStation(station))
           _createMetroStationPlacemark(station),
     ];
+  }
+
+  bool _shouldShowMetroStation(SubwayStation station) {
+    final selectedLineId = widget.layerOptions.metroStationLineId;
+    return selectedLineId == null || station.line == selectedLineId;
   }
 
   bool get _isMetroWalkAreaLabelVisible {
@@ -1102,10 +1120,17 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     required double latitude,
     required double longitude,
   }) {
+    final coordinateKey = _mapCoordinateKey(latitude, longitude);
     if (!widget.layerOptions.showMetroStationsLayer ||
-        !_metroStationCoordinateKeys.contains(
-          _mapCoordinateKey(latitude, longitude),
-        )) {
+        !_metroStationCoordinateKeys.contains(coordinateKey)) {
+      return Point(latitude: latitude, longitude: longitude);
+    }
+    final selectedLineId = widget.layerOptions.metroStationLineId;
+    if (selectedLineId != null &&
+        !(_metroStationCoordinateLineIds[coordinateKey]?.contains(
+              selectedLineId,
+            ) ??
+            false)) {
       return Point(latitude: latitude, longitude: longitude);
     }
 

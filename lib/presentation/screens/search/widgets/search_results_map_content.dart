@@ -17,23 +17,25 @@ class _SearchResultsMapContent extends StatelessWidget {
     required this.selectedUniversityMarkerId,
     required this.userUniversityMarkerId,
     required this.showDistrictLayer,
-    required this.showMetroStationsLayer,
+    required this.metroLayerMode,
     required this.showUniversitiesLayer,
     required this.showGroceryStoresLayer,
     required this.showBusStopsLayer,
     required this.mapNightModeOverride,
     required this.showLocationPrompt,
+    required this.showFilterRibbon,
     required this.userLocationRequestToken,
     required this.placeViewToggleAtBottom,
     required this.mapBottomInset,
     required this.searchButtonBottom,
     required this.viewToggleBottom,
     required this.onOpenFilters,
+    required this.onCloseFilterRibbon,
     required this.onOpenEmbeddedSearch,
     required this.onOpenFeedView,
     required this.onRequestUserLocation,
     required this.onToggleDistrictLayer,
-    required this.onToggleMetroStationsLayer,
+    required this.onSelectMetroLayerMode,
     required this.onToggleUniversitiesLayer,
     required this.onToggleMapNightMode,
     required this.onClearSelectedPin,
@@ -70,23 +72,25 @@ class _SearchResultsMapContent extends StatelessWidget {
   final String? selectedUniversityMarkerId;
   final String? userUniversityMarkerId;
   final bool showDistrictLayer;
-  final bool showMetroStationsLayer;
+  final _MetroLayerMode metroLayerMode;
   final bool showUniversitiesLayer;
   final bool showGroceryStoresLayer;
   final bool showBusStopsLayer;
   final bool? mapNightModeOverride;
   final bool showLocationPrompt;
+  final bool showFilterRibbon;
   final int userLocationRequestToken;
   final bool placeViewToggleAtBottom;
   final double mapBottomInset;
   final double searchButtonBottom;
   final double viewToggleBottom;
   final VoidCallback onOpenFilters;
+  final VoidCallback onCloseFilterRibbon;
   final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onOpenFeedView;
   final VoidCallback onRequestUserLocation;
   final VoidCallback onToggleDistrictLayer;
-  final VoidCallback onToggleMetroStationsLayer;
+  final ValueChanged<_MetroLayerMode> onSelectMetroLayerMode;
   final VoidCallback onToggleUniversitiesLayer;
   final ValueChanged<bool> onToggleMapNightMode;
   final VoidCallback onClearSelectedPin;
@@ -103,10 +107,12 @@ class _SearchResultsMapContent extends StatelessWidget {
     final pinGroup = selectedPinGroup;
     final universityMarker = selectedUniversityMarker;
     final showNoResultsTile = !isLoading && result.total == 0;
+    final showChooseFiltersTile = !showFilterRibbon;
     final hasMapTooltipSpace = hasSelectedMetroStation && !showNoResultsTile;
     final hasTopTile = pin != null ||
         pinGroup.isNotEmpty ||
         universityMarker != null ||
+        showChooseFiltersTile ||
         showNoResultsTile ||
         hasMapTooltipSpace;
     final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
@@ -165,21 +171,22 @@ class _SearchResultsMapContent extends StatelessWidget {
     );
     return Column(
       children: [
-        _MapFilterRibbon(
-          onPressed: onOpenFilters,
-          onClose: onOpenFeedView,
-          listingTypeId: listingTypeId,
-          gender: gender,
-          locationId: locationId,
-          subwayStationId: subwayStationId,
-          subwayStationIds: subwayStationIds,
-          subwayLineId: subwayLineId,
-          minPrice: minPrice,
-          maxPrice: maxPrice,
-          privateRoom: privateRoom,
-          withPhoto: withPhoto,
-          total: result.total,
-        ),
+        if (showFilterRibbon)
+          _MapFilterRibbon(
+            onPressed: onOpenFilters,
+            onClose: onCloseFilterRibbon,
+            listingTypeId: listingTypeId,
+            gender: gender,
+            locationId: locationId,
+            subwayStationId: subwayStationId,
+            subwayStationIds: subwayStationIds,
+            subwayLineId: subwayLineId,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            privateRoom: privateRoom,
+            withPhoto: withPhoto,
+            total: result.total,
+          ),
         Expanded(
           child: Stack(
             children: [
@@ -210,7 +217,8 @@ class _SearchResultsMapContent extends StatelessWidget {
                   layerOptions: YandexMapLayerOptions(
                     showUserLocation: true,
                     showDistrictLayer: showDistrictLayer,
-                    showMetroStationsLayer: showMetroStationsLayer,
+                    showMetroStationsLayer: metroLayerMode.showsStations,
+                    metroStationLineId: metroLayerMode.lineId,
                     showGroceryStoresLayer: showGroceryStoresLayer,
                     showBusStopsLayer: showBusStopsLayer,
                   ),
@@ -267,46 +275,52 @@ class _SearchResultsMapContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     MapTooltipFadeTransition(
-                      child: showNoResultsTile
+                      child: showChooseFiltersTile
                           ? _NoMapResultsTile(
-                              key: const ValueKey("no-map-results"),
-                              label: L10n.get("no_results"),
+                              key: const ValueKey("choose-map-filters"),
+                              label: context.l10n.choose_filters,
+                              onPressed: onOpenFilters,
                             )
-                          : pin != null
-                              ? _PinSummaryTooltip(
-                                  key: ValueKey("pin-${pin.listingId}"),
-                                  pin: pin,
-                                  onClose: onClearSelectedPin,
-                                  onOpen: () => onOpenPin(pin),
+                          : showNoResultsTile
+                              ? _NoMapResultsTile(
+                                  key: const ValueKey("no-map-results"),
+                                  label: L10n.get("no_results"),
                                 )
-                              : pinGroup.isNotEmpty
-                                  ? _PinGroupSummaryTooltip(
-                                      key: ValueKey(
-                                        "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
-                                      ),
-                                      pins: pinGroup,
+                              : pin != null
+                                  ? _PinSummaryTooltip(
+                                      key: ValueKey("pin-${pin.listingId}"),
+                                      pin: pin,
                                       onClose: onClearSelectedPin,
-                                      onOpenPin: onOpenPin,
+                                      onOpen: () => onOpenPin(pin),
                                     )
-                                  : universityMarker != null
-                                      ? UniversityMapTooltip(
+                                  : pinGroup.isNotEmpty
+                                      ? _PinGroupSummaryTooltip(
                                           key: ValueKey(
-                                            "university-${universityMarker.id}",
+                                            "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
                                           ),
-                                          marker: universityMarker,
-                                          onClose:
-                                              onClearSelectedUniversityMarker,
+                                          pins: pinGroup,
+                                          onClose: onClearSelectedPin,
+                                          onOpenPin: onOpenPin,
                                         )
-                                      : hasMapTooltipSpace
-                                          ? const SizedBox(
+                                      : universityMarker != null
+                                          ? UniversityMapTooltip(
                                               key: ValueKey(
-                                                "metro-station-tooltip-space",
+                                                "university-${universityMarker.id}",
                                               ),
-                                              width: double.infinity,
-                                              height:
-                                                  metroTooltipReservedHeight,
+                                              marker: universityMarker,
+                                              onClose:
+                                                  onClearSelectedUniversityMarker,
                                             )
-                                          : null,
+                                          : hasMapTooltipSpace
+                                              ? const SizedBox(
+                                                  key: ValueKey(
+                                                    "metro-station-tooltip-space",
+                                                  ),
+                                                  width: double.infinity,
+                                                  height:
+                                                      metroTooltipReservedHeight,
+                                                )
+                                              : null,
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
@@ -330,11 +344,10 @@ class _SearchResultsMapContent extends StatelessWidget {
                               const SizedBox(height: viewToggleGap),
                             ],
                             _MapLayerToggleButtons(
-                              showMetroStationsLayer: showMetroStationsLayer,
+                              metroLayerMode: metroLayerMode,
                               showDistrictLayer: showDistrictLayer,
                               showUniversitiesLayer: showUniversitiesLayer,
-                              onToggleMetroStationsLayer:
-                                  onToggleMetroStationsLayer,
+                              onSelectMetroLayerMode: onSelectMetroLayerMode,
                               onToggleDistrictLayer: onToggleDistrictLayer,
                               onToggleUniversitiesLayer:
                                   onToggleUniversitiesLayer,
@@ -478,11 +491,9 @@ class _MapLocationPromptCard extends StatelessWidget {
         color: Colors.transparent,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: 0.94),
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.7),
-            ),
+            border: Border.all(color: scheme.outlineVariant),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -507,44 +518,59 @@ class _MapLocationPromptCard extends StatelessWidget {
 class _NoMapResultsTile extends StatelessWidget {
   const _NoMapResultsTile({
     required this.label,
+    this.onPressed,
     super.key,
   });
 
   final String label;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final borderRadius = BorderRadius.circular(18);
+    final isAndroid = isAndroidDevice;
+    final child = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Center(
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w800,
+            height: 1.0,
+          ),
+        ),
+      ),
+    );
+
     return Material(
       color: Colors.transparent,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: scheme.surface.withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          color: scheme.surface,
+          borderRadius: borderRadius,
+          border: isAndroid ? Border.all(color: scheme.outlineVariant) : null,
+          boxShadow: isAndroid
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: Center(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.w800,
-                height: 1.0,
+        child: onPressed == null
+            ? child
+            : InkWell(
+                borderRadius: borderRadius,
+                onTap: onPressed,
+                child: child,
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -552,10 +578,10 @@ class _NoMapResultsTile extends StatelessWidget {
 
 class _MapLayerToggleButtons extends StatelessWidget {
   const _MapLayerToggleButtons({
-    required this.showMetroStationsLayer,
+    required this.metroLayerMode,
     required this.showDistrictLayer,
     required this.showUniversitiesLayer,
-    required this.onToggleMetroStationsLayer,
+    required this.onSelectMetroLayerMode,
     required this.onToggleDistrictLayer,
     required this.onToggleUniversitiesLayer,
     required this.width,
@@ -563,10 +589,10 @@ class _MapLayerToggleButtons extends StatelessWidget {
     required this.gap,
   });
 
-  final bool showMetroStationsLayer;
+  final _MetroLayerMode metroLayerMode;
   final bool showDistrictLayer;
   final bool showUniversitiesLayer;
-  final VoidCallback onToggleMetroStationsLayer;
+  final ValueChanged<_MetroLayerMode> onSelectMetroLayerMode;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleUniversitiesLayer;
   final double width;
@@ -581,13 +607,13 @@ class _MapLayerToggleButtons extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildLayerButton(
-          context,
-          active: showMetroStationsLayer,
-          iconData: Icons.directions_subway_rounded,
-          activeTooltip: context.l10n.hide_metro_stations_layer,
-          inactiveTooltip: context.l10n.show_metro_stations_layer,
-          onPressed: onToggleMetroStationsLayer,
+        _MetroLayerModeButton(
+          mode: metroLayerMode,
+          width: width,
+          height: height,
+          iconSize: _iconSize,
+          borderSide: _border,
+          onSelected: onSelectMetroLayerMode,
         ),
         SizedBox(width: gap),
         _buildLayerButton(
@@ -652,4 +678,73 @@ class _MapLayerToggleButtons extends StatelessWidget {
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
   }
+}
+
+class _MetroLayerModeButton extends StatelessWidget {
+  const _MetroLayerModeButton({
+    required this.mode,
+    required this.width,
+    required this.height,
+    required this.iconSize,
+    required this.borderSide,
+    required this.onSelected,
+  });
+
+  final _MetroLayerMode mode;
+  final double width;
+  final double height;
+  final double iconSize;
+  final BorderSide borderSide;
+  final ValueChanged<_MetroLayerMode> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = _modeBackgroundColor(mode);
+    final foregroundColor = _modeForegroundColor(mode);
+    return SearchFloatingActionButton(
+      onPressed: () => onSelected(mode.next),
+      iconData: Icons.directions_subway_rounded,
+      tooltip: _modeTooltip(context, mode),
+      width: width,
+      height: height,
+      iconSize: iconSize,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      borderSide: borderSide,
+      elevation: ThemeState().isBlueTheme ? null : 8,
+    );
+  }
+
+  String _modeTooltip(BuildContext context, _MetroLayerMode mode) {
+    return switch (mode) {
+      _MetroLayerMode.off => context.l10n.show_metro_stations_layer,
+      _MetroLayerMode.all => context.l10n.metro_layer_all_stations,
+      _ => context.l10n.metro_layer_select_line,
+    };
+  }
+}
+
+Color _modeAccentColor(_MetroLayerMode mode) {
+  return switch (mode) {
+    _MetroLayerMode.line1 => const Color(0xFFE53935),
+    _MetroLayerMode.line2 => const Color(0xFF1E88E5),
+    _MetroLayerMode.line3 => const Color(0xFF43A047),
+    _MetroLayerMode.line4 => const Color(0xFFFFB300),
+    _MetroLayerMode.all => Colors.black,
+    _MetroLayerMode.off => Colors.black54,
+  };
+}
+
+Color _modeBackgroundColor(_MetroLayerMode mode) {
+  return switch (mode) {
+    _MetroLayerMode.off => Colors.white,
+    _MetroLayerMode.all => Colors.black,
+    _ => _modeAccentColor(mode),
+  };
+}
+
+Color _modeForegroundColor(_MetroLayerMode mode) {
+  return mode == _MetroLayerMode.off || mode == _MetroLayerMode.line4
+      ? Colors.black
+      : Colors.white;
 }

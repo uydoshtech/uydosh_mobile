@@ -212,6 +212,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get open_feed_view => 'Lentani ochish';
 
   @override
+  String get choose_filters => 'Filtrlarni tanlash';
+
+  @override
   String get map_location_prompt_title => 'Joylashuvimni ko‘rsatish';
 
   @override
@@ -246,6 +249,27 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get hide_metro_stations_layer => 'Metro bekatlarini yashirish';
+
+  @override
+  String get metro_layer_select_line => 'Metro liniyasini tanlash';
+
+  @override
+  String get metro_layer_off => 'Metro bekatlari yo‘q';
+
+  @override
+  String get metro_layer_all_stations => 'Barcha metro bekatlari';
+
+  @override
+  String get metro_line_1 => '1-liniya';
+
+  @override
+  String get metro_line_2 => '2-liniya';
+
+  @override
+  String get metro_line_3 => '3-liniya';
+
+  @override
+  String get metro_line_4 => '4-liniya';
 
   @override
   String get show_universities_layer => 'Universitetlarni ko‘rsatish';
