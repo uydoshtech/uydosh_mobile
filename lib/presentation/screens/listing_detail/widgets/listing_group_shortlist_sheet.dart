@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter/rendering.dart";
 import "package:dio/dio.dart";
@@ -16,6 +18,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/group_housing_budget_fit.dart";
 import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
@@ -113,17 +116,35 @@ class _ListingGroupShortlistSheetState
   var _currentPage = 0;
   int? _currentUserId;
   List<_ShortlistRow> _rows = const [];
+  ListingDetail? _groupListingDetail;
+
+  ListingDetail? get _effectiveGroupDetail =>
+      _groupListingDetail ?? widget.groupListingDetail;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _groupListingDetail = widget.groupListingDetail;
+    unawaited(_load());
+    if (_groupListingDetail == null) {
+      unawaited(_loadGroupListingDetail());
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadGroupListingDetail() async {
+    try {
+      final detail = await getIt<IListingService>().getListingDetail(
+        widget.groupListingId,
+      );
+      if (!mounted) return;
+      setState(() => _groupListingDetail = detail);
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -133,33 +154,44 @@ class _ListingGroupShortlistSheetState
       final items = await getIt<IListingGroupService>().listShortlist(
         groupListingId: widget.groupListingId,
       );
-      final rows = <_ShortlistRow>[];
-      final ownerProfilesByUserId = <int, UserProfile>{};
-      final userProfileService = getIt<IUserProfileService>();
+      final parsedItems = <({ListingGroupShortlistItem item, Listing listing})>[];
+      final ownerIds = <int>{};
       for (final item in items) {
         final json = item.listingJson;
         if (json == null) continue;
         try {
           final listing = Listing.fromJson(json);
-          UserProfile? ownerProfile;
+          ownerIds.add(listing.userId);
+          parsedItems.add((item: item, listing: listing));
+        } catch (_) {}
+      }
+
+      final userProfileService = getIt<IUserProfileService>();
+      final ownerProfilesByUserId = <int, UserProfile>{};
+      await Future.wait(
+        ownerIds.map((userId) async {
           try {
-            ownerProfile = ownerProfilesByUserId[listing.userId] ??=
-                await userProfileService.getUserProfile(listing.userId);
+            final profile = await userProfileService.getUserProfile(userId);
+            ownerProfilesByUserId[userId] = profile;
           } catch (_) {}
-          rows.add(
-            _ShortlistRow(
-              item: item,
-              listing: listing,
+        }),
+      );
+
+      final rows = parsedItems
+          .map((parsed) {
+            final ownerProfile = ownerProfilesByUserId[parsed.listing.userId];
+            return _ShortlistRow(
+              item: parsed.item,
+              listing: parsed.listing,
               ownerName: ownerProfile == null
                   ? null
                   : _listingOwnerNameFromProfile(ownerProfile),
               ownerAvatarUrl: ownerProfile == null
                   ? null
                   : _listingOwnerAvatarUrlFromProfile(ownerProfile),
-            ),
-          );
-        } catch (_) {}
-      }
+            );
+          })
+          .toList(growable: false);
       if (!mounted) return;
       setState(() {
         _currentUserId = currentUserId;
@@ -534,7 +566,7 @@ class _ListingGroupShortlistSheetState
 
   Future<void> _discussInGroup(_ShortlistRow row) async {
     if (!AuthFlow.requireAuth(context)) return;
-    final groupDetail = widget.groupListingDetail;
+    final groupDetail = _effectiveGroupDetail;
     if (groupDetail == null) return;
     final conversationId = groupDetail.groupContext?.groupConversationId;
     if (conversationId == null) return;
@@ -586,7 +618,7 @@ class _ListingGroupShortlistSheetState
 
   @override
   Widget build(BuildContext context) {
-    final groupDetail = widget.groupListingDetail;
+    final groupDetail = _effectiveGroupDetail;
     final mediaQuery = MediaQuery.of(context);
     final maxSheetHeight = mediaQuery.size.height -
         mediaQuery.padding.top -

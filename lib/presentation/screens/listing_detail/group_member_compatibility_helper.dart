@@ -1,4 +1,6 @@
+import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
+import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
 
 class MemberCompatibilityFieldHighlight {
@@ -103,6 +105,42 @@ class GroupMemberCompatibilityHelper {
         return 2;
       case ProfileMatchFieldStatus.incomplete:
         return 3;
+    }
+  }
+
+  /// Viewer-vs-member compatibility for group member tiles, keyed by user id.
+  static Future<Map<int, GroupMemberCompatibilitySummary>> loadForMembers({
+    required List<ConversationMemberSummary> members,
+    required IUserProfileService profileService,
+    int? currentUserId,
+    UserProfile? viewerProfile,
+  }) async {
+    if (members.isEmpty || currentUserId == null) {
+      return const {};
+    }
+
+    final targetIds = members
+        .map((member) => member.userId)
+        .where((userId) => userId != currentUserId)
+        .toList(growable: false);
+    if (targetIds.isEmpty) return const {};
+
+    try {
+      final viewer =
+          viewerProfile ?? await profileService.getCurrentUserProfile();
+      final entries = await Future.wait(
+        targetIds.map((userId) async {
+          try {
+            final memberProfile = await profileService.getUserProfile(userId);
+            return MapEntry(userId, summarize(viewer, memberProfile));
+          } catch (_) {
+            return MapEntry(userId, GroupMemberCompatibilitySummary.empty);
+          }
+        }),
+      );
+      return Map.fromEntries(entries);
+    } catch (_) {
+      return const {};
     }
   }
 }

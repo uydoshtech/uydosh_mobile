@@ -11,8 +11,8 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 
 /// Meta chips and optional area price stats in one [ListingDetailTileShell].
 ///
-/// Expansion is driven from here so taps on the badges row (outside the
-/// favorite control) and on the price header/body can all toggle the section.
+/// Expansion is driven from here so taps on the badges row and on the price
+/// header/body can all toggle the section.
 class ListingDetailMetaAndPriceTile extends StatefulWidget {
   const ListingDetailMetaAndPriceTile({required this.listingDetail, super.key});
 

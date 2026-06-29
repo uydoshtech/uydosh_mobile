@@ -518,6 +518,7 @@ class _ChatScreenState extends State<ChatScreen> {
           _groupParticipants,
         );
       });
+      unawaited(_loadGroupMemberCompatibility());
     } catch (e) {
       logger.d("❌ [ChatScreen] Error fetching group participants: $e");
       if (!mounted) return;
@@ -3275,11 +3276,6 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!_isGroupChat || _groupParticipants.isEmpty) return;
     UiFeedbackUtils.selection();
 
-    if (_groupListingDetail == null) {
-      await _loadGroupHousingContext();
-      if (!mounted) return;
-    }
-
     final listingId = widget.listingId;
     if (listingId == null) return;
 
@@ -3289,8 +3285,10 @@ class _ChatScreenState extends State<ChatScreen> {
         _groupParticipants.first.userId;
     final isOwner = _groupChatIsOwner ||
         (_currentUserId != null && _currentUserId == ownerUserId);
-    final memberCompatibility = await _loadGroupMemberCompatibility();
-    if (!mounted) return;
+
+    if (_groupListingDetail == null) {
+      unawaited(_loadGroupHousingContext());
+    }
 
     final leftGroup = await showListingGroupMemberProfilesSheet(
       context: context,
@@ -3302,7 +3300,7 @@ class _ChatScreenState extends State<ChatScreen> {
       groupProgress: detail == null
           ? null
           : ListingGroupProgress.fromListingDetail(detail),
-      memberCompatibility: memberCompatibility,
+      memberCompatibility: _groupMemberCompatibility,
       groupListingDetail: detail,
       onMemberTap: _navigateToProfile,
       onChanged: () {

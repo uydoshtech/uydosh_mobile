@@ -3221,6 +3221,8 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
               pageController: _pageController,
               buildPhotoUrl: _buildPhotoUrl,
               onPhotoTap: _openFullScreenPhotoViewer,
+              listingId: listingDetail.id,
+              ownerUserId: listingDetail.user.id,
             ),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),

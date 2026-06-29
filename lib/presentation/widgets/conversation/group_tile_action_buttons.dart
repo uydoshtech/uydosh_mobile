@@ -9,10 +9,8 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/conversation.dart";
-import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/follow_service.dart";
-import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/presentation/blocs/listing_owner_profile_bloc.dart";
@@ -210,11 +208,7 @@ class _GroupTileActionButtonsState extends State<GroupTileActionButtons> {
     final members = widget.conversation.members;
     if (listingId == null || members.isEmpty) return;
 
-    final detail = await _loadGroupListingDetail(listingId);
-    if (!context.mounted) return;
-
-    final ownerUserId = detail?.user.id ??
-        members.first.userId;
+    final ownerUserId = members.first.userId;
     final isOwner = widget.groupContext?.isOwner == true ||
         (widget.currentUserId != null &&
             widget.currentUserId == ownerUserId);
@@ -229,17 +223,8 @@ class _GroupTileActionButtonsState extends State<GroupTileActionButtons> {
       groupProgress: widget.groupContext == null
           ? null
           : ListingGroupProgress.fromGroupContext(widget.groupContext!),
-      groupListingDetail: detail,
       onMemberTap: (userId) => _navigateToProfile(context, userId),
     );
-  }
-
-  Future<ListingDetail?> _loadGroupListingDetail(int listingId) async {
-    try {
-      return await getIt<IListingService>().getListingDetail(listingId);
-    } catch (_) {
-      return null;
-    }
   }
 
   void _navigateToProfile(BuildContext context, int userId) {

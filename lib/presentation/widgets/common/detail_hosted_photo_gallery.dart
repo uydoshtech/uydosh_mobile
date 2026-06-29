@@ -23,6 +23,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
     required this.buildPhotoUrl,
     required this.onPhotoTapCarouselIndex,
     this.useTileShell = true,
+    this.topRightOverlay,
     super.key,
   });
 
@@ -31,6 +32,10 @@ class DetailHostedPhotoGallery extends StatelessWidget {
   final String Function(String rawPhotoUrl) buildPhotoUrl;
   final void Function(int carouselIndex) onPhotoTapCarouselIndex;
   final bool useTileShell;
+
+  /// Optional widget pinned to the carousel's top-right (e.g. favorite heart).
+  /// When set and there are multiple photos, the page counter moves to top-left.
+  final Widget? topRightOverlay;
 
   @override
   Widget build(BuildContext context) {
@@ -48,73 +53,86 @@ class DetailHostedPhotoGallery extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: PageView.builder(
-              controller: pageController,
-              itemCount: n,
-              itemBuilder: (context, index) {
-                final rawUrl = orderedRawPhotoUrls[index];
-                return GestureDetector(
-                  onTap: () => onPhotoTapCarouselIndex(index),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: Padding(
-                      padding: useTileShell
-                          ? const EdgeInsets.symmetric(horizontal: 8)
-                          : EdgeInsets.zero,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            _buildCoverFill(rawUrl),
-                            ColoredBox(
-                              color: Colors.black.withValues(alpha: 0.12),
-                            ),
-                            Positioned.fill(
-                              child: CachedNetworkImage(
-                                imageUrl: buildPhotoUrl(rawUrl),
-                                fit: BoxFit.contain,
-                                memCacheWidth: 720,
-                                fadeInDuration:
-                                    const Duration(milliseconds: 300),
-                                fadeInCurve: Curves.easeOut,
-                                placeholder: (context, url) =>
-                                    const SizedBox.shrink(),
-                                errorWidget: (context, url, error) =>
-                                    const SizedBox.shrink(),
-                              ),
-                            ),
-                            const Positioned(
-                              bottom: 12,
-                              right: 12,
-                              child: _PhotoGlassPill(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 4,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                PageView.builder(
+                  controller: pageController,
+                  itemCount: n,
+                  itemBuilder: (context, index) {
+                    final rawUrl = orderedRawPhotoUrls[index];
+                    final counterOnLeft = topRightOverlay != null && n > 1;
+                    return GestureDetector(
+                      onTap: () => onPhotoTapCarouselIndex(index),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Padding(
+                          padding: useTileShell
+                              ? const EdgeInsets.symmetric(horizontal: 8)
+                              : EdgeInsets.zero,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                _buildCoverFill(rawUrl),
+                                ColoredBox(
+                                  color: Colors.black.withValues(alpha: 0.12),
                                 ),
-                                child: ThemeIcon(
-                                  Icons.fullscreen,
-                                  color: Colors.white,
-                                  useThemeColor: false,
-                                  size: 18,
+                                Positioned.fill(
+                                  child: CachedNetworkImage(
+                                    imageUrl: buildPhotoUrl(rawUrl),
+                                    fit: BoxFit.contain,
+                                    memCacheWidth: 720,
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 300),
+                                    fadeInCurve: Curves.easeOut,
+                                    placeholder: (context, url) =>
+                                        const SizedBox.shrink(),
+                                    errorWidget: (context, url, error) =>
+                                        const SizedBox.shrink(),
+                                  ),
                                 ),
-                              ),
+                                const Positioned(
+                                  bottom: 12,
+                                  right: 12,
+                                  child: DetailPhotoGlassPill(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 4,
+                                    ),
+                                    child: ThemeIcon(
+                                      Icons.fullscreen,
+                                      color: Colors.white,
+                                      useThemeColor: false,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                                if (n > 1)
+                                  Positioned(
+                                    top: 12,
+                                    left: counterOnLeft ? 12 : null,
+                                    right: counterOnLeft ? null : 12,
+                                    child: _PhotoCounterPill(
+                                      text: "${index + 1}/$n",
+                                    ),
+                                  ),
+                              ],
                             ),
-                            if (n > 1)
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: _PhotoCounterPill(
-                                  text: "${index + 1}/$n",
-                                ),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                    );
+                  },
+                ),
+                if (topRightOverlay != null)
+                  Positioned(
+                    top: 12,
+                    right: useTileShell ? 20 : 12,
+                    child: topRightOverlay!,
                   ),
-                );
-              },
+              ],
             ),
           ),
           if (n > 1) ...[
@@ -205,7 +223,7 @@ class _PhotoCounterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PhotoGlassPill(
+    return DetailPhotoGlassPill(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Text(
         text,
@@ -221,10 +239,12 @@ class _PhotoCounterPill extends StatelessWidget {
   }
 }
 
-class _PhotoGlassPill extends StatelessWidget {
-  const _PhotoGlassPill({
+/// Liquid-glass pill for controls overlaid on detail photo carousels.
+class DetailPhotoGlassPill extends StatelessWidget {
+  const DetailPhotoGlassPill({
     required this.child,
     required this.padding,
+    super.key,
   });
 
   final Widget child;

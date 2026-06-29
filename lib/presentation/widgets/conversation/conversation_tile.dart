@@ -322,11 +322,18 @@ class ConversationTile extends StatelessWidget {
     final useLiquidGlass = useFeedTileSurface &&
         (themeState.usesLiquidGlassChrome);
 
-    final groupTitleStyle = TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 15,
-      color: textColor,
-    );
+    final groupTitleStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: secondaryTextColor,
+              height: 1.3,
+            ) ??
+        TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: secondaryTextColor,
+          height: 1.3,
+        );
     final groupParticipantNames = _groupParticipantNames(
       conversation,
       currentUserName: profileState.cachedName,

@@ -293,11 +293,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _minHighlightedDistrictLabelZoom = 10.0;
   static const double _brandMarkSize = 42.0;
   static const double _brandMarkInset = 10.0;
+  static const double _districtLabelZIndex = 1.0;
+  static const double _highlightedDistrictLabelZIndex = 1.2;
   static const double _listingPinZIndex = 100.0;
   static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
   static const double _walkingSpeedMetersPerMinute = 110.0;
-  static const double _minMetroStationWalkAreaLabelZoom = 14.0;
+  static const double _minMetroStationWalkAreaLabelZoom = 12.0;
   static const double _listingPinMetroStationOffsetMeters = 45.0;
   static const double _metroStationPlacemarkScale = 70 / 96;
   static const double _selectedMetroStationPlacemarkScale = 100 / 96;
@@ -346,8 +348,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
   final Map<int, Uint8List> _cachedSelectedMetroStationIconBytes = {};
   final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
+  final Map<String, Uint8List> _cachedDistrictLabelIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
   final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
+  final Set<String> _pendingDistrictLabelIconKeys = {};
   final Map<Uint8List, BitmapDescriptor> _cachedBitmapDescriptors = {};
   YandexMapController? _mapController;
   SearchSession? _groceryStoreSearchSession;
@@ -469,6 +473,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (oldWidget.nightModeEnabled != widget.nightModeEnabled) {
       _cachedMetroWalkAreaLabelIconBytes.clear();
       _pendingMetroWalkAreaLabelIconKeys.clear();
+      _cachedDistrictLabelIconBytes.clear();
+      _pendingDistrictLabelIconKeys.clear();
       _invalidateMapObjectsCache();
       _requestMapRebuild();
       unawaited(_refreshUserLocationLayerAppearance());

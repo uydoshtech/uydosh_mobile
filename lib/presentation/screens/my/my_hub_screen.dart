@@ -1,18 +1,11 @@
-import "dart:async";
-
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
-import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
-import "package:uy_dosh/domain/services/listing_group_service.dart";
-import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
-import "package:uy_dosh/presentation/screens/group_housing/my_group_bookmarks_screen.dart";
 import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
@@ -37,87 +30,22 @@ class MyHubScreen extends StatefulWidget {
 
 class _MyHubScreenState extends State<MyHubScreen>
     with SingleTickerProviderStateMixin {
-  static const int _conversationLimit = 100;
+  static const _visibleTabs = _MyHubTabSpec.tabs;
 
   late TabController _tabController;
-  bool _hasGroupBookmarks = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _visibleTabs.length, vsync: this);
     _tabController.addListener(_handleTabChanged);
-    GroupShortlistState().addListener(_handleShortlistChanged);
-    unawaited(_refreshGroupBookmarkAvailability());
   }
 
   @override
   void dispose() {
-    GroupShortlistState().removeListener(_handleShortlistChanged);
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     super.dispose();
-  }
-
-  List<_MyHubTabSpec> get _visibleTabs =>
-      _MyHubTabSpec.visibleTabs(hasGroupBookmarks: _hasGroupBookmarks);
-
-  Future<void> _refreshGroupBookmarkAvailability() async {
-    try {
-      final conversations = await getIt<IMessagingService>().getConversations(
-        limit: _conversationLimit,
-      );
-      final groupListingIds = conversations.data
-          .where((c) => c.contextType?.trim().toLowerCase() == "listing_group")
-          .map((c) => c.listingId)
-          .whereType<int>()
-          .toSet();
-
-      var total = 0;
-      for (final groupListingId in groupListingIds) {
-        final count = await getIt<IListingGroupService>().getShortlistCount(
-          groupListingId: groupListingId,
-        );
-        total += count;
-        GroupShortlistState().setShortlistCountForGroup(groupListingId, count);
-      }
-
-      if (!mounted) return;
-      _setGroupBookmarksVisible(total > 0);
-    } catch (_) {
-      if (!mounted) return;
-      _setGroupBookmarksVisible(false);
-    }
-  }
-
-  void _handleShortlistChanged() {
-    _setGroupBookmarksVisible(GroupShortlistState().totalShortlistCount > 0);
-  }
-
-  void _setGroupBookmarksVisible(bool visible) {
-    if (visible == _hasGroupBookmarks) return;
-    final previousTabs = _visibleTabs;
-    final selectedTab =
-        previousTabs[_tabController.index.clamp(0, previousTabs.length - 1)].id;
-
-    setState(() {
-      _hasGroupBookmarks = visible;
-      _replaceTabController(selectedTab: selectedTab);
-    });
-  }
-
-  void _replaceTabController({required _MyHubTabId selectedTab}) {
-    final nextTabs = _visibleTabs;
-    final nextIndex = nextTabs.indexWhere((tab) => tab.id == selectedTab);
-    final oldController = _tabController;
-    oldController.removeListener(_handleTabChanged);
-    _tabController = TabController(
-      length: nextTabs.length,
-      initialIndex: nextIndex < 0 ? 0 : nextIndex,
-      vsync: this,
-    );
-    _tabController.addListener(_handleTabChanged);
-    oldController.dispose();
   }
 
   void _handleTabChanged() {
@@ -130,8 +58,6 @@ class _MyHubScreenState extends State<MyHubScreen>
     switch (tab.id) {
       case _MyHubTabId.groups:
         return const MyGroupsScreen(embedded: true);
-      case _MyHubTabId.groupBookmarks:
-        return const MyGroupBookmarksScreen(embedded: true);
       case _MyHubTabId.listings:
         return const UserListingsScreen(embedded: true);
       case _MyHubTabId.favorites:
@@ -197,7 +123,7 @@ class _MyHubScreenState extends State<MyHubScreen>
   }
 }
 
-enum _MyHubTabId { groups, groupBookmarks, listings, favorites, alerts }
+enum _MyHubTabId { groups, listings, favorites, alerts }
 
 class _MyHubTabSpec {
   const _MyHubTabSpec({
@@ -212,39 +138,29 @@ class _MyHubTabSpec {
   final String labelKey;
   final bool useIconBadge;
 
-  static List<_MyHubTabSpec> visibleTabs({
-    required bool hasGroupBookmarks,
-  }) {
-    return [
-      const _MyHubTabSpec(
-        id: _MyHubTabId.groups,
-        icon: Icons.groups_outlined,
-        labelKey: "my_hub_tab_groups",
-        useIconBadge: false,
-      ),
-      if (hasGroupBookmarks)
-        const _MyHubTabSpec(
-          id: _MyHubTabId.groupBookmarks,
-          icon: Icons.bookmark_border,
-          labelKey: "my_hub_tab_bookmarks",
-        ),
-      const _MyHubTabSpec(
-        id: _MyHubTabId.listings,
-        icon: Icons.list_alt,
-        labelKey: "menu_my_listings",
-      ),
-      const _MyHubTabSpec(
-        id: _MyHubTabId.favorites,
-        icon: Icons.favorite_border,
-        labelKey: "menu_favorites",
-      ),
-      const _MyHubTabSpec(
-        id: _MyHubTabId.alerts,
-        icon: Icons.notifications_none,
-        labelKey: "my_hub_tab_alerts",
-      ),
-    ];
-  }
+  static const tabs = [
+    _MyHubTabSpec(
+      id: _MyHubTabId.groups,
+      icon: Icons.groups_outlined,
+      labelKey: "my_hub_tab_groups",
+      useIconBadge: false,
+    ),
+    _MyHubTabSpec(
+      id: _MyHubTabId.listings,
+      icon: Icons.list_alt,
+      labelKey: "menu_my_listings",
+    ),
+    _MyHubTabSpec(
+      id: _MyHubTabId.favorites,
+      icon: Icons.favorite_border,
+      labelKey: "menu_favorites",
+    ),
+    _MyHubTabSpec(
+      id: _MyHubTabId.alerts,
+      icon: Icons.notifications_none,
+      labelKey: "my_hub_tab_alerts",
+    ),
+  ];
 }
 
 class _MyHubTabRibbon extends StatefulWidget {

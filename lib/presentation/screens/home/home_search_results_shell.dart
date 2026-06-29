@@ -210,6 +210,8 @@ class _SearchResultsFabStack extends StatelessWidget {
   static const double compactButtonWidth = 61.2;
   static const double compactButtonHeight = 34.2;
   static const double compactButtonIconSize = 22.5;
+  static const _feedOverlayPanelColor = Colors.white;
+  static const _feedOverlayButtonBorder = BorderSide(color: Colors.black, width: 1);
 
   final bool inSearchContext;
   final double bottom;
@@ -227,6 +229,8 @@ class _SearchResultsFabStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final useLightFeedOverlayStyle = ThemeState().isLightTheme;
+
     return Positioned.fill(
       child: Stack(
         children: [
@@ -241,7 +245,14 @@ class _SearchResultsFabStack extends StatelessWidget {
                 width: compactButtonWidth,
                 height: compactButtonHeight,
                 iconSize: compactButtonIconSize,
-                foregroundColor: ThemeState().isBlueTheme ? Colors.white : null,
+                backgroundColor:
+                    useLightFeedOverlayStyle ? _feedOverlayPanelColor : null,
+                foregroundColor: useLightFeedOverlayStyle
+                    ? Colors.black
+                    : (ThemeState().isBlueTheme ? Colors.white : null),
+                borderSide:
+                    useLightFeedOverlayStyle ? _feedOverlayButtonBorder : null,
+                mapOverlay: useLightFeedOverlayStyle,
                 elevation: ThemeState().isBlueTheme ? null : 8,
               ),
             ),
@@ -265,10 +276,17 @@ class _SearchResultsFabStack extends StatelessWidget {
                       iconSize: compactButtonIconSize,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
-                      foregroundColor:
-                          ThemeState().isBlueTheme && showViewToggle
+                      backgroundColor:
+                          useLightFeedOverlayStyle ? _feedOverlayPanelColor : null,
+                      foregroundColor: useLightFeedOverlayStyle
+                          ? Colors.black
+                          : (ThemeState().isBlueTheme && showViewToggle
                               ? Colors.white
-                              : null,
+                              : null),
+                      borderSide: useLightFeedOverlayStyle
+                          ? _feedOverlayButtonBorder
+                          : null,
+                      mapOverlay: useLightFeedOverlayStyle,
                       elevation: ThemeState().isBlueTheme ? null : 8,
                     ),
                   );

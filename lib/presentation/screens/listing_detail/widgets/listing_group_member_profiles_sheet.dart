@@ -1,6 +1,6 @@
+import "dart:async";
 import "dart:math" as math;
 
-import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -14,6 +14,7 @@ import "package:uy_dosh/base/utils/string_utils.dart";
 import "package:uy_dosh/domain/models/conversation_member.dart";
 import "package:uy_dosh/domain/models/listing_group.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
+import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/utils/listing_group_progress.dart";
 import "package:uy_dosh/domain/utils/profile_match_scoring.dart";
@@ -37,7 +38,7 @@ const _sheetScreenMargin = 24.0;
 const _sheetMinimumHeight = 280.0;
 const _sheetHandleHeight = 14.0;
 const _sheetHeaderHeight = 118.0;
-const _sheetFullGroupHeaderExtraHeight = 55.0;
+const _sheetHeaderStatusPillHeight = 32.0;
 const _sheetHeaderExtraNameLineHeight = 20.0;
 const _sheetListBottomPadding = 16.0;
 const _sheetCardGap = 10.0;
@@ -383,19 +384,71 @@ class _ListingGroupMemberProfilesSheetState
   List<ListingGroupJoinRequest> _pendingRequests = const [];
   Map<int, GroupMemberCompatibilitySummary> _pendingRequestCompatibility =
       const {};
+  Map<int, GroupMemberCompatibilitySummary> _memberCompatibility = const {};
+  ListingDetail? _groupListingDetail;
   final Set<int> _busyRequestIds = {};
   var _isRemoving = false;
   var _isLeaving = false;
   var _loadingRequests = false;
   var _hasCheckedRequests = false;
+  var _loadingMemberCompatibility = false;
+
+  ListingDetail? get _effectiveGroupListingDetail =>
+      _groupListingDetail ?? widget.groupListingDetail;
 
   @override
   void initState() {
     super.initState();
     _members = List<ConversationMemberSummary>.from(widget.members);
+    _memberCompatibility = Map<int, GroupMemberCompatibilitySummary>.from(
+      widget.memberCompatibility,
+    );
+    _groupListingDetail = widget.groupListingDetail;
+    if (_needsMemberCompatibilityLoad) {
+      unawaited(_loadMemberCompatibility());
+    }
+    if (_groupListingDetail == null) {
+      unawaited(_loadGroupListingDetail());
+    }
     if (widget.isOwner) {
       _loadPendingRequests();
     }
+  }
+
+  bool get _needsMemberCompatibilityLoad {
+    final currentUserId = widget.currentUserId;
+    if (currentUserId == null) return false;
+    for (final member in _members) {
+      if (member.userId == currentUserId) continue;
+      if (!_memberCompatibility.containsKey(member.userId)) return true;
+    }
+    return false;
+  }
+
+  Future<void> _loadMemberCompatibility() async {
+    if (_loadingMemberCompatibility) return;
+    _loadingMemberCompatibility = true;
+    try {
+      final loaded = await GroupMemberCompatibilityHelper.loadForMembers(
+        members: _members,
+        profileService: getIt<IUserProfileService>(),
+        currentUserId: widget.currentUserId,
+      );
+      if (!mounted) return;
+      setState(() => _memberCompatibility = {..._memberCompatibility, ...loaded});
+    } finally {
+      _loadingMemberCompatibility = false;
+    }
+  }
+
+  Future<void> _loadGroupListingDetail() async {
+    try {
+      final detail = await getIt<IListingService>().getListingDetail(
+        widget.listingId,
+      );
+      if (!mounted) return;
+      setState(() => _groupListingDetail = detail);
+    } catch (_) {}
   }
 
   ListingGroupProgress? get _groupProgress {
@@ -407,15 +460,8 @@ class _ListingGroupMemberProfilesSheetState
     );
   }
 
-  int? get _activeLandlordUserId => widget
-      .groupListingDetail?.groupContext?.groupProgress?.activeLandlordUserId;
-
-  bool get _isGroupFull {
-    final progress = _groupProgress;
-    return progress != null &&
-        progress.target > 0 &&
-        progress.current >= progress.target;
-  }
+  int? get _activeLandlordUserId => _effectiveGroupListingDetail
+      ?.groupContext?.groupProgress?.activeLandlordUserId;
 
   List<ConversationMemberSummary> get _sortedMembers => _sortMembersForDisplay(
         members: _members,
@@ -435,22 +481,24 @@ class _ListingGroupMemberProfilesSheetState
         .toDouble();
   }
 
+  bool _showsStatusLabel(String? statusLabelKey) {
+    return statusLabelKey != null;
+  }
+
   double _estimatedSheetHeight({
     required List<ConversationMemberSummary> sortedMembers,
     required bool showPendingRequests,
     required double sheetWidth,
+    required String? statusLabelKey,
   }) {
     var height = _sheetHandleHeight +
         _estimatedHeaderHeight(
           sortedMembers: sortedMembers,
           sheetWidth: sheetWidth,
+          hasStatusLabel: _showsStatusLabel(statusLabelKey),
         ) +
         _sheetListBottomPadding +
         _estimatedMemberCardsHeight(sortedMembers);
-
-    if (_isGroupFull) {
-      height += _sheetFullGroupHeaderExtraHeight;
-    }
 
     if (showPendingRequests) {
       height += _sheetPendingSectionHeaderHeight;
@@ -467,8 +515,12 @@ class _ListingGroupMemberProfilesSheetState
   double _estimatedHeaderHeight({
     required List<ConversationMemberSummary> sortedMembers,
     required double sheetWidth,
+    required bool hasStatusLabel,
   }) {
-    if (sortedMembers.isEmpty) return _sheetHeaderHeight;
+    if (sortedMembers.isEmpty) {
+      return _sheetHeaderHeight +
+          (hasStatusLabel ? _sheetHeaderStatusPillHeight : 0);
+    }
 
     final visibleAvatars = math.min(sortedMembers.length, 5);
     final avatarSize = 32 * 1.1;
@@ -484,7 +536,9 @@ class _ListingGroupMemberProfilesSheetState
         (namesText.length / estimatedCharactersPerLine).ceil().clamp(1, 6);
     final extraLines = math.max(0, estimatedLines - 2);
 
-    return _sheetHeaderHeight + extraLines * _sheetHeaderExtraNameLineHeight;
+    return _sheetHeaderHeight +
+        extraLines * _sheetHeaderExtraNameLineHeight +
+        (hasStatusLabel ? _sheetHeaderStatusPillHeight : 0);
   }
 
   double _estimatedMemberCardsHeight(
@@ -501,7 +555,7 @@ class _ListingGroupMemberProfilesSheetState
 
   double _estimatedMemberCardHeight(ConversationMemberSummary member) {
     final hasHighlights =
-        widget.memberCompatibility[member.userId]?.fieldHighlights.isNotEmpty ??
+        _memberCompatibility[member.userId]?.fieldHighlights.isNotEmpty ??
             false;
     final hasLeaveAction = !widget.isOwner &&
         widget.currentUserId != null &&
@@ -784,14 +838,101 @@ class _ListingGroupMemberProfilesSheetState
     }
   }
 
+  Widget _buildProfilesList({
+    required BuildContext context,
+    required List<ConversationMemberSummary> sortedMembers,
+    required bool showPendingRequests,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showPendingRequests) ...[
+            Text(
+              L10n.get("group_pending_join_requests"),
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            if (_loadingRequests)
+              const SizedBox(
+                height: _sheetLoadingRequestsHeight,
+                child: Center(
+                  child: HouseLoadingIndicator(size: 24),
+                ),
+              )
+            else
+              for (final request in _pendingRequests) ...[
+                if (request != _pendingRequests.first) const SizedBox(height: 10),
+                _PendingJoinRequestCard(
+                  request: request,
+                  compatibility:
+                      _pendingRequestCompatibility[request.applicantUserId],
+                  isBusy: _busyRequestIds.contains(request.id),
+                  onTap: () {
+                    HapticFeedbackUtils.impact();
+                    Navigator.of(context).pop();
+                    widget.onMemberTap(request.applicantUserId);
+                  },
+                  onApprove: () => _approveRequest(request),
+                  onReject: () => _rejectRequest(request),
+                ),
+              ],
+            const SizedBox(height: 18),
+          ],
+          for (final member in sortedMembers) ...[
+            if (member != sortedMembers.first) const SizedBox(height: 10),
+            _MemberProfileCard(
+              member: member,
+              ownerUserId: widget.ownerUserId,
+              landlordUserId: _activeLandlordUserId,
+              currentUserId: widget.currentUserId,
+              compatibility: _memberCompatibility[member.userId],
+              canRemove: widget.isOwner &&
+                  member.userId != widget.ownerUserId &&
+                  !_isRemoving,
+              canLeave: !widget.isOwner &&
+                  widget.currentUserId != null &&
+                  member.userId == widget.currentUserId &&
+                  member.userId != widget.ownerUserId &&
+                  !_isLeaving,
+              onTap: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(context).pop();
+                widget.onMemberTap(member.userId);
+              },
+              onRemove: widget.isOwner &&
+                      member.userId != widget.ownerUserId &&
+                      !_isRemoving
+                  ? () => _confirmRemoveMember(member)
+                  : null,
+              onLeave: !widget.isOwner &&
+                      widget.currentUserId != null &&
+                      member.userId == widget.currentUserId &&
+                      member.userId != widget.ownerUserId &&
+                      !_isLeaving
+                  ? _confirmLeaveGroup
+                  : null,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final scheme = Theme.of(context).colorScheme;
         final sortedMembers = _sortedMembers;
+        final statusLabelKey =
+            _effectiveGroupListingDetail?.groupContext?.progressStatusLabelKey;
         final pendingRequestCount =
-            widget.groupListingDetail?.groupContext?.pendingJoinRequestCount;
+            _effectiveGroupListingDetail?.groupContext?.pendingJoinRequestCount;
         final shouldShowPendingLoader = _loadingRequests &&
             !_hasCheckedRequests &&
             (pendingRequestCount == null || pendingRequestCount > 0);
@@ -807,6 +948,7 @@ class _ListingGroupMemberProfilesSheetState
           sortedMembers: sortedMembers,
           showPendingRequests: showPendingRequests,
           sheetWidth: constraints.maxWidth,
+          statusLabelKey: statusLabelKey,
         );
         final minSheetHeight = maxSheetHeight < _sheetMinimumHeight
             ? maxSheetHeight
@@ -820,128 +962,47 @@ class _ListingGroupMemberProfilesSheetState
             .toDouble();
         final shouldScroll = wantsFullHeight;
 
+        final handle = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Center(
+              child: Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.onSurface.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            ),
+          ],
+        );
+        final header = _MemberProfilesHeader(
+          members: sortedMembers,
+          currentUserId: widget.currentUserId,
+          groupProgress: _groupProgress,
+          statusLabelKey: statusLabelKey,
+        );
+        final list = _buildProfilesList(
+          context: context,
+          sortedMembers: sortedMembers,
+          showPendingRequests: showPendingRequests,
+        );
+
         return SizedBox(
           height: sheetHeight,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 10),
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: scheme.onSurface.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                ),
-              ),
-              _MemberProfilesHeader(
-                members: sortedMembers,
-                currentUserId: widget.currentUserId,
-                isGroupFull: _isGroupFull,
-                groupProgress: _groupProgress,
-                statusLabelKey: widget
-                    .groupListingDetail?.groupContext?.progressStatusLabelKey,
-              ),
+              handle,
+              header,
               Expanded(
                 child: SingleChildScrollView(
                   physics: shouldScroll
                       ? const BouncingScrollPhysics()
                       : const ClampingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (showPendingRequests) ...[
-                              Text(
-                                L10n.get("group_pending_join_requests"),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                              const SizedBox(height: 10),
-                              if (_loadingRequests)
-                                const SizedBox(
-                                  height: _sheetLoadingRequestsHeight,
-                                  child: Center(
-                                    child: HouseLoadingIndicator(size: 24),
-                                  ),
-                                )
-                              else
-                                for (final request in _pendingRequests) ...[
-                                  if (request != _pendingRequests.first)
-                                    const SizedBox(height: 10),
-                                  _PendingJoinRequestCard(
-                                    request: request,
-                                    compatibility: _pendingRequestCompatibility[
-                                        request.applicantUserId],
-                                    isBusy:
-                                        _busyRequestIds.contains(request.id),
-                                    onTap: () {
-                                      HapticFeedbackUtils.impact();
-                                      Navigator.of(context).pop();
-                                      widget
-                                          .onMemberTap(request.applicantUserId);
-                                    },
-                                    onApprove: () => _approveRequest(request),
-                                    onReject: () => _rejectRequest(request),
-                                  ),
-                                ],
-                              const SizedBox(height: 18),
-                            ],
-                            for (final member in sortedMembers) ...[
-                              if (member != sortedMembers.first)
-                                const SizedBox(height: 10),
-                              _MemberProfileCard(
-                                member: member,
-                                ownerUserId: widget.ownerUserId,
-                                landlordUserId: _activeLandlordUserId,
-                                currentUserId: widget.currentUserId,
-                                compatibility:
-                                    widget.memberCompatibility[member.userId],
-                                canRemove: widget.isOwner &&
-                                    member.userId != widget.ownerUserId &&
-                                    !_isRemoving,
-                                canLeave: !widget.isOwner &&
-                                    widget.currentUserId != null &&
-                                    member.userId == widget.currentUserId &&
-                                    member.userId != widget.ownerUserId &&
-                                    !_isLeaving,
-                                onTap: () {
-                                  HapticFeedbackUtils.impact();
-                                  Navigator.of(context).pop();
-                                  widget.onMemberTap(member.userId);
-                                },
-                                onRemove: widget.isOwner &&
-                                        member.userId != widget.ownerUserId &&
-                                        !_isRemoving
-                                    ? () => _confirmRemoveMember(member)
-                                    : null,
-                                onLeave: !widget.isOwner &&
-                                        widget.currentUserId != null &&
-                                        member.userId == widget.currentUserId &&
-                                        member.userId != widget.ownerUserId &&
-                                        !_isLeaving
-                                    ? _confirmLeaveGroup
-                                    : null,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: list,
                 ),
               ),
             ],
@@ -978,14 +1039,12 @@ class _MemberProfilesHeader extends StatelessWidget {
   const _MemberProfilesHeader({
     required this.members,
     required this.currentUserId,
-    required this.isGroupFull,
     this.groupProgress,
     this.statusLabelKey,
   });
 
   final List<ConversationMemberSummary> members;
   final int? currentUserId;
-  final bool isGroupFull;
   final ListingGroupProgress? groupProgress;
   final String? statusLabelKey;
 
@@ -1005,48 +1064,14 @@ class _MemberProfilesHeader extends StatelessWidget {
     final progressLabel = membersNeeded > 0
         ? L10n.plural("group_members_needed", membersNeeded)
         : null;
-    final statusLabel = statusLabelKey == null ||
-            (isGroupFull && statusLabelKey == "group_status_full")
-        ? null
-        : L10n.get(statusLabelKey!);
+    final statusLabel =
+        statusLabelKey == null ? null : L10n.get(statusLabelKey!);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (isGroupFull) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.success.withValues(alpha: 0.28),
-                ),
-              ),
-              child: Row(
-                children: [
-                  ThemeIcon(
-                    CupertinoIcons.checkmark_circle_fill,
-                    size: 18,
-                    color: AppColors.success,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      L10n.get("group_member_profiles_formed"),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.successDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
           Text(
             L10n.get("view_member_profiles"),
             style: theme.textTheme.titleMedium?.copyWith(

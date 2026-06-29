@@ -89,37 +89,37 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     final reduceStartupIconWork = isAndroidDevice;
     final iconBytes = await _createIconBytes(
       Icons.home,
-      reduceStartupIconWork ? 84 : 100,
+      reduceStartupIconWork ? 67 : 80,
       outlineColor: Colors.white,
-      outlineWidth: reduceStartupIconWork ? 5 : 7,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
     );
     final darkIconBytes = await _createIconBytes(
       Icons.home,
-      reduceStartupIconWork ? 84 : 100,
+      reduceStartupIconWork ? 67 : 80,
       backgroundColor: BlueThemeColors.primaryDark,
       outlineColor: Colors.white,
-      outlineWidth: reduceStartupIconWork ? 5 : 7,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
     );
     final visitedIconBytes = await _createIconBytes(
       Icons.home,
-      reduceStartupIconWork ? 84 : 100,
+      reduceStartupIconWork ? 67 : 80,
       backgroundColor: _visitedPinBackground,
       outlineColor: Colors.white,
-      outlineWidth: reduceStartupIconWork ? 5 : 7,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
     );
     final darkVisitedIconBytes = await _createIconBytes(
       Icons.home,
-      reduceStartupIconWork ? 84 : 100,
+      reduceStartupIconWork ? 67 : 80,
       backgroundColor: _visitedPinBackgroundDark,
       outlineColor: Colors.white,
-      outlineWidth: reduceStartupIconWork ? 5 : 7,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
     );
     final selectedIconBytes = await _createIconBytes(
       Icons.home,
-      reduceStartupIconWork ? 100 : 124,
+      reduceStartupIconWork ? 80 : 99,
       backgroundColor: AppColors.primary,
       outlineColor: Colors.white,
-      outlineWidth: reduceStartupIconWork ? 6 : 7,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
       shadowColor: Colors.black.withValues(alpha: 0.35),
       shadowBlurRadius: reduceStartupIconWork ? 6 : 10,
       shadowOffset:
@@ -135,37 +135,37 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         final icon = ListingTypeHelper.getIcon(code);
         listingTypeIconBytes[code] = await _createIconBytes(
           icon,
-          100,
+          80,
           outlineColor: Colors.white,
-          outlineWidth: 7,
+          outlineWidth: 5,
         );
         darkListingTypeIconBytes[code] = await _createIconBytes(
           icon,
-          100,
+          80,
           backgroundColor: BlueThemeColors.primaryDark,
           outlineColor: Colors.white,
-          outlineWidth: 7,
+          outlineWidth: 5,
         );
         visitedListingTypeIconBytes[code] = await _createIconBytes(
           icon,
-          100,
+          80,
           backgroundColor: _visitedPinBackground,
           outlineColor: Colors.white,
-          outlineWidth: 7,
+          outlineWidth: 5,
         );
         darkVisitedListingTypeIconBytes[code] = await _createIconBytes(
           icon,
-          100,
+          80,
           backgroundColor: _visitedPinBackgroundDark,
           outlineColor: Colors.white,
-          outlineWidth: 7,
+          outlineWidth: 5,
         );
         selectedListingTypeIconBytes[code] = await _createIconBytes(
           icon,
-          124,
+          99,
           backgroundColor: AppColors.primary,
           outlineColor: Colors.white,
-          outlineWidth: 7,
+          outlineWidth: 5,
           shadowColor: Colors.black.withValues(alpha: 0.35),
           shadowBlurRadius: 10,
           shadowOffset: const Offset(0, 5),
@@ -510,6 +510,75 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     return "${widget.nightModeEnabled ? "dark" : "light"}|$label";
   }
 
+  String _districtLabelIconCacheKey({
+    required int locationId,
+    required String language,
+    required bool highlighted,
+  }) {
+    return "district_${locationId}_${language}_"
+        "${widget.nightModeEnabled ? "dark" : "light"}_"
+        "${highlighted ? "hi" : "normal"}";
+  }
+
+  void _ensureDistrictLabelIconBytes({
+    required int locationId,
+    required String label,
+    required bool highlighted,
+  }) {
+    final cacheKey = _districtLabelIconCacheKey(
+      locationId: locationId,
+      language: Localizations.localeOf(context).languageCode,
+      highlighted: highlighted,
+    );
+    if (_cachedDistrictLabelIconBytes.containsKey(cacheKey) ||
+        _pendingDistrictLabelIconKeys.contains(cacheKey)) {
+      return;
+    }
+
+    _pendingDistrictLabelIconKeys.add(cacheKey);
+    _createDistrictLabelIconBytes(label: label, highlighted: highlighted)
+        .then((bytes) {
+      _pendingDistrictLabelIconKeys.remove(cacheKey);
+      if (!mounted) return;
+      _cachedDistrictLabelIconBytes[cacheKey] = bytes;
+      _requestMapRebuild();
+    }).catchError((Object error) {
+      _pendingDistrictLabelIconKeys.remove(cacheKey);
+      logger.w("Could not create district label icon: $error");
+    });
+  }
+
+  Future<Uint8List> _createDistrictLabelIconBytes({
+    required String label,
+    required bool highlighted,
+  }) async {
+    final textColor =
+        widget.nightModeEnabled ? Colors.white : const Color(0xFF111111);
+    final fontSize = highlighted ? 42.0 : 38.0;
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    const horizontalPadding = 4.0;
+    const verticalPadding = 2.0;
+    final width = (textPainter.width + horizontalPadding * 2).ceil();
+    final height = (textPainter.height + verticalPadding * 2).ceil();
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+    final offset = Offset(horizontalPadding, verticalPadding);
+    textPainter.paint(canvas, offset);
+
+    return _createPngBytesFromPicture(pictureRecorder, width, height);
+  }
+
   Color _metroWalkAreaLabelColor() {
     return widget.nightModeEnabled ? Colors.white : Colors.black;
   }
@@ -780,13 +849,13 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     required bool darkMap,
     String? listingTypeCode,
   }) async {
-    const width = 148;
-    const height = 96;
+    const width = 118;
+    const height = 77;
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
     const center = Offset(width / 2, height / 2);
-    final pillHeight = selected ? 68.0 : 62.0;
-    final pillWidth = selected ? 130.0 : 122.0;
+    final pillHeight = selected ? 54.0 : 50.0;
+    final pillWidth = selected ? 104.0 : 98.0;
     final pillRect = Rect.fromCenter(
       center: center,
       width: pillWidth,
@@ -797,14 +866,14 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
 
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: selected ? 0.35 : 0.24)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8)
       ..style = PaintingStyle.fill;
-    canvas.drawRRect(pillRRect.shift(const Offset(0, 5)), shadowPaint);
+    canvas.drawRRect(pillRRect.shift(const Offset(0, 4)), shadowPaint);
 
     final outlinePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-    final outlineWidth = selected ? 8.0 : 6.0;
+    final outlineWidth = selected ? 6.0 : 4.0;
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         pillRect.inflate(outlineWidth),
@@ -833,7 +902,7 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         text: String.fromCharCode(iconData.codePoint),
         style: TextStyle(
           color: Colors.white,
-          fontSize: label.length > 2 ? 32 : 38,
+          fontSize: label.length > 2 ? 26 : 30,
           fontFamily: iconData.fontFamily,
           package: iconData.fontPackage,
         ),
@@ -845,14 +914,14 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
         text: label,
         style: TextStyle(
           color: Colors.white,
-          fontSize: label.length > 2 ? 30 : 36,
+          fontSize: label.length > 2 ? 24 : 29,
           fontWeight: FontWeight.w900,
           letterSpacing: -0.8,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    const gap = 8.0;
+    const gap = 6.0;
     final contentWidth = textPainter.width + gap + iconPainter.width;
     final contentHeight = iconPainter.height > textPainter.height
         ? iconPainter.height
