@@ -273,21 +273,18 @@ class _SearchFloatingActionButtonState extends State<SearchFloatingActionButton>
     final searchFiltersState = widget.searchFiltersState;
     if (searchFiltersState == null) return;
 
-    searchFiltersState.applyProfileValuesForSearchSheet().then((_) {
-      if (!context.mounted) return;
-      SearchBottomSheetWidget.show(
-        context,
-        replaceCurrentRoute: widget.replaceCurrentRoute,
-        openedFromHomeScreen: widget.openedFromHomeScreen,
-        currentListingTypeId: searchFiltersState.selectedListingTypeId,
-        currentLocationId: searchFiltersState.selectedLocationIndex,
-        currentSubwayStationId: searchFiltersState.selectedStationId,
-        currentSubwayLineId: searchFiltersState.selectedSubwayLine,
-        currentGender: searchFiltersState.selectedGender,
-        currentMinPrice: searchFiltersState.minPrice,
-        currentMaxPrice: searchFiltersState.maxPrice,
-      );
-    });
+    SearchBottomSheetWidget.show(
+      context,
+      replaceCurrentRoute: widget.replaceCurrentRoute,
+      openedFromHomeScreen: widget.openedFromHomeScreen,
+      currentListingTypeId: searchFiltersState.selectedListingTypeId,
+      currentLocationId: searchFiltersState.selectedLocationIndex,
+      currentSubwayStationId: searchFiltersState.selectedStationId,
+      currentSubwayLineId: searchFiltersState.selectedSubwayLine,
+      currentGender: searchFiltersState.selectedGender,
+      currentMinPrice: searchFiltersState.minPrice,
+      currentMaxPrice: searchFiltersState.maxPrice,
+    );
   }
 }
 

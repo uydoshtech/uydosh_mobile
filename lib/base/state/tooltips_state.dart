@@ -33,9 +33,13 @@ class TooltipsState extends ChangeNotifier {
 
   bool _enabled = true;
   bool _isInitialized = false;
+  bool _metroAllStationsHintDismissed = true;
 
   bool get enabled => _enabled;
   bool get isInitialized => _isInitialized;
+
+  /// Cached from prefs during [initialize]. Defaults to hidden until loaded.
+  bool get metroAllStationsHintDismissed => _metroAllStationsHintDismissed;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -49,6 +53,8 @@ class TooltipsState extends ChangeNotifier {
       }
 
       _enabled = prefs.getBool(_keyTooltipsEnabled) ?? true;
+      _metroAllStationsHintDismissed =
+          prefs.getBool(keyMetroAllStationsHintDismissed) ?? false;
       logger.d("Loaded tooltips preference: $_enabled");
     } catch (e) {
       logger.d("Error initializing tooltips state: $e");
@@ -73,6 +79,18 @@ class TooltipsState extends ChangeNotifier {
     }
   }
 
+  Future<void> dismissMetroAllStationsHint() async {
+    if (_metroAllStationsHintDismissed) return;
+    _metroAllStationsHintDismissed = true;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(keyMetroAllStationsHintDismissed, true);
+    } catch (e) {
+      logger.d("Error saving metro all-stations hint dismissal: $e");
+    }
+  }
+
   /// Re-enable tips and reset known per-tooltip dismissal flags.
   ///
   /// This is intended for the Settings toggle: when user turns tips back on,
@@ -86,6 +104,8 @@ class TooltipsState extends ChangeNotifier {
       await prefs.setBool(keyMetroAllStationsHintDismissed, false);
       await prefs.setBool(keyEmptySearchBellHintDismissed, false);
       await prefs.setBool(keyGroupedChatsExpandCoachDismissed, false);
+      _metroAllStationsHintDismissed = false;
+      notifyListeners();
     } catch (e) {
       logger.d("Error resetting tooltip flags: $e");
     }

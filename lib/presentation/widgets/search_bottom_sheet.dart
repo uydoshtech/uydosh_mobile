@@ -2,7 +2,6 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -18,14 +17,13 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
-import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart"; // ignore: unused_import
 import "package:uy_dosh/domain/services/search_alert_service.dart"; // ignore: unused_import
 import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart"; // ignore: unused_import
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
-import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.dart";
+import "package:uy_dosh/presentation/widgets/common/modal_sheet_glass_scope.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/notify_search_alert_app_bar_button.dart";
@@ -104,58 +102,19 @@ class SearchBottomSheetWidget {
     IconData primaryIcon = Icons.search,
     SearchBottomSheetAction primaryAction = SearchBottomSheetAction.feed,
   }) async {
-    // Ensure first-time users see sensible defaults (role + gender) without
-    // overwriting any explicit saved search preferences.
-    //
-    // This is intentionally done here (not only in specific buttons) so any
-    // caller of the bottom sheet gets consistent behavior.
     final searchFiltersState = SearchFiltersState();
-    final prefs = await SharedPreferences.getInstance();
-    final hadSavedListingTypeId =
-        prefs.getInt("search_listing_type_id") != null;
-    final hadSavedGender = prefs.getInt("search_gender") != null;
-    final isFirstOpen = !hadSavedListingTypeId && !hadSavedGender;
 
-    await searchFiltersState.initialize();
-
-    // Mutations made inside the sheet (wheel scrolls, toggles, etc.) must NOT
-    // bleed into the home filter chips ribbon — only an explicit Search press
-    // should commit the new filters. Open an editing session that suppresses
-    // outside notifications + remote persist, snapshot the current state so
-    // we can revert on dismiss, and let [_performSearch] flip a commit flag
-    // before popping.
     searchFiltersState.beginEditingSession();
     final preSheetSnapshot = SearchFiltersSnapshot.capture(searchFiltersState);
     var didCommit = false;
 
-    if (applyProfileDefaults) {
-      await searchFiltersState.applyProfileValuesForSearchSheet();
-    }
-
-    // Some callers pass "defaults" (e.g. 2/male) on the first open which would
-    // override the profile-derived values inside the sheet initState. When we
-    // detect first open (no saved prefs yet), force-seed the sheet with the
-    // computed values instead.
+    final isFirstOpen = searchFiltersState.isFirstSearchSheetOpen;
     final resolvedListingTypeId = applyProfileDefaults && isFirstOpen
         ? searchFiltersState.selectedListingTypeId
         : currentListingTypeId;
     final resolvedGender = applyProfileDefaults && isFirstOpen
         ? searchFiltersState.selectedGender
         : currentGender;
-
-    // Try to get existing blocs from context to avoid redundant fetches
-    ListingsBloc? existingListingsBloc;
-    LocationsBloc? existingLocationsBloc;
-    try {
-      existingListingsBloc = context.read<ListingsBloc>();
-    } catch (_) {
-      existingListingsBloc = null;
-    }
-    try {
-      existingLocationsBloc = context.read<LocationsBloc>();
-    } catch (_) {
-      existingLocationsBloc = null;
-    }
 
     void markCommitted() {
       didCommit = true;
@@ -165,30 +124,8 @@ class SearchBottomSheetWidget {
       await showAppBottomSheet<void>(
         context: context,
         useSafeArea: false,
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            // Provide ListingsBloc - either existing or new one
-            existingListingsBloc != null
-                ? BlocProvider.value(value: existingListingsBloc)
-                : BlocProvider(
-                    create: (context) => ListingsBloc(getIt<IListingService>()),
-                  ),
-            if (!metroOnly) ...[
-              // Provide LocationsBloc - reuse if available to avoid refetch
-              existingLocationsBloc != null
-                  ? BlocProvider.value(value: existingLocationsBloc)
-                  : BlocProvider(
-                      create: (context) {
-                        final locationsBloc = LocationsBloc(
-                          getIt<ILocationService>(),
-                        );
-                        locationsBloc
-                            .add(const LocationsEvent.fetchLocations());
-                        return locationsBloc;
-                      },
-                    ),
-            ],
-          ],
+        builder: (context) => ModalSheetGlassScope(
+          nestedPlateBlurEnabled: false,
           child: _SearchBottomSheetContent(
             replaceCurrentRoute: replaceCurrentRoute,
             openedFromHomeScreen: openedFromHomeScreen,

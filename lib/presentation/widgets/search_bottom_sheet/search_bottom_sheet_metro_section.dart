@@ -3,7 +3,6 @@ import "dart:async";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
-import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -19,7 +18,6 @@ import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_hint_bubble.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/tooltip_fade.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet/search_bottom_sheet_hints_config.dart";
@@ -79,9 +77,9 @@ class _SearchBottomSheetMetroSectionState
   /// Loaded from SharedPreferences so the dismissal survives across sheet
   /// re-openings and app restarts. Until prefs resolve we keep the hint
   /// hidden to avoid a flicker where it briefly shows then disappears.
-  bool _allStationsHintDismissed = true;
+  bool _deferHeavyStationList = true;
 
-  /// Debounce gate for the all-stations hint. Cycling through metro lines
+  /// Debounce gate for the all-stations hint.
   /// reloads stations in rapid succession; without a settle delay the hint
   /// would flicker on/off and visibly jerk the layout. We only flip this
   /// to `true` after the user has paused on a line for [_hintDebounceDelay].
@@ -106,11 +104,14 @@ class _SearchBottomSheetMetroSectionState
   @override
   void initState() {
     super.initState();
-    _loadAllStationsHintDismissed();
     TooltipsState().addListener(_onTooltipsStateChanged);
     _lastSeenLine = widget.searchFiltersState.selectedSubwayLine;
     _scheduleHintDebounce(_lastSeenLine);
-    _scheduleScrollSelectedStationToTop(jump: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _deferHeavyStationList = false);
+      _scheduleScrollSelectedStationToTop(jump: true);
+    });
   }
 
   @override
@@ -202,7 +203,6 @@ class _SearchBottomSheetMetroSectionState
 
   void _onTooltipsStateChanged() {
     if (!mounted) return;
-    _loadAllStationsHintDismissed();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _syncMetroAllStationsHintPortal();
     });
@@ -272,37 +272,17 @@ class _SearchBottomSheetMetroSectionState
     );
   }
 
-  Future<void> _loadAllStationsHintDismissed() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final dismissed =
-          prefs.getBool(TooltipsState.keyMetroAllStationsHintDismissed) ??
-              false;
-      setStateIfMounted(() => _allStationsHintDismissed = dismissed);
-    } catch (_) {
-      // If prefs are unavailable, keep the hint hidden by default.
-    }
-  }
-
   Future<void> _dismissAllStationsHint() async {
-    setStateIfMounted(() => _allStationsHintDismissed = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _syncMetroAllStationsHintPortal();
     });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(
-        TooltipsState.keyMetroAllStationsHintDismissed,
-        true,
-      );
-    } catch (_) {}
+    await TooltipsState().dismissMetroAllStationsHint();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (!SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
+    if (SearchBottomSheetHintsConfig.metroAllStationsHintEnabled &&
+        !SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) _syncMetroAllStationsHintPortal();
       });
@@ -311,31 +291,32 @@ class _SearchBottomSheetMetroSectionState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn)
-          TooltipFade(
-            visible: _shouldShowHint,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Expanded(child: SizedBox.shrink()),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: NeumorphicHintBubble(
-                        message: _buildHintSpan(context, theme),
-                        onClose: _dismissAllStationsHint,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        // “All N stations on this line” hint — disabled via [metroAllStationsHintEnabled].
+        // if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn)
+        //   TooltipFade(
+        //     visible: _shouldShowHint,
+        //     child: Padding(
+        //       padding: const EdgeInsets.fromLTRB(0, 4, 8, 8),
+        //       child: Row(
+        //         crossAxisAlignment: CrossAxisAlignment.end,
+        //         children: [
+        //           const Expanded(child: SizedBox.shrink()),
+        //           const SizedBox(width: 12),
+        //           Expanded(
+        //             child: Align(
+        //               alignment: Alignment.bottomCenter,
+        //               child: NeumorphicHintBubble(
+        //                 message: _buildHintSpan(context, theme),
+        //                 onClose: _dismissAllStationsHint,
+        //               ),
+        //             ),
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
         RepaintBoundary(
-          child: _buildPickersRow(context, theme),
+          child: _buildPickersRow(context, Theme.of(context)),
         ),
       ],
     );
@@ -492,7 +473,8 @@ class _SearchBottomSheetMetroSectionState
                 curve: Curves.easeInOutCubic,
                 alignment: Alignment.topCenter,
                 child: widget.searchFiltersState.selectedSubwayLine > 0 &&
-                        widget.currentStations.isNotEmpty
+                        widget.currentStations.isNotEmpty &&
+                        !_deferHeavyStationList
                     ? _buildMetroStationPicker(context, theme)
                     : _buildMetroStationPlaceholder(context, theme),
               ),
@@ -505,6 +487,9 @@ class _SearchBottomSheetMetroSectionState
 
   /// [OverlayPortal] floats the hint above wheels when inline flag is false.
   Widget _wrapStationPickerWithHintAnchor(Widget child) {
+    if (!SearchBottomSheetHintsConfig.metroAllStationsHintEnabled) {
+      return child;
+    }
     if (SearchBottomSheetHintsConfig.metroAllStationsHintUsesInlineColumn) {
       return child;
     }
@@ -517,13 +502,14 @@ class _SearchBottomSheetMetroSectionState
   }
 
   bool get _shouldShowHint =>
+      SearchBottomSheetHintsConfig.metroAllStationsHintEnabled &&
       // Suppress entirely while the metro coach-mark tutorial is on screen so
       // the bubble doesn't fight for attention with the spotlight overlay.
       !MetroTutorialOverlay.isActive &&
       // Honor the global tooltips toggle (Settings > Tips).
       TooltipsState().enabled &&
       // Respect per-tip dismissal (small "x" in the bubble corner).
-      !_allStationsHintDismissed &&
+      !TooltipsState().metroAllStationsHintDismissed &&
       // Only surface after the user has settled on a line (debounced) so the
       // bubble doesn't strobe in/out while they cycle through lines.
       _hintDebounceSettled &&

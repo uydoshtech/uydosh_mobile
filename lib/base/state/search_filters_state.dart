@@ -42,6 +42,8 @@ class SearchFiltersState extends ChangeNotifier {
   // [ensureDefaultFiltersBuiltAndSaved] to decide between building fresh
   // profile defaults vs. keeping the user's saved filters untouched.
   bool _hadSavedFilters = false;
+  bool _hadSavedListingTypeId = false;
+  bool _hadSavedGender = false;
   Future<void> _prefsWriteChain = Future<void>.value();
   bool _suppressRemotePersist = false;
   Timer? _remoteSaveDebounce;
@@ -72,6 +74,7 @@ class SearchFiltersState extends ChangeNotifier {
       }
     }
     await initialize();
+    await applyProfileValuesForSearchSheet();
     if (!authenticated) return;
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
     await hydrateFromBackendForCurrentUser();
@@ -147,6 +150,7 @@ class SearchFiltersState extends ChangeNotifier {
   void endEditingSession({required bool commit}) {
     if (_editingSessionDepth > 0) _editingSessionDepth--;
     if (_editingSessionDepth == 0 && commit) {
+      unawaited(_persistCurrentFiltersToPrefs());
       super.notifyListeners();
       if (!_remotePersistGated) _scheduleRemotePersist();
     }
@@ -364,11 +368,107 @@ class SearchFiltersState extends ChangeNotifier {
   Future<void> _enqueuePrefsWrite(
     Future<void> Function(SharedPreferences prefs) write,
   ) {
+    if (_editingSessionDepth > 0) {
+      return Future<void>.value();
+    }
     _prefsWriteChain = _prefsWriteChain.then((_) async {
       final prefs = await SharedPreferences.getInstance();
       await write(prefs);
     });
     return _prefsWriteChain;
+  }
+
+  Future<void> _persistCurrentFiltersToPrefs() async {
+    await _enqueuePrefsWrite((prefs) async {
+      await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
+      await prefs.setString(
+        SearchFilterListingTypeIdsCodec.prefsKey,
+        SearchFilterListingTypeIdsCodec.toPrefsString(_searchListingTypeIds),
+      );
+      await prefs.remove("search_landlord_demand_bundle");
+      await prefs.setInt("search_location_index", _selectedLocationIndex);
+      await prefs.setInt("search_subway_line", _selectedSubwayLine);
+      await prefs.setInt("search_station_index", _selectedStationIndex);
+      await prefs.setInt("search_station_id", _selectedStationId);
+      await prefs.setString(
+        _stationIdsPrefsKey,
+        _stationIdsToPrefsString(_selectedStationIds),
+      );
+      await prefs.setInt("search_gender", _selectedGender);
+      await prefs.setDouble("search_min_price", _minPrice);
+      await prefs.setDouble("search_max_price", _maxPrice);
+      await prefs.setBool("search_private_room", _privateRoom);
+      await prefs.setBool("search_with_photo", _withPhoto);
+    });
+    _hadSavedListingTypeId = true;
+    _hadSavedGender = true;
+  }
+
+  /// Seeds in-memory filter fields when opening the search sheet. Skips disk
+  /// I/O and listener notifications — callers run inside an editing session.
+  void seedFromSheetOpenParams({
+    int? listingTypeId,
+    int? locationId,
+    int? subwayLineId,
+    int? subwayStationId,
+    List<int>? subwayStationIds,
+    int? gender,
+    double? minPrice,
+    double? maxPrice,
+    bool? privateRoom,
+    bool? withPhoto,
+  }) {
+    if (listingTypeId != null) {
+      _selectedListingTypeId = listingTypeId;
+      _searchListingTypeIds = [listingTypeId];
+    }
+
+    if (locationId != null) {
+      _selectedLocationIndex = locationId;
+    }
+
+    if (subwayLineId != null) {
+      _selectedSubwayLine = subwayLineId;
+    }
+
+    if (subwayStationId != null) {
+      _selectedStationId = subwayStationId;
+      if (subwayStationId > 0) {
+        _selectedStationIds = [subwayStationId];
+      }
+    }
+
+    if (subwayStationIds != null) {
+      _selectedStationIds = List<int>.from(subwayStationIds);
+      _selectedStationId =
+          subwayStationIds.length == 1 ? subwayStationIds.first : 0;
+    }
+
+    if (gender != null) {
+      _selectedGender = gender;
+    }
+
+    if (minPrice != null && maxPrice != null) {
+      _minPrice = minPrice;
+      _maxPrice = maxPrice;
+    }
+
+    if (privateRoom != null) {
+      _privateRoom = privateRoom;
+    }
+
+    if (withPhoto != null) {
+      _withPhoto = withPhoto;
+    }
+
+    if (subwayLineId != null &&
+        subwayLineId > 0 &&
+        subwayStationId == null &&
+        (subwayStationIds == null || subwayStationIds.isEmpty)) {
+      _selectedStationIndex = 0;
+      _selectedStationId = 0;
+      _selectedStationIds = const [];
+    }
   }
 
   int get selectedListingTypeId => _selectedListingTypeId;
@@ -438,6 +538,10 @@ class SearchFiltersState extends ChangeNotifier {
   bool get withPhoto => _withPhoto;
   bool get isInitialized => _isInitialized;
 
+  /// True when the user has never saved listing type or gender prefs yet.
+  bool get isFirstSearchSheetOpen =>
+      !_hadSavedListingTypeId && !_hadSavedGender;
+
   // Initialize and load saved search filters from storage
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -486,6 +590,7 @@ class SearchFiltersState extends ChangeNotifier {
 
       // Load listing type ID - use profile default when no saved preference
       final savedListingTypeId = prefs.getInt("search_listing_type_id");
+      _hadSavedListingTypeId = savedListingTypeId != null;
       _selectedListingTypeId = savedListingTypeId ?? 2;
 
       // Load location index
@@ -518,6 +623,7 @@ class SearchFiltersState extends ChangeNotifier {
 
       // Load gender - use profile default when no saved preference
       final savedGender = prefs.getInt("search_gender");
+      _hadSavedGender = savedGender != null;
       _selectedGender = savedGender ?? 1;
 
       // Load price range
@@ -831,6 +937,7 @@ class SearchFiltersState extends ChangeNotifier {
   }) async {
     _selectedListingTypeId = listingTypeId;
     _searchListingTypeIds = searchListingTypeIds ?? [listingTypeId];
+    _hadSavedListingTypeId = true;
 
     try {
       await _enqueuePrefsWrite(_persistListingTypePrefs);
@@ -963,6 +1070,7 @@ class SearchFiltersState extends ChangeNotifier {
   // Update gender
   Future<void> setGender(int gender) async {
     _selectedGender = gender;
+    _hadSavedGender = true;
 
     try {
       await _enqueuePrefsWrite((prefs) async {

@@ -3,6 +3,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
+import "package:uy_dosh/presentation/widgets/common/modal_sheet_glass_scope.dart";
 
 /// Lightweight “glass” plate for controls that sit on top of a blurred sheet.
 ///
@@ -74,7 +75,8 @@ class LiquidGlassPlate extends StatelessWidget {
       );
     }
 
-    final enableGlass = LiquidGlassRendering.effectsEnabled(context);
+    final enableGlass = LiquidGlassRendering.effectsEnabled(context) &&
+        ModalSheetGlassScope.nestedPlateBlurEnabledOf(context);
     final plateShadows = UiPerformancePolicy.solidColorsPreferredForDevice
         ? const <BoxShadow>[]
         : [

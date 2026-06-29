@@ -13,95 +13,42 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   bool _metroLineChangedInThisSession = false;
   bool _isCreatingSearchAlert = false;
   int _searchAlertCelebrationTick = 0;
+  bool _showDeferredSections = false;
 
   @override
   void initState() {
     super.initState();
 
-    logger.d(
-      "DEBUG: SearchBottomSheet initState - widget.currentSubwayStationId: ${widget.currentSubwayStationId}, widget.currentSubwayLineId: ${widget.currentSubwayLineId}",
-    );
-    logger.d(
-      "DEBUG: SearchBottomSheet initState - global subwayLine: ${_searchFiltersState.selectedSubwayLine}, global stationId: ${_searchFiltersState.selectedStationId}",
-    );
-
-    // Initialize the station picker controller only once
-    // Don"t set initialItem here to avoid forcing position 0
     _stationPickerController = FixedExtentScrollController();
     _metroLineScrollController = FixedExtentScrollController(
       initialItem:
           widget.currentSubwayLineId ?? _searchFiltersState.selectedSubwayLine,
     );
-    // Position is synced in [LocationPicker] once locations load (controller
-    // is created before the async locations list exists).
     _locationScrollController = FixedExtentScrollController();
 
-    // Use the current search parameters to restore the correct state
-    if (widget.currentListingTypeId != null) {
-      unawaited(
-        _searchFiltersState.setListingTypeId(widget.currentListingTypeId!),
-      );
-    }
+    _searchFiltersState.seedFromSheetOpenParams(
+      listingTypeId: widget.currentListingTypeId,
+      locationId: widget.metroOnly ? null : widget.currentLocationId,
+      subwayLineId: widget.currentSubwayLineId,
+      subwayStationId: widget.currentSubwayStationId,
+      subwayStationIds: widget.currentSubwayStationIds,
+      gender: widget.currentGender,
+      minPrice: widget.currentMinPrice,
+      maxPrice: widget.currentMaxPrice,
+      privateRoom: widget.currentPrivateRoom,
+      withPhoto: widget.currentWithPhoto,
+    );
 
-    if (!widget.metroOnly && widget.currentLocationId != null) {
-      unawaited(
-          _searchFiltersState.setLocationIndex(widget.currentLocationId!));
-    }
-
-    if (widget.currentSubwayLineId != null) {
-      unawaited(_searchFiltersState.setSubwayLine(widget.currentSubwayLineId!));
-    }
-
-    if (widget.currentSubwayStationId != null) {
-      unawaited(
-          _searchFiltersState.setStationId(widget.currentSubwayStationId!));
-    }
-
-    if (widget.currentSubwayStationIds != null) {
-      unawaited(
-        _searchFiltersState.setStationIds(widget.currentSubwayStationIds!),
-      );
-    }
-
-    if (widget.currentGender != null) {
-      unawaited(_searchFiltersState.setGender(widget.currentGender!));
-    }
-
-    // Restore price range if provided
-    if (widget.currentMinPrice != null && widget.currentMaxPrice != null) {
-      unawaited(
-        _searchFiltersState.setPriceRange(
-          widget.currentMinPrice!,
-          widget.currentMaxPrice!,
-        ),
-      );
-    }
-
-    if (widget.currentPrivateRoom != null) {
-      unawaited(
-        _searchFiltersState.setPrivateRoom(widget.currentPrivateRoom!),
-      );
-    }
-    if (widget.currentWithPhoto != null) {
-      unawaited(
-        _searchFiltersState.setWithPhoto(widget.currentWithPhoto!),
-      );
-    }
-
-    // Load stations if there"s a saved subway line (static MetroCache).
     if (_searchFiltersState.selectedSubwayLine > 0) {
       _onStationsLoaded(
         MetroCache.getStationsForLine(_searchFiltersState.selectedSubwayLine),
       );
     }
 
-    // Ensure station selection is reset when opening with only metro line (no specific station)
-    if (widget.currentSubwayLineId != null &&
-        widget.currentSubwayLineId! > 0 &&
-        widget.currentSubwayStationId == null) {
-      unawaited(_searchFiltersState.setStationIndex(0));
-      unawaited(_searchFiltersState.setStationId(0));
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _showDeferredSections = true);
+    });
 
     // Show metro tutorial only when opened from home screen, onboarding toggle is ON,
     // user is logged in, and not yet completed
@@ -716,30 +663,32 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
                   const SizedBox(height: 12),
 
-                  // Price, Private Room, Search button
-                  SearchBottomSheetSecondaryFilters(
-                    searchFiltersState: _searchFiltersState,
-                    onPriceRangeChanged: (minPrice, maxPrice) {
-                      _searchFiltersState.setPriceRange(
-                        minPrice,
-                        maxPrice,
-                      );
-                      setState(() {});
-                    },
-                    onPrivateRoomChanged: (value) {
-                      _searchFiltersState.setPrivateRoom(value);
-                      setState(() {});
-                    },
-                    onWithPhotoChanged: (value) {
-                      _searchFiltersState.setWithPhoto(value);
-                      setState(() {});
-                    },
-                    onPrimaryPressed: () => _performSearch(
-                      action: widget.primaryAction,
-                    ),
-                    primaryLabelKey: widget.primaryLabelKey,
-                    primaryIcon: widget.primaryIcon,
-                  ),
+                  if (_showDeferredSections)
+                    SearchBottomSheetSecondaryFilters(
+                      searchFiltersState: _searchFiltersState,
+                      onPriceRangeChanged: (minPrice, maxPrice) {
+                        _searchFiltersState.setPriceRange(
+                          minPrice,
+                          maxPrice,
+                        );
+                        setState(() {});
+                      },
+                      onPrivateRoomChanged: (value) {
+                        _searchFiltersState.setPrivateRoom(value);
+                        setState(() {});
+                      },
+                      onWithPhotoChanged: (value) {
+                        _searchFiltersState.setWithPhoto(value);
+                        setState(() {});
+                      },
+                      onPrimaryPressed: () => _performSearch(
+                        action: widget.primaryAction,
+                      ),
+                      primaryLabelKey: widget.primaryLabelKey,
+                      primaryIcon: widget.primaryIcon,
+                    )
+                  else
+                    const SizedBox(height: 88),
                 ],
               ),
             ),
