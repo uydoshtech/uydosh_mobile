@@ -145,32 +145,11 @@ class _MapListingTileSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final bg = scheme.surface;
-    final isDark = theme.brightness == Brightness.dark;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.lerp(
-              bg,
-              scheme.onSurface,
-              isDark ? 0.06 : 0.03,
-            )!,
-            bg,
-          ],
-        ),
-        boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-      ),
+    final bg = Theme.of(context).colorScheme.surface;
+    return ClipRRect(
+      borderRadius: borderRadius,
       child: Material(
-        color: solidColors ? bg : Colors.transparent,
-        borderRadius: borderRadius,
-        clipBehavior: Clip.antiAlias,
+        color: bg,
         child: child,
       ),
     );
@@ -198,15 +177,21 @@ class _PinGroupSummaryTooltip extends StatefulWidget {
 
 class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
   late final PageController _pageController;
+  late final List<GlobalKey> _pageKeys;
   final Set<int> _viewedPageIndices = {};
+  final Map<int, double> _pageHeights = {};
+  int _currentPage = 0;
+  double _carouselHeight = _PinSummaryPhoto.size + 20;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _pageKeys = List.generate(widget.pins.length, (_) => GlobalKey());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _recordPageViewed(0);
+      _scheduleMeasurePage(0);
     });
   }
 
@@ -224,6 +209,29 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
     }
   }
 
+  void _onPageChanged(int index) {
+    _recordPageViewed(index);
+    setState(() {
+      _currentPage = index;
+      _carouselHeight = _pageHeights[index] ?? _carouselHeight;
+    });
+    _scheduleMeasurePage(index);
+  }
+
+  void _scheduleMeasurePage(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final box =
+          _pageKeys[index].currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) return;
+      final height = box.size.height;
+      _pageHeights[index] = height;
+      if (index == _currentPage && (_carouselHeight - height).abs() > 0.5) {
+        setState(() => _carouselHeight = height);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final showPageIndicator = widget.pins.length > 1;
@@ -238,23 +246,36 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 148,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    physics: const BouncingScrollPhysics(),
-                    onPageChanged: _recordPageViewed,
-                    itemCount: widget.pins.length,
-                    itemBuilder: (context, index) {
-                      final pin = widget.pins[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: _PinGroupListingCard(
-                          pin: pin,
-                          onTap: () => widget.onOpenPin(pin),
-                        ),
-                      );
-                    },
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  child: SizedBox(
+                    height: _carouselHeight,
+                    width: double.infinity,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const BouncingScrollPhysics(),
+                      onPageChanged: _onPageChanged,
+                      itemCount: widget.pins.length,
+                      itemBuilder: (context, index) {
+                        final pin = widget.pins[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: KeyedSubtree(
+                              key: _pageKeys[index],
+                              child: _PinGroupListingCard(
+                                pin: pin,
+                                onTap: () => widget.onOpenPin(pin),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 if (showPageIndicator) ...[
@@ -318,69 +339,67 @@ class _PinGroupListingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final borderRadius = BorderRadius.circular(14);
-    return SizedBox.expand(
-      child: _MapListingTileSurface(
+    return _MapListingTileSurface(
+      borderRadius: borderRadius,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: borderRadius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: borderRadius,
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _PinSummaryPhoto(
-                  photoUrl: pin.photoUrl,
-                  listingTypeId: pin.listingTypeId,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (pin.listingTypeCode?.isNotEmpty == true ||
-                          pin.gender != null) ...[
-                        _PinSummaryBadges(
-                          listingTypeCode: pin.listingTypeCode,
-                          gender: pin.gender,
-                          compact: true,
-                        ),
-                        const SizedBox(height: 6),
-                      ],
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _PinSummaryPhoto(
+                photoUrl: pin.photoUrl,
+                listingTypeId: pin.listingTypeId,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (pin.listingTypeCode?.isNotEmpty == true ||
+                        pin.gender != null) ...[
+                      _PinSummaryBadges(
+                        listingTypeCode: pin.listingTypeCode,
+                        gender: pin.gender,
+                        compact: true,
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                    Text(
+                      pin.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: _MapListingTileStyle.titleColor(context),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (pin.subtitle?.isNotEmpty == true) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        pin.title,
-                        maxLines: 2,
+                        pin.subtitle!,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: _MapListingTileStyle.titleColor(context),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _MapListingTileStyle.priceColor(context),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      if (pin.subtitle?.isNotEmpty == true) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          pin.subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: _MapListingTileStyle.priceColor(context),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                      if (pin.stationLabel?.isNotEmpty == true) ...[
-                        const SizedBox(height: 6),
-                        _PinMetroRow(
-                          lineIds: pin.subwayLineIds,
-                          label: pin.stationLabel!,
-                        ),
-                      ],
                     ],
-                  ),
+                    if (pin.stationLabel?.isNotEmpty == true) ...[
+                      const SizedBox(height: 6),
+                      _PinMetroRow(
+                        lineIds: pin.subwayLineIds,
+                        label: pin.stationLabel!,
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
