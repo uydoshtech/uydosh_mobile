@@ -73,6 +73,8 @@ class MainNavigationState extends State<MainNavigation>
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   final GlobalKey<HomeScreenState> _homeScreenKey =
       GlobalKey<HomeScreenState>();
+  final GlobalKey<MyHubScreenState> _myHubScreenKey =
+      GlobalKey<MyHubScreenState>();
 
   bool _isAuthenticated = false;
   int _incomingMessageTravelDotTrigger = 0;
@@ -686,7 +688,11 @@ class MainNavigationState extends State<MainNavigation>
       ),
       AppConfig.servicesFeatureEnabled
           ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)
-          : MyHubScreen(embedded: true, tabVisible: _currentIndex == 1),
+          : MyHubScreen(
+              key: _myHubScreenKey,
+              embedded: true,
+              tabVisible: _currentIndex == 1,
+            ),
       MessagesInboxScreen(
         showCustomHeader: false,
         mainTabSelected: _currentIndex == 2,
@@ -713,6 +719,18 @@ class MainNavigationState extends State<MainNavigation>
       return;
     }
     unawaited(showCreateChoiceSheet(context));
+  }
+
+  /// Switch to the My hub tab and optionally select a category ribbon tab.
+  void navigateToMyHub({MyHubCategory category = MyHubCategory.groups}) {
+    if (!mounted) return;
+    setState(() {
+      _currentIndex = 1;
+    });
+    _scheduleMaybeShowNotificationsBellTutorial();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _myHubScreenKey.currentState?.selectCategory(category);
+    });
   }
 
   /// Method to navigate to a specific index (can be called from outside).

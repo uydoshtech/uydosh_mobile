@@ -3,10 +3,10 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
-import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
 import "package:uy_dosh/presentation/screens/gamification/achievements_screen.dart";
-import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
+import "package:uy_dosh/presentation/screens/my/my_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
@@ -95,32 +95,28 @@ class ProfileListingsSection extends StatelessWidget {
                           context: context,
                           icon: Icons.list_alt,
                           title: L10n.get("menu_my_listings"),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const UserListingsScreen(),
-                              ),
-                            );
-                          },
+                          onTap: () => context.openMyHub(
+                            MyHubCategory.listings,
+                            popToRoot: true,
+                          ),
                         ),
                         _buildGroupedMenuItem(
                           context: context,
                           icon: Icons.groups_outlined,
                           title: L10n.get("menu_my_groups"),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const MyGroupsScreen(),
-                              ),
-                            );
-                          },
+                          onTap: () => context.openMyHub(
+                            MyHubCategory.groups,
+                            popToRoot: true,
+                          ),
                         ),
                         _buildGroupedMenuItem(
                           context: context,
                           icon: CupertinoIcons.suit_heart,
                           title: L10n.get("menu_favorites"),
-                          onTap: () => _openFavoritesTab(context),
+                          onTap: () => context.openMyHub(
+                            MyHubCategory.favorites,
+                            popToRoot: true,
+                          ),
                         ),
                         _buildGroupedMenuItem(
                           context: context,
@@ -330,16 +326,6 @@ class ProfileListingsSection extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _openFavoritesTab(BuildContext context) {
-    // Favorites is no longer a bottom-nav tab — push it as a standalone
-    // route on top of whatever is currently visible (the profile screen).
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const FavoritesScreen(),
       ),
     );
   }

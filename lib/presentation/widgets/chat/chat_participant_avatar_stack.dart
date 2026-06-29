@@ -15,12 +15,14 @@ class ChatParticipantAvatarStack extends StatelessWidget {
     super.key,
     this.avatarSize = 32,
     this.maxVisible = 4,
+    this.landlordSecond = false,
   });
 
   final List<ConversationMemberSummary> participants;
   final int? currentUserId;
   final double avatarSize;
   final int maxVisible;
+  final bool landlordSecond;
 
   static const double _overlapFraction = 0.22;
   static const double _avatarBorderWidth = 1;
@@ -31,25 +33,49 @@ class ChatParticipantAvatarStack extends StatelessWidget {
   }
 
   /// Puts the viewer first so the leftmost avatar is always "you".
+  ///
+  /// When [landlordSecond] is true, the landlord guest (if any) is placed
+  /// immediately after the current user, before other members.
   static List<ConversationMemberSummary> orderWithCurrentUserFirst(
     List<ConversationMemberSummary> participants,
-    int? currentUserId,
-  ) {
-    if (currentUserId == null || participants.length <= 1) {
+    int? currentUserId, {
+    bool landlordSecond = false,
+  }) {
+    if (participants.length <= 1) {
       return participants;
     }
 
-    final currentUser = <ConversationMemberSummary>[];
+    final hasOrdering =
+        currentUserId != null || (landlordSecond && _hasLandlordGuest(participants));
+    if (!hasOrdering) {
+      return participants;
+    }
+
+    ConversationMemberSummary? currentUser;
+    ConversationMemberSummary? landlord;
     final others = <ConversationMemberSummary>[];
     for (final participant in participants) {
-      if (participant.userId == currentUserId) {
-        currentUser.add(participant);
+      if (currentUserId != null && participant.userId == currentUserId) {
+        currentUser = participant;
+      } else if (landlordSecond && _isLandlordGuest(participant)) {
+        landlord = participant;
       } else {
         others.add(participant);
       }
     }
-    return [...currentUser, ...others];
+
+    return [
+      if (currentUser != null) currentUser,
+      if (landlord != null) landlord,
+      ...others,
+    ];
   }
+
+  static bool _isLandlordGuest(ConversationMemberSummary member) =>
+      member.role?.trim().toLowerCase() == "landlord_guest";
+
+  static bool _hasLandlordGuest(List<ConversationMemberSummary> participants) =>
+      participants.any(_isLandlordGuest);
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +83,13 @@ class ChatParticipantAvatarStack extends StatelessWidget {
       return ChatAvatar(isCurrentUser: false);
     }
 
-    final ordered = orderWithCurrentUserFirst(participants, currentUserId);
+    final ordered = orderWithCurrentUserFirst(
+      participants,
+      currentUserId,
+      landlordSecond: landlordSecond,
+    );
     final visible = ordered.take(maxVisible).toList();
-    final overflow = participants.length - visible.length;
+    final overflow = ordered.length - visible.length;
     final step = avatarSize * (1 - _overlapFraction);
     final width =
         avatarSize + (visible.length - 1) * step + (overflow > 0 ? step : 0);

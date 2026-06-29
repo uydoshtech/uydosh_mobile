@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/screens/my/my_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/auth/auth_wizard_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
@@ -134,6 +135,27 @@ extension NavigatorExtensions on BuildContext {
       // See note in `pushReplaceMainNavigation`.
       MaterialPageRoute<void>(builder: (_) => AppRouter.mainNavigationRoute),
       (route) => false,
+    );
+  }
+
+  /// Open the My hub tab with the given category. When [popToRoot] is true,
+  /// pops back to the main shell first (e.g. from a pushed profile screen).
+  void openMyHub(
+    MyHubCategory category, {
+    bool popToRoot = false,
+  }) {
+    if (popToRoot) {
+      Navigator.of(this).popUntil((route) => route.isFirst);
+    }
+    final mainState = mainNavigationKey.currentState;
+    if (mainState != null) {
+      mainState.navigateToMyHub(category: category);
+      return;
+    }
+    Navigator.of(this).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MyHubScreen(initialCategory: category),
+      ),
     );
   }
 }

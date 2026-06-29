@@ -34,5 +34,45 @@ void main() {
         participants,
       );
     });
+
+    ConversationMemberSummary landlordMember(int id) => ConversationMemberSummary(
+          userId: id,
+          name: "Landlord $id",
+          avatarUrl: null,
+          role: "landlord_guest",
+        );
+
+    test("puts landlord second when landlordSecond is true", () {
+      final participants = [
+        member(10),
+        landlordMember(20),
+        member(30),
+      ];
+
+      final ordered = ChatParticipantAvatarStack.orderWithCurrentUserFirst(
+        participants,
+        30,
+        landlordSecond: true,
+      );
+
+      expect(ordered.map((m) => m.userId).toList(), [30, 20, 10]);
+    });
+
+    test("puts landlord first when current user is absent and landlordSecond is true",
+        () {
+      final participants = [
+        member(10),
+        landlordMember(20),
+        member(30),
+      ];
+
+      final ordered = ChatParticipantAvatarStack.orderWithCurrentUserFirst(
+        participants,
+        null,
+        landlordSecond: true,
+      );
+
+      expect(ordered.map((m) => m.userId).toList(), [20, 10, 30]);
+    });
   });
 }

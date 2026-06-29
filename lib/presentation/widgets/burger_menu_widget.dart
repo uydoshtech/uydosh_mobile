@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -15,19 +17,18 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
+import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
 import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
-import "package:uy_dosh/base/utils/listing_navigation.dart";
+import "package:uy_dosh/presentation/router/create_choice_sheet.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/faq/faq_screen.dart";
-import "package:uy_dosh/presentation/screens/favorites/favorites_screen.dart";
-import "package:uy_dosh/presentation/screens/group_housing/my_groups_screen.dart";
+import "package:uy_dosh/presentation/screens/my/my_hub_screen.dart";
 // import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/profile_screen.dart";
 import "package:uy_dosh/presentation/screens/settings/settings_screen.dart";
-import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 // import "package:uy_dosh/presentation/screens/view_history/view_history_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
@@ -237,9 +238,10 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           icon: Icons.add,
           titleKey: "menu_add_listing",
           onTap: () {
+            HapticFeedbackUtils.impact();
             Navigator.pop(context);
             if (!context.mounted) return;
-            context.pushCreateListing();
+            unawaited(showCreateChoiceSheet(context));
           },
         ),
       );
@@ -251,11 +253,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const UserListingsScreen(),
-              ),
-            );
+            context.openMyHub(MyHubCategory.listings);
           },
         ),
       );
@@ -267,11 +265,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const MyGroupsScreen(),
-              ),
-            );
+            context.openMyHub(MyHubCategory.groups);
           },
         ),
       );
@@ -283,11 +277,7 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
           onTap: () {
             Navigator.pop(context);
             if (!context.mounted) return;
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const FavoritesScreen(),
-              ),
-            );
+            context.openMyHub(MyHubCategory.favorites);
           },
         ),
       );

@@ -25,7 +25,7 @@ class MetroCache {
         nameEn: "Chinor",
         latitude: 41.20669650,
         longitude: 69.21895750,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 2,
@@ -36,7 +36,7 @@ class MetroCache {
         nameEn: "Yangikhayot",
         latitude: 41.21350990,
         longitude: 69.21401500,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 3,
@@ -47,7 +47,7 @@ class MetroCache {
         nameEn: "Sergeli",
         latitude: 41.22064000,
         longitude: 69.20884500,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 4,
@@ -58,7 +58,7 @@ class MetroCache {
         nameEn: "Uzgarish",
         latitude: 41.22733640,
         longitude: 69.20397140,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 5,
@@ -69,7 +69,7 @@ class MetroCache {
         nameEn: "Chashtepa",
         latitude: 41.23824960,
         longitude: 69.19603450,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 6,
@@ -124,7 +124,7 @@ class MetroCache {
         nameEn: "National Park",
         latitude: 41.30339440,
         longitude: 69.23566630,
-        locationId: 8,
+        locationId: 7,
       ),
       SubwayStation(
         id: 11,
@@ -168,7 +168,7 @@ class MetroCache {
         nameEn: "A. Temur Square",
         latitude: 41.31267380,
         longitude: 69.28326910,
-        locationId: 9,
+        locationId: 3,
       ),
       SubwayStation(
         id: 15,
@@ -215,7 +215,7 @@ class MetroCache {
         nameEn: "Beruniy",
         latitude: 41.34461520,
         longitude: 69.20620460,
-        locationId: 6,
+        locationId: 8,
       ),
       SubwayStation(
         id: 19,
@@ -226,7 +226,7 @@ class MetroCache {
         nameEn: "Tinchlik",
         latitude: 41.33230140,
         longitude: 69.21911550,
-        locationId: 6,
+        locationId: 8,
       ),
       SubwayStation(
         id: 20,
@@ -248,7 +248,7 @@ class MetroCache {
         nameEn: "Gafur Gulom",
         latitude: 41.32788280,
         longitude: 69.24583420,
-        locationId: 8,
+        locationId: 6,
       ),
       SubwayStation(
         id: 22,
@@ -270,7 +270,7 @@ class MetroCache {
         nameEn: "Uzbekistan",
         latitude: 41.31194370,
         longitude: 69.25340570,
-        locationId: 10,
+        locationId: 8,
       ),
       SubwayStation(
         id: 24,
@@ -350,7 +350,7 @@ class MetroCache {
         nameEn: "Yunus Rajabiy",
         latitude: 41.31388710,
         longitude: 69.28350770,
-        locationId: 9,
+        locationId: 3,
       ),
       SubwayStation(
         id: 31,
@@ -496,7 +496,7 @@ class MetroCache {
         nameEn: "Quyliuq",
         latitude: 41.23745790,
         longitude: 69.32700010,
-        locationId: 4,
+        locationId: 2,
       ),
       SubwayStation(
         id: 44,
@@ -507,7 +507,7 @@ class MetroCache {
         nameEn: "Matonat",
         latitude: 41.24447130,
         longitude: 69.30832290,
-        locationId: 5,
+        locationId: 4,
       ),
       SubwayStation(
         id: 45,
@@ -562,7 +562,7 @@ class MetroCache {
         nameEn: "Turon",
         latitude: 41.21068130,
         longitude: 69.23415400,
-        locationId: 5,
+        locationId: 12,
       ),
       SubwayStation(
         id: 50,
@@ -573,7 +573,7 @@ class MetroCache {
         nameEn: "Qipchoq",
         latitude: 41.20542290,
         longitude: 69.22141120,
-        locationId: 5,
+        locationId: 12,
       ),
     ],
   };

@@ -14,30 +14,52 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_category_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
+enum MyHubCategory { groups, listings, favorites, alerts }
+
 class MyHubScreen extends StatefulWidget {
   const MyHubScreen({
     super.key,
     this.embedded = false,
     this.tabVisible = true,
+    this.initialCategory,
   });
 
   final bool embedded;
   final bool tabVisible;
+  final MyHubCategory? initialCategory;
 
   @override
-  State<MyHubScreen> createState() => _MyHubScreenState();
+  State<MyHubScreen> createState() => MyHubScreenState();
 }
 
-class _MyHubScreenState extends State<MyHubScreen>
+class MyHubScreenState extends State<MyHubScreen>
     with SingleTickerProviderStateMixin {
   static const _visibleTabs = _MyHubTabSpec.tabs;
 
   late TabController _tabController;
 
+  static int indexForCategory(MyHubCategory category) {
+    final index = _visibleTabs.indexWhere((tab) => tab.id == category);
+    return index >= 0 ? index : 0;
+  }
+
+  void selectCategory(MyHubCategory category) {
+    final index = indexForCategory(category);
+    if (_tabController.index == index) return;
+    _tabController.animateTo(index);
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _visibleTabs.length, vsync: this);
+    final initialIndex = indexForCategory(
+      widget.initialCategory ?? MyHubCategory.groups,
+    );
+    _tabController = TabController(
+      length: _visibleTabs.length,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
     _tabController.addListener(_handleTabChanged);
   }
 
@@ -54,18 +76,25 @@ class _MyHubScreenState extends State<MyHubScreen>
     }
   }
 
+  /// Status-bar inset when embedded under [MainNavigation]'s glass app bar.
+  /// Standalone routes use their own [Scaffold.appBar] (no extra top pad).
+  double _shellHeaderClearance(BuildContext context) {
+    if (!widget.embedded) return 0;
+    return ThemeState().mainShellGlassExtraTopInset(context);
+  }
+
   Widget _buildTabView(_MyHubTabSpec tab, int index) {
     switch (tab.id) {
-      case _MyHubTabId.groups:
+      case MyHubCategory.groups:
         return const MyGroupsScreen(embedded: true);
-      case _MyHubTabId.listings:
+      case MyHubCategory.listings:
         return const UserListingsScreen(embedded: true);
-      case _MyHubTabId.favorites:
+      case MyHubCategory.favorites:
         return FavoritesScreen(
           embedded: true,
           tabVisible: widget.tabVisible && _tabController.index == index,
         );
-      case _MyHubTabId.alerts:
+      case MyHubCategory.alerts:
         return const NotificationsScreen(embedded: true);
     }
   }
@@ -81,13 +110,8 @@ class _MyHubScreenState extends State<MyHubScreen>
           );
         }
 
-        final themeState = ThemeState();
-        final topPadding = widget.embedded
-            ? themeState.mainShellGlassExtraTopInset(context)
-            : 0.0;
-
-        return Padding(
-          padding: EdgeInsets.only(top: topPadding),
+        final content = Padding(
+          padding: EdgeInsets.only(top: _shellHeaderClearance(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -118,12 +142,22 @@ class _MyHubScreenState extends State<MyHubScreen>
             ],
           ),
         );
+
+        if (widget.embedded) {
+          return content;
+        }
+
+        return Scaffold(
+          backgroundColor: ThemeState().backgroundColor,
+          appBar: AppBar(
+            title: L10n.text("nav_my"),
+          ),
+          body: content,
+        );
       },
     );
   }
 }
-
-enum _MyHubTabId { groups, listings, favorites, alerts }
 
 class _MyHubTabSpec {
   const _MyHubTabSpec({
@@ -133,30 +167,30 @@ class _MyHubTabSpec {
     this.useIconBadge = true,
   });
 
-  final _MyHubTabId id;
+  final MyHubCategory id;
   final IconData icon;
   final String labelKey;
   final bool useIconBadge;
 
   static const tabs = [
     _MyHubTabSpec(
-      id: _MyHubTabId.groups,
+      id: MyHubCategory.groups,
       icon: Icons.groups_outlined,
       labelKey: "my_hub_tab_groups",
       useIconBadge: false,
     ),
     _MyHubTabSpec(
-      id: _MyHubTabId.listings,
+      id: MyHubCategory.listings,
       icon: Icons.list_alt,
       labelKey: "menu_my_listings",
     ),
     _MyHubTabSpec(
-      id: _MyHubTabId.favorites,
+      id: MyHubCategory.favorites,
       icon: Icons.favorite_border,
       labelKey: "menu_favorites",
     ),
     _MyHubTabSpec(
-      id: _MyHubTabId.alerts,
+      id: MyHubCategory.alerts,
       icon: Icons.notifications_none,
       labelKey: "my_hub_tab_alerts",
     ),
@@ -187,7 +221,7 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
   int get _selectedIndex =>
       widget.tabController.index.clamp(0, widget.tabs.length - 1);
 
-  void _scrollSelectionToCenter() {
+  void _scrollSelectionToVisible() {
     if (!mounted) return;
     final ctx = _itemKeys[_selectedIndex].currentContext;
     if (ctx == null) return;
@@ -195,7 +229,8 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     Scrollable.ensureVisible(
       ctx,
-      alignment: 0.5,
+      alignment: 0.0,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
       duration:
           disableMotion ? Duration.zero : const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
@@ -207,7 +242,7 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
     if (index == _lastIndex) return;
     _lastIndex = index;
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => _scrollSelectionToCenter());
+        .addPostFrameCallback((_) => _scrollSelectionToVisible());
   }
 
   @override
@@ -220,7 +255,7 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
     _lastIndex = _selectedIndex;
     widget.tabController.addListener(_handleTabControllerChanged);
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => _scrollSelectionToCenter());
+        .addPostFrameCallback((_) => _scrollSelectionToVisible());
   }
 
   @override
@@ -237,7 +272,7 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
     _lastIndex = _selectedIndex;
     widget.tabController.addListener(_handleTabControllerChanged);
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => _scrollSelectionToCenter());
+        .addPostFrameCallback((_) => _scrollSelectionToVisible());
   }
 
   @override
@@ -259,38 +294,31 @@ class _MyHubTabRibbonState extends State<_MyHubTabRibbon> {
           16,
           _chipPadBottom,
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (var i = 0; i < widget.tabs.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 8),
-                      _MyHubPillTabChip(
-                        key: _itemKeys[i],
-                        icon: widget.tabs[i].icon,
-                        label: L10n.get(widget.tabs[i].labelKey),
-                        iconBadgeDimension: 28.6,
-                        iconSize: 20,
-                        useIconBadge: widget.tabs[i].useIconBadge,
-                        isSelected: idx == i,
-                        onTap: () {
-                          if (widget.tabController.index != i) {
-                            widget.tabController.animateTo(i);
-                          }
-                        },
-                      ),
-                    ],
-                  ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              for (var i = 0; i < widget.tabs.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                _MyHubPillTabChip(
+                  key: _itemKeys[i],
+                  icon: widget.tabs[i].icon,
+                  label: L10n.get(widget.tabs[i].labelKey),
+                  iconBadgeDimension: 28.6,
+                  iconSize: 20,
+                  useIconBadge: widget.tabs[i].useIconBadge,
+                  isSelected: idx == i,
+                  onTap: () {
+                    if (widget.tabController.index != i) {
+                      widget.tabController.animateTo(i);
+                    }
+                  },
                 ),
-              ),
-            );
-          },
+              ],
+            ],
+          ),
         ),
       ),
     );

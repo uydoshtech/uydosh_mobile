@@ -125,7 +125,8 @@ class ConversationTile extends StatelessWidget {
       participants: conversation.members,
       currentUserId: currentUserId,
       avatarSize: 28,
-      maxVisible: 5,
+      maxVisible: conversation.members.length,
+      landlordSecond: true,
     );
     final avatarLeading = UyDoshAvatar(
       avatarUrl: rawAvatar,
@@ -635,6 +636,7 @@ class ConversationTile extends StatelessWidget {
     final orderedMembers = ChatParticipantAvatarStack.orderWithCurrentUserFirst(
       conversation.members,
       currentUserId,
+      landlordSecond: true,
     );
     final seenUserIds = <int>{};
     final names = <String>[];
