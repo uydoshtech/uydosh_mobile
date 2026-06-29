@@ -38,28 +38,22 @@ class _PinSummaryTooltip extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (pin.listingTypeCode?.isNotEmpty == true ||
-                            pin.gender != null) ...[
-                          _PinSummaryBadges(
-                            listingTypeCode: pin.listingTypeCode,
-                            gender: pin.gender,
-                            hostResident: pin.hostResident,
-                            compact: true,
+                        _PinSummaryBadgesPriceRow(
+                          listingTypeCode: pin.listingTypeCode,
+                          gender: pin.gender,
+                          hostResident: pin.hostResident,
+                          priceLabel: pin.subtitle,
+                          priceStyle: theme.textTheme.bodyMedium?.copyWith(
+                            color: _MapListingTileStyle.priceColor(context),
+                            fontWeight: FontWeight.w800,
                           ),
+                        ),
+                        if (_PinSummaryBadgesPriceRow.hasContent(
+                          listingTypeCode: pin.listingTypeCode,
+                          gender: pin.gender,
+                          priceLabel: pin.subtitle,
+                        ))
                           const SizedBox(height: 4),
-                        ],
-                        if (pin.subtitle?.isNotEmpty == true) ...[
-                          Text(
-                            pin.subtitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: _MapListingTileStyle.priceColor(context),
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
                         Text(
                           pin.title,
                           maxLines: 1,
@@ -128,6 +122,14 @@ class _MapListingTileStyle {
   static Color priceColor(BuildContext context) {
     return ThemeState().isLightTheme ? _accentGreenLightTheme : _accentGreen;
   }
+
+  static Color borderColor(BuildContext context) {
+    final theme = Theme.of(context);
+    if (ThemeState().isBlueTheme) {
+      return Colors.white.withValues(alpha: 0.16);
+    }
+    return theme.colorScheme.outline.withValues(alpha: 0.22);
+  }
 }
 
 class _MapListingTileSurface extends StatelessWidget {
@@ -142,12 +144,18 @@ class _MapListingTileSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = Theme.of(context).colorScheme.surface;
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: Material(
-        color: bg,
-        child: child,
+    return Material(
+      color: bg,
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(
+          color: _MapListingTileStyle.borderColor(context),
+          width: 1,
+        ),
       ),
+      child: child,
     );
   }
 }
@@ -366,28 +374,22 @@ class _PinGroupListingCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (pin.listingTypeCode?.isNotEmpty == true ||
-                        pin.gender != null) ...[
-                      _PinSummaryBadges(
-                        listingTypeCode: pin.listingTypeCode,
-                        gender: pin.gender,
-                        hostResident: pin.hostResident,
-                        compact: true,
+                    _PinSummaryBadgesPriceRow(
+                      listingTypeCode: pin.listingTypeCode,
+                      gender: pin.gender,
+                      hostResident: pin.hostResident,
+                      priceLabel: pin.subtitle,
+                      priceStyle: theme.textTheme.bodySmall?.copyWith(
+                        color: _MapListingTileStyle.priceColor(context),
+                        fontWeight: FontWeight.w800,
                       ),
+                    ),
+                    if (_PinSummaryBadgesPriceRow.hasContent(
+                      listingTypeCode: pin.listingTypeCode,
+                      gender: pin.gender,
+                      priceLabel: pin.subtitle,
+                    ))
                       const SizedBox(height: 4),
-                    ],
-                    if (pin.subtitle?.isNotEmpty == true) ...[
-                      Text(
-                        pin.subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: _MapListingTileStyle.priceColor(context),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
                     Text(
                       pin.title,
                       maxLines: 2,
@@ -437,6 +439,63 @@ class _PinSummaryMediaColumn extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PinSummaryBadgesPriceRow extends StatelessWidget {
+  const _PinSummaryBadgesPriceRow({
+    required this.listingTypeCode,
+    required this.gender,
+    required this.hostResident,
+    required this.priceLabel,
+    required this.priceStyle,
+  });
+
+  final String? listingTypeCode;
+  final int? gender;
+  final bool? hostResident;
+  final String? priceLabel;
+  final TextStyle? priceStyle;
+
+  static bool hasContent({
+    required String? listingTypeCode,
+    required int? gender,
+    required String? priceLabel,
+  }) {
+    return listingTypeCode?.isNotEmpty == true ||
+        gender != null ||
+        priceLabel?.isNotEmpty == true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBadges =
+        listingTypeCode?.isNotEmpty == true || gender != null;
+    final hasPrice = priceLabel?.isNotEmpty == true;
+    if (!hasBadges && !hasPrice) return const SizedBox.shrink();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (hasBadges)
+          _PinSummaryBadges(
+            listingTypeCode: listingTypeCode,
+            gender: gender,
+            hostResident: hostResident,
+            compact: true,
+          ),
+        if (hasBadges && hasPrice) const SizedBox(width: 8),
+        if (hasPrice)
+          Expanded(
+            child: Text(
+              priceLabel!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: priceStyle,
+            ),
+          ),
+      ],
     );
   }
 }
