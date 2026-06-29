@@ -96,11 +96,16 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
                 final blocTotal = _totalFor(state);
                 final mapActive = HomeInlineSearchState().isMapViewActive;
                 final mapCount = HomeInlineSearchState().mapListingCount;
-                final total = mapActive && mapCount != null && mapCount > 0
-                    ? mapCount
-                    : blocTotal;
-                final showCount =
-                    _inlineActive && _countReady && total != null && total > 0;
+                final mapTotal =
+                    mapActive && mapCount != null && mapCount > 0 ? mapCount : null;
+                final listTotal = _inlineActive &&
+                        _countReady &&
+                        blocTotal != null &&
+                        blocTotal > 0
+                    ? blocTotal
+                    : null;
+                final total = mapTotal ?? listTotal;
+                final showCount = total != null;
 
                 // “•” uses title size; digits are smaller for hierarchy.
                 final titleFs = widget.titleStyle.fontSize ?? 20;

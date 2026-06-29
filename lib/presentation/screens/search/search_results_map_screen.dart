@@ -436,11 +436,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       HomeInlineSearchState().setMapListingCount(0);
       return;
     }
-    HomeInlineSearchState().setMapListingCount(_uniqueMapListingCount(result));
-  }
-
-  int _uniqueMapListingCount(_SearchMapResult result) {
-    return result.pins.map((pin) => pin.listingId).toSet().length;
+    HomeInlineSearchState().setMapListingCount(result.total);
   }
 
   void _pruneSelectionForCurrentResult() {
@@ -1379,9 +1375,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _handleToggleMetroLayerMode() {
     _metroLayerMode = _metroLayerMode.next;
-    if (!_metroLayerMode.showsStations) {
-      _selectedMetroStation = null;
-    }
+    _selectedMetroStation = null;
+    _selectedUniversityMarker = null;
     _syncAllMapProps();
   }
 

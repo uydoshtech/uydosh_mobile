@@ -33,7 +33,7 @@ class HomeInlineSearchState extends ChangeNotifier {
   /// True while the home tab shows the embedded search-results map.
   bool _isMapViewActive = false;
 
-  /// Unique mappable listings currently shown on the embedded map (when active).
+  /// Search result total for the embedded map header (when active).
   int? _mapListingCount;
 
   bool get isActive => _isActive;

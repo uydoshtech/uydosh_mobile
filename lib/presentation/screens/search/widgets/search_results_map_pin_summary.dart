@@ -18,12 +18,13 @@ class _PinSummaryTooltip extends StatelessWidget {
     final borderRadius = BorderRadius.circular(18);
     return _MapListingTileSurface(
       borderRadius: borderRadius,
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: borderRadius,
-        child: Stack(
-          children: [
-            Padding(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          InkWell(
+            onTap: onOpen,
+            borderRadius: borderRadius,
+            child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 52, 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,21 +90,23 @@ class _PinSummaryTooltip extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: IconButton(
-                onPressed: onClose,
-                icon: Icon(
-                  Icons.close,
-                  color: _MapListingTileStyle.titleColor(context),
-                ),
-                visualDensity: VisualDensity.compact,
-                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: onClose,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              visualDensity: VisualDensity.compact,
+              icon: Icon(
+                Icons.close,
+                color: _MapListingTileStyle.titleColor(context),
               ),
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -223,12 +226,11 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
 
   @override
   Widget build(BuildContext context) {
-    final placeLabel = _placeLabel;
-    final placeStationLineIds = _placeStationLineIds;
     final showPageIndicator = widget.pins.length > 1;
     return _MapListingTileSurface(
       borderRadius: BorderRadius.circular(18),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
@@ -236,22 +238,6 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (placeLabel != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 44),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _PinGroupPlaceTitle(
-                          label: placeLabel,
-                          stationLineIds: placeStationLineIds,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
                 SizedBox(
                   height: 148,
                   child: PageView.builder(
@@ -293,15 +279,17 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
             ),
           ),
           Positioned(
-            top: 4,
-            right: 4,
+            top: 0,
+            right: 0,
             child: IconButton(
               onPressed: widget.onClose,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              visualDensity: VisualDensity.compact,
               icon: Icon(
                 Icons.close,
                 color: _MapListingTileStyle.titleColor(context),
               ),
-              visualDensity: VisualDensity.compact,
               tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             ),
           ),
@@ -310,86 +298,10 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
     );
   }
 
-  String? get _placeLabel {
-    for (final pin in widget.pins) {
-      final stationLabel = pin.stationLabel;
-      if (stationLabel != null && stationLabel.isNotEmpty) {
-        return stationLabel;
-      }
-    }
-    for (final pin in widget.pins) {
-      final locationLabel = pin.locationLabel;
-      if (locationLabel != null && locationLabel.isNotEmpty) {
-        return locationLabel;
-      }
-    }
-    return null;
-  }
-
-  List<int> get _placeStationLineIds {
-    for (final pin in widget.pins) {
-      final stationLabel = pin.stationLabel;
-      if (stationLabel != null && stationLabel.isNotEmpty) {
-        return pin.subwayLineIds;
-      }
-    }
-    return const [];
-  }
-
   Color _pinGroupCarouselDotColor(BuildContext context) {
     if (ThemeState().isLightTheme) return Colors.black;
     if (ThemeState().isBlueTheme) return Colors.white;
     return AppColors.primary;
-  }
-}
-
-class _PinGroupPlaceTitle extends StatelessWidget {
-  const _PinGroupPlaceTitle({
-    required this.label,
-    required this.stationLineIds,
-  });
-
-  final String label;
-  final List<int> stationLineIds;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.titleSmall?.copyWith(
-      color: _MapListingTileStyle.titleColor(context),
-      fontWeight: FontWeight.w900,
-    );
-
-    if (stationLineIds.isEmpty) {
-      return Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: style,
-      );
-    }
-
-    return Row(
-      children: [
-        for (var i = 0; i < stationLineIds.length; i++) ...[
-          ThemeIcon(
-            Icons.train,
-            color: AppColors.getMetroLineColor(stationLineIds[i]),
-            size: 20,
-            useThemeColor: false,
-          ),
-          SizedBox(width: i == stationLineIds.length - 1 ? 6 : 2),
-        ],
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: style,
-          ),
-        ),
-      ],
-    );
   }
 }
 

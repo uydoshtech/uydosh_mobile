@@ -8,7 +8,7 @@ class _MapFilterRibbon extends StatelessWidget {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
-    required this.total,
+    this.total,
     this.onClose,
     this.emptyLabel,
     this.gender,
@@ -33,7 +33,7 @@ class _MapFilterRibbon extends StatelessWidget {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
-  final int total;
+  final int? total;
 
   @override
   Widget build(BuildContext context) {

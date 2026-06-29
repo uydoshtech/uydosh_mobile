@@ -71,13 +71,13 @@ class _SearchResultsMapBody extends StatelessWidget {
                 maxPrice: overlay.maxPrice,
                 privateRoom: overlay.privateRoom,
                 withPhoto: overlay.withPhoto,
-                total: overlay.resultTotal,
+                total: null,
               );
             }
             return _MapFilterRibbon(
               onPressed: onOpenFilters,
               emptyLabel: overlay.hasSearchFilters
-                  ? "${L10n.get("filters_bar_label")} • ${overlay.resultTotal}"
+                  ? L10n.get("filters_bar_label")
                   : context.l10n.choose_filters,
               listingTypeId: overlay.listingTypeId,
               gender: overlay.gender,
@@ -89,7 +89,7 @@ class _SearchResultsMapBody extends StatelessWidget {
               maxPrice: overlay.maxPrice,
               privateRoom: overlay.privateRoom,
               withPhoto: overlay.withPhoto,
-              total: overlay.resultTotal,
+              total: null,
             );
           },
         ),

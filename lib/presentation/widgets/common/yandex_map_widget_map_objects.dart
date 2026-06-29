@@ -766,7 +766,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         longitude: station.longitude!,
       ),
       mapObjectId:
-          "tashkent_metro_station_${station.id}_walking_radius_${widget.walkRadiusMinutes}_${_metroLayerScopeKey}",
+          "tashkent_metro_station_${station.id}_walking_radius_${widget.walkRadiusMinutes}",
     );
   }
 
@@ -774,7 +774,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final station = _effectiveSelectedMetroStation!;
     return _createWalkAreaRadiusLabel(
       mapObjectId:
-          "tashkent_metro_station_${station.id}_walking_radius_label_${widget.walkRadiusMinutes}_${_metroLayerScopeKey}",
+          "tashkent_metro_station_${station.id}_walking_radius_label_${widget.walkRadiusMinutes}",
       latitude: station.latitude!,
       longitude: station.longitude!,
     );

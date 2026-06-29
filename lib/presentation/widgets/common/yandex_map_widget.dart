@@ -444,6 +444,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           selectedStation.line != selectedLineId) {
         _clearSelectedMetroStation(notify: true);
       }
+      if (_highlightedUniversityMarkerId != null) {
+        _clearSelectedUniversityMarker();
+      }
       _invalidateMapObjectsCache();
       _requestMapRebuild();
       _syncMetroLayerViewport();
@@ -2103,6 +2106,24 @@ class MapTooltipFadeTransition extends StatelessWidget {
   }
 }
 
+class _MapTooltipCloseButton extends StatelessWidget {
+  const _MapTooltipCloseButton({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onClose,
+      padding: const EdgeInsets.all(8),
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      visualDensity: VisualDensity.compact,
+      icon: const Icon(Icons.close),
+      tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+    );
+  }
+}
+
 class MetroStationMapTooltip extends StatelessWidget {
   const MetroStationMapTooltip({
     required this.station,
@@ -2149,11 +2170,12 @@ class MetroStationMapTooltip extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
-          child: Stack(
-            children: [
-              Row(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ThemeIcon(
@@ -2193,18 +2215,13 @@ class MetroStationMapTooltip extends StatelessWidget {
                   ),
                 ],
               ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                ),
-              ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _MapTooltipCloseButton(onClose: onClose),
+            ),
+          ],
         ),
       ),
     );
@@ -2245,11 +2262,12 @@ class _ListingDetailMapTooltip extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
-          child: Stack(
-            children: [
-              Column(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2273,18 +2291,13 @@ class _ListingDetailMapTooltip extends StatelessWidget {
                   ),
                 ],
               ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                ),
-              ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _MapTooltipCloseButton(onClose: onClose),
+            ),
+          ],
         ),
       ),
     );
@@ -2351,11 +2364,12 @@ class UniversityMapTooltip extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
-          child: Stack(
-            children: [
-              Row(
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ThemeIcon(
@@ -2394,18 +2408,13 @@ class UniversityMapTooltip extends StatelessWidget {
                   ),
                 ],
               ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-                ),
-              ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _MapTooltipCloseButton(onClose: onClose),
+            ),
+          ],
         ),
       ),
     );
