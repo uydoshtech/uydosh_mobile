@@ -171,6 +171,45 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
           shadowOffset: const Offset(0, 5),
         );
       }
+      final absentHostIcon = ListingTypeHelper.roommateAbsentHostIcon;
+      const absentHostKey = ListingTypeHelper.roommateAbsentHostMapIconKey;
+      listingTypeIconBytes[absentHostKey] = await _createIconBytes(
+        absentHostIcon,
+        80,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+      );
+      darkListingTypeIconBytes[absentHostKey] = await _createIconBytes(
+        absentHostIcon,
+        80,
+        backgroundColor: BlueThemeColors.primaryDark,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+      );
+      visitedListingTypeIconBytes[absentHostKey] = await _createIconBytes(
+        absentHostIcon,
+        80,
+        backgroundColor: _visitedPinBackground,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+      );
+      darkVisitedListingTypeIconBytes[absentHostKey] = await _createIconBytes(
+        absentHostIcon,
+        80,
+        backgroundColor: _visitedPinBackgroundDark,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+      );
+      selectedListingTypeIconBytes[absentHostKey] = await _createIconBytes(
+        absentHostIcon,
+        99,
+        backgroundColor: AppColors.primary,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+        shadowColor: Colors.black.withValues(alpha: 0.35),
+        shadowBlurRadius: 10,
+        shadowOffset: const Offset(0, 5),
+      );
     }
     final universityIconBytes = reduceStartupIconWork
         ? selectedIconBytes

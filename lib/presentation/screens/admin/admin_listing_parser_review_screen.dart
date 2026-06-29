@@ -76,9 +76,9 @@ class _AdminListingParserReviewScreenState
   bool _busy = false;
   bool _rawExpanded = true;
 
-  /// Editable original Telegram poster handle (no `@`).
-  final TextEditingController _ownerController = TextEditingController();
-  bool _savingOwner = false;
+  /// Editable listing contact Telegram handle (no `@`).
+  final TextEditingController _contactTelegramController = TextEditingController();
+  bool _savingContactTelegram = false;
 
   /// id -> localized name lookups so metro/district render as names, not ids.
   final Map<int, String> _stationNames = {};
@@ -92,7 +92,7 @@ class _AdminListingParserReviewScreenState
 
   @override
   void dispose() {
-    _ownerController.dispose();
+    _contactTelegramController.dispose();
     super.dispose();
   }
 
@@ -110,8 +110,8 @@ class _AdminListingParserReviewScreenState
         _bundle = bundle;
         // Only sync the field from the server while the admin isn't mid-edit;
         // a save round-trips through here so the normalized value lands too.
-        if (!_savingOwner) {
-          _ownerController.text = bundle.telegramAuthorUsername ?? "";
+        if (!_savingContactTelegram) {
+          _contactTelegramController.text = bundle.contactTelegram ?? "";
         }
         _isLoading = false;
       });
@@ -281,37 +281,37 @@ class _AdminListingParserReviewScreenState
     }
   }
 
-  /// Persist the manually-typed original Telegram owner handle. Clearing the
-  /// field removes it (falls back to the parser-detected contact telegram).
-  Future<void> _saveOwnerUsername() async {
-    if (_savingOwner) return;
+  /// Persist the manually-typed contact Telegram handle. Clearing the field
+  /// removes it from the listing.
+  Future<void> _saveContactTelegram() async {
+    if (_savingContactTelegram) return;
     FocusScope.of(context).unfocus();
-    final input = _ownerController.text.trim();
-    setState(() => _savingOwner = true);
+    final input = _contactTelegramController.text.trim();
+    setState(() => _savingContactTelegram = true);
     try {
-      final stored = await _reviewService.updateTelegramAuthorUsername(
+      final stored = await _reviewService.updateContactTelegram(
         widget.listingId,
         input.isEmpty ? null : input,
       );
       HapticFeedbackUtils.selectionClick();
-      _bundle?.listing["telegram_author_username"] = stored;
+      _bundle?.listing["contact_telegram"] = stored;
       setStateIfMounted(() {
-        _ownerController.text = stored ?? "";
-        _savingOwner = false;
+        _contactTelegramController.text = stored ?? "";
+        _savingContactTelegram = false;
       });
       if (!mounted) return;
       ToastTheme.showSuccess(
         context,
         message: L10n.get(
           "admin_parser_review_owner_saved",
-          fallback: "Telegram owner updated",
+          fallback: "Contact telegram updated",
         ),
       );
     } catch (e) {
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
       ToastTheme.showErrorSimple(context, message: e.toString());
-      setStateIfMounted(() => _savingOwner = false);
+      setStateIfMounted(() => _savingContactTelegram = false);
     }
   }
 
@@ -503,7 +503,7 @@ class _AdminListingParserReviewScreenState
               delegate: SliverChildListDelegate([
                 _buildRawSourceCard(context, bundle),
                 const SizedBox(height: 12),
-                _buildOwnerCard(context),
+                _buildContactTelegramCard(context),
                 const SizedBox(height: 16),
                 _buildSectionTitle(
                   context,
@@ -636,7 +636,7 @@ class _AdminListingParserReviewScreenState
   /// Manually-typed original Telegram owner handle. Editable because the parser
   /// can't always resolve the poster (e.g. forwarded posts, aggregator rooms),
   /// yet it's used as the listing's Telegram contact fallback.
-  Widget _buildOwnerCard(BuildContext context) {
+  Widget _buildContactTelegramCard(BuildContext context) {
     return ListenableBuilder(
       listenable: ThemeState(),
       builder: (context, child) {
@@ -662,7 +662,7 @@ class _AdminListingParserReviewScreenState
                       child: Text(
                         L10n.get(
                           "admin_parser_review_owner_section",
-                          fallback: "Telegram owner",
+                          fallback: "Contact telegram",
                         ),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -678,19 +678,18 @@ class _AdminListingParserReviewScreenState
                   L10n.get(
                     "admin_parser_review_owner_help",
                     fallback:
-                        "Telegram @username of whoever originally posted this listing. "
-                        "Used as the contact handle when no contact telegram is set.",
+                        "Telegram @username shown to users as this listing's contact handle.",
                   ),
                   style: TextStyle(fontSize: 11, color: secondaryTextColor),
                 ),
                 const SizedBox(height: 12),
                 TextField(
-                  controller: _ownerController,
-                  enabled: !_savingOwner,
+                  controller: _contactTelegramController,
+                  enabled: !_savingContactTelegram,
                   autocorrect: false,
                   enableSuggestions: false,
                   textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _saveOwnerUsername(),
+                  onSubmitted: (_) => _saveContactTelegram(),
                   cursorColor: textColor,
                   style: TextStyle(fontSize: 14, color: textColor),
                   decoration: InputDecoration(
@@ -725,13 +724,13 @@ class _AdminListingParserReviewScreenState
                 Align(
                   alignment: Alignment.centerRight,
                   child: GhostButtonFactory.iconTextCentered(
-                    onPressed: _savingOwner ? null : _saveOwnerUsername,
-                    icon: _savingOwner
+                    onPressed: _savingContactTelegram ? null : _saveContactTelegram,
+                    icon: _savingContactTelegram
                         ? Icons.hourglass_top_rounded
                         : Icons.save_outlined,
                     text: L10n.get(
                       "admin_parser_review_owner_save",
-                      fallback: "Save owner",
+                      fallback: "Save contact",
                     ),
                     iconSize: 18,
                     neumorphicSoftUi: true,

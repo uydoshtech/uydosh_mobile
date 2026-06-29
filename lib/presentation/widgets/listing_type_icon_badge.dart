@@ -8,6 +8,7 @@ class ListingTypeIconBadge extends StatelessWidget {
   const ListingTypeIconBadge({
     required this.listingTypeCode,
     super.key,
+    this.hostResident,
     this.size = 24,
     this.padding = const EdgeInsets.all(8),
     this.label,
@@ -16,6 +17,7 @@ class ListingTypeIconBadge extends StatelessWidget {
   });
 
   final String listingTypeCode;
+  final bool? hostResident;
   final double size;
   final EdgeInsets padding;
 
@@ -27,7 +29,10 @@ class ListingTypeIconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = ListingTypeHelper.getBadgeStyle(listingTypeCode);
-    final icon = ListingTypeHelper.getIcon(listingTypeCode);
+    final icon = ListingTypeHelper.getIcon(
+      listingTypeCode,
+      hostResident: hostResident,
+    );
 
     return Container(
       padding: padding,

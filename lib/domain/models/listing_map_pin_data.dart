@@ -27,6 +27,7 @@ class ListingMapPinData {
     this.minPrice,
     this.maxPrice,
     this.listingTypeCode,
+    this.hostResident,
     this.subwayStationId,
     this.locationId,
     this.subwayLineId,
@@ -43,6 +44,7 @@ class ListingMapPinData {
   final int? minPrice;
   final int? maxPrice;
   final String? listingTypeCode;
+  final bool? hostResident;
   final int? subwayStationId;
   final int? locationId;
   final int? subwayLineId;
@@ -60,6 +62,7 @@ class ListingMapPinData {
       minPrice: _nullableMapPinIntFromJson(json['min_price']),
       maxPrice: _nullableMapPinIntFromJson(json['max_price']),
       listingTypeCode: json['listing_type_code'] as String?,
+      hostResident: json['host_resident'] as bool?,
       subwayStationId: _nullableMapPinIntFromJson(json['subway_station_id']),
       locationId: _nullableMapPinIntFromJson(json['location_id']),
       subwayLineId: _nullableMapPinIntFromJson(json['subway_line_id']),

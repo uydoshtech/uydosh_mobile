@@ -208,7 +208,7 @@ class _SearchResultsFabStack extends StatelessWidget {
 
   static const double _viewToggleGap = 12.0;
   static const double compactButtonWidth = 61.2;
-  static const double compactButtonHeight = 34.2;
+  static const double compactButtonHeight = 44.2;
   static const double compactButtonIconSize = 22.5;
   static const _feedOverlayPanelColor = Colors.white;
   static const _feedOverlayButtonBorder = BorderSide(color: Colors.black, width: 1);

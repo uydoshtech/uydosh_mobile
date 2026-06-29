@@ -59,6 +59,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
 class EditListingScreen extends StatefulWidget {
@@ -111,6 +112,7 @@ class _EditListingScreenState extends State<EditListingScreen>
   bool get _pricePickerSingleHandle =>
       _selectedListingTypeId == ListingTypeIds.roommateNeeded;
   bool _isPrivateRoom = false; // Add private room toggle
+  bool _hostResident = false;
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
@@ -252,18 +254,25 @@ class _EditListingScreenState extends State<EditListingScreen>
     _selectedSearchLocations.clear();
     _stationCache.clear();
 
+    // Demand-side geo is metro XOR districts. When both arrays exist (stale
+    // server rows), explicit district picks win so edit opens on the district
+    // multi-select the user saved.
+    if (locations.isNotEmpty) {
+      _locationSearchMode = _LocationSearchMode.district;
+      _selectedSearchLocations.addAll(locations.map(_locationFromDetail));
+      if (stations.isNotEmpty) {
+        final mapped = stations.map(_stationFromDetail).toList();
+        _stationCache.addEntries(mapped.map((s) => MapEntry(s.id, s)));
+      }
+      return;
+    }
+
     if (stations.isNotEmpty) {
       final mapped = stations.map(_stationFromDetail).toList();
       _locationSearchMode = _LocationSearchMode.metro;
       _selectedSearchStations.addAll(mapped);
       _stationCache.addEntries(mapped.map((s) => MapEntry(s.id, s)));
       _selectedSubwayLine = mapped.first.line;
-      return;
-    }
-
-    if (locations.isNotEmpty) {
-      _locationSearchMode = _LocationSearchMode.district;
-      _selectedSearchLocations.addAll(locations.map(_locationFromDetail));
       return;
     }
 
@@ -412,6 +421,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
 
     _isPrivateRoom = widget.listingDetail.privateRoom ?? false;
+    _hostResident = widget.listingDetail.hostResident ?? false;
 
     // Initialize validation states
     _showDescriptionError = false;
@@ -421,6 +431,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _selectedListingTypeId = _listingTypeIdFromDetail(widget.listingDetail);
     if (_isGroupFormingFlow) {
       _isPrivateRoom = false;
+      _hostResident = false;
     }
     _groupSizeTarget = (widget.listingDetail.groupSizeTarget ?? 3).clamp(
       GroupSizeTargetPicker.minSize,
@@ -457,13 +468,18 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     _seedMultiSearchFromDetail();
 
-    // Set subway line and station
+    // Set subway line; station wheel is hidden on supply-side edit — location
+    // picker is the source of truth for district.
     if (_selectedSearchStations.isNotEmpty) {
       _selectedSubwayLine = _selectedSearchStations.first.line;
-      _loadStationsForLine(_selectedSubwayLine);
+      if (_supportsMultiSearch) {
+        _loadStationsForLine(_selectedSubwayLine);
+      }
     } else if (widget.listingDetail.subwayStation != null) {
       _selectedSubwayLine = widget.listingDetail.subwayStation!.line;
-      _loadStationsForLine(_selectedSubwayLine);
+      if (_supportsMultiSearch) {
+        _loadStationsForLine(_selectedSubwayLine);
+      }
     }
 
     // Set selected amenities
@@ -691,6 +707,67 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
   }
 
+  /// Preserve the listing's saved station when the metro line is unchanged;
+  /// supply-side edit hides the station wheel so the district picker wins.
+  SubwayStation? _supplySideSubwayStationForUpdate() {
+    if (_selectedSubwayLine <= 0) return null;
+    final saved = widget.listingDetail.subwayStation;
+    if (saved != null && saved.line == _selectedSubwayLine) {
+      return _stationFromDetail(saved);
+    }
+    return null;
+  }
+
+  void _restoreSearchLocationsFromDetailIfNeeded() {
+    if (_selectedSearchLocations.isNotEmpty) return;
+    final locations = widget.listingDetail.searchLocations;
+    if (locations != null && locations.isNotEmpty) {
+      _selectedSearchLocations.addAll(locations.map(_locationFromDetail));
+      return;
+    }
+    final location = widget.listingDetail.location;
+    if (location != null) {
+      _selectedSearchLocations.add(_locationFromDetail(location));
+    }
+  }
+
+  void _restoreSearchStationsFromDetailIfNeeded() {
+    if (_selectedSearchStations.isNotEmpty) return;
+    final stations = widget.listingDetail.searchSubwayStations;
+    if (stations != null && stations.isNotEmpty) {
+      final mapped = stations.map(_stationFromDetail).toList();
+      _selectedSearchStations.addAll(mapped);
+      _stationCache.addEntries(mapped.map((s) => MapEntry(s.id, s)));
+      if (_selectedSubwayLine <= 0) {
+        _selectedSubwayLine = mapped.first.line;
+      }
+      return;
+    }
+    final station = widget.listingDetail.subwayStation;
+    if (station != null) {
+      final mapped = _stationFromDetail(station);
+      _selectedSearchStations.add(mapped);
+      _stationCache[mapped.id] = mapped;
+      if (_selectedSubwayLine <= 0) {
+        _selectedSubwayLine = mapped.line;
+      }
+    }
+  }
+
+  void _hydrateSelectedSearchLocationsFromCurrent() {
+    if (_selectedSearchLocations.isEmpty || _currentLocations.isEmpty) {
+      return;
+    }
+    final byId = {for (final location in _currentLocations) location.id: location};
+    final hydrated = <Location>[];
+    for (final selected in _selectedSearchLocations) {
+      hydrated.add(byId[selected.id] ?? selected);
+    }
+    _selectedSearchLocations
+      ..clear()
+      ..addAll(hydrated);
+  }
+
   void _setLocationSearchMode(_LocationSearchMode mode) {
     if (_locationSearchMode == mode) return;
     HapticFeedbackUtils.impact();
@@ -700,11 +777,17 @@ class _EditListingScreenState extends State<EditListingScreen>
       if (mode == _LocationSearchMode.metro) {
         _selectedSearchLocations.clear();
         _selectedLocationIndex = -1;
+        _restoreSearchStationsFromDetailIfNeeded();
+        if (_selectedSubwayLine > 0 && _currentStations.isEmpty) {
+          _loadStationsForLine(_selectedSubwayLine);
+        }
       } else {
         _selectedSearchStations.clear();
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _currentStations = [];
+        _restoreSearchLocationsFromDetailIfNeeded();
+        _hydrateSelectedSearchLocationsFromCurrent();
         _selectedLocationIndex = _selectedSearchLocations.isEmpty
             ? -1
             : _currentLocations.indexWhere(
@@ -748,12 +831,25 @@ class _EditListingScreenState extends State<EditListingScreen>
       _selectedStationIndex = 0;
       _currentStations = [];
       _showLocationError = false;
+      final incomingIds = ids.toSet();
+      final addedIds = <int>{};
       final next = <Location>[];
+      for (final location in _selectedSearchLocations) {
+        if (incomingIds.contains(location.id) && addedIds.add(location.id)) {
+          next.add(
+            _currentLocations.firstWhere(
+              (entry) => entry.id == location.id,
+              orElse: () => location,
+            ),
+          );
+        }
+      }
       for (final id in ids) {
+        if (!addedIds.add(id)) continue;
         final location = _currentLocations
-            .where((location) => location.id == id)
+            .where((entry) => entry.id == id)
             .cast<Location?>()
-            .firstWhere((location) => location != null, orElse: () => null);
+            .firstWhere((entry) => entry != null, orElse: () => null);
         if (location != null) next.add(location);
       }
       _selectedSearchLocations
@@ -798,6 +894,11 @@ class _EditListingScreenState extends State<EditListingScreen>
           );
           return aName.compareTo(bName);
         });
+
+      if (_locationSearchMode == _LocationSearchMode.district) {
+        _restoreSearchLocationsFromDetailIfNeeded();
+      }
+      _hydrateSelectedSearchLocationsFromCurrent();
 
       // Index must be into [_currentLocations] (sorted), not the raw API list.
       if (_selectedSearchLocations.isNotEmpty) {
@@ -1241,6 +1342,11 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("private_room", fallback: "Private room");
     }
 
+    if (_selectedListingTypeId == ListingTypeIds.roommateNeeded &&
+        _hostResident != (baseline.hostResident ?? false)) {
+      addLabel("host_resident", fallback: "I live here");
+    }
+
     if (_moveInDateValue != _baselineMoveInDate(baseline)) {
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
@@ -1371,6 +1477,11 @@ class _EditListingScreenState extends State<EditListingScreen>
     if (_priceForUpdateRequest() != d.price) return true;
 
     if (!_isGroupFormingFlow && _isPrivateRoom != (d.privateRoom ?? false)) {
+      return true;
+    }
+
+    if (_selectedListingTypeId == ListingTypeIds.roommateNeeded &&
+        _hostResident != (d.hostResident ?? false)) {
       return true;
     }
 
@@ -1546,6 +1657,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                     scrollController:
                                         _listingTypeScrollController,
                                     userGender: _selectedGender,
+                                    readOnly: true,
                                     onListingTypeChanged: (listingTypeId) {
                                       setState(() {
                                         final prevType = _selectedListingTypeId;
@@ -1604,10 +1716,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 _metroLineScrollController,
                             metroStationScrollController:
                                 _metroStationScrollController,
+                            showStationPicker: false,
                             onLineChanged: (index) {
                               setState(() {
                                 _selectedSubwayLine = index;
-                                if (index > 0) {
+                                if (index > 0 && _supportsMultiSearch) {
                                   _loadStationsForLine(index);
                                 } else {
                                   _currentStations = [];
@@ -1615,12 +1728,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 }
                               });
                             },
-                            onStationChanged: (index) {
-                              setState(() {
-                                _selectedStationIndex = index;
-                                _syncLocationWithStation();
-                              });
-                            },
+                            onStationChanged: (_) {},
                             onDismissKeyboard: _dismissKeyboard,
                           ),
                           const SizedBox(
@@ -2021,6 +2129,79 @@ class _EditListingScreenState extends State<EditListingScreen>
                             ],
                           ),
                         ),
+                        if (_selectedListingTypeId ==
+                            ListingTypeIds.roommateNeeded) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration:
+                                ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+                              context,
+                              theme: theme,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                                vertical: 16.0,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ThemeIcon(
+                                    ListingTypeHelper.hostResidentFieldIcon,
+                                    color: _hostResident
+                                        ? _getBorderColor()
+                                        : (Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? theme.colorScheme.onSurfaceVariant
+                                                .withOpacity(0.7)
+                                            : Colors.grey[600]),
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      L10n.get("host_resident")
+                                          .replaceFirst(" ", "\n"),
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: ThemeState().isLightTheme
+                                            ? Colors.black
+                                            : theme
+                                                .colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                  NeumorphicToggle(
+                                    value: _hostResident,
+                                    activeAccentColor: _getBorderColor(),
+                                    activeTrackColor: _getBorderColor()
+                                        .withValues(alpha: 0.3),
+                                    inactiveThumbColor:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? theme.colorScheme.onSurfaceVariant
+                                                .withOpacity(0.7)
+                                            : Colors.grey.shade600,
+                                    inactiveTrackColor:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? theme.colorScheme.onSurfaceVariant
+                                                .withOpacity(0.3)
+                                            : Colors.grey.shade300,
+                                    onChanged: (value) {
+                                      HapticFeedbackUtils.impact();
+                                      setState(() {
+                                        _hostResident = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 10),
 
                         // Photos Section - Only show for roommate needed listings (not for room needed)
@@ -2256,12 +2437,14 @@ class _EditListingScreenState extends State<EditListingScreen>
               : null;
       final selectedStation = usesMetroSearch
           ? _selectedSearchStations.first
-          : _selectedSubwayLine > 0 &&
-                  _currentStations.isNotEmpty &&
-                  _selectedStationIndex >= 0 &&
-                  _selectedStationIndex < _currentStations.length
-              ? _currentStations[_selectedStationIndex]
-              : null;
+          : !_supportsMultiSearch
+              ? _supplySideSubwayStationForUpdate()
+              : _selectedSubwayLine > 0 &&
+                      _currentStations.isNotEmpty &&
+                      _selectedStationIndex >= 0 &&
+                      _selectedStationIndex < _currentStations.length
+                  ? _currentStations[_selectedStationIndex]
+                  : null;
       final multiStationIds = _supportsMultiSearch
           ? (usesMetroSearch
               ? _selectedSearchStations.map((station) => station.id).toList()
@@ -2305,6 +2488,9 @@ class _EditListingScreenState extends State<EditListingScreen>
             ? _moveInDateValue
             : null, // Add move-in date
         privateRoom: _isGroupFormingFlow ? false : _isPrivateRoom,
+        hostResident: _selectedListingTypeId == ListingTypeIds.roommateNeeded
+            ? _hostResident
+            : null,
         photoPaths: null, // Don"t upload photos during listing update
         groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
       );

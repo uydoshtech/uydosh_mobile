@@ -81,6 +81,7 @@ abstract class IListingService {
     double? addressLongitude,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   });
@@ -102,6 +103,7 @@ abstract class IListingService {
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   });
@@ -338,6 +340,7 @@ class ListingService implements IListingService {
     double? addressLongitude,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   }) =>
@@ -360,6 +363,7 @@ class ListingService implements IListingService {
         addressLongitude: addressLongitude,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
+        hostResident: hostResident,
         photoPaths: photoPaths,
         groupSizeTarget: groupSizeTarget,
       );
@@ -382,6 +386,7 @@ class ListingService implements IListingService {
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   }) =>
@@ -402,6 +407,7 @@ class ListingService implements IListingService {
         subwayLineId: subwayLineId,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
+        hostResident: hostResident,
         photoPaths: photoPaths,
         groupSizeTarget: groupSizeTarget,
       );

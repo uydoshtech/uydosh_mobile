@@ -63,6 +63,8 @@ mixin _$ListingDetail {
   String? get moveInDate => throw _privateConstructorUsedError;
   @JsonKey(name: "private_room")
   bool? get privateRoom => throw _privateConstructorUsedError;
+  @JsonKey(name: "host_resident")
+  bool? get hostResident => throw _privateConstructorUsedError;
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl => throw _privateConstructorUsedError;
   @JsonKey(name: "room_scan_floor_long_m")
@@ -152,6 +154,7 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
+      @JsonKey(name: "host_resident") bool? hostResident,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
       @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
@@ -227,6 +230,7 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
+    Object? hostResident = freezed,
     Object? pointCloudUrl = freezed,
     Object? roomScanFloorLongM = freezed,
     Object? roomScanFloorShortM = freezed,
@@ -347,6 +351,10 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
       privateRoom: freezed == privateRoom
           ? _value.privateRoom
           : privateRoom // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      hostResident: freezed == hostResident
+          ? _value.hostResident
+          : hostResident // ignore: cast_nullable_to_non_nullable
               as bool?,
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
@@ -539,6 +547,7 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
+      @JsonKey(name: "host_resident") bool? hostResident,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
       @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
@@ -617,6 +626,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? featuredAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
+    Object? hostResident = freezed,
     Object? pointCloudUrl = freezed,
     Object? roomScanFloorLongM = freezed,
     Object? roomScanFloorShortM = freezed,
@@ -737,6 +747,10 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
       privateRoom: freezed == privateRoom
           ? _value.privateRoom
           : privateRoom // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      hostResident: freezed == hostResident
+          ? _value.hostResident
+          : hostResident // ignore: cast_nullable_to_non_nullable
               as bool?,
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
@@ -862,6 +876,7 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "featured_at") this.featuredAt,
       @JsonKey(name: "move_in_date") this.moveInDate,
       @JsonKey(name: "private_room") this.privateRoom,
+      @JsonKey(name: "host_resident") this.hostResident,
       @JsonKey(name: "point_cloud_url") this.pointCloudUrl,
       @JsonKey(name: "room_scan_floor_long_m") this.roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") this.roomScanFloorShortM,
@@ -967,6 +982,9 @@ class _$ListingDetailImpl implements _ListingDetail {
   @override
   @JsonKey(name: "private_room")
   final bool? privateRoom;
+  @override
+  @JsonKey(name: "host_resident")
+  final bool? hostResident;
   @override
   @JsonKey(name: "point_cloud_url")
   final String? pointCloudUrl;
@@ -1129,6 +1147,8 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.moveInDate == moveInDate) &&
             (identical(other.privateRoom, privateRoom) ||
                 other.privateRoom == privateRoom) &&
+            (identical(other.hostResident, hostResident) ||
+                other.hostResident == hostResident) &&
             (identical(other.pointCloudUrl, pointCloudUrl) ||
                 other.pointCloudUrl == pointCloudUrl) &&
             (identical(other.roomScanFloorLongM, roomScanFloorLongM) ||
@@ -1207,6 +1227,7 @@ class _$ListingDetailImpl implements _ListingDetail {
         featuredAt,
         moveInDate,
         privateRoom,
+        hostResident,
         pointCloudUrl,
         roomScanFloorLongM,
         roomScanFloorShortM,
@@ -1275,6 +1296,7 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "featured_at") final String? featuredAt,
       @JsonKey(name: "move_in_date") final String? moveInDate,
       @JsonKey(name: "private_room") final bool? privateRoom,
+      @JsonKey(name: "host_resident") final bool? hostResident,
       @JsonKey(name: "point_cloud_url") final String? pointCloudUrl,
       @JsonKey(name: "room_scan_floor_long_m") final double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m")
@@ -1378,6 +1400,9 @@ abstract class _ListingDetail implements ListingDetail {
   @override
   @JsonKey(name: "private_room")
   bool? get privateRoom;
+  @override
+  @JsonKey(name: "host_resident")
+  bool? get hostResident;
   @override
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl;

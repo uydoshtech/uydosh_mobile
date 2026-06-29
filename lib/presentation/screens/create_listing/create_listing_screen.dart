@@ -156,6 +156,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   bool get _pricePickerSingleHandle => _isRoommateNeededFlow;
   bool _isPrivateRoom = false; // Add private room toggle
+  bool _hostResident = false;
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
@@ -219,6 +220,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   double _baselineRoomBudgetMax = 50.0;
   bool _baselinePriceTouched = false;
   bool _baselinePrivateRoom = false;
+  bool _baselineHostResident = false;
   String _baselineMoveInDateValue = "";
   int _baselineSelectedSubwayLine = 0;
   int _baselineSelectedStationIndex = 0;
@@ -304,6 +306,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _baselineRoomBudgetMax = _roomBudgetMax;
     _baselinePriceTouched = _priceTouched;
     _baselinePrivateRoom = _isPrivateRoom;
+    _baselineHostResident = _hostResident;
     _baselineMoveInDateValue = _moveInDateValue;
     _baselineSelectedSubwayLine = _selectedSubwayLine;
     _baselineSelectedStationIndex = _selectedStationIndex;
@@ -383,8 +386,21 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _currentStations = [];
       _selectedStationIndex = 0;
 
+      final incomingIds = ids.toSet();
+      final addedIds = <int>{};
       final next = <Location>[];
+      for (final location in _selectedSearchLocations) {
+        if (incomingIds.contains(location.id) && addedIds.add(location.id)) {
+          next.add(
+            _currentLocations.firstWhere(
+              (entry) => entry.id == location.id,
+              orElse: () => location,
+            ),
+          );
+        }
+      }
       for (final id in ids) {
+        if (!addedIds.add(id)) continue;
         final location = _currentLocations
             .where((l) => l.id == id)
             .cast<Location?>()
@@ -508,6 +524,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_isPrivateRoom != _baselinePrivateRoom) {
       addLabel("private_room", fallback: "Private room");
     }
+    if (_isRoommateNeededFlow && _hostResident != _baselineHostResident) {
+      addLabel("host_resident", fallback: "I live here");
+    }
     if (_moveInDateValue != _baselineMoveInDateValue) {
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
@@ -563,6 +582,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     if (_selectedListingTypeId != _baselineListingTypeId) return true;
     if (_isPriceDirty()) return true;
     if (_isPrivateRoom != _baselinePrivateRoom) return true;
+    if (_isRoommateNeededFlow && _hostResident != _baselineHostResident) {
+      return true;
+    }
     if (_moveInDateValue != _baselineMoveInDateValue) return true;
 
     if (!_supportsMultiLocation &&
@@ -2178,6 +2200,77 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ],
           ),
         ),
+        if (_isRoommateNeededFlow) ...[
+          const SizedBox(height: 12),
+          Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
+              context,
+              theme: Theme.of(context),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 16.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ThemeIcon(
+                    ListingTypeHelper.hostResidentFieldIcon,
+                    color: _hostResident
+                        ? _getBorderColor()
+                        : (Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withOpacity(0.7)
+                            : Colors.grey[600]),
+                    size: 22,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      L10n.get("host_resident").replaceFirst(" ", "\n"),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: ThemeState().isLightTheme
+                            ? Colors.black
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  NeumorphicToggle(
+                    value: _hostResident,
+                    activeAccentColor: _getBorderColor(),
+                    activeTrackColor: _getBorderColor().withValues(alpha: 0.3),
+                    inactiveThumbColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withOpacity(0.7)
+                            : Colors.grey.shade600,
+                    inactiveTrackColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withOpacity(0.3)
+                            : Colors.grey.shade300,
+                    onChanged: (value) {
+                      HapticFeedbackUtils.impact();
+                      setState(() {
+                        _hostResident = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -2399,6 +2492,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           _summaryTile(
             label: _summaryLabel("private_room", fallback: "Private room"),
             value: _isPrivateRoom
+                ? L10n.get("yes", fallback: "Yes")
+                : L10n.get("no", fallback: "No"),
+            stepIndex: 1,
+          ),
+        if (_isRoommateNeededFlow)
+          _summaryTile(
+            label: _summaryLabel("host_resident", fallback: "I live here"),
+            value: _hostResident
                 ? L10n.get("yes", fallback: "Yes")
                 : L10n.get("no", fallback: "No"),
             stepIndex: 1,
@@ -3112,6 +3213,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ? _moveInDateValue
             : null, // Only send date if selected
         privateRoom: _isPrivateRoom,
+        hostResident: _isRoommateNeededFlow ? _hostResident : null,
         photoPaths: orderedPhotos.isNotEmpty ? orderedPhotos : null,
         groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
       );
@@ -3168,6 +3270,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _roomBudgetMax = 50.0;
         _priceTouched = false;
         _isPrivateRoom = false;
+        _hostResident = false;
         _selectedSubwayLine = 0;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;

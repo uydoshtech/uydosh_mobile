@@ -33,6 +33,7 @@ class ListingDetail with _$ListingDetail {
     @JsonKey(name: "featured_at") String? featuredAt,
     @JsonKey(name: "move_in_date") String? moveInDate,
     @JsonKey(name: "private_room") bool? privateRoom,
+    @JsonKey(name: "host_resident") bool? hostResident,
     @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
     @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,

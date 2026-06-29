@@ -52,7 +52,7 @@ Future<void> showCreateChoiceSheet(BuildContext context) {
                 CreateChoiceTile(
                   emoji: "👥",
                   iconColor: const Color(0xFFF4C9CF),
-                  title: L10n.get("listing_type_roommate_needed"),
+                  title: L10n.get("create_choice_roommate_needed"),
                   subtitle: L10n.get(
                     "create_choice_roommate_needed_subtitle",
                   ),
@@ -61,6 +61,19 @@ Future<void> showCreateChoiceSheet(BuildContext context) {
                     Navigator.of(sheetContext).pop();
                     if (!context.mounted) return;
                     context.pushCreateListing(listingTypeId: 2);
+                  },
+                ),
+                const SizedBox(height: 12),
+                CreateChoiceTile(
+                  emoji: "🏠",
+                  iconColor: const Color(0xFFB9DCEC),
+                  title: L10n.get("create_choice_room_needed"),
+                  subtitle: L10n.get("create_choice_room_needed_subtitle"),
+                  onTap: () {
+                    HapticFeedbackUtils.impact();
+                    Navigator.of(sheetContext).pop();
+                    if (!context.mounted) return;
+                    context.pushCreateListing(listingTypeId: 1);
                   },
                 ),
                 const SizedBox(height: 12),
@@ -74,19 +87,6 @@ Future<void> showCreateChoiceSheet(BuildContext context) {
                     Navigator.of(sheetContext).pop();
                     if (!context.mounted) return;
                     context.pushCreateGroup();
-                  },
-                ),
-                const SizedBox(height: 12),
-                CreateChoiceTile(
-                  emoji: "🏠",
-                  iconColor: const Color(0xFFB9DCEC),
-                  title: L10n.get("listing_type_room_needed"),
-                  subtitle: L10n.get("create_choice_room_needed_subtitle"),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(sheetContext).pop();
-                    if (!context.mounted) return;
-                    context.pushCreateListing(listingTypeId: 1);
                   },
                 ),
                 if (AppConfig.servicesFeatureEnabled) ...[

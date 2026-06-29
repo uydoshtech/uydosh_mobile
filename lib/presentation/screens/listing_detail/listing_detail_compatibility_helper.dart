@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/cache/region_cache.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/pets_preference_strings.dart";
 import "package:uy_dosh/domain/models/user_profile.dart";
@@ -175,12 +176,11 @@ class ListingDetailCompatibilityHelper {
     void Function(String, String, String, String) addDealbreaker,
   ) {
     if (current.regionId == null || owner.regionId == null) return;
+    if (status == ProfileMatchFieldStatus.incomplete) return;
 
-    final currentText = current.region != null
-        ? _getLocalizedRegionName(current.region!)
-        : "";
-    final ownerText =
-        owner.region != null ? _getLocalizedRegionName(owner.region!) : "";
+    final currentText = _formatRegion(current);
+    final ownerText = _formatRegion(owner);
+    final unknown = L10n.get("unknown");
 
     if (status == ProfileMatchFieldStatus.match) {
       addMatch(
@@ -192,17 +192,32 @@ class ListingDetailCompatibilityHelper {
       addDealbreaker(
         "region",
         L10n.get("region"),
-        currentText.isNotEmpty ? currentText : L10n.get("unknown"),
-        ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
+        currentText.isNotEmpty ? currentText : unknown,
+        ownerText.isNotEmpty ? ownerText : unknown,
       );
     } else {
       addDifference(
         "region",
         L10n.get("region"),
-        currentText.isNotEmpty ? currentText : L10n.get("unknown"),
-        ownerText.isNotEmpty ? ownerText : L10n.get("unknown"),
+        currentText.isNotEmpty ? currentText : unknown,
+        ownerText.isNotEmpty ? ownerText : unknown,
       );
     }
+  }
+
+  /// Uzbekistan viloyat/shahri label for compatibility rows (1-on-1 only).
+  static String _formatRegion(UserProfile profile) {
+    if (profile.region != null) {
+      return _getLocalizedRegionName(profile.region!);
+    }
+    final regionId = profile.regionId;
+    if (regionId == null) return "";
+
+    final lang = LanguageState().currentLanguage;
+    if (RegionCache.isInitialized) {
+      return RegionCache.getRegionShortName(regionId, lang);
+    }
+    return "";
   }
 
   static void _addStandardRow(

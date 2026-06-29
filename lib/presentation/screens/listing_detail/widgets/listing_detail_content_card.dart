@@ -371,6 +371,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   }
 
   List<SubwayStationDetail> _effectiveSearchStations() {
+    final locations = widget.listingDetail.searchLocations;
+    if (locations != null && locations.isNotEmpty) {
+      return const <SubwayStationDetail>[];
+    }
     final stations = widget.listingDetail.searchSubwayStations;
     if (stations != null && stations.isNotEmpty) return stations;
     final station = widget.listingDetail.subwayStation;
@@ -380,10 +384,10 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
   List<LocationDetail> _effectiveSearchLocations(
     List<SubwayStationDetail> stations,
   ) {
-    final stationLocations = _locationsForStations(stations);
-    if (stationLocations.isNotEmpty) return stationLocations;
     final locations = widget.listingDetail.searchLocations;
     if (locations != null && locations.isNotEmpty) return locations;
+    final stationLocations = _locationsForStations(stations);
+    if (stationLocations.isNotEmpty) return stationLocations;
     final location = widget.listingDetail.location;
     return location == null ? const <LocationDetail>[] : [location];
   }

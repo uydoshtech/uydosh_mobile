@@ -31,6 +31,7 @@ abstract class IListingCrudService {
     double? addressLongitude,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   });
@@ -52,6 +53,7 @@ abstract class IListingCrudService {
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   });
@@ -125,6 +127,7 @@ class ListingCrudService implements IListingCrudService {
     double? addressLongitude,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   }) async {
@@ -153,6 +156,7 @@ class ListingCrudService implements IListingCrudService {
         amenityIds: amenityIds,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
+        hostResident: hostResident,
         userId: null,
         groupSizeTarget: groupSizeTarget,
       );
@@ -249,6 +253,7 @@ class ListingCrudService implements IListingCrudService {
     int? subwayLineId,
     String? moveInDate,
     bool? privateRoom,
+    bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
   }) async {
@@ -274,6 +279,7 @@ class ListingCrudService implements IListingCrudService {
         amenityIds: amenityIds,
         moveInDate: moveInDate,
         privateRoom: privateRoom,
+        hostResident: hostResident,
         userId: null,
         groupSizeTarget: groupSizeTarget,
       );

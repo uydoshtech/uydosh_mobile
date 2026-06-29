@@ -30,6 +30,7 @@ class ListingTypePicker extends StatefulWidget {
     this.scrollController,
     this.useGlassPlate = false,
     this.userGender,
+    this.readOnly = false,
   });
 
   final int selectedListingTypeId;
@@ -47,6 +48,9 @@ class ListingTypePicker extends StatefulWidget {
   /// "roommate needed" option label and icon color. When null, the picker
   /// resolves it from the cached/current user profile.
   final int? userGender;
+
+  /// When true, the wheel is visible but not scrollable.
+  final bool readOnly;
 
   @override
   State<ListingTypePicker> createState() => _ListingTypePickerState();
@@ -236,7 +240,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final wheel = Row(
+    Widget wheel = Row(
         children: [
           Expanded(
             child: CupertinoPicker(
@@ -244,11 +248,13 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
               changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
               itemExtent: widget.itemExtent,
               scrollController: _effectiveController,
-              onSelectedItemChanged: (index) {
-                FocusScope.of(context).unfocus();
-                SendSoundUtils.playCupertinoWheelSound();
-                widget.onListingTypeChanged(_listingTypeOptions[index]);
-              },
+              onSelectedItemChanged: widget.readOnly
+                  ? null
+                  : (index) {
+                      FocusScope.of(context).unfocus();
+                      SendSoundUtils.playCupertinoWheelSound();
+                      widget.onListingTypeChanged(_listingTypeOptions[index]);
+                    },
               children: [
                 for (final listingTypeId in _listingTypeOptions)
                   _buildWheelItem(context, listingTypeId),
@@ -283,6 +289,13 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
             ),
         ],
       );
+
+    if (widget.readOnly) {
+      wheel = Opacity(
+        opacity: 0.55,
+        child: AbsorbPointer(child: wheel),
+      );
+    }
 
     if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
       return LiquidGlassPlate(

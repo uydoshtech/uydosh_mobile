@@ -16,6 +16,7 @@ class ListingTypeBadge extends StatelessWidget {
     this.showIcon = true,
     this.showText = true,
     this.useShortLabel = false,
+    this.hostResident,
     this.fontSize,
     this.padding,
   });
@@ -25,13 +26,18 @@ class ListingTypeBadge extends StatelessWidget {
   final bool showText;
   /// Compact badge copy (e.g. «Собираем Группу» vs «Собрать группу»).
   final bool useShortLabel;
+  /// When set on `roommate_needed`, switches badge/map icon (people vs person).
+  final bool? hostResident;
   final double? fontSize;
   final EdgeInsets? padding;
 
   @override
   Widget build(BuildContext context) {
     final style = ListingTypeHelper.getBadgeStyle(listingTypeCode);
-    final icon = ListingTypeHelper.getIcon(listingTypeCode);
+    final icon = ListingTypeHelper.getIcon(
+      listingTypeCode,
+      hostResident: hostResident,
+    );
     final text = useShortLabel
         ? ListingTypeHelper.getShortText(context, listingTypeCode)
         : ListingTypeHelper.getText(context, listingTypeCode);
@@ -177,17 +183,53 @@ class ListingTypeHelper {
   }
 
   /// Get the icon for a listing type code
-  static IconData getIcon(String code) {
+  static IconData getIcon(String code, {bool? hostResident}) {
     switch (code) {
       case "room_needed":
         return Icons.home;
       case "roommate_needed":
-        return Icons.people;
+        return hostResident == false
+            ? roommateAbsentHostIcon
+            : roommateResidentIcon;
       case "group_forming":
         return Icons.groups_2_outlined;
       default:
         return Icons.help_outline;
     }
+  }
+
+  /// Two people — publisher lives on site (`host_resident` true / legacy null).
+  static const IconData roommateResidentIcon = Icons.people;
+
+  /// Single person — publisher does not live on site (`host_resident` false).
+  static const IconData roommateAbsentHostIcon = Icons.person_outline;
+
+  /// Map pin cache key when `roommate_needed` + `host_resident == false`.
+  static const String roommateAbsentHostMapIconKey =
+      "roommate_needed_absent_host";
+
+  /// Icon for the host-resident toggle on create/edit forms.
+  static const IconData hostResidentFieldIcon = Icons.person_outline;
+
+  /// Cache key for map pin bitmaps (`roommate_needed` absent-host variant).
+  static String? mapIconCacheKey(
+    String? listingTypeCode, {
+    bool? hostResident,
+  }) {
+    if (listingTypeCode == "roommate_needed" && hostResident == false) {
+      return roommateAbsentHostMapIconKey;
+    }
+    return listingTypeCode;
+  }
+
+  static IconData mapPinIcon(
+    String? listingTypeCode, {
+    bool? hostResident,
+  }) {
+    if (listingTypeCode != null && listingTypeCode.isNotEmpty) {
+      return getIcon(listingTypeCode, hostResident: hostResident);
+    }
+    return Icons.home;
   }
 
   /// Get the localized text for a listing type code

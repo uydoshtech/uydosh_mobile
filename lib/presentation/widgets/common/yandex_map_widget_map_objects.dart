@@ -128,6 +128,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       pin.longitude,
       pin.listingTypeId,
       pin.listingTypeCode,
+      pin.hostResident,
       pin.gender,
     );
   }
@@ -222,9 +223,14 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         logger.d("🎨 Using Cupertino location icon");
       }
       final listingTypeCode = widget.listingDetail?.listingType.code;
-      final listingTypeIconBytes = listingTypeCode == null
+      final hostResident = widget.listingDetail?.hostResident;
+      final mapIconKey = ListingTypeHelper.mapIconCacheKey(
+        listingTypeCode,
+        hostResident: hostResident,
+      );
+      final listingTypeIconBytes = mapIconKey == null
           ? null
-          : _cachedListingTypeIconBytes[listingTypeCode];
+          : _cachedListingTypeIconBytes[mapIconKey];
       iconDescriptor = _bitmapDescriptorFromBytes(
         listingTypeIconBytes ?? _cachedIconBytes!,
       );
@@ -1317,6 +1323,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     return _listingTypeIconDescriptor(
       listingTypeCode: pin.listingTypeCode,
       listingTypeId: pin.listingTypeId,
+      hostResident: pin.hostResident,
       selected: selected,
       visited: visited,
     );
@@ -1325,6 +1332,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   BitmapDescriptor _listingTypeIconDescriptor({
     String? listingTypeCode,
     int? listingTypeId,
+    bool? hostResident,
     bool selected = false,
     bool visited = false,
   }) {
@@ -1350,9 +1358,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
             : widget.nightModeEnabled
                 ? _cachedDarkListingTypeIconBytes
                 : _cachedListingTypeIconBytes;
-    final resolvedCode = _resolveListingTypeCode(
-      listingTypeCode: listingTypeCode,
-      listingTypeId: listingTypeId,
+    final resolvedCode = ListingTypeHelper.mapIconCacheKey(
+      _resolveListingTypeCode(
+        listingTypeCode: listingTypeCode,
+        listingTypeId: listingTypeId,
+      ),
+      hostResident: hostResident,
     );
     final iconBytes = resolvedCode == null ? null : bytesByCode[resolvedCode];
     return _bitmapDescriptorFromBytes(iconBytes ?? fallbackBytes!);

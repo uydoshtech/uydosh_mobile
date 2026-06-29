@@ -25,10 +25,15 @@ class ListingFormMetroSection extends StatefulWidget {
     required this.onDismissKeyboard,
     this.embeddedInPlate = false,
     this.pickerHeight = 80,
+    this.showStationPicker = true,
     super.key,
   });
 
   final bool embeddedInPlate;
+
+  /// When false, only the metro line wheel is shown (district picker is the
+  /// location source of truth elsewhere on the form).
+  final bool showStationPicker;
 
   /// Height of the line/station wheel pickers. Larger values reveal more
   /// adjacent options (e.g. neighbouring stations) at once.
@@ -121,11 +126,13 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
           label: L10n.get("select_metro_line_optional"),
           child: _buildLinePicker(context),
         ),
-        const SizedBox(height: 10),
-        LabeledFieldOverlay(
-          label: L10n.get("metro_station_label"),
-          child: _buildStationPicker(context),
-        ),
+        if (widget.showStationPicker) ...[
+          const SizedBox(height: 10),
+          LabeledFieldOverlay(
+            label: L10n.get("metro_station_label"),
+            child: _buildStationPicker(context),
+          ),
+        ],
       ],
     );
   }

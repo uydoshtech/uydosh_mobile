@@ -89,6 +89,7 @@ class ListingDetailMetaBadges extends StatelessWidget {
               children: [
                 ListingTypeBadge(
                   listingTypeCode: listingDetail.listingType.code,
+                  hostResident: listingDetail.hostResident,
                   useShortLabel: true,
                   fontSize: 12,
                   padding: const EdgeInsets.symmetric(

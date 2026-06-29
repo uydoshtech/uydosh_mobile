@@ -1365,7 +1365,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// then pin to the physical bottom — under the curved bar — instead of
   /// sitting above it like before extendBody.
   double _searchAlertFabStackBottom(BuildContext context) {
-    const base = 30.0;
+    const base = 80.0;
     return base + _blueShellExtendBodyBottomInset(context);
   }
 
@@ -1455,7 +1455,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       _searchAlertFabStackBottom(context) +
           _fabColumnHeight(includeBellFab: false) +
           16.0 -
-          100.0,
+          150.0,
     );
   }
 

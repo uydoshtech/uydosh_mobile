@@ -51,10 +51,12 @@ abstract final class UydoshDropdownChrome {
 
   /// Foreground for rows inside the opened menu panel.
   static Color menuItemForeground(BuildContext context) {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.primary;
+    final isLightTheme = ThemeState().isLightTheme;
+    final isBlueTheme = ThemeState().isBlueTheme;
+    if (isBlueTheme) {
+      return BlueThemeColors.textPrimary;
     }
-    return ThemeState().isLightTheme ? Colors.grey[800]! : Colors.grey[200]!;
+    return isLightTheme ? Colors.grey[800]! : Colors.grey[200]!;
   }
 
   static TextStyle? menuItemStyle(BuildContext context) {

@@ -46,6 +46,7 @@ import "package:uy_dosh/presentation/widgets/common/yandex_map_widget.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
@@ -124,8 +125,8 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.initialListings = const [],
     this.initialTotal,
     this.embeddedMapBottomInset = 0,
-    this.embeddedSearchButtonBottom = 100.0,
-    this.embeddedViewToggleBottom = 168.0,
+    this.embeddedSearchButtonBottom = 150.0,
+    this.embeddedViewToggleBottom = 206.2,
     this.onOpenEmbeddedSearch,
     this.onDismissFilterRibbon,
     this.feedListingsRevision = -1,
@@ -792,6 +793,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       subwayLineIds: _mapPinSubwayLineIds(pin),
       listingTypeId: pin.listingTypeId,
       listingTypeCode: listingTypeCode,
+      hostResident: pin.hostResident,
       gender: pin.gender,
       photoUrl: pin.photoUrl != null
           ? EnvironmentUtil.hostedImageUrl(pin.photoUrl!)
@@ -1054,6 +1056,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           listingTypeCode: listingTypeCode,
           gender: listing.gender,
           photoUrl: _listingPrimaryPhotoUrl(listing),
+          createdAt: listing.createdAt,
         );
       }
     }
@@ -1079,6 +1082,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           listingTypeCode: listingTypeCode,
           gender: listing.gender,
           photoUrl: _listingPrimaryPhotoUrl(listing),
+          createdAt: listing.createdAt,
         );
       }
     }
@@ -1099,6 +1103,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   List<SubwayStationDetail> _effectiveSearchStations(Listing listing) {
+    final locations = listing.searchLocations;
+    if (locations != null && locations.isNotEmpty) {
+      return const <SubwayStationDetail>[];
+    }
     final stations = listing.searchSubwayStations;
     if (stations != null && stations.isNotEmpty) return stations;
     final station = listing.subwayStation;
@@ -1109,10 +1117,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     Listing listing,
     List<SubwayStationDetail> stations,
   ) {
-    final stationLocations = _locationsForStations(stations);
-    if (stationLocations.isNotEmpty) return stationLocations;
     final locations = listing.searchLocations;
     if (locations != null && locations.isNotEmpty) return locations;
+    final stationLocations = _locationsForStations(stations);
+    if (stationLocations.isNotEmpty) return stationLocations;
     final location = listing.location;
     return location == null ? const <LocationDetail>[] : [location];
   }

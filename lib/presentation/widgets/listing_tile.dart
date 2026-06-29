@@ -437,6 +437,7 @@ class _ListingTileState extends State<ListingTile> {
                           if (widget.listing.listingType != null)
                             ListingTypeIconBadge(
                               listingTypeCode: widget.listing.listingType!.code,
+                              hostResident: widget.listing.hostResident,
                               size: 16,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -1456,6 +1457,10 @@ class _ListingTileState extends State<ListingTile> {
   }
 
   List<SubwayStationDetail> _effectiveSearchStations() {
+    final locations = widget.listing.searchLocations;
+    if (locations != null && locations.isNotEmpty) {
+      return const <SubwayStationDetail>[];
+    }
     final stations = widget.listing.searchSubwayStations;
     if (stations != null && stations.isNotEmpty) return stations;
     final station = widget.listing.subwayStation;
@@ -1465,10 +1470,10 @@ class _ListingTileState extends State<ListingTile> {
   List<LocationDetail> _effectiveSearchLocations(
     List<SubwayStationDetail> stations,
   ) {
-    final stationLocations = _locationsForStations(stations);
-    if (stationLocations.isNotEmpty) return stationLocations;
     final locations = widget.listing.searchLocations;
     if (locations != null && locations.isNotEmpty) return locations;
+    final stationLocations = _locationsForStations(stations);
+    if (stationLocations.isNotEmpty) return stationLocations;
     final location = widget.listing.location;
     return location == null ? const <LocationDetail>[] : [location];
   }

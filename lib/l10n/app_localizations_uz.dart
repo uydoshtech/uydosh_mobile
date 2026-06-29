@@ -1392,10 +1392,10 @@ class AppLocalizationsUz extends AppLocalizations {
   String get both_students => 'Ikkalasi ham talaba';
 
   @override
-  String get region => 'Tuman';
+  String get region => 'Viloyat';
 
   @override
-  String get same_region => 'Bir xil tuman';
+  String get same_region => 'Bir xil viloyat';
 
   @override
   String get rating => 'Reyting';

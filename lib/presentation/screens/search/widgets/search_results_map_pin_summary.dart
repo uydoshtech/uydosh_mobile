@@ -45,6 +45,7 @@ class _PinSummaryTooltip extends StatelessWidget {
                               _PinSummaryBadges(
                                 listingTypeCode: pin.listingTypeCode,
                                 gender: pin.gender,
+                                hostResident: pin.hostResident,
                                 compact: true,
                               ),
                               const SizedBox(width: 8),
@@ -82,6 +83,7 @@ class _PinSummaryTooltip extends StatelessWidget {
                             locationLabel: pin.locationLabel,
                             stationLabel: pin.stationLabel,
                             lineIds: pin.subwayLineIds,
+                            createdAt: pin.createdAt,
                           ),
                         ],
                       ],
@@ -364,6 +366,7 @@ class _PinGroupListingCard extends StatelessWidget {
                       _PinSummaryBadges(
                         listingTypeCode: pin.listingTypeCode,
                         gender: pin.gender,
+                        hostResident: pin.hostResident,
                         compact: true,
                       ),
                       const SizedBox(height: 6),
@@ -394,6 +397,7 @@ class _PinGroupListingCard extends StatelessWidget {
                       _PinMetroRow(
                         lineIds: pin.subwayLineIds,
                         label: pin.stationLabel!,
+                        createdAt: pin.createdAt,
                       ),
                     ],
                   ],
@@ -433,11 +437,13 @@ class _PinSummaryBadges extends StatelessWidget {
   const _PinSummaryBadges({
     required this.listingTypeCode,
     required this.gender,
+    this.hostResident,
     this.compact = false,
   });
 
   final String? listingTypeCode;
   final int? gender;
+  final bool? hostResident;
   final bool compact;
 
   @override
@@ -450,6 +456,7 @@ class _PinSummaryBadges extends StatelessWidget {
         if (listingTypeCode?.isNotEmpty == true)
           ListingTypeIconBadge(
             listingTypeCode: listingTypeCode!,
+            hostResident: hostResident,
             size: compact ? 13 : 14,
             padding: compact
                 ? const EdgeInsets.all(4)
@@ -473,11 +480,13 @@ class _PinGeoLabelsRow extends StatelessWidget {
     required this.locationLabel,
     required this.stationLabel,
     required this.lineIds,
+    this.createdAt,
   });
 
   final String? locationLabel;
   final String? stationLabel;
   final List<int> lineIds;
+  final String? createdAt;
 
   @override
   Widget build(BuildContext context) {
@@ -499,6 +508,7 @@ class _PinGeoLabelsRow extends StatelessWidget {
           _PinMetroRow(
             lineIds: lineIds,
             label: stationLabel!,
+            createdAt: createdAt,
           ),
       ],
     );
@@ -540,15 +550,24 @@ class _PinMetaRow extends StatelessWidget {
 }
 
 class _PinMetroRow extends StatelessWidget {
-  const _PinMetroRow({required this.lineIds, required this.label});
+  const _PinMetroRow({
+    required this.lineIds,
+    required this.label,
+    this.createdAt,
+  });
 
   final List<int> lineIds;
   final String label;
+  final String? createdAt;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final visibleLineIds = lineIds.isEmpty ? const [1] : lineIds;
+    final publicationDate = ListingDetailDateUtils.formatPublicationDate(
+      context,
+      createdAt,
+    );
     return Row(
       children: [
         for (var i = 0; i < visibleLineIds.length; i++) ...[
@@ -571,6 +590,19 @@ class _PinMetroRow extends StatelessWidget {
             ),
           ),
         ),
+        if (publicationDate != null) ...[
+          const SizedBox(width: 8),
+          Text(
+            publicationDate,
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ],
     );
   }

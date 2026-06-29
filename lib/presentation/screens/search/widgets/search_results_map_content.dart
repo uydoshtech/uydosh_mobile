@@ -174,7 +174,7 @@ class _SearchMapCanvas extends StatelessWidget {
     const viewToggleWidth = 61.0;
     const zoomControlsWidth = 48.0;
     const viewToggleGap = 8.0;
-    const feedViewButtonHeight = 34.2;
+    const feedViewButtonHeight = 44.2;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
     final zoomControlsBottom = canvas.viewToggleBottom +
         feedViewButtonHeight +
@@ -311,7 +311,7 @@ class _SearchMapOverlays extends StatelessWidget {
     final mapLoaderColor = mapNightModeEnabled ? Colors.white : Colors.black;
     const viewToggleTop = 4.0;
     const viewToggleWidth = 61.0;
-    const feedViewButtonHeight = 34.2;
+    const feedViewButtonHeight = 44.2;
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
     const locationPromptBottomMargin = 8.0;

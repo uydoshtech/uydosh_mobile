@@ -23,6 +23,7 @@ class CreateListingRequest implements IJsonEncodable {
     this.addressLongitude,
     this.moveInDate, // Add move-in date parameter
     this.privateRoom, // Add private room parameter
+    this.hostResident,
     this.userId, // Add user ID parameter
     this.groupSizeTarget,
   });
@@ -45,6 +46,7 @@ class CreateListingRequest implements IJsonEncodable {
   final double? addressLongitude;
   final String? moveInDate; // Add move-in date field
   final bool? privateRoom; // Add private room field
+  final bool? hostResident;
   final int? userId;
   final int? groupSizeTarget;
 
@@ -71,6 +73,10 @@ class CreateListingRequest implements IJsonEncodable {
       "privateRoom":
           privateRoom, // Always include, sends null when no private room preference
     };
+
+    if (hostResident != null) {
+      json["hostResident"] = hostResident;
+    }
 
     // Only include moveInDate if it's not null
     if (moveInDate != null) {

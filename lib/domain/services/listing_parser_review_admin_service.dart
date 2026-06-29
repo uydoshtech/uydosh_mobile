@@ -141,25 +141,12 @@ class ParserReviewBundle {
 
   bool get hasParserData => parserSnapshot != null;
 
-  /// The original Telegram poster's handle (no `@`) stored on the listing, if
-  /// any. Admin-editable on the review screen. Falls back to the raw source's
-  /// author username so the field is pre-filled even before it's been saved.
-  String? get telegramAuthorUsername {
-    final candidates = <Object?>[
-      listing["telegram_author_username"],
-      rawSource?.authorUsername,
-      parserSnapshot?.outputJson["telegram_author_username"],
-      parserSnapshot?.outputJson["contact_telegram"],
-      listing["contact_telegram"],
-    ];
-    for (final candidate in candidates) {
-      final normalized = _normalizeTelegramUsername(candidate);
-      if (normalized != null) return normalized;
-    }
-    return null;
-  }
+  /// Listing contact Telegram handle (no `@`) shown to users and editable on
+  /// the parser review screen.
+  String? get contactTelegram =>
+      ParserReviewBundle.normalizeTelegramUsername(listing["contact_telegram"]);
 
-  static String? _normalizeTelegramUsername(Object? value) {
+  static String? normalizeTelegramUsername(Object? value) {
     if (value is! String) return null;
     var normalized = value.trim();
     if (normalized.isEmpty) return null;
@@ -177,21 +164,20 @@ class ParserReviewBundle {
   }
 }
 
-class _SetTelegramAuthorUsernameBody implements IJsonEncodable {
-  _SetTelegramAuthorUsernameBody({required this.telegramAuthorUsername});
-  final String? telegramAuthorUsername;
+class _SetContactTelegramBody implements IJsonEncodable {
+  _SetContactTelegramBody({required this.contactTelegram});
+  final String? contactTelegram;
 
   @override
-  Map<String, dynamic> toJson() =>
-      {"telegram_author_username": telegramAuthorUsername};
+  Map<String, dynamic> toJson() => {"contact_telegram": contactTelegram};
 }
 
 abstract class IListingParserReviewAdminService {
   Future<ParserReviewBundle> getParserReview(int listingId);
 
-  /// Sets (or clears, with null/empty) the original Telegram poster's handle.
+  /// Sets (or clears, with null/empty) the listing contact Telegram handle.
   /// Returns the normalized value stored server-side (no `@`, or null).
-  Future<String?> updateTelegramAuthorUsername(int listingId, String? username);
+  Future<String?> updateContactTelegram(int listingId, String? username);
 }
 
 class ListingParserReviewAdminService
@@ -219,7 +205,7 @@ class ListingParserReviewAdminService
   }
 
   @override
-  Future<String?> updateTelegramAuthorUsername(
+  Future<String?> updateContactTelegram(
     int listingId,
     String? username,
   ) async {
@@ -229,23 +215,23 @@ class ListingParserReviewAdminService
           ? null
           : trimmed.replaceAll(RegExp(r"^@+"), "").trim();
       final response =
-          await _oauthApiClient.patch<dynamic, _SetTelegramAuthorUsernameBody>(
-        "/admin/listings/$listingId/telegram-author-username",
+          await _oauthApiClient.patch<dynamic, _SetContactTelegramBody>(
+        "/admin/listings/$listingId/contact-telegram",
         (data) => data,
         basePath: EnvironmentUtil.basePath,
-        data: _SetTelegramAuthorUsernameBody(
-          telegramAuthorUsername:
+        data: _SetContactTelegramBody(
+          contactTelegram:
               (normalized != null && normalized.isEmpty) ? null : normalized,
         ),
       );
       if (response is Map<String, dynamic>) {
-        final stored = response["telegram_author_username"];
+        final stored = response["contact_telegram"];
         if (stored is String) return stored;
       }
       return normalized;
     } catch (e) {
       logger.d(
-        "Error updating telegram author username for listing $listingId: $e",
+        "Error updating contact telegram for listing $listingId: $e",
       );
       rethrow;
     }

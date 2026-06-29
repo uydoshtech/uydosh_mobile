@@ -39,8 +39,10 @@ class ListingMapPin {
     this.subwayLineIds = const [],
     this.listingTypeId,
     this.listingTypeCode,
+    this.hostResident,
     this.gender,
     this.photoUrl,
+    this.createdAt,
   });
 
   final int listingId;
@@ -53,8 +55,10 @@ class ListingMapPin {
   final List<int> subwayLineIds;
   final int? listingTypeId;
   final String? listingTypeCode;
+  final bool? hostResident;
   final int? gender;
   final String? photoUrl;
+  final String? createdAt;
 }
 
 class UniversityMapMarker {
@@ -1402,9 +1406,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       return _ListingDetailMapTooltip(
         key: ValueKey("listing-detail-${listingDetail.id}"),
         listingDetail: listingDetail,
-        onClose: () => setState(() {
-          _showListingDetailTooltip = false;
-        }),
       );
     }
 
@@ -2269,12 +2270,10 @@ class MetroStationMapTooltip extends StatelessWidget {
 class _ListingDetailMapTooltip extends StatelessWidget {
   const _ListingDetailMapTooltip({
     required this.listingDetail,
-    required this.onClose,
     super.key,
   });
 
   final ListingDetail listingDetail;
-  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -2300,42 +2299,32 @@ class _ListingDetailMapTooltip extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 48, 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    listingDetail.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _priceLabel(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                listingDetail.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            Positioned(
-              top: 0,
-              right: 0,
-              child: _MapTooltipCloseButton(onClose: onClose),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                _priceLabel(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
