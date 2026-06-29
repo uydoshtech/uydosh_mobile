@@ -893,7 +893,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       context,
       openedFromHomeScreen: false,
       currentListingTypeId: _listingTypeId,
-      currentLocationId: _locationId,
+      currentLocationId: _locationId ?? 0,
       currentSubwayStationId: _subwayStationId,
       currentSubwayStationIds: _subwayStationIds,
       currentSubwayLineId: _subwayLineId,

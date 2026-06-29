@@ -28,7 +28,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     _searchFiltersState.seedFromSheetOpenParams(
       listingTypeId: widget.currentListingTypeId,
-      locationId: widget.metroOnly ? null : widget.currentLocationId,
+      // `null` means "no district filter" — coalesce so we clear any stale
+      // singleton location instead of skipping the seed (map passes null).
+      locationId: widget.metroOnly ? null : (widget.currentLocationId ?? 0),
       subwayLineId: widget.currentSubwayLineId,
       subwayStationId: widget.currentSubwayStationId,
       subwayStationIds: widget.currentSubwayStationIds,
@@ -656,7 +658,19 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       onStationsSelected: (stationIds) {
                         setState(() {
                           _searchFiltersState.setStationIds(stationIds);
+                          if (stationIds.isNotEmpty &&
+                              _searchFiltersState.selectedLocationIndex > 0) {
+                            _searchFiltersState.setLocationIndex(0);
+                          }
                         });
+                        if (stationIds.isNotEmpty) {
+                          final locationCtrl = _locationScrollController;
+                          if (locationCtrl != null &&
+                              locationCtrl.hasClients &&
+                              locationCtrl.selectedItem != 0) {
+                            locationCtrl.jumpToItem(0);
+                          }
+                        }
                       },
                     ),
                   ),
@@ -712,7 +726,6 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;
-    final locationId = _getSelectedLocationId();
     final subwayStationIds = _searchFiltersState.selectedStationIdsList;
     final subwayStationId = subwayStationIds.length == 1
         ? subwayStationIds.first
@@ -720,6 +733,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     final subwayLine = _searchFiltersState.selectedSubwayLine;
     final hasStationFilter = subwayStationIds.isNotEmpty ||
         (subwayStationId != null && subwayStationId > 0);
+    // Location and metro are mutually exclusive in search results; when the
+    // user picks a station, drop any district filter so reopening the sheet
+    // does not resurrect a stale location.
+    final locationId =
+        hasStationFilter ? null : _getSelectedLocationId();
+    if (hasStationFilter && _searchFiltersState.selectedLocationIndex > 0) {
+      _searchFiltersState.setLocationIndex(0);
+    }
     final effectiveSubwayLineId =
         hasStationFilter && subwayLine > 0 ? subwayLine : null;
     final gender = _searchFiltersState.selectedGender;
