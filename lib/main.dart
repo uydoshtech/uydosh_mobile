@@ -12,6 +12,7 @@ import "package:flutter_localizations/flutter_localizations.dart";
 import "package:uy_dosh/base/config/client_custom_camera_config.dart";
 import "package:uy_dosh/base/config/client_gemini_listing_ui_config.dart";
 import "package:uy_dosh/base/config/client_home_start_view_config.dart";
+import "package:uy_dosh/base/state/home_start_view_settings_state.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
@@ -95,6 +96,11 @@ Future<void> _bootstrapPriceDisplayCurrencyColdStart() async {
   await PriceDisplaySettingsState().initialize();
   if (!await SessionManager.isAuthenticated()) return;
   await PriceDisplaySettingsState().hydrateFromBackendForCurrentUser();
+}
+
+Future<void> _bootstrapHomeStartViewColdStart() async {
+  await ClientHomeStartViewConfig.load();
+  await HomeStartViewSettingsState().initialize();
 }
 
 void main() async {
@@ -222,7 +228,7 @@ void main() async {
       OnboardingState().initialize(),
       ThemeState().initialize(),
       UiPerformancePolicy.initialize(),
-      ClientHomeStartViewConfig.load(),
+      _bootstrapHomeStartViewColdStart(),
       ClientMapLayerDefaultsConfig.load(),
       // Determines splash variant (full animated vs quick static). Cheap:
       // a single SharedPreferences read + PackageInfo lookup.

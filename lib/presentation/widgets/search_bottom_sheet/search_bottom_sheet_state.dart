@@ -49,6 +49,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_searchFiltersState.isGroupFormingOnlySearch) {
+        _clearGroupFormingIncompatibleFilters();
+      }
       setState(() => _showDeferredSections = true);
     });
 
@@ -57,6 +60,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
+        if (_searchFiltersState.isGroupFormingOnlySearch) return;
         if (widget.openedFromHomeScreen &&
             AuthenticationState().isAuthenticated &&
             OnboardingState().showOnboarding &&
@@ -323,6 +327,22 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     });
   }
 
+  /// Group-forming listings have no fixed address; drop geo and supply-side
+  /// toggles so they are not applied silently on search.
+  void _clearGroupFormingIncompatibleFilters() {
+    _resetLocationPicker();
+    _resetMetroPicker();
+    unawaited(_searchFiltersState.setPrivateRoom(false));
+    unawaited(_searchFiltersState.setWithPhoto(false));
+
+    final locationCtrl = _locationScrollController;
+    if (locationCtrl != null &&
+        locationCtrl.hasClients &&
+        locationCtrl.selectedItem != 0) {
+      locationCtrl.jumpToItem(0);
+    }
+  }
+
   void _resetMetroPicker() {
     final hasMetroSelection = _searchFiltersState.selectedSubwayLine > 0 ||
         _searchFiltersState.selectedStationIndex > 0 ||
@@ -510,6 +530,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final mq = MediaQuery.of(context);
+    final isGroupFormingOnlySearch =
+        _searchFiltersState.isGroupFormingOnlySearch;
     // Cap the glass sheet while letting it shrink to the actual filter content.
     final maxSheetHeight = (mq.size.height - mq.viewInsets.bottom) * 0.9;
     final radius = const BorderRadius.only(
@@ -558,19 +580,21 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       ),
                     ),
                   ),
-                  Opacity(
-                    opacity: _isCreatingSearchAlert ? 0.55 : 1,
-                    child: NotifySearchAlertAppBarButton(
-                      tooltip: L10n.get("search_alert_notify_me"),
-                      enabled: !_isCreatingSearchAlert,
-                      celebrationTick: _searchAlertCelebrationTick,
-                      onPressed: () {
-                        if (_isCreatingSearchAlert) return;
-                        unawaited(_addAlertFromCurrentSearch());
-                      },
+                  if (!isGroupFormingOnlySearch) ...[
+                    Opacity(
+                      opacity: _isCreatingSearchAlert ? 0.55 : 1,
+                      child: NotifySearchAlertAppBarButton(
+                        tooltip: L10n.get("search_alert_notify_me"),
+                        enabled: !_isCreatingSearchAlert,
+                        celebrationTick: _searchAlertCelebrationTick,
+                        onPressed: () {
+                          if (_isCreatingSearchAlert) return;
+                          unawaited(_addAlertFromCurrentSearch());
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
+                    const SizedBox(width: 16),
+                  ],
                   ThreeDAppBarIconButton(
                     iconData: Icons.close,
                     onPressed: () => Navigator.pop(context),
@@ -595,6 +619,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                       _searchFiltersState.setListingTypeId(
                         listingTypeId,
                       );
+                      if (listingTypeId == ListingTypeIds.groupForming) {
+                        _clearGroupFormingIncompatibleFilters();
+                      }
                       setState(() {});
                     },
                     onGenderChanged: (gender) {
@@ -604,7 +631,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   ),
                   const SizedBox(height: 10),
 
-                  if (!widget.metroOnly) ...[
+                  if (!widget.metroOnly && !isGroupFormingOnlySearch) ...[
                     // Location filter - Wheel Picker
                     RepaintBoundary(
                       child: SearchBottomSheetLocationSection(
@@ -628,9 +655,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                     const SizedBox(height: 8),
                   ],
 
-                  // Metro Line and Station Selection - Side by Side Wheel Pickers
-                  RepaintBoundary(
-                    child: SearchBottomSheetMetroSection(
+                  if (!isGroupFormingOnlySearch)
+                    RepaintBoundary(
+                      child: SearchBottomSheetMetroSection(
                       searchFiltersState: _searchFiltersState,
                       currentStations: _currentStations,
                       metroLineScrollController: _metroLineScrollController,
@@ -675,11 +702,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  if (!isGroupFormingOnlySearch) const SizedBox(height: 12),
 
                   if (_showDeferredSections)
                     SearchBottomSheetSecondaryFilters(
                       searchFiltersState: _searchFiltersState,
+                      showPrivateRoomAndPhoto: !isGroupFormingOnlySearch,
                       onPriceRangeChanged: (minPrice, maxPrice) {
                         _searchFiltersState.setPriceRange(
                           minPrice,
@@ -726,28 +754,43 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     // Get all current filter values
     final listingTypeId = _searchFiltersState.selectedListingTypeId;
-    final subwayStationIds = _searchFiltersState.selectedStationIdsList;
-    final subwayStationId = subwayStationIds.length == 1
-        ? subwayStationIds.first
-        : _getSelectedSubwayStationId();
+    final isGroupFormingOnlySearch =
+        _searchFiltersState.isGroupFormingOnlySearch;
+    final subwayStationIds = isGroupFormingOnlySearch
+        ? const <int>[]
+        : _searchFiltersState.selectedStationIdsList;
+    final subwayStationId = isGroupFormingOnlySearch
+        ? null
+        : subwayStationIds.length == 1
+            ? subwayStationIds.first
+            : _getSelectedSubwayStationId();
     final subwayLine = _searchFiltersState.selectedSubwayLine;
-    final hasStationFilter = subwayStationIds.isNotEmpty ||
-        (subwayStationId != null && subwayStationId > 0);
+    final hasStationFilter = !isGroupFormingOnlySearch &&
+        (subwayStationIds.isNotEmpty ||
+            (subwayStationId != null && subwayStationId > 0));
     // Location and metro are mutually exclusive in search results; when the
     // user picks a station, drop any district filter so reopening the sheet
     // does not resurrect a stale location.
-    final locationId =
-        hasStationFilter ? null : _getSelectedLocationId();
+    final locationId = isGroupFormingOnlySearch
+        ? null
+        : hasStationFilter
+            ? null
+            : _getSelectedLocationId();
     if (hasStationFilter && _searchFiltersState.selectedLocationIndex > 0) {
       _searchFiltersState.setLocationIndex(0);
     }
-    final effectiveSubwayLineId =
-        hasStationFilter && subwayLine > 0 ? subwayLine : null;
+    final effectiveSubwayLineId = isGroupFormingOnlySearch
+        ? null
+        : hasStationFilter && subwayLine > 0
+            ? subwayLine
+            : null;
     final gender = _searchFiltersState.selectedGender;
     final minPrice = _searchFiltersState.minPrice;
     final maxPrice = _searchFiltersState.maxPrice;
-    final privateRoom = _searchFiltersState.privateRoom;
-    final withPhoto = _searchFiltersState.withPhoto;
+    final privateRoom =
+        isGroupFormingOnlySearch ? false : _searchFiltersState.privateRoom;
+    final withPhoto =
+        isGroupFormingOnlySearch ? false : _searchFiltersState.withPhoto;
 
     // Debug logging to see what values are being passed
     logger.d(

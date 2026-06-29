@@ -1,9 +1,15 @@
 part of "yandex_map_widget.dart";
 
+/// Bump when listing-type map glyphs change so in-memory caches refresh.
+const int _yandexMapSharedIconBytesVersion = 2;
+int _loadedYandexMapSharedIconBytesVersion = 0;
+
 Future<_YandexMapSharedIconBytes>? _sharedYandexMapIconBytesFuture;
 _YandexMapSharedIconBytes? _sharedYandexMapIconBytes;
 final Map<String, Uint8List> _sharedListingGroupIconBytes = {};
 final Map<String, Future<Uint8List>> _pendingSharedListingGroupIconBytes = {};
+final Map<String, Uint8List> _sharedListingTypePinIconBytes = {};
+final Map<String, Future<Uint8List>> _pendingSharedListingTypePinIconBytes = {};
 final Map<String, Uint8List> _sharedListingClusterIconBytes = {};
 final Map<String, Future<Uint8List>> _pendingSharedListingClusterIconBytes = {};
 final Map<String, Uint8List> _sharedUniversityClusterIconBytes = {};
@@ -65,6 +71,16 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
   static const Color _visitedPinBackgroundDark = Color(0xFF757575);
 
   Future<_YandexMapSharedIconBytes> _loadSharedIconBytes() async {
+    if (_loadedYandexMapSharedIconBytesVersion !=
+        _yandexMapSharedIconBytesVersion) {
+      _sharedYandexMapIconBytes = null;
+      _sharedYandexMapIconBytesFuture = null;
+      _sharedListingTypePinIconBytes.clear();
+      _pendingSharedListingTypePinIconBytes.clear();
+      _loadedYandexMapSharedIconBytesVersion =
+          _yandexMapSharedIconBytesVersion;
+    }
+
     final cached = _sharedYandexMapIconBytes;
     if (cached != null) return cached;
 
@@ -371,6 +387,152 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
       selectedMetroStationIconBytes:
           Map.unmodifiable(selectedMetroStationIconBytes),
     );
+  }
+
+  Future<Uint8List> _createListingTypePinIconBytes(
+    String cacheKey, {
+    required bool selected,
+    required bool visited,
+    required bool darkMap,
+  }) async {
+    final icon = ListingTypeHelper.iconForMapCacheKey(cacheKey);
+    final reduceStartupIconWork = isAndroidDevice;
+    if (selected) {
+      return _createIconBytes(
+        icon,
+        reduceStartupIconWork ? 80 : 99,
+        backgroundColor: AppColors.primary,
+        outlineColor: Colors.white,
+        outlineWidth: 5,
+        shadowColor: Colors.black.withValues(alpha: 0.35),
+        shadowBlurRadius: reduceStartupIconWork ? 6 : 10,
+        shadowOffset:
+            reduceStartupIconWork ? const Offset(0, 3) : const Offset(0, 5),
+      );
+    }
+    if (visited) {
+      return _createIconBytes(
+        icon,
+        reduceStartupIconWork ? 67 : 80,
+        backgroundColor:
+            darkMap ? _visitedPinBackgroundDark : _visitedPinBackground,
+        outlineColor: Colors.white,
+        outlineWidth: reduceStartupIconWork ? 4 : 5,
+      );
+    }
+    if (darkMap) {
+      return _createIconBytes(
+        icon,
+        reduceStartupIconWork ? 67 : 80,
+        backgroundColor: BlueThemeColors.primaryDark,
+        outlineColor: Colors.white,
+        outlineWidth: reduceStartupIconWork ? 4 : 5,
+      );
+    }
+    return _createIconBytes(
+      icon,
+      reduceStartupIconWork ? 67 : 80,
+      outlineColor: Colors.white,
+      outlineWidth: reduceStartupIconWork ? 4 : 5,
+    );
+  }
+
+  String _listingTypePinIconVariantKey(
+    String cacheKey, {
+    required bool selected,
+    required bool visited,
+    required bool darkMap,
+  }) {
+    final state = selected
+        ? "selected"
+        : visited
+            ? darkMap
+                ? "dark_visited"
+                : "visited"
+            : darkMap
+                ? "dark"
+                : "default";
+    return "${state}_$cacheKey";
+  }
+
+  Map<String, Uint8List> _listingTypePinIconBytesMap({
+    required bool selected,
+    required bool visited,
+    required bool darkMap,
+  }) {
+    if (selected) return _cachedSelectedListingTypeIconBytes;
+    if (visited) {
+      return darkMap
+          ? _cachedDarkVisitedListingTypeIconBytes
+          : _cachedVisitedListingTypeIconBytes;
+    }
+    return darkMap
+        ? _cachedDarkListingTypeIconBytes
+        : _cachedListingTypeIconBytes;
+  }
+
+  void _ensureListingTypePinIconBytes(
+    String cacheKey, {
+    required bool selected,
+    required bool visited,
+  }) {
+    if (_cachedIconBytes == null) return;
+    final darkMap = widget.nightModeEnabled && !selected && !visited;
+    final targetMap = _listingTypePinIconBytesMap(
+      selected: selected,
+      visited: visited,
+      darkMap: darkMap,
+    );
+    if (targetMap.containsKey(cacheKey)) return;
+
+    final variantKey = _listingTypePinIconVariantKey(
+      cacheKey,
+      selected: selected,
+      visited: visited,
+      darkMap: darkMap,
+    );
+    final sharedBytes = _sharedListingTypePinIconBytes[variantKey];
+    if (sharedBytes != null) {
+      targetMap[cacheKey] = sharedBytes;
+      return;
+    }
+    if (_pendingListingTypePinIconKeys.contains(variantKey)) return;
+
+    _pendingListingTypePinIconKeys.add(variantKey);
+    final future = _pendingSharedListingTypePinIconBytes.putIfAbsent(
+      variantKey,
+      () => _createListingTypePinIconBytes(
+        cacheKey,
+        selected: selected,
+        visited: visited,
+        darkMap: darkMap,
+      ).then((bytes) {
+        _sharedListingTypePinIconBytes[variantKey] = bytes;
+        _pendingSharedListingTypePinIconBytes.remove(variantKey);
+        return bytes;
+      }).catchError((Object error, StackTrace stackTrace) {
+        _pendingSharedListingTypePinIconBytes.remove(variantKey);
+        Error.throwWithStackTrace(error, stackTrace);
+      }),
+    );
+    future.then((bytes) {
+      _pendingListingTypePinIconKeys.remove(variantKey);
+      if (!mounted) return;
+      targetMap[cacheKey] = bytes;
+      _requestMapRebuild();
+    }).catchError((error) {
+      _pendingListingTypePinIconKeys.remove(variantKey);
+      logger.w("Could not create listing type pin icon: $error");
+    });
+  }
+
+  void _syncListingTypePinIconBytes() {
+    if (_cachedIconBytes == null) return;
+    for (final cacheKey in ListingTypeHelper.getAllMapIconCacheKeys()) {
+      _ensureListingTypePinIconBytes(cacheKey, selected: false, visited: false);
+      _ensureListingTypePinIconBytes(cacheKey, selected: false, visited: true);
+      _ensureListingTypePinIconBytes(cacheKey, selected: true, visited: false);
+    }
   }
 
   Future<Uint8List> _createIconBytes(

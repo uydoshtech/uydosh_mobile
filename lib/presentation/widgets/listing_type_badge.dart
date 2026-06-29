@@ -208,6 +208,20 @@ class ListingTypeHelper {
   static const String roommateAbsentHostMapIconKey =
       "roommate_needed_absent_host";
 
+  /// Resolves the Material icon for a pre-rendered map pin cache [key].
+  static IconData iconForMapCacheKey(String key) {
+    if (key == roommateAbsentHostMapIconKey) {
+      return roommateAbsentHostIcon;
+    }
+    return getIcon(key);
+  }
+
+  /// All bitmap keys used for listing-type map pins (incl. host variants).
+  static List<String> getAllMapIconCacheKeys() => [
+        ...getAllCodes(),
+        roommateAbsentHostMapIconKey,
+      ];
+
   /// Icon for the host-resident toggle on create/edit forms.
   static const IconData hostResidentFieldIcon = Icons.person_outline;
 

@@ -2134,6 +2134,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                           const SizedBox(height: 12),
                           Container(
                             clipBehavior: Clip.antiAlias,
+                            constraints: const BoxConstraints(minHeight: 69),
                             decoration:
                                 ThreeDSurfaceStyle.wheelPickerPlateDecoration(
                               context,
@@ -2144,9 +2145,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                                 horizontal: 12.0,
                                 vertical: 16.0,
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
                                   ThemeIcon(
                                     ListingTypeHelper.hostResidentFieldIcon,
                                     color: _hostResident
@@ -2160,17 +2163,25 @@ class _EditListingScreenState extends State<EditListingScreen>
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: Text(
-                                      L10n.get("host_resident")
-                                          .replaceFirst(" ", "\n"),
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: ThemeState().isLightTheme
-                                            ? Colors.black
-                                            : theme
-                                                .colorScheme.onSurfaceVariant,
-                                      ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          L10n.get("host_resident"),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: ThemeState().isLightTheme
+                                                ? Colors.black
+                                                : theme.colorScheme
+                                                    .onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   NeumorphicToggle(
@@ -2201,6 +2212,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                               ),
                             ),
                           ),
+                        ),
                         ],
                         const SizedBox(height: 10),
 

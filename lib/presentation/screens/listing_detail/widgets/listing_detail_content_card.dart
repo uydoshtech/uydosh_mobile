@@ -10,6 +10,7 @@ import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/string_utils.dart";
+import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/utils/listing_utils.dart";
@@ -21,6 +22,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_geo_
 import "package:uy_dosh/presentation/widgets/common/deferred_yandex_map.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 /// Main content card for listing detail (header, title, description, location, amenities, dates).
@@ -701,6 +703,32 @@ class _ListingDetailContentCardState extends State<ListingDetailContentCard> {
                   const SizedBox(width: 8),
                   Text(
                     L10n.get("private_room"),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: ListingDetailThemeHelper.locationTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (widget.listingDetail.listingTypeId ==
+                ListingTypeIds.roommateNeeded) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ThemeIconFactory.detail(
+                    icon: widget.listingDetail.hostResident == false
+                        ? ListingTypeHelper.roommateAbsentHostIcon
+                        : ListingTypeHelper.roommateResidentIcon,
+                    color: ListingDetailThemeHelper.locationTextColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.listingDetail.hostResident == false
+                        ? L10n.get("host_resident_no")
+                        : L10n.get("host_resident"),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,

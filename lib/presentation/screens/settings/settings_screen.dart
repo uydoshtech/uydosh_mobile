@@ -9,6 +9,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
+import "package:uy_dosh/base/state/home_start_view_settings_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
@@ -297,6 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context,
               [
                 _buildOnboardingToggleMenuItem(context),
+                _buildHomeStartViewToggleMenuItem(context),
                 _buildTooltipsToggleMenuItem(context),
                 _buildRestoreFiltersToggleMenuItem(context),
                 _buildHapticFeedbackToggleMenuItem(context),
@@ -448,6 +450,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (value) async {
             await OnboardingState().setShowOnboarding(value);
             // When turned ON, onboarding will show on next app start (no immediate navigation)
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildHomeStartViewToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: HomeStartViewSettingsState(),
+      builder: (context, child) {
+        return UydoshToggle(
+          icon: Icons.map_outlined,
+          iconColor: _getIconColor(),
+          title: L10n.text(
+            "admin_app_setting_home_start_map_title",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: L10n.text(
+            "admin_app_setting_home_start_map_subtitle",
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          value: HomeStartViewSettingsState().showMapInitially,
+          onChanged: (value) async {
+            await HomeStartViewSettingsState().setShowMapInitially(value);
           },
         );
       },

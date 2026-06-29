@@ -13,6 +13,18 @@ double _mapPinDoubleFromJson(dynamic value) {
   return 0;
 }
 
+bool? _nullableMapPinBoolFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    final normalized = value.trim().toLowerCase();
+    if (normalized == 'true' || normalized == '1') return true;
+    if (normalized == 'false' || normalized == '0') return false;
+  }
+  return null;
+}
+
 /// Lightweight listing row returned by GET /listings/map for map pins.
 class ListingMapPinData {
   const ListingMapPinData({
@@ -62,7 +74,7 @@ class ListingMapPinData {
       minPrice: _nullableMapPinIntFromJson(json['min_price']),
       maxPrice: _nullableMapPinIntFromJson(json['max_price']),
       listingTypeCode: json['listing_type_code'] as String?,
-      hostResident: json['host_resident'] as bool?,
+      hostResident: _nullableMapPinBoolFromJson(json['host_resident']),
       subwayStationId: _nullableMapPinIntFromJson(json['subway_station_id']),
       locationId: _nullableMapPinIntFromJson(json['location_id']),
       subwayLineId: _nullableMapPinIntFromJson(json['subway_line_id']),

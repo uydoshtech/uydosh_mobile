@@ -66,6 +66,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
     required this.onPrimaryPressed,
     required this.primaryLabelKey,
     required this.primaryIcon,
+    this.showPrivateRoomAndPhoto = true,
     super.key,
   });
 
@@ -76,6 +77,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final VoidCallback onPrimaryPressed;
   final String primaryLabelKey;
   final IconData primaryIcon;
+  final bool showPrivateRoomAndPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -94,38 +96,39 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
           onPriceRangeChanged: onPriceRangeChanged,
           useGlassPlate: true,
         ),
-        const SizedBox(height: 15),
-
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _SearchSheetFilterToggle(
-                icon: Icons.lock_outline,
-                label: L10n.get("search_filter_private_room"),
-                value: searchFiltersState.privateRoom,
-                emphasized: searchFiltersState.privateRoom,
-                onChanged: (value) {
-                  UiFeedbackUtils.tap();
-                  onPrivateRoomChanged(value);
-                },
+        if (showPrivateRoomAndPhoto) ...[
+          const SizedBox(height: 15),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _SearchSheetFilterToggle(
+                  icon: Icons.lock_outline,
+                  label: L10n.get("search_filter_private_room"),
+                  value: searchFiltersState.privateRoom,
+                  emphasized: searchFiltersState.privateRoom,
+                  onChanged: (value) {
+                    UiFeedbackUtils.tap();
+                    onPrivateRoomChanged(value);
+                  },
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _SearchSheetFilterToggle(
-                icon: Icons.photo_camera_outlined,
-                label: L10n.get("search_filter_with_photo"),
-                value: searchFiltersState.withPhoto,
-                emphasized: searchFiltersState.withPhoto,
-                onChanged: (value) {
-                  UiFeedbackUtils.tap();
-                  onWithPhotoChanged(value);
-                },
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SearchSheetFilterToggle(
+                  icon: Icons.photo_camera_outlined,
+                  label: L10n.get("search_filter_with_photo"),
+                  value: searchFiltersState.withPhoto,
+                  emphasized: searchFiltersState.withPhoto,
+                  onChanged: (value) {
+                    UiFeedbackUtils.tap();
+                    onWithPhotoChanged(value);
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
         const SizedBox(height: 20),
 
         Builder(

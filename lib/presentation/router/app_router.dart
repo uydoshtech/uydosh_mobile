@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:uy_dosh/base/config/client_home_start_view_config.dart";
+import "package:uy_dosh/base/state/home_start_view_settings_state.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/blocs/listings_bloc.dart";
@@ -31,7 +31,8 @@ class AppRouter {
         child: MainNavigation(
           key: attachKey ? mainNavigationKey : null,
           initialIndex: initialIndex,
-          showHomeMapInitially: ClientHomeStartViewConfig.showMapInitially,
+          showHomeMapInitially:
+              HomeStartViewSettingsState().showMapInitially,
         ),
       );
 

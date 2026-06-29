@@ -41,8 +41,8 @@ class PermissionRationaleScreen extends StatelessWidget {
   final String title;
   final String body;
 
-  /// Text on the brand-blue primary pill ("Allow camera access" /
-  /// "Open Settings" depending on context).
+  /// Text on the primary pill ("Turn on notifications" / "Allow camera access"
+  /// / "Open Settings" depending on context).
   final String primaryLabel;
 
   /// Text on the secondary "Not now" / "Skip" button. When `null`, no
@@ -149,10 +149,9 @@ class PermissionRationaleScreen extends StatelessWidget {
   }
 }
 
-/// Primary CTA on the rationale screen ("Allow camera access" / "Open
-/// Settings"). White neumorphic pill — the dual-shadow soft-UI treatment
-/// (`neumorphicSoftUi`) reads as a raised tablet on the brand-blue backdrop,
-/// keeping it visually consistent with the onboarding wizard CTAs.
+/// Primary CTA on the rationale screen ("Turn on notifications" / "Allow
+/// camera access"). Lighter brand-blue neumorphic pill so it reads as the
+/// main action against the darker [BlueThemeColors.primary] backdrop.
 class _PermissionPrimaryButton extends StatelessWidget {
   const _PermissionPrimaryButton({
     required this.label,
@@ -168,7 +167,7 @@ class _PermissionPrimaryButton extends StatelessWidget {
       width: double.infinity,
       child: ThreeDPillButton(
         onPressed: onPressed,
-        backgroundColor: Colors.white,
+        backgroundColor: BlueThemeColors.primaryLight,
         neumorphicSoftUi: true,
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 22),
         child: Center(
@@ -176,7 +175,7 @@ class _PermissionPrimaryButton extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: BlueThemeColors.primary,
+              color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.2,
@@ -188,10 +187,8 @@ class _PermissionPrimaryButton extends StatelessWidget {
   }
 }
 
-/// Secondary "Not now" / "Skip" pill. Uses the lighter brand blue as its face
-/// so the same neumorphic dual shadows give it a softly raised look against
-/// the darker [BlueThemeColors.primary] page background, instead of the
-/// previous flat outlined button.
+/// Secondary "Not now" / "Skip" pill. White neumorphic face with brand-blue
+/// label text — visually lighter than the primary action above it.
 class _PermissionSecondaryButton extends StatelessWidget {
   const _PermissionSecondaryButton({
     required this.label,
@@ -207,7 +204,7 @@ class _PermissionSecondaryButton extends StatelessWidget {
       width: double.infinity,
       child: ThreeDPillButton(
         onPressed: onPressed,
-        backgroundColor: BlueThemeColors.primaryLight,
+        backgroundColor: Colors.white,
         neumorphicSoftUi: true,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 22),
         child: Center(
@@ -215,7 +212,7 @@ class _PermissionSecondaryButton extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.white,
+              color: BlueThemeColors.primary,
               fontSize: 15.5,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,

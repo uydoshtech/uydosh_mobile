@@ -1365,6 +1365,13 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       ),
       hostResident: hostResident,
     );
+    if (resolvedCode != null) {
+      _ensureListingTypePinIconBytes(
+        resolvedCode,
+        selected: selected,
+        visited: visited,
+      );
+    }
     final iconBytes = resolvedCode == null ? null : bytesByCode[resolvedCode];
     return _bitmapDescriptorFromBytes(iconBytes ?? fallbackBytes!);
   }

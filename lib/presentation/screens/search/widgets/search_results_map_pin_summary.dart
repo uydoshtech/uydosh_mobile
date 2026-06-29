@@ -38,34 +38,17 @@ class _PinSummaryTooltip extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            if (pin.listingTypeCode?.isNotEmpty == true ||
-                                pin.gender != null) ...[
-                              _PinSummaryBadges(
-                                listingTypeCode: pin.listingTypeCode,
-                                gender: pin.gender,
-                                hostResident: pin.hostResident,
-                                compact: true,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            Expanded(
-                              child: Text(
-                                pin.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  color:
-                                      _MapListingTileStyle.titleColor(context),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (pin.subtitle?.isNotEmpty == true) ...[
+                        if (pin.listingTypeCode?.isNotEmpty == true ||
+                            pin.gender != null) ...[
+                          _PinSummaryBadges(
+                            listingTypeCode: pin.listingTypeCode,
+                            gender: pin.gender,
+                            hostResident: pin.hostResident,
+                            compact: true,
+                          ),
                           const SizedBox(height: 4),
+                        ],
+                        if (pin.subtitle?.isNotEmpty == true) ...[
                           Text(
                             pin.subtitle!,
                             maxLines: 1,
@@ -75,10 +58,21 @@ class _PinSummaryTooltip extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          const SizedBox(height: 4),
                         ],
+                        Text(
+                          pin.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: _MapListingTileStyle.titleColor(context),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                         if (pin.locationLabel?.isNotEmpty == true ||
-                            pin.stationLabel?.isNotEmpty == true) ...[
-                          const SizedBox(height: 6),
+                            pin.stationLabel?.isNotEmpty == true ||
+                            pin.createdAt?.isNotEmpty == true) ...[
+                          const SizedBox(height: 4),
                           _PinGeoLabelsRow(
                             locationLabel: pin.locationLabel,
                             stationLabel: pin.stationLabel,
@@ -178,12 +172,16 @@ class _PinGroupSummaryTooltip extends StatefulWidget {
 }
 
 class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
+  /// Room for card padding plus a two-line title, price, and inline geo
+  /// labels beside the photo.
+  static const double _fallbackCarouselHeight = _PinSummaryPhoto.size + 24;
+
   late final PageController _pageController;
   late final List<GlobalKey> _pageKeys;
   final Set<int> _viewedPageIndices = {};
   final Map<int, double> _pageHeights = {};
   int _currentPage = 0;
-  double _carouselHeight = _PinSummaryPhoto.size + 20;
+  double _carouselHeight = _fallbackCarouselHeight;
 
   @override
   void initState() {
@@ -215,7 +213,7 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
     _recordPageViewed(index);
     setState(() {
       _currentPage = index;
-      _carouselHeight = _pageHeights[index] ?? _carouselHeight;
+      _carouselHeight = _pageHeights[index] ?? _fallbackCarouselHeight;
     });
     _scheduleMeasurePage(index);
   }
@@ -226,7 +224,10 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
       final box =
           _pageKeys[index].currentContext?.findRenderObject() as RenderBox?;
       if (box == null || !box.hasSize) return;
-      final height = box.size.height;
+      final measuredHeight = box.size.height;
+      final height = measuredHeight < _fallbackCarouselHeight
+          ? _fallbackCarouselHeight
+          : measuredHeight;
       _pageHeights[index] = height;
       if (index == _currentPage && (_carouselHeight - height).abs() > 0.5) {
         setState(() => _carouselHeight = height);
@@ -267,11 +268,15 @@ class _PinGroupSummaryTooltipState extends State<_PinGroupSummaryTooltip> {
                           padding: const EdgeInsets.symmetric(horizontal: 3),
                           child: Align(
                             alignment: Alignment.topCenter,
-                            child: KeyedSubtree(
-                              key: _pageKeys[index],
-                              child: _PinGroupListingCard(
-                                pin: pin,
-                                onTap: () => widget.onOpenPin(pin),
+                            child: OverflowBox(
+                              maxHeight: double.infinity,
+                              alignment: Alignment.topCenter,
+                              child: KeyedSubtree(
+                                key: _pageKeys[index],
+                                child: _PinGroupListingCard(
+                                  pin: pin,
+                                  onTap: () => widget.onOpenPin(pin),
+                                ),
                               ),
                             ),
                           ),
@@ -369,7 +374,19 @@ class _PinGroupListingCard extends StatelessWidget {
                         hostResident: pin.hostResident,
                         compact: true,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
+                    ],
+                    if (pin.subtitle?.isNotEmpty == true) ...[
+                      Text(
+                        pin.subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _MapListingTileStyle.priceColor(context),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                     ],
                     Text(
                       pin.title,
@@ -380,23 +397,14 @@ class _PinGroupListingCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    if (pin.subtitle?.isNotEmpty == true) ...[
+                    if (pin.locationLabel?.isNotEmpty == true ||
+                        pin.stationLabel?.isNotEmpty == true ||
+                        pin.createdAt?.isNotEmpty == true) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        pin.subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: _MapListingTileStyle.priceColor(context),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                    if (pin.stationLabel?.isNotEmpty == true) ...[
-                      const SizedBox(height: 6),
-                      _PinMetroRow(
+                      _PinGeoLabelsRow(
+                        locationLabel: pin.locationLabel,
+                        stationLabel: pin.stationLabel,
                         lineIds: pin.subwayLineIds,
-                        label: pin.stationLabel!,
                         createdAt: pin.createdAt,
                       ),
                     ],
@@ -483,6 +491,8 @@ class _PinGeoLabelsRow extends StatelessWidget {
     this.createdAt,
   });
 
+  static const double _inlineIconSize = 16;
+
   final String? locationLabel;
   final String? stationLabel;
   final List<int> lineIds;
@@ -490,119 +500,134 @@ class _PinGeoLabelsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final hasLocation = locationLabel?.isNotEmpty == true;
     final hasStation = stationLabel?.isNotEmpty == true;
+    final publicationDate = ListingDetailDateUtils.formatPublicationDate(
+      context,
+      createdAt,
+    );
+    final metaStyle = theme.textTheme.bodySmall?.copyWith(
+      color: _MapListingTileStyle.metaColor(context),
+      fontWeight: FontWeight.w600,
+    );
+    final dateStyle = theme.textTheme.labelSmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      fontWeight: FontWeight.w500,
+    );
+
+    final geoLabels = <Widget>[
+      if (hasLocation)
+        _PinInlineMetaLabel(
+          icon: Icons.location_on,
+          iconColor: AppColors.error,
+          label: locationLabel!,
+          style: metaStyle,
+        ),
+      if (hasStation)
+        _PinInlineMetroLabel(
+          lineIds: lineIds,
+          label: stationLabel!,
+          style: metaStyle,
+        ),
+    ];
+    if (geoLabels.isEmpty && publicationDate == null) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasLocation)
-          _PinMetaRow(
-            icon: Icons.location_on,
-            iconColor: AppColors.error,
-            label: locationLabel!,
+        if (geoLabels.isNotEmpty)
+          Wrap(
+            spacing: 10,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: geoLabels,
           ),
-        if (hasLocation && hasStation) const SizedBox(height: 4),
-        if (hasStation)
-          _PinMetroRow(
-            lineIds: lineIds,
-            label: stationLabel!,
-            createdAt: createdAt,
+        if (publicationDate != null) ...[
+          if (geoLabels.isNotEmpty) const SizedBox(height: 4),
+          _PinInlineMetaLabel(
+            icon: Icons.schedule,
+            iconColor: theme.colorScheme.onSurfaceVariant,
+            label: publicationDate,
+            style: dateStyle,
           ),
+        ],
       ],
     );
   }
 }
 
-class _PinMetaRow extends StatelessWidget {
-  const _PinMetaRow({
+class _PinInlineMetaLabel extends StatelessWidget {
+  const _PinInlineMetaLabel({
     required this.icon,
     required this.iconColor,
     required this.label,
+    required this.style,
   });
 
   final IconData icon;
   final Color iconColor;
   final String label;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        ThemeIcon(icon, color: iconColor, size: 18, useThemeColor: false),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: _MapListingTileStyle.metaColor(context),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        ThemeIcon(
+          icon,
+          color: iconColor,
+          size: _PinGeoLabelsRow._inlineIconSize,
+          useThemeColor: false,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: style,
         ),
       ],
     );
   }
 }
 
-class _PinMetroRow extends StatelessWidget {
-  const _PinMetroRow({
+class _PinInlineMetroLabel extends StatelessWidget {
+  const _PinInlineMetroLabel({
     required this.lineIds,
     required this.label,
-    this.createdAt,
+    required this.style,
   });
 
   final List<int> lineIds;
   final String label;
-  final String? createdAt;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final visibleLineIds = lineIds.isEmpty ? const [1] : lineIds;
-    final publicationDate = ListingDetailDateUtils.formatPublicationDate(
-      context,
-      createdAt,
-    );
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < visibleLineIds.length; i++) ...[
           ThemeIcon(
             Icons.train,
             color: _lineColor(visibleLineIds[i]),
-            size: 18,
+            size: _PinGeoLabelsRow._inlineIconSize,
             useThemeColor: false,
           ),
-          SizedBox(width: i == visibleLineIds.length - 1 ? 6 : 2),
+          SizedBox(width: i == visibleLineIds.length - 1 ? 4 : 2),
         ],
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: _MapListingTileStyle.metaColor(context),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: style,
         ),
-        if (publicationDate != null) ...[
-          const SizedBox(width: 8),
-          Text(
-            publicationDate,
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ],
     );
   }

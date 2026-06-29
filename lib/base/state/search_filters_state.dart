@@ -488,6 +488,13 @@ class SearchFiltersState extends ChangeNotifier {
     if (_searchListingTypeIds.length > 1) return null;
     return _searchListingTypeIds.isNotEmpty ? _searchListingTypeIds.first : null;
   }
+
+  /// True when search targets group-forming listings only (not bundled with
+  /// room_needed or other types).
+  bool get isGroupFormingOnlySearch =>
+      _searchListingTypeIds.length == 1 &&
+      _searchListingTypeIds.first == ListingTypeIds.groupForming;
+
   int get selectedLocationIndex => _selectedLocationIndex;
   int get selectedSubwayLine => _selectedSubwayLine;
   int get selectedStationIndex => _selectedStationIndex;

@@ -354,6 +354,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
   final Map<String, Uint8List> _cachedDistrictLabelIconBytes = {};
   final Set<String> _pendingListingGroupIconKeys = {};
+  final Set<String> _pendingListingTypePinIconKeys = {};
   final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
   final Set<String> _pendingDistrictLabelIconKeys = {};
   final Map<Uint8List, BitmapDescriptor> _cachedBitmapDescriptors = {};
@@ -422,6 +423,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
     _syncListingGroupIconBytes();
+    _syncListingTypePinIconBytes();
     _initializeMapWithDelay();
   }
 
@@ -493,6 +495,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedListingPinGroupsKey = null;
       _requestMapRebuild();
       _syncListingGroupIconBytes();
+      _syncListingTypePinIconBytes();
     }
     _syncSelectedUniversityMarker();
     final shouldMoveForPins =
@@ -582,6 +585,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ..clear()
         ..addAll(sharedIcons.selectedMetroStationIconBytes);
       _syncListingGroupIconBytes();
+      _syncListingTypePinIconBytes();
       unawaited(_refreshUserLocationLayerAppearance());
       if (kDebugMode) {
         logger.d("✅ Map listing type icons created successfully");
