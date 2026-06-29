@@ -236,6 +236,7 @@ class YandexMapWidget extends StatefulWidget {
     this.walkRadiusMinutes = 10,
     this.zoomControlsOptions = const YandexMapZoomControlsOptions(),
     this.userLocationRequestToken = 0,
+    this.userLocationFocusToken = 0,
     this.userLocationLatitude,
     this.userLocationLongitude,
     this.selectedMetroStationId,
@@ -275,6 +276,7 @@ class YandexMapWidget extends StatefulWidget {
   final int walkRadiusMinutes;
   final YandexMapZoomControlsOptions zoomControlsOptions;
   final int userLocationRequestToken;
+  final int userLocationFocusToken;
   final double? userLocationLatitude;
   final double? userLocationLongitude;
   final ValueChanged<SubwayStation?>? onSelectedMetroStationChanged;
@@ -427,6 +429,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     }
     if (oldWidget.userLocationRequestToken != widget.userLocationRequestToken) {
       _syncUserLocationLayer(requestPermission: true);
+    }
+    if (oldWidget.userLocationFocusToken != widget.userLocationFocusToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_isMapReady || _mapController == null) return;
+        unawaited(_moveCameraToUserLocation());
+      });
     }
     if (oldWidget.layerOptions.showMetroStationsLayer &&
         !widget.layerOptions.showMetroStationsLayer) {
@@ -1204,6 +1212,30 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final controller = _mapController;
     if (controller == null) return;
     await _moveInitialCamera(controller, _getCenterPoint());
+  }
+
+  Future<void> _moveCameraToUserLocation() async {
+    final latitude = widget.userLocationLatitude;
+    final longitude = widget.userLocationLongitude;
+    if (latitude == null || longitude == null) return;
+
+    final controller = _mapController;
+    if (controller == null || !_isMapReady) return;
+
+    final moved = await _moveCameraAutomatically(
+      controller,
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: Point(latitude: latitude, longitude: longitude),
+          zoom: 16.0,
+          azimuth: 0,
+          tilt: 0,
+        ),
+      ),
+    );
+    if (moved && _isCurrentMapOperation(controller, _mapOperationGeneration)) {
+      _setCurrentZoom(16.0);
+    }
   }
 
   Point? _selectedZoomFocusPoint() {

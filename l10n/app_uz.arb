@@ -118,6 +118,7 @@
   "choose_filters": "Iltimos, filtr tanlang",
   "map_location_prompt_title": "Joylashuvimni ko‘rsatish",
   "map_location_prompt_action": "Joylashuvdan foydalanish",
+  "map_update_my_location": "Joylashuvimni yangilash",
   "permission_location_title": "E'lonlarni xaritada ko‘ring",
   "permission_location_body": "UyDosh xarita tajribasini ochishi va yaqin e'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.",
   "permission_location_cta": "Joylashuvga ruxsat berish",

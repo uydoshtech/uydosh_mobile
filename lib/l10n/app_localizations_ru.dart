@@ -233,6 +233,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get map_location_prompt_action => 'Использовать геопозицию';
 
   @override
+  String get map_update_my_location => 'Обновить мою геопозицию';
+
+  @override
   String get permission_location_title => 'Смотреть объявления на карте';
 
   @override

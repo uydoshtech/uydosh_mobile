@@ -232,6 +232,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get map_location_prompt_action => 'Use location';
 
   @override
+  String get map_update_my_location => 'Update my location';
+
+  @override
   String get permission_location_title => 'See listings on the map';
 
   @override

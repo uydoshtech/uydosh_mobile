@@ -9,6 +9,7 @@ class _SearchResultsMapBody extends StatelessWidget {
     required this.onOpenEmbeddedSearch,
     required this.onOpenFeedView,
     required this.onRequestUserLocation,
+    required this.onUpdateUserLocation,
     required this.onToggleDistrictLayer,
     required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
@@ -33,6 +34,7 @@ class _SearchResultsMapBody extends StatelessWidget {
   final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onOpenFeedView;
   final VoidCallback onRequestUserLocation;
+  final VoidCallback onUpdateUserLocation;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
@@ -121,6 +123,7 @@ class _SearchResultsMapBody extends StatelessWidget {
                       onOpenFeedView: onOpenFeedView,
                       onOpenEmbeddedSearch: onOpenEmbeddedSearch,
                       onRequestUserLocation: onRequestUserLocation,
+                      onUpdateUserLocation: onUpdateUserLocation,
                       onToggleDistrictLayer: onToggleDistrictLayer,
                       onToggleWalkRadiusMinutes: onToggleWalkRadiusMinutes,
                       onToggleMetroLayerMode: onToggleMetroLayerMode,
@@ -228,6 +231,7 @@ class _SearchMapCanvas extends StatelessWidget {
               showBusStopsLayer: canvas.showBusStopsLayer,
             ),
             userLocationRequestToken: canvas.userLocationRequestToken,
+            userLocationFocusToken: canvas.userLocationFocusToken,
             userLocationLatitude: canvas.userLocationLatitude,
             userLocationLongitude: canvas.userLocationLongitude,
             showLoadingPlaceholderContent: false,
@@ -257,6 +261,7 @@ class _SearchMapOverlays extends StatelessWidget {
     required this.onOpenFeedView,
     required this.onOpenEmbeddedSearch,
     required this.onRequestUserLocation,
+    required this.onUpdateUserLocation,
     required this.onToggleDistrictLayer,
     required this.onToggleWalkRadiusMinutes,
     required this.onToggleMetroLayerMode,
@@ -273,6 +278,7 @@ class _SearchMapOverlays extends StatelessWidget {
   final VoidCallback onOpenFeedView;
   final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onRequestUserLocation;
+  final VoidCallback onUpdateUserLocation;
   final VoidCallback onToggleDistrictLayer;
   final VoidCallback onToggleWalkRadiusMinutes;
   final VoidCallback onToggleMetroLayerMode;
@@ -348,6 +354,22 @@ class _SearchMapOverlays extends StatelessWidget {
       iconSize: 18,
       backgroundColor: mapNightModeEnabled ? Colors.black : Colors.white,
       foregroundColor: mapNightModeEnabled ? Colors.white : Colors.black,
+      borderSide: mapOverlayButtonBorder,
+      mapOverlay: true,
+      elevation: ThemeState().isBlueTheme ? null : 8,
+    );
+    final userLocationButtonBottom = overlay.placeViewToggleAtBottom
+        ? overlay.viewToggleBottom
+        : bottomOverlayInset + locationPromptBottomMargin;
+    final updateUserLocationButton = SearchFloatingActionButton(
+      onPressed: onUpdateUserLocation,
+      iconData: Icons.my_location_rounded,
+      tooltip: L10n.get("map_update_my_location"),
+      width: feedViewButtonHeight,
+      height: feedViewButtonHeight,
+      iconSize: 19,
+      backgroundColor: mapOverlayPanelColor,
+      foregroundColor: Colors.black,
       borderSide: mapOverlayButtonBorder,
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
@@ -521,6 +543,12 @@ class _SearchMapOverlays extends StatelessWidget {
                 elevation: ThemeState().isBlueTheme ? null : 8,
               ),
             ),
+          ),
+        if (overlay.showUserLocationButton)
+          Positioned(
+            left: 16,
+            bottom: userLocationButtonBottom,
+            child: PointerInterceptor(child: updateUserLocationButton),
           ),
         if (overlay.showLocationPrompt)
           Positioned(

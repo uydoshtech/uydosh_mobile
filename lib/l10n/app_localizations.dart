@@ -514,6 +514,12 @@ abstract class AppLocalizations {
   /// **'Use location'**
   String get map_location_prompt_action;
 
+  /// No description provided for @map_update_my_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Update my location'**
+  String get map_update_my_location;
+
   /// No description provided for @permission_location_title.
   ///
   /// In en, this message translates to:

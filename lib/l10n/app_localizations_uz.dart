@@ -233,6 +233,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get map_location_prompt_action => 'Joylashuvdan foydalanish';
 
   @override
+  String get map_update_my_location => 'Joylashuvimni yangilash';
+
+  @override
   String get permission_location_title => 'E\'lonlarni xaritada ko‘ring';
 
   @override

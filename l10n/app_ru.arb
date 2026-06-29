@@ -118,6 +118,7 @@
   "choose_filters": "Пожалуйста, выберите фильтр",
   "map_location_prompt_title": "Показать мою геопозицию",
   "map_location_prompt_action": "Использовать геопозицию",
+  "map_update_my_location": "Обновить мою геопозицию",
   "permission_location_title": "Смотреть объявления на карте",
   "permission_location_body": "Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.",
   "permission_location_cta": "Разрешить геопозицию",

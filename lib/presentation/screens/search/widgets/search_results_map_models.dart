@@ -53,6 +53,7 @@ class _SearchMapCanvasProps {
     required this.showBusStopsLayer,
     required this.mapNightModeOverride,
     required this.userLocationRequestToken,
+    required this.userLocationFocusToken,
     required this.userLocationLatitude,
     required this.userLocationLongitude,
     required this.placeViewToggleAtBottom,
@@ -81,6 +82,7 @@ class _SearchMapCanvasProps {
   final bool showBusStopsLayer;
   final bool? mapNightModeOverride;
   final int userLocationRequestToken;
+  final int userLocationFocusToken;
   final double? userLocationLatitude;
   final double? userLocationLongitude;
   final bool placeViewToggleAtBottom;
@@ -114,6 +116,7 @@ class _SearchMapCanvasProps {
             showBusStopsLayer == other.showBusStopsLayer &&
             mapNightModeOverride == other.mapNightModeOverride &&
             userLocationRequestToken == other.userLocationRequestToken &&
+            userLocationFocusToken == other.userLocationFocusToken &&
             userLocationLatitude == other.userLocationLatitude &&
             userLocationLongitude == other.userLocationLongitude &&
             placeViewToggleAtBottom == other.placeViewToggleAtBottom &&
@@ -144,6 +147,7 @@ class _SearchMapCanvasProps {
         showBusStopsLayer,
         mapNightModeOverride,
         userLocationRequestToken,
+        userLocationFocusToken,
         userLocationLatitude,
         userLocationLongitude,
         placeViewToggleAtBottom,
@@ -180,6 +184,7 @@ class _SearchMapOverlayProps {
     required this.showUniversitiesLayer,
     required this.mapNightModeOverride,
     required this.showLocationPrompt,
+    required this.showUserLocationButton,
     required this.filterRibbonEnabled,
     required this.showFilterRibbon,
     required this.placeViewToggleAtBottom,
@@ -212,6 +217,7 @@ class _SearchMapOverlayProps {
   final bool showUniversitiesLayer;
   final bool? mapNightModeOverride;
   final bool showLocationPrompt;
+  final bool showUserLocationButton;
   final bool filterRibbonEnabled;
   final bool showFilterRibbon;
   final bool placeViewToggleAtBottom;
@@ -247,6 +253,7 @@ class _SearchMapOverlayProps {
             showUniversitiesLayer == other.showUniversitiesLayer &&
             mapNightModeOverride == other.mapNightModeOverride &&
             showLocationPrompt == other.showLocationPrompt &&
+            showUserLocationButton == other.showUserLocationButton &&
             filterRibbonEnabled == other.filterRibbonEnabled &&
             showFilterRibbon == other.showFilterRibbon &&
             placeViewToggleAtBottom == other.placeViewToggleAtBottom &&
@@ -281,6 +288,7 @@ class _SearchMapOverlayProps {
         showUniversitiesLayer,
         mapNightModeOverride,
         showLocationPrompt,
+        showUserLocationButton,
         filterRibbonEnabled,
         showFilterRibbon,
         placeViewToggleAtBottom,

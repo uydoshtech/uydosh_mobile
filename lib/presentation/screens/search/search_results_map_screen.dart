@@ -199,11 +199,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _showBusStopsLayer = false;
   bool? _mapNightModeOverride;
   bool _showLocationPrompt = false;
+  bool _userLocationPermissionGranted = false;
   bool _showFilterRibbon = true;
   /// True only after the user taps X on the map filter ribbon — not when the
   /// ribbon is hidden because filters are profile defaults only.
   bool _filterRibbonDismissedByUser = false;
   int _userLocationRequestToken = 0;
+  int _userLocationFocusToken = 0;
   int _userLocationLoadGeneration = 0;
   double? _userLocationLatitude;
   double? _userLocationLongitude;
@@ -357,6 +359,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       showBusStopsLayer: _showBusStopsLayer,
       mapNightModeOverride: _mapNightModeOverride,
       userLocationRequestToken: _userLocationRequestToken,
+      userLocationFocusToken: _userLocationFocusToken,
       userLocationLatitude: _userLocationLatitude,
       userLocationLongitude: _userLocationLongitude,
       placeViewToggleAtBottom: widget.embedded,
@@ -392,6 +395,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       showUniversitiesLayer: _showUniversitiesLayer,
       mapNightModeOverride: _mapNightModeOverride,
       showLocationPrompt: _showLocationPrompt,
+      showUserLocationButton: !kIsWeb && _userLocationPermissionGranted,
       filterRibbonEnabled: _filterRibbonEnabled,
       showFilterRibbon: _showFilterRibbon,
       placeViewToggleAtBottom: widget.embedded,
@@ -592,6 +596,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final isGranted = status.isGranted || status.isLimited;
     final shouldAutoLoad = isGranted && _userLocationRequestToken == 0;
 
+    _userLocationPermissionGranted = isGranted;
     _showLocationPrompt =
         !isGranted &&
         _userLocationRequestToken == 0 &&
@@ -609,17 +614,19 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   Future<void> _requestUserLocation() async {
     final status = await Permission.location.request();
     if (!mounted) return;
+    final isGranted = status.isGranted || status.isLimited;
+    _userLocationPermissionGranted = isGranted;
     _showLocationPrompt = false;
-    if (status.isGranted) {
+    if (isGranted) {
       _userLocationRequestToken++;
     }
-    _invalidateMapView(canvas: status.isGranted, overlay: true);
-    if (status.isGranted) {
+    _invalidateMapView(canvas: isGranted, overlay: true);
+    if (isGranted) {
       await _loadCurrentUserLocationOnce();
     }
   }
 
-  Future<void> _loadCurrentUserLocationOnce() async {
+  Future<void> _loadCurrentUserLocationOnce({bool focusOnMap = false}) async {
     final generation = ++_userLocationLoadGeneration;
     try {
       final position = await geo.Geolocator.getCurrentPosition(
@@ -631,10 +638,27 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       if (!mounted || generation != _userLocationLoadGeneration) return;
       _userLocationLatitude = position.latitude;
       _userLocationLongitude = position.longitude;
+      if (focusOnMap) {
+        _userLocationFocusToken++;
+      }
       _syncCanvasProps();
     } catch (error) {
       logger.w("Could not load current map location: $error");
     }
+  }
+
+  Future<void> _updateUserLocation() async {
+    if (kIsWeb) return;
+
+    final status = await Permission.location.status;
+    if (!mounted) return;
+
+    if (!status.isGranted && !status.isLimited) {
+      await _requestUserLocation();
+      return;
+    }
+
+    await _loadCurrentUserLocationOnce(focusOnMap: true);
   }
 
   bool _isPlaceholderUniversityCoordinate(double latitude, double longitude) {
@@ -1345,6 +1369,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onOpenEmbeddedSearch: widget.onOpenEmbeddedSearch,
       onOpenFeedView: _openFeedView,
       onRequestUserLocation: _requestUserLocation,
+      onUpdateUserLocation: _updateUserLocation,
       onToggleDistrictLayer: _onToggleDistrictLayer,
       onToggleWalkRadiusMinutes: _onToggleWalkRadiusMinutes,
       onToggleMetroLayerMode: _onToggleMetroLayerMode,
