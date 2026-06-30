@@ -411,8 +411,10 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
         ),
       ),
       builder: (context, data) {
-        if (data.isLoading) {
-          return const Center(child: HouseLoadingIndicator());
+        if (data.isLoading && data.listings.isEmpty) {
+          return CenteredHouseLoadingIndicator(
+            text: L10n.get("loading"),
+          );
         }
         if (data.hasError) {
           return _buildListingsErrorState(data.errorMessage);

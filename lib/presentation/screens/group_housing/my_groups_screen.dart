@@ -16,9 +16,11 @@ import "package:uy_dosh/presentation/screens/chat/chat_screen.dart";
 import "package:uy_dosh/presentation/utils/conversation_listing_title.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/pull_to_refresh_stretch_haptics.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_empty_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/conversation/conversation_tile.dart";
 
 class MyGroupsScreen extends StatefulWidget {
@@ -45,11 +47,13 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
     unawaited(_loadGroups());
   }
 
-  Future<void> _loadGroups() async {
-    setState(() {
-      _loading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadGroups({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      setState(() {
+        _loading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final userId = await SessionManager.getUserId();
@@ -137,7 +141,7 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
     );
   }
 
-  Future<void> _refresh() => _loadGroups();
+  Future<void> _refresh() => _loadGroups(isRefresh: true);
 
   @override
   Widget build(BuildContext context) {
@@ -165,47 +169,58 @@ class _MyGroupsScreenState extends State<MyGroupsScreen> {
   }
 
   Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: HouseLoadingIndicator());
+    if (_loading && _groups.isEmpty && _errorMessage == null) {
+      return CenteredHouseLoadingIndicator(
+        text: L10n.get("loading"),
+      );
     }
 
     final errorMessage = _errorMessage;
-    if (errorMessage != null) {
+    if (errorMessage != null && _groups.isEmpty) {
       return UydoshErrorRetryColumn(
         message: errorMessage,
-        onRetry: _loadGroups,
+        onRetry: () => _loadGroups(),
       );
     }
 
     if (_groups.isEmpty) {
-      return UydoshEmptyColumn(
-        icon: Icons.groups_outlined,
-        title: L10n.get("menu_my_groups"),
-        subtitle: L10n.get("my_groups_empty_subtitle"),
-        fillViewportForRefresh: true,
+      return UydoshRefreshIndicator.mainShell(
+        onRefresh: _refresh,
+        edgeOffset: 0,
+        child: PullToRefreshStretchHaptics(
+          child: UydoshEmptyColumn(
+            icon: Icons.groups_outlined,
+            title: L10n.get("menu_my_groups"),
+            subtitle: L10n.get("my_groups_empty_subtitle"),
+            fillViewportForRefresh: true,
+          ),
+        ),
       );
     }
 
-    return RefreshIndicator(
+    return UydoshRefreshIndicator.mainShell(
       onRefresh: _refresh,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
-        itemCount: _groups.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final group = _groups[index];
-          return ConversationTile(
-            conversation: group,
-            currentUserId: _currentUserId,
-            useFeedTileSurface: true,
-            surfaceMargin: EdgeInsets.zero,
-            showParticipantAvatarStack: true,
-            groupContext: _groupContexts[group.id],
-            onTap: () => _openGroup(group),
-            onChatTap: () => _openChat(group),
-          );
-        },
+      edgeOffset: 0,
+      child: PullToRefreshStretchHaptics(
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(14, 16, 14, 32),
+          itemCount: _groups.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final group = _groups[index];
+            return ConversationTile(
+              conversation: group,
+              currentUserId: _currentUserId,
+              useFeedTileSurface: true,
+              surfaceMargin: EdgeInsets.zero,
+              showParticipantAvatarStack: true,
+              groupContext: _groupContexts[group.id],
+              onTap: () => _openGroup(group),
+              onChatTap: () => _openChat(group),
+            );
+          },
+        ),
       ),
     );
   }

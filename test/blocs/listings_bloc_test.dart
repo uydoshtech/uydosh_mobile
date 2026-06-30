@@ -26,6 +26,18 @@ void main() {
 
   setUp(() {
     mockListingService = MockListingService();
+    final mockAnalytics = getIt<AppAnalyticsService>() as MockAppAnalyticsService;
+    when(
+      () => mockAnalytics.logSearchPerformed(
+        listingTypeId: any(named: "listingTypeId"),
+        locationId: any(named: "locationId"),
+        subwayStationId: any(named: "subwayStationId"),
+        subwayLineId: any(named: "subwayLineId"),
+        gender: any(named: "gender"),
+        hasPriceFilter: any(named: "hasPriceFilter"),
+        hasGenderFilter: any(named: "hasGenderFilter"),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   group("ListingsBloc", () {
@@ -167,6 +179,94 @@ void main() {
             1,
           ),
         ]),
+      );
+
+      bloc.close();
+    });
+    test("loadMore keeps hasMore true when exact total exceeds loaded count", () async {
+      const page1 = [
+        Listing(
+          id: 1,
+          userId: 1,
+          title: "A",
+          listingTypeId: 1,
+          price: 100,
+          isActive: true,
+          createdAt: "2024-01-01",
+          updatedAt: "2024-01-01",
+        ),
+      ];
+      const page2 = [
+        Listing(
+          id: 2,
+          userId: 1,
+          title: "B",
+          listingTypeId: 1,
+          price: 120,
+          isActive: true,
+          createdAt: "2024-01-02",
+          updatedAt: "2024-01-02",
+        ),
+      ];
+
+      when(
+        () => mockListingService.searchListings(
+          page: 1,
+          limit: 1,
+          isActive: true,
+          gender: 2,
+        ),
+      ).thenAnswer(
+        (_) async => const PageableResponse<Listing>(
+          data: page1,
+          total: 94,
+          page: 1,
+          limit: 1,
+          totalPages: 2,
+        ),
+      );
+      when(
+        () => mockListingService.searchListings(
+          page: 2,
+          limit: 1,
+          isActive: true,
+          gender: 2,
+        ),
+      ).thenAnswer(
+        (_) async => const PageableResponse<Listing>(
+          data: page2,
+          total: 2,
+          page: 2,
+          limit: 1,
+          totalPages: 2,
+        ),
+      );
+
+      final bloc = ListingsBloc(mockListingService);
+
+      bloc.add(const ListingsEvent.searchListings(gender: 2, limit: 1));
+      await bloc.stream.firstWhere(
+        (state) => state.maybeMap(
+          loaded: (s) => s.listings.length == 1,
+          orElse: () => false,
+        ),
+      );
+
+      bloc.add(const ListingsEvent.loadMore(limit: 1));
+      final loaded = await bloc.stream.firstWhere(
+        (state) => state.maybeMap(
+          loaded: (s) => s.listings.length == 2,
+          orElse: () => false,
+        ),
+      );
+
+      expect(
+        loaded.maybeMap(loaded: (s) => s.hasMore, orElse: () => false),
+        isTrue,
+      );
+      expect(
+        loaded.maybeMap(loaded: (s) => s.total, orElse: () => null),
+        94,
       );
 
       bloc.close();

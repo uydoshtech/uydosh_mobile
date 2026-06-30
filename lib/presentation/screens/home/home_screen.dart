@@ -1070,6 +1070,16 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
             loaded: (loadedState) {
               _resetLoadMoreState();
               _syncFeedEntriesCache(loadedState.listings);
+              if (loadedState.hasMore) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  if (!_scrollController.hasClients) return;
+                  final position = _scrollController.position;
+                  if (position.pixels >= position.maxScrollExtent - 200) {
+                    _loadMoreListings();
+                  }
+                });
+              }
               final shouldUpdateSearchFlags = _searchRefreshInFlight ||
                   (widget.isSearchMode && !_searchResultsReady);
               if (shouldUpdateSearchFlags && mounted) {

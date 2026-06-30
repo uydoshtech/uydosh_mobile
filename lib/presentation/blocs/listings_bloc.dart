@@ -70,6 +70,39 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     );
   }
 
+  /// True when the last feed search stored any filter beyond plain pagination.
+  bool get _hasStoredSearchContext =>
+      _lastListingTypeId != null ||
+      (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
+      _lastLocationId != null ||
+      _lastSubwayStationId != null ||
+      (_lastSubwayStationIds != null && _lastSubwayStationIds!.isNotEmpty) ||
+      _lastSubwayLineId != null ||
+      _lastGender != null ||
+      _lastMinPrice != null ||
+      _lastMaxPrice != null ||
+      _lastPrivateRoom != null ||
+      _lastWithPhoto == true ||
+      (_lastExcludeUserIds != null && _lastExcludeUserIds!.isNotEmpty);
+
+  /// Prefer the exact total captured on page 1; page 2+ responses only carry a
+  /// conservative estimate and must not prematurely stop infinite scroll.
+  bool _computeHasMore({
+    required int loadedCount,
+    required int newPageItemCount,
+    required int limit,
+    required int currentPage,
+    required int responseTotalPages,
+    int? exactTotal,
+  }) {
+    if (newPageItemCount <= 0) return false;
+    if (exactTotal != null && exactTotal > 0) {
+      return loadedCount < exactTotal;
+    }
+    return newPageItemCount >= limit &&
+        (currentPage + 1) <= responseTotalPages;
+  }
+
   Future<void> _onFetchListings(
     Emitter<ListingsState> emit,
     ListingsEvent event,
@@ -131,7 +164,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
       final newListings = response.data;
       FavoritesState().syncFromListings(newListings);
-      _hasMore = (page + 1) <= response.totalPages && newListings.isNotEmpty;
       _totalResults = response.total;
 
       if (isRefresh) {
@@ -139,6 +171,15 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       } else {
         _currentListings = [..._currentListings, ...newListings];
       }
+
+      _hasMore = _computeHasMore(
+        loadedCount: _currentListings.length,
+        newPageItemCount: newListings.length,
+        limit: limit,
+        currentPage: page,
+        responseTotalPages: response.totalPages,
+        exactTotal: _totalResults,
+      );
 
       emit(
         _loadedState(
@@ -219,12 +260,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       }
 
       // Check if we have stored search parameters
-      if (_lastListingTypeId != null ||
-          (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
-          _lastLocationId != null ||
-          _lastSubwayStationId != null ||
-          (_lastSubwayStationIds != null &&
-              _lastSubwayStationIds!.isNotEmpty)) {
+      if (_hasStoredSearchContext) {
         // Use search with stored parameters
         final response = await _listingService
             .searchListings(
@@ -249,11 +285,17 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
         final newListings = response.data;
         FavoritesState().syncFromListings(newListings);
-        _hasMore =
-            (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
         _totalResults ??= response.total;
 
         final updatedListings = [...currentListings, ...newListings];
+        _hasMore = _computeHasMore(
+          loadedCount: updatedListings.length,
+          newPageItemCount: newListings.length,
+          limit: limit,
+          currentPage: _currentPage,
+          responseTotalPages: response.totalPages,
+          exactTotal: _totalResults,
+        );
 
         emit(
           _loadedState(
@@ -277,11 +319,17 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
         final newListings = response.data;
         FavoritesState().syncFromListings(newListings);
-        _hasMore =
-            (_currentPage + 1) <= response.totalPages && newListings.isNotEmpty;
         _totalResults ??= response.total;
 
         final updatedListings = [...currentListings, ...newListings];
+        _hasMore = _computeHasMore(
+          loadedCount: updatedListings.length,
+          newPageItemCount: newListings.length,
+          limit: limit,
+          currentPage: _currentPage,
+          responseTotalPages: response.totalPages,
+          exactTotal: _totalResults,
+        );
 
         emit(
           _loadedState(
@@ -407,7 +455,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         _currentListings = [..._currentListings, ...listings];
       }
 
-      _hasMore = listings.length >= limit;
+      _hasMore = _computeHasMore(
+        loadedCount: _currentListings.length,
+        newPageItemCount: listings.length,
+        limit: limit,
+        currentPage: page,
+        responseTotalPages: page + (listings.length >= limit ? 1 : 0),
+        exactTotal: _totalResults,
+      );
 
       emit(
         _loadedState(
@@ -495,7 +550,14 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         _currentListings = [..._currentListings, ...listings];
       }
 
-      _hasMore = listings.length >= limit;
+      _hasMore = _computeHasMore(
+        loadedCount: _currentListings.length,
+        newPageItemCount: listings.length,
+        limit: limit,
+        currentPage: page,
+        responseTotalPages: page + (listings.length >= limit ? 1 : 0),
+        exactTotal: _totalResults,
+      );
 
       emit(
         _loadedState(
@@ -711,11 +773,19 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         _currentListings = [..._currentListings, ...listings];
       }
 
-      _hasMore = listings.length >= limit;
       _totalResults = response.total;
       if (isRefresh && page == 1 && listings.length > (_totalResults ?? 0)) {
         _totalResults = listings.length;
       }
+
+      _hasMore = _computeHasMore(
+        loadedCount: _currentListings.length,
+        newPageItemCount: listings.length,
+        limit: limit,
+        currentPage: page,
+        responseTotalPages: response.totalPages,
+        exactTotal: _totalResults,
+      );
 
       emit(
         _loadedState(
