@@ -384,23 +384,27 @@ class PreferenceSegmentTile extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            leading,
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                  letterSpacing: 0.2,
-                  color: scheme.onSurface,
+            if (label.isEmpty)
+              leading
+            else ...[
+              leading,
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    letterSpacing: 0.2,
+                    color: scheme.onSurface,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -635,9 +639,9 @@ class LanguagePickerOptionTile extends StatelessWidget {
       },
       leading: Text(
         languageFlagForCode(code),
-        style: const TextStyle(fontSize: 18, height: 1),
+        style: const TextStyle(fontSize: 20, height: 1),
       ),
-      label: code.toUpperCase(),
+      label: "",
     );
   }
 }

@@ -4,10 +4,12 @@ class _SearchMapResult {
   const _SearchMapResult({
     required this.pins,
     required this.total,
+    required this.mappableCount,
   });
 
   final List<ListingMapPin> pins;
   final int total;
+  final int mappableCount;
 }
 
 class _PinMeta {

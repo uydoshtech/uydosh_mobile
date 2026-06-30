@@ -810,6 +810,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       apply(
         SearchBottomSheetResult(
           listingTypeId: listingTypeId,
+          listingTypeIds: _searchFiltersState.searchListingTypeIds,
           gender: gender > 0 ? gender : null,
           locationId: locationId,
           subwayStationId: subwayStationId,

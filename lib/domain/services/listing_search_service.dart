@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
 import "package:flutter/foundation.dart";
+import "package:uy_dosh/domain/search/listing_browse_constants.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 void _applyListingTypeQueryParams(
@@ -37,7 +38,7 @@ abstract class IListingSearchService {
     int? gender,
     double? minPrice,
     double? maxPrice,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
   Future<List<Listing>> getListingsBySubwayStation(
@@ -45,7 +46,7 @@ abstract class IListingSearchService {
     int page = 1,
     int limit = 10,
     String? language,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
   Future<List<Listing>> getListingsByLocation(
@@ -53,7 +54,7 @@ abstract class IListingSearchService {
     int page = 1,
     int limit = 10,
     String? language,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
   Future<PageableResponse<Listing>> searchListings({
@@ -72,7 +73,7 @@ abstract class IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   });
 
@@ -92,7 +93,7 @@ abstract class IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   });
 
@@ -111,7 +112,7 @@ abstract class IListingSearchService {
 
   /// Subway station IDs that have at least one active listing (single API round-trip).
   Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     int? listingTypeId,
     int? gender,
     double? minPrice,
@@ -183,7 +184,7 @@ class ListingSearchService implements IListingSearchService {
     required int limit,
     required bool isActive,
     required String language,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
@@ -260,7 +261,7 @@ class ListingSearchService implements IListingSearchService {
     int? gender,
     double? minPrice,
     double? maxPrice,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
@@ -341,7 +342,7 @@ class ListingSearchService implements IListingSearchService {
     int page = 1,
     int limit = 10,
     String? language,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
@@ -369,7 +370,7 @@ class ListingSearchService implements IListingSearchService {
     int page = 1,
     int limit = 10,
     String? language,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
 
@@ -408,7 +409,7 @@ class ListingSearchService implements IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
@@ -506,7 +507,7 @@ class ListingSearchService implements IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   }) async {
     final currentLanguage = language ?? LanguageState().currentLanguage;
@@ -660,7 +661,7 @@ class ListingSearchService implements IListingSearchService {
 
   @override
   Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = 30,
+    int createdWithinDays = listingBrowseCreatedWithinDays,
     int? listingTypeId,
     int? gender,
     double? minPrice,

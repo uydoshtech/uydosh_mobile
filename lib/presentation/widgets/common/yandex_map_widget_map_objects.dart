@@ -325,11 +325,40 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     );
   }
 
+  int _listingCountForPlacemark(MapObjectId mapId) {
+    const groupPrefix = "listing_group_";
+    const placemarkSuffix = "_placemark";
+    final id = mapId.value;
+    if (id.startsWith(groupPrefix) && id.endsWith(placemarkSuffix)) {
+      final key = id.substring(
+        groupPrefix.length,
+        id.length - placemarkSuffix.length,
+      );
+      for (final group in _groupListingPins(widget.pins)) {
+        if (group.key == key) return group.pins.length;
+      }
+      return 1;
+    }
+    if (id.startsWith("listing_") && id.endsWith(placemarkSuffix)) {
+      return 1;
+    }
+    return 1;
+  }
+
+  int _listingCountForCluster(Cluster cluster) {
+    var total = 0;
+    for (final placemark in cluster.placemarks) {
+      total += _listingCountForPlacemark(placemark.mapId);
+    }
+    return total;
+  }
+
   Future<Cluster?> _handleListingClusterAdded(
     ClusterizedPlacemarkCollection self,
     Cluster cluster,
   ) async {
-    final iconBytes = await _listingClusterIconBytes(cluster.size);
+    final listingCount = _listingCountForCluster(cluster);
+    final iconBytes = await _listingClusterIconBytes(listingCount);
     return cluster.copyWith(
       appearance: cluster.appearance.copyWith(
         zIndex: _YandexMapWidgetState._selectedListingPinZIndex,

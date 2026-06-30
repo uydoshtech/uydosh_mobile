@@ -28,6 +28,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/scroll_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
+import "package:uy_dosh/domain/search/resolved_listing_search_params.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
@@ -118,35 +119,6 @@ class _HomeScreenData {
       Object.hash(hasMore, total),
     );
   }
-}
-
-@immutable
-class _ResolvedSearchFilters {
-  const _ResolvedSearchFilters({
-    required this.listingTypeId,
-    required this.listingTypeIds,
-    required this.locationId,
-    required this.subwayStationId,
-    required this.subwayLineId,
-    required this.gender,
-    required this.minPrice,
-    required this.maxPrice,
-    required this.privateRoom,
-    required this.withPhoto,
-    this.subwayStationIds,
-  });
-
-  final int? listingTypeId;
-  final List<int>? listingTypeIds;
-  final int? locationId;
-  final int? subwayStationId;
-  final List<int>? subwayStationIds;
-  final int? subwayLineId;
-  final int? gender;
-  final double? minPrice;
-  final double? maxPrice;
-  final bool? privateRoom;
-  final bool? withPhoto;
 }
 
 enum _SearchResultsView { list, map }
@@ -973,72 +945,35 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  _ResolvedSearchFilters _resolveSearchFilters({
+  ResolvedListingSearchParams _resolveSearchFilters({
     required bool includeSafeFallbacks,
     required bool explicitNullFallsBackToState,
   }) {
-    final fromExplicit = widget.useExplicitFiltersOnly;
-
-    final listingTypeId = fromExplicit
-        ? (explicitNullFallsBackToState
-            ? (widget.listingTypeId ?? _searchFiltersState.searchListingTypeId)
-            : widget.listingTypeId)
-        : _searchFiltersState.searchListingTypeId;
-
-    final listingTypeIds =
-        fromExplicit ? null : _searchFiltersState.searchListingTypeIds;
-
-    // For location / metro fields we preserve current behavior: if opened with
-    // explicit filters, we display/use exactly what was provided (nullable).
-    final locationId = fromExplicit
-        ? widget.locationId
-        : _searchFiltersState.selectedLocationIndex;
-    final subwayStationId = fromExplicit
-        ? widget.subwayStationId
-        : _searchFiltersState.selectedStationId;
-    final subwayStationIds = fromExplicit
-        ? widget.subwayStationIds
-        : _searchFiltersState.searchSubwayStationIds;
-    final stationIds = subwayStationIds ?? const <int>[];
-    final hasStationFilter = stationIds.isNotEmpty ||
-        (subwayStationId != null && subwayStationId > 0);
-    final rawSubwayLineId = fromExplicit
-        ? widget.subwayLineId
-        : _searchFiltersState.selectedSubwayLine;
-    final subwayLineId = hasStationFilter ? rawSubwayLineId : null;
-    final gender =
-        fromExplicit ? widget.gender : _searchFiltersState.selectedGender;
-
-    final minPrice = fromExplicit
-        ? (includeSafeFallbacks ? (widget.minPrice ?? 0.0) : widget.minPrice)
-        : _searchFiltersState.minPrice;
-    final maxPrice = fromExplicit
-        ? (includeSafeFallbacks ? (widget.maxPrice ?? 1000.0) : widget.maxPrice)
-        : _searchFiltersState.maxPrice;
-
-    final privateRoom = fromExplicit
-        ? (includeSafeFallbacks
-            ? (widget.privateRoom ?? false)
-            : widget.privateRoom)
-        : _searchFiltersState.privateRoom;
-    final withPhoto = fromExplicit
-        ? (includeSafeFallbacks
-            ? (widget.withPhoto ?? false)
-            : widget.withPhoto)
-        : _searchFiltersState.withPhoto;
-
-    return _ResolvedSearchFilters(
-      listingTypeId: listingTypeId,
-      listingTypeIds: listingTypeIds,
-      locationId: locationId,
-      subwayStationId: subwayStationId,
-      subwayStationIds: subwayStationIds,
-      subwayLineId: subwayLineId,
-      gender: gender,
-      minPrice: minPrice,
-      maxPrice: maxPrice,
-      privateRoom: privateRoom,
-      withPhoto: withPhoto,
+    return ResolvedListingSearchParams.fromSearchFiltersState(
+      _searchFiltersState,
+      explicitListingTypeId: widget.useExplicitFiltersOnly
+          ? (explicitNullFallsBackToState
+              ? (widget.listingTypeId ??
+                  _searchFiltersState.searchListingTypeId)
+              : widget.listingTypeId)
+          : null,
+      explicitLocationId:
+          widget.useExplicitFiltersOnly ? widget.locationId : null,
+      explicitSubwayStationId:
+          widget.useExplicitFiltersOnly ? widget.subwayStationId : null,
+      explicitSubwayStationIds:
+          widget.useExplicitFiltersOnly ? widget.subwayStationIds : null,
+      explicitSubwayLineId:
+          widget.useExplicitFiltersOnly ? widget.subwayLineId : null,
+      explicitGender: widget.useExplicitFiltersOnly ? widget.gender : null,
+      explicitMinPrice: widget.useExplicitFiltersOnly ? widget.minPrice : null,
+      explicitMaxPrice: widget.useExplicitFiltersOnly ? widget.maxPrice : null,
+      explicitPrivateRoom:
+          widget.useExplicitFiltersOnly ? widget.privateRoom : null,
+      explicitWithPhoto: widget.useExplicitFiltersOnly ? widget.withPhoto : null,
+      useExplicitFiltersOnly: widget.useExplicitFiltersOnly,
+      includeSafeFallbacks: includeSafeFallbacks,
+      explicitNullFallsBackToState: explicitNullFallsBackToState,
     );
   }
 
@@ -1303,6 +1238,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
     return SearchBottomSheetResult(
       listingTypeId: listingTypeId,
+      listingTypeIds: filters.listingTypeIds ??
+          _searchFiltersState.searchListingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
       subwayStationIds: filters.subwayStationIds ?? const [],
@@ -2415,8 +2352,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
     listingsBloc.add(
       ListingsEvent.searchListings(
-        listingTypeId:
-            filters.listingTypeIds != null ? null : filters.listingTypeId,
+        listingTypeId: filters.listingTypeId,
         listingTypeIds: filters.listingTypeIds,
         locationId: filters.locationId,
         subwayStationId: filters.subwayStationId,

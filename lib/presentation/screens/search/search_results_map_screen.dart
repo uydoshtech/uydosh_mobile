@@ -29,6 +29,7 @@ import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
+import "package:uy_dosh/domain/search/resolved_listing_search_params.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/models/university.dart";
 import "package:uy_dosh/domain/search/search_filter_defaults.dart";
@@ -115,6 +116,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     required this.privateRoom,
     required this.withPhoto,
     super.key,
+    this.listingTypeIds,
     this.locationId,
     this.subwayStationId,
     this.subwayStationIds = const [],
@@ -133,6 +135,7 @@ class SearchResultsMapScreen extends StatefulWidget {
   });
 
   final int listingTypeId;
+  final List<int>? listingTypeIds;
   final int? locationId;
   final int? subwayStationId;
   final List<int> subwayStationIds;
@@ -212,6 +215,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   double? _userLocationLongitude;
 
   late int _listingTypeId;
+  List<int>? _listingTypeIds;
   int? _locationId;
   int? _subwayStationId;
   late List<int> _subwayStationIds;
@@ -272,7 +276,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _isLoading = false;
       _showFilterRibbon = false;
     } else {
-      _result = const _SearchMapResult(pins: [], total: 0);
+      _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
       _isLoading = false;
       _showFilterRibbon = false;
     }
@@ -337,7 +341,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   _SearchMapCanvasProps _buildCanvasProps() {
-    final result = _result ?? const _SearchMapResult(pins: [], total: 0);
+    final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
     return _SearchMapCanvasProps(
       result: result,
       hasSearchFilters: _hasMapSearchFilters,
@@ -371,7 +375,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   _SearchMapOverlayProps _buildOverlayProps() {
-    final result = _result ?? const _SearchMapResult(pins: [], total: 0);
+    final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
     return _SearchMapOverlayProps(
       isLoading: _isLoading,
       hasSearchFilters: _hasMapSearchFilters,
@@ -464,6 +468,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _syncFiltersFromWidget() {
     _listingTypeId = widget.listingTypeId;
+    _listingTypeIds = widget.listingTypeIds == null
+        ? null
+        : List<int>.from(widget.listingTypeIds!);
     _locationId = widget.locationId;
     _subwayStationId = widget.subwayStationId;
     _subwayStationIds = List<int>.from(widget.subwayStationIds);
@@ -477,6 +484,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   bool _widgetFiltersChanged(SearchResultsMapScreen oldWidget) {
     return oldWidget.listingTypeId != widget.listingTypeId ||
+        !_intListsEqual(
+          oldWidget.listingTypeIds ?? const [],
+          widget.listingTypeIds ?? const [],
+        ) ||
         oldWidget.locationId != widget.locationId ||
         oldWidget.subwayStationId != widget.subwayStationId ||
         !_intListsEqual(oldWidget.subwayStationIds, widget.subwayStationIds) ||
@@ -490,6 +501,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   bool _matchesCurrentFilters(SearchBottomSheetResult result) {
     return _listingTypeId == result.listingTypeId &&
+        _intListsEqual(
+          _listingTypeIds ?? const [],
+          result.listingTypeIds ?? const [],
+        ) &&
         _locationId == result.locationId &&
         _subwayStationId == result.subwayStationId &&
         _intListsEqual(_subwayStationIds, result.subwayStationIds) &&
@@ -672,7 +687,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }) async {
     if (!_hasMapSearchFilters) {
       _loadGeneration++;
-      _result = const _SearchMapResult(pins: [], total: 0);
+      _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
       _loadError = null;
       _isLoading = false;
       _selectedPin = null;
@@ -725,40 +740,50 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     }
   }
 
+  ResolvedListingSearchParams get _searchParams =>
+      ResolvedListingSearchParams.fromMapToggle(
+        listingTypeId: _listingTypeId,
+        listingTypeIds: _listingTypeIds,
+        locationId: _locationId,
+        subwayStationId: _subwayStationId,
+        subwayStationIds: _subwayStationIds,
+        subwayLineId: _subwayLineId,
+        gender: _gender,
+        minPrice: _minPrice,
+        maxPrice: _maxPrice,
+        privateRoom: _privateRoom,
+        withPhoto: _withPhoto,
+      );
+
   Future<_SearchMapResult> _fetchResults() async {
-    // TODO: re-enable GET /listings/map once backend is ready.
-    // final response = await getIt<IListingService>().searchMapListings(
-    //   page: 1,
-    //   limit: isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit,
-    //   listingTypeId: _listingTypeId,
-    //   locationId: _locationId,
-    //   subwayStationId: _subwayStationId,
-    //   subwayStationIds: _subwayStationIds,
-    //   subwayLineId: _subwayLineId,
-    //   gender: _gender,
-    //   minPrice: _minPrice,
-    //   maxPrice: _maxPrice,
-    //   privateRoom: _privateRoom,
-    //   withPhoto: _withPhoto,
-    // );
-    // return _resultFromMapPins(response.data, total: response.total);
+    final params = _searchParams;
+    final pageLimit =
+        isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit;
+    final accumulated = <Listing>[];
+    var exactTotal = 0;
+    var page = 1;
 
-    final response = await getIt<IListingService>().searchListings(
-      page: 1,
-      limit: isAndroidDevice ? _androidMapSearchLimit : _defaultMapSearchLimit,
-      listingTypeId: _listingTypeId,
-      locationId: _locationId,
-      subwayStationId: _subwayStationId,
-      subwayStationIds: _subwayStationIds,
-      subwayLineId: _subwayLineId,
-      gender: _gender,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      privateRoom: _privateRoom,
-      withPhoto: _withPhoto,
+    while (true) {
+      final response = await params.searchListingsPage(
+        getIt<IListingService>(),
+        page: page,
+        limit: pageLimit,
+      );
+      if (page == 1) {
+        exactTotal = response.total;
+      }
+      if (response.data.isEmpty) break;
+      accumulated.addAll(response.data);
+      if (exactTotal > 0 && accumulated.length >= exactTotal) break;
+      if (response.data.length < pageLimit) break;
+      page++;
+      if (page > 100) break;
+    }
+
+    return _resultFromListings(
+      accumulated,
+      total: exactTotal > 0 ? exactTotal : accumulated.length,
     );
-
-    return _resultFromListings(response.data, total: response.total);
   }
 
   _SearchMapResult _resultFromMapPins(
@@ -772,10 +797,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       mapPins.add(_mapPinFromData(pin));
     }
     final mappableCount = mapPins.length;
-    final effectiveTotal = mappableCount > total ? mappableCount : total;
     return _SearchMapResult(
       pins: mapPins,
-      total: effectiveTotal,
+      total: total,
+      mappableCount: mappableCount,
     );
   }
 
@@ -879,10 +904,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       pins.add(pin);
     }
     final mappableCount = pins.length;
-    final effectiveTotal = mappableCount > total ? mappableCount : total;
     return _SearchMapResult(
       pins: pins,
-      total: effectiveTotal,
+      total: total,
+      mappableCount: mappableCount,
     );
   }
 
@@ -918,6 +943,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _filterRibbonDismissedByUser = false;
         _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
         _listingTypeId = result.listingTypeId;
+        _listingTypeIds = result.listingTypeIds == null
+            ? null
+            : List<int>.from(result.listingTypeIds!);
         _locationId = result.locationId;
         _subwayStationId = result.subwayStationId;
         _subwayStationIds = List<int>.from(result.subwayStationIds);
@@ -963,7 +991,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final listings = widget.initialListings;
     if (listings.isEmpty) {
       _loadGeneration++;
-      _result = const _SearchMapResult(pins: [], total: 0);
+      _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
       _loadError = null;
       _isLoading = false;
       _syncAllMapProps();
@@ -1018,6 +1046,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   SearchBottomSheetResult _currentSearchResult() {
     return SearchBottomSheetResult(
       listingTypeId: _listingTypeId,
+      listingTypeIds: _listingTypeIds,
       locationId: _locationId,
       subwayStationId: _subwayStationId,
       subwayStationIds: _subwayStationIds,

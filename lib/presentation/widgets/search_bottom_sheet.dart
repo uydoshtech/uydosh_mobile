@@ -54,9 +54,11 @@ class SearchBottomSheetResult {
     required this.withPhoto,
     this.action = SearchBottomSheetAction.feed,
     this.subwayStationIds = const [],
+    this.listingTypeIds,
   });
 
   final int listingTypeId;
+  final List<int>? listingTypeIds;
   final int? gender;
   final int? locationId;
   final int? subwayStationId;

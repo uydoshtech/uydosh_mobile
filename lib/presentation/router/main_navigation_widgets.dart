@@ -94,17 +94,22 @@ class _HomeListingsAppBarTitleState extends State<HomeListingsAppBarTitle> {
               listenable: HomeInlineSearchState(),
               builder: (context, _) {
                 final blocTotal = _totalFor(state);
-                final mapActive = HomeInlineSearchState().isMapViewActive;
-                final mapCount = HomeInlineSearchState().mapListingCount;
-                final mapTotal =
-                    mapActive && mapCount != null && mapCount > 0 ? mapCount : null;
-                final listTotal = _inlineActive &&
+                final feedTotal = _inlineActive &&
                         _countReady &&
                         blocTotal != null &&
                         blocTotal > 0
                     ? blocTotal
                     : null;
-                final total = mapTotal ?? listTotal;
+                final mapActive = HomeInlineSearchState().isMapViewActive;
+                final mapCount = HomeInlineSearchState().mapListingCount;
+                final mapTotal = mapActive &&
+                        mapCount != null &&
+                        mapCount > 0
+                    ? mapCount
+                    : null;
+                // Prefer the feed search total when available — map uses the
+                // same filters and should report the same API count.
+                final total = feedTotal ?? mapTotal;
                 final showCount = total != null;
 
                 // “•” uses title size; digits are smaller for hierarchy.

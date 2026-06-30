@@ -130,6 +130,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
 
     final mapView = SearchResultsMapScreen(
       listingTypeId: widget.mapResult.listingTypeId,
+      listingTypeIds: widget.mapResult.listingTypeIds,
       locationId: widget.mapResult.locationId,
       subwayStationId: widget.mapResult.subwayStationId,
       subwayStationIds: widget.mapResult.subwayStationIds,
