@@ -825,11 +825,11 @@ class AppStrings {
 
       // ===== ABOUT & FEATURES =====
       "about_description":
-          "UyDosh is your trusted platform for finding the perfect home in Tashkent.",
-      "about_feature_1": "• Browse listings by metro station",
-      "about_feature_2": "• Search by district",
-      "about_feature_3": "• Direct contact with property owners",
-      "about_feature_4": "• Verified and safe listings",
+          "UyDosh is Uzbekistan's rental and roommate marketplace — search, chat, and move in with confidence.",
+      "about_feature_1": "Smart search by metro, district, and filters",
+      "about_feature_2": "In-app chat with owners and roommates",
+      "about_feature_3": "Alerts when new listings match you",
+      "about_feature_4": "Verified listings and a safe community",
 
       // ===== METRO SYSTEM =====
       "open_in_yandex_maps": "Open in Yandex Maps",
@@ -2968,11 +2968,11 @@ class AppStrings {
 
       // ===== ABOUT & FEATURES =====
       "about_description":
-          "UyDosh - ваша надежная платформа для поиска идеального жилья в Ташкенте.",
-      "about_feature_1": "Поиск объявлений по метро",
-      "about_feature_2": "Поиск по районам",
-      "about_feature_3": "Прямой контакт с владельцами",
-      "about_feature_4": "Проверенные и безопасные объявления",
+          "UyDosh — маркетплейс аренды и поиска соседей в Узбекистане: ищите, общайтесь и заселяйтесь уверенно.",
+      "about_feature_1": "Умный поиск по метро, районам и фильтрам",
+      "about_feature_2": "Чат с владельцами и соседями в приложении",
+      "about_feature_3": "Уведомления о новых подходящих объявлениях",
+      "about_feature_4": "Проверенные объявления и безопасное сообщество",
 
       // ===== METRO SYSTEM =====
       "open_in_yandex_maps": "Открыть в Яндекс Картах",
@@ -5154,11 +5154,11 @@ class AppStrings {
 
       // ===== ABOUT & FEATURES =====
       "about_description":
-          "UyDosh - Toshkentda mukammal turar joy topish uchun ishonchli platformangiz.",
-      "about_feature_1": "• Metro stansiyalari bo'yicha e'lonlarni ko'rish",
-      "about_feature_2": "• Tumanlar bo'yicha qidiruv",
-      "about_feature_3": "• Egasi bilan to'g'ridan-to'g'ri aloqa",
-      "about_feature_4": "• Tekshirilgan va xavfsiz e'lonlar",
+          "UyDosh — O'zbekistonda ijara va xonadoshlar bozori: qidiring, yozishing va ishonch bilan ko'chishing.",
+      "about_feature_1": "Metro, tuman va filtrlar bo'yicha aqlli qidiruv",
+      "about_feature_2": "Ilova ichida egalar va xonadoshlar bilan chat",
+      "about_feature_3": "Mos e'lonlar paydo bo'lganda bildirishnomalar",
+      "about_feature_4": "Tekshirilgan e'lonlar va xavfsiz hamjamiyat",
 
       // ===== METRO SYSTEM =====
       "open_in_yandex_maps": "Yandex Xaritalarida ochish",

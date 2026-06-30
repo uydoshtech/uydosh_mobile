@@ -970,20 +970,21 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String get about_description =>
-      'UyDosh - Toshkentda mukammal turar joy topish uchun ishonchli platformangiz.';
+      'UyDosh — O\'zbekistonda ijara va xonadoshlar bozori: qidiring, yozishing va ishonch bilan ko\'chishing.';
 
   @override
   String get about_feature_1 =>
-      '• Metro stansiyalari bo\'yicha e\'lonlarni ko\'rish';
+      'Metro, tuman va filtrlar bo\'yicha aqlli qidiruv';
 
   @override
-  String get about_feature_2 => '• Tumanlar bo\'yicha qidiruv';
+  String get about_feature_2 => 'Ilova ichida egalar va xonadoshlar bilan chat';
 
   @override
-  String get about_feature_3 => '• Egasi bilan to\'g\'ridan-to\'g\'ri aloqa';
+  String get about_feature_3 =>
+      'Mos e\'lonlar paydo bo\'lganda bildirishnomalar';
 
   @override
-  String get about_feature_4 => '• Tekshirilgan va xavfsiz e\'lonlar';
+  String get about_feature_4 => 'Tekshirilgan e\'lonlar va xavfsiz hamjamiyat';
 
   @override
   String get location_on_map => 'Xaritadagi joylashuv';

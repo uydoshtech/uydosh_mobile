@@ -1825,31 +1825,31 @@ abstract class AppLocalizations {
   /// No description provided for @about_description.
   ///
   /// In en, this message translates to:
-  /// **'UyDosh is your trusted platform for finding the perfect home in Tashkent.'**
+  /// **'UyDosh is Uzbekistan\'s rental and roommate marketplace — search, chat, and move in with confidence.'**
   String get about_description;
 
   /// No description provided for @about_feature_1.
   ///
   /// In en, this message translates to:
-  /// **'• Browse listings by metro station'**
+  /// **'Smart search by metro, district, and filters'**
   String get about_feature_1;
 
   /// No description provided for @about_feature_2.
   ///
   /// In en, this message translates to:
-  /// **'• Search by district'**
+  /// **'In-app chat with owners and roommates'**
   String get about_feature_2;
 
   /// No description provided for @about_feature_3.
   ///
   /// In en, this message translates to:
-  /// **'• Direct contact with property owners'**
+  /// **'Alerts when new listings match you'**
   String get about_feature_3;
 
   /// No description provided for @about_feature_4.
   ///
   /// In en, this message translates to:
-  /// **'• Verified and safe listings'**
+  /// **'Verified listings and a safe community'**
   String get about_feature_4;
 
   /// No description provided for @location_on_map.

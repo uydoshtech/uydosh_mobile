@@ -958,19 +958,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get about_description =>
-      'UyDosh is your trusted platform for finding the perfect home in Tashkent.';
+      'UyDosh is Uzbekistan\'s rental and roommate marketplace — search, chat, and move in with confidence.';
 
   @override
-  String get about_feature_1 => '• Browse listings by metro station';
+  String get about_feature_1 => 'Smart search by metro, district, and filters';
 
   @override
-  String get about_feature_2 => '• Search by district';
+  String get about_feature_2 => 'In-app chat with owners and roommates';
 
   @override
-  String get about_feature_3 => '• Direct contact with property owners';
+  String get about_feature_3 => 'Alerts when new listings match you';
 
   @override
-  String get about_feature_4 => '• Verified and safe listings';
+  String get about_feature_4 => 'Verified listings and a safe community';
 
   @override
   String get location_on_map => 'Location';

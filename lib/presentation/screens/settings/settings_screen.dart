@@ -719,13 +719,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData icon;
     switch (key) {
       case "about_feature_1":
-        icon = Icons.train; // Metro icon for metro station browsing
+        icon = Icons.tune;
       case "about_feature_2":
-        icon = Icons.location_on; // Location icon for district search
+        icon = Icons.chat_bubble_outline;
       case "about_feature_3":
-        icon = Icons.contact_phone; // Contact icon for direct contact
+        icon = Icons.notifications_outlined;
       case "about_feature_4":
-        icon = Icons.verified; // Verified icon for safe listings
+        icon = Icons.verified;
       default:
         icon = Icons.circle; // Default icon
     }

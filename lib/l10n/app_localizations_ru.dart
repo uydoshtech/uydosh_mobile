@@ -956,19 +956,20 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get about_description =>
-      'UyDosh - ваша надежная платформа для поиска идеального жилья в Ташкенте.';
+      'UyDosh — маркетплейс аренды и поиска соседей в Узбекистане: ищите, общайтесь и заселяйтесь уверенно.';
 
   @override
-  String get about_feature_1 => 'Поиск объявлений по метро';
+  String get about_feature_1 => 'Умный поиск по метро, районам и фильтрам';
 
   @override
-  String get about_feature_2 => 'Поиск по районам';
+  String get about_feature_2 => 'Чат с владельцами и соседями в приложении';
 
   @override
-  String get about_feature_3 => 'Прямой контакт с владельцами';
+  String get about_feature_3 => 'Уведомления о новых подходящих объявлениях';
 
   @override
-  String get about_feature_4 => 'Проверенные и безопасные объявления';
+  String get about_feature_4 =>
+      'Проверенные объявления и безопасное сообщество';
 
   @override
   String get location_on_map => 'Локация';
