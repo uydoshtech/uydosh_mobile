@@ -3,10 +3,10 @@ import "dart:io";
 import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
-import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
-import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 
 /// Medium-sized centered preview for a single uploaded photo.
 ///
@@ -65,9 +65,10 @@ class PhotoPreviewDialog extends StatelessWidget {
     VoidCallback? onMakePrimary,
     bool isPrimary = false,
   }) {
+    final isLightTheme = ThemeState().isLightTheme;
     return showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.72),
+      barrierColor: Colors.black.withValues(alpha: isLightTheme ? 0.35 : 0.72),
       builder: (_) => PhotoPreviewDialog._(
         imageProvider: image,
         onMakePrimary: onMakePrimary,
@@ -104,6 +105,13 @@ class PhotoPreviewDialog extends StatelessWidget {
     );
   }
 
+  Color _surfaceColor(BuildContext context) {
+    if (ThemeState().isLightTheme) {
+      return Theme.of(context).colorScheme.surface;
+    }
+    return const Color(0xFF0B1220);
+  }
+
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
@@ -112,6 +120,11 @@ class PhotoPreviewDialog extends StatelessWidget {
     final maxWidth = media.size.width * 0.7;
     final maxHeight = media.size.height * 0.5;
     final showMakePrimary = onMakePrimary != null && !isPrimary;
+    final surfaceColor = _surfaceColor(context);
+    final errorIconColor = Theme.of(context)
+        .colorScheme
+        .onSurfaceVariant
+        .withValues(alpha: 0.5);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -125,7 +138,7 @@ class PhotoPreviewDialog extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: ColoredBox(
-                color: const Color(0xFF0B1220),
+                color: surfaceColor,
                 child: InteractiveViewer(
                   minScale: 1,
                   maxScale: 4,
@@ -138,10 +151,10 @@ class PhotoPreviewDialog extends StatelessWidget {
                       return SizedBox(
                         width: maxWidth,
                         height: maxHeight,
-                        child: const Center(
+                        child: Center(
                           child: ThemeIcon(
                             Icons.broken_image,
-                            color: Colors.white54,
+                            color: errorIconColor,
                             size: 48,
                           ),
                         ),
@@ -163,6 +176,7 @@ class PhotoPreviewDialog extends StatelessWidget {
                 iconSize: 18,
                 contentSlotSize: 20,
                 padding: const EdgeInsets.all(4),
+                neumorphicSoftUi: ThemeState().isLightTheme,
               ),
             ),
             if (showMakePrimary)
@@ -171,38 +185,21 @@ class PhotoPreviewDialog extends StatelessWidget {
                 right: 0,
                 bottom: 12,
                 child: Center(
-                  child: ThreeDPillButton(
+                  child: GhostButtonFactory.iconText(
+                    onPressed: () {
+                      onMakePrimary!();
+                      Navigator.of(context).pop();
+                    },
+                    icon: Icons.star,
+                    text: L10n.get("make_photo_primary"),
+                    iconSize: 18,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 10,
                     ),
-                    borderRadius:
-                        const BorderRadius.all(Radius.circular(999)),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    neumorphicSoftUi: true,
-                    onPressed: () {
-                      HapticFeedbackUtils.impact();
-                      onMakePrimary!();
-                      Navigator.of(context).pop();
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const ThemeIcon(
-                          Icons.star,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          L10n.get("make_photo_primary"),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
