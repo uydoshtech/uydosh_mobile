@@ -2960,6 +2960,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     // Prevent multiple submissions
     if (_isSubmitting) return;
 
+    unawaited(
+      getIt<AppAnalyticsService>().logListingPublishTapped(
+        flow: "create",
+        listingTypeId: _selectedListingTypeId,
+        photoCount:
+            _selectedListingTypeId != 1 ? _selectedPhotos.length : 0,
+      ),
+    );
+
     // Custom validation with toast messages
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();

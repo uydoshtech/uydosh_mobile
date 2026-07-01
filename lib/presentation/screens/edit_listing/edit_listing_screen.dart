@@ -2354,6 +2354,15 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Prevent multiple submissions
     if (_isSubmitting) return;
 
+    unawaited(
+      getIt<AppAnalyticsService>().logListingPublishTapped(
+        flow: "edit",
+        listingId: widget.listingDetail.id,
+        listingTypeId: _selectedListingTypeId,
+        photoCount: _selectedPhotos.length,
+      ),
+    );
+
     // Custom validation with toast messages
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();

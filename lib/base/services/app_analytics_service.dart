@@ -341,6 +341,38 @@ class AppAnalyticsService {
     return _analytics.setUserProperty(name: name, value: value);
   }
 
+  /// Compact user context for event params (not PII — backend user id + profile buckets).
+  Future<Map<String, Object>> _userContextEventParams() async {
+    final params = <String, Object>{};
+
+    final userId = await SessionManager.getBackendUserId();
+    if (userId != null) params["user_id"] = userId;
+
+    final role = await SessionManager.getUserRole();
+    if (role != null && role.isNotEmpty) params["user_role"] = role;
+
+    final authMethod = await SessionManager.getAuthMethod();
+    if (authMethod != null && authMethod.isNotEmpty) {
+      params["auth_method"] = authMethod;
+    }
+
+    final profile = await SessionManager.getCachedUserProfile();
+    if (profile != null) {
+      final gender = _genderPropertyValue(profile.gender);
+      if (gender != null) params["gender"] = gender;
+      params["is_student"] = profile.universityId != null ? "true" : "false";
+      final regionId = profile.regionId;
+      if (regionId != null) params["region_id"] = regionId;
+      params["profile_completion_pct"] = _profileCompletionBucket(profile);
+      if (profile.isVerified == true) params["is_verified"] = "true";
+      final appLanguage = await SessionManager.getAppLanguage();
+      final normalizedLang = _normalizeLanguageCode(appLanguage);
+      if (normalizedLang != null) params["app_language"] = normalizedLang;
+    }
+
+    return params;
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // Listings
   // ─────────────────────────────────────────────────────────────────────────
@@ -387,6 +419,27 @@ class AppAnalyticsService {
         if (listingTypeId != null) "listing_type_id": listingTypeId,
         if (locationId != null) "location_id": locationId,
       },
+    );
+  }
+
+  /// User tapped Publish / Create listing (before API call).
+  /// Includes compact session user context for funnel breakdowns.
+  Future<void> logListingPublishTapped({
+    required String flow,
+    int? listingTypeId,
+    int? listingId,
+    int? photoCount,
+  }) async {
+    final parameters = <String, Object>{
+      "flow": flow,
+      ...(await _userContextEventParams()),
+      if (listingTypeId != null) "listing_type_id": listingTypeId,
+      if (listingId != null) "listing_id": listingId,
+      if (photoCount != null) "photo_count": photoCount,
+    };
+    await _analytics.logEvent(
+      name: "listing_publish_tapped",
+      parameters: parameters,
     );
   }
 
