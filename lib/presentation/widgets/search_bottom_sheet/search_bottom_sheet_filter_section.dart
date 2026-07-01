@@ -14,7 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
 
-/// Primary filters: listing type and gender pickers.
+/// Primary filters: gender and listing type pickers.
 class SearchBottomSheetPrimaryFilters extends StatelessWidget {
   const SearchBottomSheetPrimaryFilters({
     required this.searchFiltersState,
@@ -32,16 +32,6 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: ListingTypePicker(
-            selectedListingTypeId: searchFiltersState.selectedListingTypeId,
-            onListingTypeChanged: onListingTypeChanged,
-            useThemeColors: true,
-            showArrows: false,
-            useGlassPlate: true,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
           child: GenderPicker(
             selectedGender: searchFiltersState.selectedGender,
             onGenderChanged: onGenderChanged,
@@ -49,6 +39,17 @@ class SearchBottomSheetPrimaryFilters extends StatelessWidget {
             showArrows: false,
             useGlassPlate: true,
             useToggleButtons: false,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ListingTypePicker(
+            selectedListingTypeId: searchFiltersState.selectedListingTypeId,
+            onListingTypeChanged: onListingTypeChanged,
+            userGender: searchFiltersState.selectedGender,
+            useThemeColors: true,
+            showArrows: false,
+            useGlassPlate: true,
           ),
         ),
       ],

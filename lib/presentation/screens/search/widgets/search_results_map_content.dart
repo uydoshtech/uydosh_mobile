@@ -25,6 +25,7 @@ class _SearchResultsMapBody extends StatelessWidget {
     required this.onSelectedMetroStationChanged,
     required this.onOpenPin,
     required this.onAllListingsViewedInCarousel,
+    required this.onListingTooltipHeightChanged,
   });
 
   final ValueListenable<_SearchMapCanvasProps> canvasListenable;
@@ -50,6 +51,7 @@ class _SearchResultsMapBody extends StatelessWidget {
   final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
   final ValueChanged<ListingMapPin> onOpenPin;
   final ValueChanged<List<ListingMapPin>> onAllListingsViewedInCarousel;
+  final ValueChanged<double> onListingTooltipHeightChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +138,8 @@ class _SearchResultsMapBody extends StatelessWidget {
                       onOpenPin: onOpenPin,
                       onAllListingsViewedInCarousel:
                           onAllListingsViewedInCarousel,
+                      onListingTooltipHeightChanged:
+                          onListingTooltipHeightChanged,
                     );
                   },
                 ),
@@ -178,7 +182,8 @@ class _SearchMapCanvas extends StatelessWidget {
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
     final zoomControlsBottom = canvas.viewToggleBottom +
         feedViewButtonHeight +
-        viewToggleGap -
+        viewToggleGap +
+        canvas.listingTooltipLift -
         safeAreaBottom;
 
     return LayoutBuilder(
@@ -202,7 +207,7 @@ class _SearchMapCanvas extends StatelessWidget {
             visitedListingIds: canvas.visitedListingIds,
             title: context.l10n.search_results,
             height: mapHeight,
-            brandMarkBottomInset: canvas.mapBottomInset,
+            brandMarkBottomInset: canvas.mapBottomInset + canvas.listingTooltipLift,
             cameraOptions: YandexMapCameraOptions(
               moveOnTargetChange: canvas.activeMapSearch &&
                   (canvas.result.pins.isNotEmpty ||
@@ -241,7 +246,9 @@ class _SearchMapCanvas extends StatelessWidget {
                   : null,
               bottom: canvas.placeViewToggleAtBottom
                   ? zoomControlsBottom.clamp(0.0, double.infinity)
-                  : null,
+                  : (canvas.listingTooltipLift > 0
+                      ? 44 + canvas.listingTooltipLift
+                      : null),
             ),
             onSelectedMetroStationChanged: onSelectedMetroStationChanged,
             onMapTap: onMapBackgroundTap,
@@ -272,6 +279,7 @@ class _SearchMapOverlays extends StatelessWidget {
     required this.onClearSelectedMetroStation,
     required this.onOpenPin,
     required this.onAllListingsViewedInCarousel,
+    required this.onListingTooltipHeightChanged,
   });
 
   final _SearchMapOverlayProps props;
@@ -289,6 +297,7 @@ class _SearchMapOverlays extends StatelessWidget {
   final VoidCallback onClearSelectedMetroStation;
   final ValueChanged<ListingMapPin> onOpenPin;
   final ValueChanged<List<ListingMapPin>> onAllListingsViewedInCarousel;
+  final ValueChanged<double> onListingTooltipHeightChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -297,12 +306,11 @@ class _SearchMapOverlays extends StatelessWidget {
     final pinGroup = overlay.selectedPinGroup;
     final universityMarker = overlay.selectedUniversityMarker;
     final metroStation = overlay.selectedMetroStation;
+    final hasListingTooltip = pin != null || pinGroup.isNotEmpty;
     final showSelectFiltersTile = !overlay.hasSearchFilters && !overlay.isLoading;
     final showNoResultsTile =
         overlay.hasSearchFilters && !overlay.isLoading && overlay.resultTotal == 0;
-    final hasTopTile = pin != null ||
-        pinGroup.isNotEmpty ||
-        universityMarker != null ||
+    final hasTopTile = universityMarker != null ||
         showNoResultsTile ||
         (metroStation != null && !showSelectFiltersTile && !showNoResultsTile);
     final appNightModeEnabled = Theme.of(context).brightness == Brightness.dark;
@@ -315,15 +323,20 @@ class _SearchMapOverlays extends StatelessWidget {
     const viewToggleHeight = 38.0;
     const viewToggleGap = 8.0;
     const locationPromptBottomMargin = 8.0;
+    const chromeShiftDuration = _SearchMapLayoutMetrics.chromeShiftDuration;
+    const chromeShiftCurve = _SearchMapLayoutMetrics.chromeShiftCurve;
     final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
+    final chromeLift = overlay.listingTooltipLift;
     final bottomOverlayInset = overlay.mapBottomInset > safeAreaBottom
         ? overlay.mapBottomInset
         : safeAreaBottom;
+    final effectiveSearchButtonBottom = overlay.searchButtonBottom + chromeLift;
+    final effectiveViewToggleBottom = overlay.viewToggleBottom + chromeLift;
     final locationPromptBottom = overlay.placeViewToggleAtBottom
-        ? overlay.searchButtonBottom
-        : bottomOverlayInset + locationPromptBottomMargin;
+        ? effectiveSearchButtonBottom
+        : bottomOverlayInset + locationPromptBottomMargin + chromeLift;
     final locationPromptHeight = overlay.placeViewToggleAtBottom
-        ? (overlay.viewToggleBottom - overlay.searchButtonBottom) +
+        ? (effectiveViewToggleBottom - effectiveSearchButtonBottom) +
             feedViewButtonHeight
         : feedViewButtonHeight;
     const mapOverlayPanelColor = Colors.white;
@@ -359,8 +372,8 @@ class _SearchMapOverlays extends StatelessWidget {
       elevation: ThemeState().isBlueTheme ? null : 8,
     );
     final userLocationButtonBottom = overlay.placeViewToggleAtBottom
-        ? overlay.viewToggleBottom
-        : bottomOverlayInset + locationPromptBottomMargin;
+        ? effectiveViewToggleBottom
+        : bottomOverlayInset + locationPromptBottomMargin + chromeLift;
     final updateUserLocationButton = SearchFloatingActionButton(
       onPressed: onUpdateUserLocation,
       iconData: Icons.my_location_rounded,
@@ -427,46 +440,28 @@ class _SearchMapOverlays extends StatelessWidget {
                           key: const ValueKey("no-map-results"),
                           label: L10n.get("no_results"),
                         )
-                      : pin != null
-                          ? _PinSummaryTooltip(
-                              key: ValueKey("pin-${pin.listingId}"),
-                              pin: pin,
-                              onClose: onClearSelectedPin,
-                              onOpen: () => onOpenPin(pin),
+                      : universityMarker != null
+                          ? UniversityMapTooltip(
+                              key: ValueKey(
+                                "university-${universityMarker.id}",
+                              ),
+                              marker: universityMarker,
+                              onClose: onClearSelectedUniversityMarker,
                             )
-                          : pinGroup.isNotEmpty
-                              ? _PinGroupSummaryTooltip(
+                          : metroStation != null &&
+                                  !showSelectFiltersTile &&
+                                  !showNoResultsTile
+                              ? MetroStationMapTooltip(
                                   key: ValueKey(
-                                    "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
+                                    "metro-station-${metroStation.id}",
                                   ),
-                                  pins: pinGroup,
-                                  onClose: onClearSelectedPin,
-                                  onOpenPin: onOpenPin,
-                                  onAllListingsViewedInCarousel:
-                                      onAllListingsViewedInCarousel,
+                                  station: metroStation,
+                                  lineColor: AppColors.getMetroLineColor(
+                                    metroStation.line,
+                                  ),
+                                  onClose: onClearSelectedMetroStation,
                                 )
-                              : universityMarker != null
-                                  ? UniversityMapTooltip(
-                                      key: ValueKey(
-                                        "university-${universityMarker.id}",
-                                      ),
-                                      marker: universityMarker,
-                                      onClose: onClearSelectedUniversityMarker,
-                                    )
-                                  : metroStation != null &&
-                                          !showSelectFiltersTile &&
-                                          !showNoResultsTile
-                                      ? MetroStationMapTooltip(
-                                          key: ValueKey(
-                                            "metro-station-${metroStation.id}",
-                                          ),
-                                          station: metroStation,
-                                          lineColor: AppColors.getMetroLineColor(
-                                            metroStation.line,
-                                          ),
-                                          onClose: onClearSelectedMetroStation,
-                                        )
-                                      : null,
+                              : null,
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
@@ -519,16 +514,51 @@ class _SearchMapOverlays extends StatelessWidget {
             ),
           ),
         ),
-        if (overlay.placeViewToggleAtBottom)
+        if (hasListingTooltip)
           Positioned(
+            left: _SearchMapLayoutMetrics.listingTooltipHorizontalInset,
+            right: _SearchMapLayoutMetrics.listingTooltipHorizontalInset,
+            bottom: bottomOverlayInset +
+                _SearchMapLayoutMetrics.listingTooltipBottomMargin,
+            child: PointerInterceptor(
+              child: _MapListingTooltipHeightReporter(
+                onHeightChanged: onListingTooltipHeightChanged,
+                child: MapTooltipFadeTransition(
+                  child: pin != null
+                      ? _PinSummaryTooltip(
+                          key: ValueKey("pin-${pin.listingId}"),
+                          pin: pin,
+                          onClose: onClearSelectedPin,
+                          onOpen: () => onOpenPin(pin),
+                        )
+                      : _PinGroupSummaryTooltip(
+                          key: ValueKey(
+                            "pin-group-${pinGroup.map((pin) => pin.listingId).join("-")}",
+                          ),
+                          pins: pinGroup,
+                          onClose: onClearSelectedPin,
+                          onOpenPin: onOpenPin,
+                          onAllListingsViewedInCarousel:
+                              onAllListingsViewedInCarousel,
+                        ),
+                ),
+              ),
+            ),
+          ),
+        if (overlay.placeViewToggleAtBottom)
+          AnimatedPositioned(
+            duration: chromeShiftDuration,
+            curve: chromeShiftCurve,
             right: 16,
-            bottom: overlay.viewToggleBottom,
+            bottom: effectiveViewToggleBottom,
             child: PointerInterceptor(child: feedViewButton),
           ),
         if (overlay.placeViewToggleAtBottom && overlay.hasEmbeddedSearch)
-          Positioned(
+          AnimatedPositioned(
+            duration: chromeShiftDuration,
+            curve: chromeShiftCurve,
             right: 16,
-            bottom: overlay.searchButtonBottom,
+            bottom: effectiveSearchButtonBottom,
             child: PointerInterceptor(
               child: SearchFloatingActionButton(
                 onPressed: onOpenEmbeddedSearch,
@@ -545,13 +575,17 @@ class _SearchMapOverlays extends StatelessWidget {
             ),
           ),
         if (overlay.showUserLocationButton)
-          Positioned(
+          AnimatedPositioned(
+            duration: chromeShiftDuration,
+            curve: chromeShiftCurve,
             left: 16,
             bottom: userLocationButtonBottom,
             child: PointerInterceptor(child: updateUserLocationButton),
           ),
         if (overlay.showLocationPrompt)
-          Positioned(
+          AnimatedPositioned(
+            duration: chromeShiftDuration,
+            curve: chromeShiftCurve,
             left: 12,
             width: MediaQuery.sizeOf(context).width * 0.75,
             bottom: locationPromptBottom,

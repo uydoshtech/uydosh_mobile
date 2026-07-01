@@ -122,8 +122,8 @@ class _EditListingScreenState extends State<EditListingScreen>
 
   static const List<int> _listingTypePickerOrder = [
     ListingTypeIds.roommateNeeded,
-    ListingTypeIds.groupForming,
     ListingTypeIds.roomNeeded,
+    ListingTypeIds.groupForming,
   ];
 
   final List<SubwayStation> _selectedSearchStations = [];

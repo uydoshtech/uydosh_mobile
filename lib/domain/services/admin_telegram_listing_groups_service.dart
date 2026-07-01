@@ -1,8 +1,8 @@
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/domain/models/listing.dart";
-import "package:uy_dosh/domain/models/pageable_response.dart";
 
 /// How a scraped (Telegram-ingested) listing was attributed to a poster.
 enum TelegramListingGroupType {
@@ -171,12 +171,30 @@ abstract class IAdminTelegramListingGroupsService {
   });
 
   /// GET `/admin/telegram/listing-groups/listings` — listings within one group.
-  Future<PageableResponse<Listing>> getGroupListings({
+  Future<TelegramGroupListingsPage> getGroupListings({
     required TelegramListingGroupType groupType,
     required String groupValue,
     int page = 1,
     int limit = 20,
   });
+}
+
+class TelegramGroupListingsPage {
+  TelegramGroupListingsPage({
+    required this.listings,
+    required this.duplicateHints,
+    required this.total,
+    required this.page,
+    required this.limit,
+    required this.totalPages,
+  });
+
+  final List<Listing> listings;
+  final Map<int, ListingDuplicateHint?> duplicateHints;
+  final int total;
+  final int page;
+  final int limit;
+  final int totalPages;
 }
 
 class AdminTelegramListingGroupsService
@@ -209,7 +227,7 @@ class AdminTelegramListingGroupsService
   }
 
   @override
-  Future<PageableResponse<Listing>> getGroupListings({
+  Future<TelegramGroupListingsPage> getGroupListings({
     required TelegramListingGroupType groupType,
     required String groupValue,
     int page = 1,
@@ -231,12 +249,18 @@ class AdminTelegramListingGroupsService
         throw Exception("Unexpected listing-group listings response");
       }
       final rawList = response["listings"] as List<dynamic>? ?? [];
-      final listings = rawList
-          .whereType<Map<String, dynamic>>()
-          .map(Listing.fromJson)
-          .toList();
-      return PageableResponse<Listing>(
-        data: listings,
+      final listings = <Listing>[];
+      final duplicateHints = <int, ListingDuplicateHint?>{};
+      for (final raw in rawList.whereType<Map<String, dynamic>>()) {
+        final listing = Listing.fromJson(raw);
+        listings.add(listing);
+        duplicateHints[listing.id] = ListingDuplicateHint.tryParse(
+          raw["duplicateHint"] ?? raw["duplicate_hint"],
+        );
+      }
+      return TelegramGroupListingsPage(
+        listings: listings,
+        duplicateHints: duplicateHints,
         total: (response["total"] as num?)?.toInt() ?? listings.length,
         page: (response["page"] as num?)?.toInt() ?? page,
         limit: (response["limit"] as num?)?.toInt() ?? limit,

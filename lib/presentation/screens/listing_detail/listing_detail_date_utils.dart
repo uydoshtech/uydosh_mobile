@@ -54,4 +54,18 @@ class ListingDetailDateUtils {
     final uzDate = app_date_utils.AppDateUtils.toUzbekistanTime(date);
     return app_date_utils.AppDateUtils.formatDateWithShortMonth(context, uzDate);
   }
+
+  /// Compact publication date for listing cards (date only, no time).
+  static String? formatListingCardPublicationDate(
+    BuildContext context,
+    String? createdAt,
+  ) {
+    final date = parseCreatedAt(createdAt);
+    if (date == null) return null;
+    final uzDate = app_date_utils.AppDateUtils.toUzbekistanTime(date);
+    return app_date_utils.AppDateUtils.formatListingPublicationDate(
+      context,
+      uzDate,
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -41,6 +42,7 @@ class PendingModerationListing {
     this.userName,
     this.userAvatarUrl,
     this.listingTypeLabel,
+    this.duplicateHint,
   });
 
   factory PendingModerationListing.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,9 @@ class PendingModerationListing {
       userName: name,
       userAvatarUrl: avatarUrl,
       listingTypeLabel: typeLabel,
+      duplicateHint: ListingDuplicateHint.tryParse(
+        json["duplicateHint"] ?? json["duplicate_hint"],
+      ),
     );
   }
 
@@ -88,6 +93,7 @@ class PendingModerationListing {
   final String? userName;
   final String? userAvatarUrl;
   final String? listingTypeLabel;
+  final ListingDuplicateHint? duplicateHint;
 }
 
 class PendingModerationQueueResponse {

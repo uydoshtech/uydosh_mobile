@@ -9,6 +9,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
+import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_parser_review_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
@@ -17,6 +18,7 @@ import "package:uy_dosh/domain/services/subway_station_service.dart";
 import "package:uy_dosh/presentation/blocs/listing_detail_bloc.dart";
 import "package:uy_dosh/presentation/blocs/locations_bloc.dart";
 import "package:uy_dosh/presentation/blocs/subway_stations_bloc.dart";
+import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dart";
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
@@ -317,6 +319,13 @@ class _AdminListingParserReviewScreenState
 
   Future<void> _approve() async {
     if (_busy) return;
+
+    final confirmed = await confirmListingApproveWithDuplicateHint(
+      context: context,
+      duplicateHint: _bundle?.duplicateHint,
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _busy = true);
     try {
       await _moderationService.approveListing(widget.listingId);
@@ -504,6 +513,10 @@ class _AdminListingParserReviewScreenState
                 _buildRawSourceCard(context, bundle),
                 const SizedBox(height: 12),
                 _buildContactTelegramCard(context),
+                if (bundle.duplicateHint != null) ...[
+                  const SizedBox(height: 12),
+                  _buildDuplicateHintBanner(context, bundle.duplicateHint!),
+                ],
                 const SizedBox(height: 16),
                 _buildSectionTitle(
                   context,
@@ -998,6 +1011,49 @@ class _AdminListingParserReviewScreenState
                   style: TextStyle(fontSize: 13, color: textColor),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDuplicateHintBanner(
+    BuildContext context,
+    ListingDuplicateHint hint,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final bg = hint.isHigh
+        ? scheme.errorContainer.withValues(alpha: 0.35)
+        : scheme.tertiaryContainer.withValues(alpha: 0.35);
+    return ThreeDElevatedSurface(
+      baseColor: bg,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ThemeIcon(
+              Icons.content_copy_outlined,
+              color: hint.isHigh ? scheme.error : scheme.tertiary,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                L10n.getWithParams(
+                  "admin_parser_review_duplicate_banner",
+                  params: {
+                    "id": "${hint.matchedListingId}",
+                    "fields": hint.matchedFieldsLabel(),
+                  },
+                ),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
           ],
         ),
       ),

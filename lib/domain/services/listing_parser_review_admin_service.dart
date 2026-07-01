@@ -2,6 +2,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
+import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 
 /// One field-level difference between the frozen parser output and the
 /// human-approved listing (mirrors `listing_correction_diffs`).
@@ -107,6 +108,7 @@ class ParserReviewBundle {
     this.parserSnapshot,
     this.latestHumanCorrected,
     this.latestApproved,
+    this.duplicateHint,
   });
 
   factory ParserReviewBundle.fromJson(Map<String, dynamic> json) {
@@ -129,6 +131,9 @@ class ParserReviewBundle {
       latestHumanCorrected: humanJson,
       latestApproved: approvedJson,
       correctionDiffs: diffs,
+      duplicateHint: ListingDuplicateHint.tryParse(
+        json["duplicateHint"] ?? json["duplicate_hint"],
+      ),
     );
   }
 
@@ -138,6 +143,7 @@ class ParserReviewBundle {
   final Map<String, dynamic>? latestHumanCorrected;
   final Map<String, dynamic>? latestApproved;
   final List<ParserCorrectionDiff> correctionDiffs;
+  final ListingDuplicateHint? duplicateHint;
 
   bool get hasParserData => parserSnapshot != null;
 

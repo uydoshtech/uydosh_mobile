@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 class AppDateUtils {
   /// Convert an absolute timestamp to Uzbekistan local time (Asia/Tashkent).
@@ -51,6 +52,82 @@ class AppDateUtils {
     final localizedMonth = L10n.get(monthKeys[dateTime.month - 1]);
 
     return "${dateTime.day.toString().padLeft(2, '0')} $localizedMonth ${dateTime.year} • ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+  }
+
+  /// Listing card publication date: "July 1, 2026" / "1 Июля 2026" /
+  /// "1-iyul, 2026" depending on the active app language.
+  static String formatListingPublicationDate(
+    BuildContext context,
+    DateTime dateTime,
+  ) {
+    final language = LanguageState().currentLanguage;
+    switch (language) {
+      case "ru":
+        try {
+          return _capitalizeMonthToken(
+            DateFormat("d MMMM yyyy", "ru").format(dateTime),
+          );
+        } catch (_) {
+          return _formatListingPublicationDateFallback(dateTime);
+        }
+      case "uz":
+        return _formatUzbekListingPublicationDate(dateTime);
+      case "en":
+      default:
+        try {
+          return DateFormat("MMMM d, yyyy", "en").format(dateTime);
+        } catch (_) {
+          return _formatListingPublicationDateFallback(dateTime);
+        }
+    }
+  }
+
+  static String _formatUzbekListingPublicationDate(DateTime dateTime) {
+    const monthKeys = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ];
+    final month = L10n.get(monthKeys[dateTime.month - 1]).toLowerCase();
+    return "${dateTime.day}-$month, ${dateTime.year}";
+  }
+
+  static String _formatListingPublicationDateFallback(DateTime dateTime) {
+    const monthKeys = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ];
+    final month = L10n.get(monthKeys[dateTime.month - 1]);
+    return "${dateTime.day} $month ${dateTime.year}";
+  }
+
+  static String _capitalizeMonthToken(String dateText) {
+    final parts = dateText.split(" ");
+    if (parts.length < 2 || parts[1].isEmpty) {
+      return dateText;
+    }
+    final month = parts[1];
+    parts[1] = "${month.substring(0, 1).toUpperCase()}${month.substring(1)}";
+    return parts.join(" ");
   }
 
   /// Format date in the format: "DD MONTH YYYY"

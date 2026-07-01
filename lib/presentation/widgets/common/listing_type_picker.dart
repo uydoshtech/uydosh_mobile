@@ -65,8 +65,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
 
   static const _baseListingTypeOptions = [
     ListingTypeIds.roommateNeeded,
-    ListingTypeIds.groupForming,
     ListingTypeIds.roomNeeded,
+    ListingTypeIds.groupForming,
   ];
 
   List<int> get _listingTypeOptions => widget.includeUnselected

@@ -1,5 +1,44 @@
 part of "../search_results_map_screen.dart";
 
+class _SearchMapLayoutMetrics {
+  const _SearchMapLayoutMetrics._();
+
+  static const double listingTooltipGap = 8.0;
+  static const double listingTooltipBottomMargin = 10.0;
+  static const double listingTooltipHorizontalInset = 12.0;
+  static const double singlePinTooltipFallbackHeight = 124.0;
+  static const double pinGroupTooltipFallbackHeight = 172.0;
+  static const double embeddedSearchAboveShellInset = 55.0;
+  static const double standaloneLocationBottomMargin = 8.0;
+  static const Duration chromeShiftDuration = Duration(milliseconds: 220);
+  static const Curve chromeShiftCurve = Curves.easeOutCubic;
+}
+
+double _listingTooltipLiftFor({
+  required ListingMapPin? selectedPin,
+  required List<ListingMapPin> selectedPinGroup,
+  required double measuredHeight,
+  required bool placeViewToggleAtBottom,
+}) {
+  final hasListingTooltip =
+      selectedPin != null || selectedPinGroup.isNotEmpty;
+  if (!hasListingTooltip) return 0;
+  final fallback = selectedPinGroup.length > 1
+      ? _SearchMapLayoutMetrics.pinGroupTooltipFallbackHeight
+      : _SearchMapLayoutMetrics.singlePinTooltipFallbackHeight;
+  final tooltipBlockHeight = (measuredHeight > 0 ? measuredHeight : fallback) +
+      _SearchMapLayoutMetrics.listingTooltipGap +
+      _SearchMapLayoutMetrics.listingTooltipBottomMargin;
+  if (placeViewToggleAtBottom) {
+    return (tooltipBlockHeight -
+            _SearchMapLayoutMetrics.embeddedSearchAboveShellInset)
+        .clamp(0.0, double.infinity);
+  }
+  return (tooltipBlockHeight -
+          _SearchMapLayoutMetrics.standaloneLocationBottomMargin)
+      .clamp(0.0, double.infinity);
+}
+
 class _SearchMapResult {
   const _SearchMapResult({
     required this.pins,
@@ -62,6 +101,7 @@ class _SearchMapCanvasProps {
     required this.mapBottomInset,
     required this.viewToggleBottom,
     required this.searchButtonBottom,
+    required this.listingTooltipLift,
   });
 
   final _SearchMapResult result;
@@ -91,6 +131,7 @@ class _SearchMapCanvasProps {
   final double mapBottomInset;
   final double viewToggleBottom;
   final double searchButtonBottom;
+  final double listingTooltipLift;
 
   bool get activeMapSearch => showFilterRibbon && hasSearchFilters;
 
@@ -124,7 +165,8 @@ class _SearchMapCanvasProps {
             placeViewToggleAtBottom == other.placeViewToggleAtBottom &&
             mapBottomInset == other.mapBottomInset &&
             viewToggleBottom == other.viewToggleBottom &&
-            searchButtonBottom == other.searchButtonBottom;
+            searchButtonBottom == other.searchButtonBottom &&
+            listingTooltipLift == other.listingTooltipLift;
   }
 
   @override
@@ -156,6 +198,7 @@ class _SearchMapCanvasProps {
         mapBottomInset,
         viewToggleBottom,
         searchButtonBottom,
+        listingTooltipLift,
       ]);
 }
 
@@ -194,6 +237,7 @@ class _SearchMapOverlayProps {
     required this.searchButtonBottom,
     required this.viewToggleBottom,
     required this.hasEmbeddedSearch,
+    required this.listingTooltipLift,
   });
 
   final bool isLoading;
@@ -227,6 +271,7 @@ class _SearchMapOverlayProps {
   final double searchButtonBottom;
   final double viewToggleBottom;
   final bool hasEmbeddedSearch;
+  final double listingTooltipLift;
 
   @override
   bool operator ==(Object other) {
@@ -262,7 +307,8 @@ class _SearchMapOverlayProps {
             mapBottomInset == other.mapBottomInset &&
             searchButtonBottom == other.searchButtonBottom &&
             viewToggleBottom == other.viewToggleBottom &&
-            hasEmbeddedSearch == other.hasEmbeddedSearch;
+            hasEmbeddedSearch == other.hasEmbeddedSearch &&
+            listingTooltipLift == other.listingTooltipLift;
   }
 
   @override
@@ -298,6 +344,7 @@ class _SearchMapOverlayProps {
         searchButtonBottom,
         viewToggleBottom,
         hasEmbeddedSearch,
+        listingTooltipLift,
       ]);
 }
 

@@ -794,3 +794,42 @@ class _PinSummaryPhoto extends StatelessWidget {
     );
   }
 }
+
+class _MapListingTooltipHeightReporter extends SingleChildRenderObjectWidget {
+  const _MapListingTooltipHeightReporter({
+    required this.onHeightChanged,
+    required super.child,
+  });
+
+  final ValueChanged<double> onHeightChanged;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _MapListingTooltipHeightReporterRenderObject(onHeightChanged);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _MapListingTooltipHeightReporterRenderObject renderObject,
+  ) {
+    renderObject.onHeightChanged = onHeightChanged;
+  }
+}
+
+class _MapListingTooltipHeightReporterRenderObject extends RenderProxyBox {
+  _MapListingTooltipHeightReporterRenderObject(this.onHeightChanged);
+
+  ValueChanged<double> onHeightChanged;
+  Size? _oldSize;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final newSize = child?.size ?? Size.zero;
+    if (_oldSize == newSize) return;
+    _oldSize = newSize;
+    if (newSize.height > 0) {
+      onHeightChanged(newSize.height);
+    }
+  }
+}

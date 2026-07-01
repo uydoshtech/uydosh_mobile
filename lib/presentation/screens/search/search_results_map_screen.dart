@@ -4,6 +4,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "package:flutter/foundation.dart" show ValueListenable, ValueNotifier;
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
+import "package:flutter/rendering.dart";
 import "package:geolocator/geolocator.dart" as geo;
 import "package:permission_handler/permission_handler.dart";
 import "package:pointer_interceptor/pointer_interceptor.dart";
@@ -213,6 +214,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   int _userLocationLoadGeneration = 0;
   double? _userLocationLatitude;
   double? _userLocationLongitude;
+  double _listingTooltipHeight = 0;
 
   late int _listingTypeId;
   List<int>? _listingTypeIds;
@@ -342,6 +344,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   _SearchMapCanvasProps _buildCanvasProps() {
     final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
+    final listingTooltipLift = _listingTooltipLiftFor(
+      selectedPin: _selectedPin,
+      selectedPinGroup: _selectedPinGroup,
+      measuredHeight: _listingTooltipHeight,
+      placeViewToggleAtBottom: widget.embedded,
+    );
     return _SearchMapCanvasProps(
       result: result,
       hasSearchFilters: _hasMapSearchFilters,
@@ -371,11 +379,18 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       searchButtonBottom: widget.embeddedSearchButtonBottom,
+      listingTooltipLift: listingTooltipLift,
     );
   }
 
   _SearchMapOverlayProps _buildOverlayProps() {
     final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
+    final listingTooltipLift = _listingTooltipLiftFor(
+      selectedPin: _selectedPin,
+      selectedPinGroup: _selectedPinGroup,
+      measuredHeight: _listingTooltipHeight,
+      placeViewToggleAtBottom: widget.embedded,
+    );
     return _SearchMapOverlayProps(
       isLoading: _isLoading,
       hasSearchFilters: _hasMapSearchFilters,
@@ -408,6 +423,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       searchButtonBottom: widget.embeddedSearchButtonBottom,
       viewToggleBottom: widget.embeddedViewToggleBottom,
       hasEmbeddedSearch: widget.onOpenEmbeddedSearch != null,
+      listingTooltipLift: listingTooltipLift,
     );
   }
 
@@ -1422,6 +1438,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onSelectUniversityMarker: _onSelectUniversityMarker,
       onOpenPin: _onOpenPin,
       onAllListingsViewedInCarousel: _onAllListingsViewedInCarousel,
+      onListingTooltipHeightChanged: _handleListingTooltipHeightChanged,
     );
   }
 
@@ -1481,10 +1498,17 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _handleClearSelectedMetroStation();
   }
 
+  void _handleListingTooltipHeightChanged(double height) {
+    if ((_listingTooltipHeight - height).abs() < 0.5) return;
+    _listingTooltipHeight = height;
+    _syncAllMapProps();
+  }
+
   void _handleClearSelectedPin() {
     _selectedPin = null;
     _selectedPinGroup = const [];
     _selectedListingGroupIds = const [];
+    _listingTooltipHeight = 0;
     _syncCanvasProps();
     _syncOverlayProps();
   }

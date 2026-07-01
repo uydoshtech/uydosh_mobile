@@ -4,6 +4,7 @@ import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
+import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
 import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
@@ -12,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminTelegramListingGroupDetailScreen extends StatefulWidget {
@@ -36,6 +38,7 @@ class AdminTelegramListingGroupDetailScreen extends StatefulWidget {
 class _AdminTelegramListingGroupDetailScreenState
     extends State<AdminTelegramListingGroupDetailScreen> {
   final List<Listing> _listings = [];
+  final Map<int, ListingDuplicateHint?> _duplicateHints = {};
   final Set<int> _listingIds = {};
   final ScrollController _scrollController = ScrollController();
 
@@ -94,10 +97,15 @@ class _AdminTelegramListingGroupDetailScreenState
       );
 
       setStateIfMounted(() {
-        final newItems =
-            response.data.where((item) => _listingIds.add(item.id)).toList();
+        final newItems = response.listings
+            .where((item) => _listingIds.add(item.id))
+            .toList();
         _listings.addAll(newItems);
-        _hasMore = newItems.isNotEmpty && response.data.length >= _pageSize;
+        for (final item in newItems) {
+          _duplicateHints[item.id] = response.duplicateHints[item.id];
+        }
+        _hasMore =
+            newItems.isNotEmpty && response.listings.length >= _pageSize;
         if (_hasMore) {
           _pageNumber += 1;
         }
@@ -120,6 +128,7 @@ class _AdminTelegramListingGroupDetailScreenState
     _hasMore = true;
     _listings.clear();
     _listingIds.clear();
+    _duplicateHints.clear();
     await _fetchListings();
   }
 
@@ -178,7 +187,23 @@ class _AdminTelegramListingGroupDetailScreenState
         final entry = feedEntries[index];
         final listing = entry.listing;
         if (listing != null) {
-          return ListingTile(key: ValueKey(listing.id), listing: listing);
+          final hint = _duplicateHints[listing.id];
+          if (hint == null) {
+            return ListingTile(key: ValueKey(listing.id), listing: listing);
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: listingDuplicateHintBadge(context, hint),
+                ),
+              ),
+              ListingTile(key: ValueKey(listing.id), listing: listing),
+            ],
+          );
         }
         final day = entry.day!;
         return DateHeaderWidget(
