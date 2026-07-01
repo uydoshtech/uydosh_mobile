@@ -2015,7 +2015,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get admin_listing_moderation_summary_today => 'Сегодня';
 
   @override
-  String get admin_listing_moderation_summary_oldest => 'Дольше всего';
+  String get admin_listing_moderation_summary_oldest => 'Старше';
 
   @override
   String get admin_listing_moderation_days_short => 'дн.';

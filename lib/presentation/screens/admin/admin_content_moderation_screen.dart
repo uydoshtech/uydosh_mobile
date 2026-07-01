@@ -9,6 +9,7 @@ import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
+import "package:uy_dosh/base/config/client_property_feature_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -62,6 +63,8 @@ class _AdminContentModerationScreenState
   bool _isSavingModerationQueue = false;
   bool _phoneSignInEnabled = false;
   bool _isSavingPhoneSignIn = false;
+  bool _propertyNavEnabled = true;
+  bool _isSavingPropertyNav = false;
   bool _homeStartsWithMap = true;
   bool _isSavingHomeStartView = false;
   bool _mapDefaultShowDistricts = true;
@@ -122,6 +125,16 @@ class _AdminContentModerationScreenState
       } catch (e) {
         logger.d(
           "Phone sign-in enabled setting skipped (is the API updated?): $e",
+        );
+      }
+      var propertyNavEnabled = true;
+      try {
+        final propertyNavRes =
+            await _settingsService.getPropertyNavEnabledSetting();
+        propertyNavEnabled = propertyNavRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Property nav enabled setting skipped (is the API updated?): $e",
         );
       }
       var homeStartsWithMap = true;
@@ -189,6 +202,7 @@ class _AdminContentModerationScreenState
         _listingContactsVisible = contactsRes.visible;
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
         _phoneSignInEnabled = phoneSignInEnabled;
+        _propertyNavEnabled = propertyNavEnabled;
         _homeStartsWithMap = homeStartsWithMap;
         _mapDefaultShowDistricts = mapDefaultShowDistricts;
         _mapDefaultShowMetro = mapDefaultShowMetro;
@@ -208,6 +222,7 @@ class _AdminContentModerationScreenState
         visible: _listingContactsVisible,
       );
       ClientPhoneSignInConfig.applyEnabled(enabled: phoneSignInEnabled);
+      ClientPropertyFeatureConfig.applyEnabled(enabled: propertyNavEnabled);
       ClientHomeStartViewConfig.applyView(
         homeStartsWithMap
             ? ClientHomeStartViewConfig.mapView
@@ -398,6 +413,26 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingPhoneSignIn = false);
+    }
+  }
+
+  Future<void> _onPropertyNavEnabledChanged(bool value) async {
+    if (_isSavingPropertyNav) return;
+    setState(() => _isSavingPropertyNav = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setPropertyNavEnabled(enabled: value);
+      setStateIfMounted(() {
+        _propertyNavEnabled = res.enabled;
+      });
+      ClientPropertyFeatureConfig.applyEnabled(enabled: res.enabled);
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingPropertyNav = false);
     }
   }
 
@@ -657,6 +692,7 @@ class _AdminContentModerationScreenState
             ),
             _homeStartViewTile(context),
             _phoneSignInTile(context),
+            _propertyNavTile(context),
           ],
         ),
         const SizedBox(height: 16),
@@ -932,6 +968,25 @@ class _AdminContentModerationScreenState
         value: _phoneSignInEnabled,
         enabled: !_isSavingPhoneSignIn,
         onChanged: _onPhoneSignInEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _propertyNavTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.apartment_outlined,
+        _isSavingPropertyNav,
+      ),
+      title: Text(L10n.get("admin_app_setting_property_nav_enabled_title")),
+      subtitle: Text(
+        L10n.get("admin_app_setting_property_nav_enabled_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _propertyNavEnabled,
+        enabled: !_isSavingPropertyNav,
+        onChanged: _onPropertyNavEnabledChanged,
       ),
     );
   }

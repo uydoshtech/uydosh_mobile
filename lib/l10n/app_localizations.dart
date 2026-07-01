@@ -3757,7 +3757,7 @@ abstract class AppLocalizations {
   /// No description provided for @admin_listing_moderation_summary_oldest.
   ///
   /// In en, this message translates to:
-  /// **'Longest wait'**
+  /// **'Older'**
   String get admin_listing_moderation_summary_oldest;
 
   /// No description provided for @admin_listing_moderation_days_short.

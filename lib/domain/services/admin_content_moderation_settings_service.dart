@@ -212,8 +212,29 @@ class PhoneSignInEnabledResponse {
   final bool enabled;
 }
 
+class PropertyNavEnabledResponse {
+  PropertyNavEnabledResponse({required this.enabled});
+
+  factory PropertyNavEnabledResponse.fromJson(Map<String, dynamic> json) {
+    return PropertyNavEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: true),
+    );
+  }
+
+  final bool enabled;
+}
+
 class _PatchPhoneSignInEnabledRequest implements IJsonEncodable {
   _PatchPhoneSignInEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
+class _PatchPropertyNavEnabledRequest implements IJsonEncodable {
+  _PatchPropertyNavEnabledRequest({required this.enabled});
 
   final bool enabled;
 
@@ -400,6 +421,12 @@ abstract class IAdminContentModerationSettingsService {
   Future<PhoneSignInEnabledResponse> getPhoneSignInEnabledSetting();
 
   Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
+    required bool enabled,
+  });
+
+  Future<PropertyNavEnabledResponse> getPropertyNavEnabledSetting();
+
+  Future<PropertyNavEnabledResponse> setPropertyNavEnabled({
     required bool enabled,
   });
 
@@ -790,6 +817,49 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating phone sign-in enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PropertyNavEnabledResponse> getPropertyNavEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/property-nav-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return PropertyNavEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from property nav setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading property nav enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PropertyNavEnabledResponse> setPropertyNavEnabled({
+    required bool enabled,
+  }) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/property-nav-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchPropertyNavEnabledRequest(enabled: enabled),
+      );
+      return PropertyNavEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from property nav setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating property nav enabled setting: $e");
       rethrow;
     }
   }

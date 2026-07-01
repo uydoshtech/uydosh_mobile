@@ -4,6 +4,7 @@ import "package:curved_navigation_bar/curved_navigation_bar.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart" show AppColors;
+import "package:uy_dosh/base/config/client_property_feature_config.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -90,6 +91,8 @@ class MainNavigationState extends State<MainNavigation>
 
   late final VoidCallback _authStateListener;
   late final VoidCallback _unreadMessagesListener;
+  late final VoidCallback _propertyFeatureListener;
+  bool? _lastPropertyFeatureEnabled;
 
   void _scheduleMaybeShowNotificationsBellTutorial() {
     if (!mounted) return;
@@ -108,6 +111,12 @@ class MainNavigationState extends State<MainNavigation>
       _currentIndex = requestedIndex.clamp(0, MainShellTab.maxTabIndex);
     }
     getIt<IPushNotificationService>().markNavigationShellReady();
+
+    _lastPropertyFeatureEnabled =
+        ClientPropertyFeatureConfig.propertyFeatureEnabled.value;
+    _propertyFeatureListener = _onPropertyFeatureEnabledChanged;
+    ClientPropertyFeatureConfig.propertyFeatureEnabled
+        .addListener(_propertyFeatureListener);
 
     // Handle deep link and push notification tap from cold start
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -217,6 +226,8 @@ class MainNavigationState extends State<MainNavigation>
     getIt<IPushNotificationService>().markNavigationShellNotReady();
     AuthenticationState().removeListener(_authStateListener);
     UnreadMessagesState().removeListener(_unreadMessagesListener);
+    ClientPropertyFeatureConfig.propertyFeatureEnabled
+        .removeListener(_propertyFeatureListener);
     ActiveSearchAlertsState().removeListener(
       _maybeShowNotificationsBellTutorial,
     );
@@ -224,6 +235,31 @@ class MainNavigationState extends State<MainNavigation>
     routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _onPropertyFeatureEnabledChanged() {
+    if (!mounted) return;
+    final enabled = ClientPropertyFeatureConfig.propertyFeatureEnabled.value;
+    final previous = _lastPropertyFeatureEnabled;
+    if (previous == null || previous == enabled) {
+      _lastPropertyFeatureEnabled = enabled;
+      return;
+    }
+    _lastPropertyFeatureEnabled = enabled;
+    setState(() {
+      if (enabled) {
+        if (_currentIndex >= 1) {
+          _currentIndex += 1;
+        }
+      } else {
+        if (_currentIndex == 1) {
+          _currentIndex = MainShellTab.housing;
+        } else if (_currentIndex > 1) {
+          _currentIndex -= 1;
+        }
+      }
+      _currentIndex = _currentIndex.clamp(0, MainShellTab.maxTabIndex);
+    });
   }
 
   void _onUnreadMessagesChanged() {
@@ -689,7 +725,7 @@ class MainNavigationState extends State<MainNavigation>
       ),
     ];
 
-    if (AppConfig.propertyFeatureEnabled) {
+    if (ClientPropertyFeatureConfig.propertyFeatureEnabled.value) {
       screens.add(
         PropertyHubScreen(
           embedded: true,
@@ -797,7 +833,7 @@ class MainNavigationState extends State<MainNavigation>
     if (_currentIndex == MainShellTab.housing) {
       return HomeListingsAppBarTitle(titleStyle: titleStyle);
     }
-    if (AppConfig.propertyFeatureEnabled &&
+    if (ClientPropertyFeatureConfig.propertyFeatureEnabled.value &&
         _currentIndex == MainShellTab.property) {
       return L10n.text("nav_property", style: titleStyle);
     }
@@ -901,7 +937,10 @@ class MainNavigationState extends State<MainNavigation>
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeState(),
+      listenable: Listenable.merge([
+        ThemeState(),
+        ClientPropertyFeatureConfig.propertyFeatureEnabled,
+      ]),
       builder: (context, _) {
         final themeState = ThemeState();
         final useLiquidGlassAppBar =
@@ -1094,7 +1133,10 @@ class MainNavigationState extends State<MainNavigation>
           },
           body: IndexedStack(index: _currentIndex, children: _getScreens()),
           bottomNavigationBar: ListenableBuilder(
-            listenable: UnreadMessagesState(),
+            listenable: Listenable.merge([
+              UnreadMessagesState(),
+              ClientPropertyFeatureConfig.propertyFeatureEnabled,
+            ]),
             builder: (context, child) {
               return CustomCurvedNavigationBar(
                 currentIndex: _currentIndex,

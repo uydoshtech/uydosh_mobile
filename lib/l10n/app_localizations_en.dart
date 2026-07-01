@@ -2007,7 +2007,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_listing_moderation_summary_today => 'New today';
 
   @override
-  String get admin_listing_moderation_summary_oldest => 'Longest wait';
+  String get admin_listing_moderation_summary_oldest => 'Older';
 
   @override
   String get admin_listing_moderation_days_short => 'd';

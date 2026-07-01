@@ -20,6 +20,7 @@ class PublicAppSettingsSnapshot {
     required this.listingContactsVisible,
     required this.listingDescriptionDictationMeterDisabled,
     required this.phoneSignInEnabled,
+    required this.propertyNavEnabled,
     required this.homeStartView,
     required this.mapDefaultShowDistricts,
     required this.mapDefaultShowMetro,
@@ -39,6 +40,10 @@ class PublicAppSettingsSnapshot {
       listingDescriptionDictationMeterDisabled: _readPublicSettingBool(
           json["listingDescriptionDictationMeterDisabled"]),
       phoneSignInEnabled: _readPublicSettingBool(json["phoneSignInEnabled"]),
+      propertyNavEnabled: _readPublicSettingBool(
+        json["propertyNavEnabled"],
+        defaultValue: true,
+      ),
       homeStartView: _readHomeStartView(json["homeStartView"]),
       mapDefaultShowDistricts: _readPublicSettingBool(
           json["mapDefaultShowDistricts"],
@@ -56,6 +61,7 @@ class PublicAppSettingsSnapshot {
   final bool listingContactsVisible;
   final bool listingDescriptionDictationMeterDisabled;
   final bool phoneSignInEnabled;
+  final bool propertyNavEnabled;
   final String homeStartView;
   final bool mapDefaultShowDistricts;
   final bool mapDefaultShowMetro;
@@ -82,6 +88,8 @@ abstract class IPublicAppSettingsService {
   Future<bool> getListingDescriptionDictationMeterDisabled();
 
   Future<bool> getPhoneSignInEnabled();
+
+  Future<bool> getPropertyNavEnabled();
 
   Future<String> getHomeStartView();
 
@@ -134,6 +142,7 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
         listingContactsVisible: false,
         listingDescriptionDictationMeterDisabled: false,
         phoneSignInEnabled: false,
+        propertyNavEnabled: true,
         homeStartView: "map",
         mapDefaultShowDistricts: true,
         mapDefaultShowMetro: true,
@@ -182,6 +191,12 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
   Future<bool> getPhoneSignInEnabled() async {
     await _ensureLoaded();
     return _cached?.phoneSignInEnabled ?? false;
+  }
+
+  @override
+  Future<bool> getPropertyNavEnabled() async {
+    await _ensureLoaded();
+    return _cached?.propertyNavEnabled ?? true;
   }
 
   @override

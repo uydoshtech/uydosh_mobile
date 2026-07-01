@@ -825,7 +825,7 @@
   "admin_listing_moderation_retry": "Retry",
   "admin_listing_moderation_summary_total": "Pending",
   "admin_listing_moderation_summary_today": "New today",
-  "admin_listing_moderation_summary_oldest": "Longest wait",
+  "admin_listing_moderation_summary_oldest": "Older",
   "admin_listing_moderation_days_short": "d",
   "admin_listing_moderation_section_list": "Awaiting review",
   "admin_listing_moderation_empty": "No listings are waiting for approval.",

@@ -817,7 +817,7 @@
   "admin_listing_moderation_retry": "Повторить",
   "admin_listing_moderation_summary_total": "В очереди",
   "admin_listing_moderation_summary_today": "Сегодня",
-  "admin_listing_moderation_summary_oldest": "Дольше всего",
+  "admin_listing_moderation_summary_oldest": "Старше",
   "admin_listing_moderation_days_short": "дн.",
   "admin_listing_moderation_section_list": "Ожидают проверки",
   "admin_listing_moderation_empty": "Нет объявлений, ожидающих одобрения.",

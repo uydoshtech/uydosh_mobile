@@ -2034,7 +2034,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get admin_listing_moderation_summary_today => 'Bugun';
 
   @override
-  String get admin_listing_moderation_summary_oldest => 'Eng uzoq';
+  String get admin_listing_moderation_summary_oldest => 'Eskiroq';
 
   @override
   String get admin_listing_moderation_days_short => 'kun';

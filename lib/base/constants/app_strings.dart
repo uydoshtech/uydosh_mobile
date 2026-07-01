@@ -1466,6 +1466,10 @@ class AppStrings {
           "Allow sign-in with phone",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "Firebase SMS sign-in in the auth wizard.",
+      "admin_app_setting_property_nav_enabled_title":
+          "Show Property tab in navigation",
+      "admin_app_setting_property_nav_enabled_subtitle":
+          "When on, the real-estate tab appears in the main bottom bar.",
       "admin_app_setting_home_start_map_title": "Start home with map",
       "admin_app_setting_home_start_map_subtitle":
           "On: open map first. Off: open feed first.",
@@ -1595,7 +1599,7 @@ class AppStrings {
       "admin_listing_moderation_retry": "Retry",
       "admin_listing_moderation_summary_total": "Pending",
       "admin_listing_moderation_summary_today": "New today",
-      "admin_listing_moderation_summary_oldest": "Longest wait",
+      "admin_listing_moderation_summary_oldest": "Older",
       "admin_listing_moderation_days_short": "d",
       "admin_listing_moderation_section_list": "Awaiting review",
       "admin_listing_moderation_empty": "No listings are waiting for approval.",
@@ -3650,6 +3654,10 @@ class AppStrings {
           "Разрешить вход по номеру телефона",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "SMS-вход через Firebase в мастере авторизации.",
+      "admin_app_setting_property_nav_enabled_title":
+          "Показывать вкладку «Недвижимость»",
+      "admin_app_setting_property_nav_enabled_subtitle":
+          "Если включено, вкладка недвижимости отображается в нижней панели.",
       "admin_app_setting_home_start_map_title": "Открывать главную с карты",
       "admin_app_setting_home_start_map_subtitle":
           "Вкл — сначала карта. Выкл — сначала лента.",
@@ -3792,7 +3800,7 @@ class AppStrings {
       "admin_listing_moderation_retry": "Повторить",
       "admin_listing_moderation_summary_total": "В очереди",
       "admin_listing_moderation_summary_today": "Сегодня",
-      "admin_listing_moderation_summary_oldest": "Дольше всего",
+      "admin_listing_moderation_summary_oldest": "Старше",
       "admin_listing_moderation_days_short": "дн.",
       "admin_listing_moderation_section_list": "Ожидают проверки",
       "admin_listing_moderation_empty": "Нет объявлений, ожидающих одобрения.",
@@ -5858,6 +5866,10 @@ class AppStrings {
           "Telefon raqami bilan kirishga ruxsat",
       "admin_app_setting_phone_sign_in_enabled_subtitle":
           "Kirish oynasida Firebase SMS orqali kirish.",
+      "admin_app_setting_property_nav_enabled_title":
+          "Navigatsiyada «Ko'chmas mulk» yorlig'ini ko'rsatish",
+      "admin_app_setting_property_nav_enabled_subtitle":
+          "Yoniq bo'lsa, ko'chmas mulk yorligi pastki panelda ko'rinadi.",
       "admin_app_setting_home_start_map_title":
           "Bosh sahifani xaritadan boshlash",
       "admin_app_setting_home_start_map_subtitle":
@@ -5994,7 +6006,7 @@ class AppStrings {
       "admin_listing_moderation_retry": "Qayta urinish",
       "admin_listing_moderation_summary_total": "Navbatda",
       "admin_listing_moderation_summary_today": "Bugun",
-      "admin_listing_moderation_summary_oldest": "Eng uzoq",
+      "admin_listing_moderation_summary_oldest": "Eskiroq",
       "admin_listing_moderation_days_short": "kun",
       "admin_listing_moderation_section_list": "Ko'rib chiqish kutilmoqda",
       "admin_listing_moderation_empty": "Tasdiq kutilayotgan e'lonlar yo'q.",

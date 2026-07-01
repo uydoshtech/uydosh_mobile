@@ -2,7 +2,8 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 
 /// Buy/sell property feed host. Embedded in [MainNavigation] tab 1 when
-/// [AppConfig.propertyFeatureEnabled] is true.
+/// Property hub tab in the main shell. Shown when
+/// [ClientPropertyFeatureConfig.propertyFeatureEnabled] is true.
 class PropertyHubScreen extends StatelessWidget {
   const PropertyHubScreen({
     super.key,

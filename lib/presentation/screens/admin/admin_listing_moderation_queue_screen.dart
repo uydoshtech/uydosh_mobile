@@ -273,6 +273,7 @@ class _AdminListingModerationQueueScreenState
         : "$oldest ${L10n.get("admin_listing_moderation_days_short")}";
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
           child: _buildSummaryCard(

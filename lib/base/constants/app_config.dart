@@ -21,9 +21,6 @@ class AppConfig {
   static const bool enableAnimations = true;
   static const bool servicesFeatureEnabled = false;
 
-  /// Real-estate buy/sell tab in the main shell bottom navigation.
-  static const bool propertyFeatureEnabled = true;
-
   /// Yandex Maps JS API key. Resolved at runtime from Firebase Remote
   /// Config (key: `yandex_maps_api_key`) so it can be rotated without
   /// shipping an app update. Falls back to
