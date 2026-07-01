@@ -929,7 +929,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settings_section_experience => 'Удобства';
 
   @override
-  String get settings_section_map => 'Карта';
+  String get settings_section_map => 'Настройки карты';
 
   @override
   String get settings_section_about => 'О приложении';

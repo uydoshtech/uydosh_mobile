@@ -1777,7 +1777,7 @@ abstract class AppLocalizations {
   /// No description provided for @settings_section_map.
   ///
   /// In en, this message translates to:
-  /// **'Map'**
+  /// **'Map settings'**
   String get settings_section_map;
 
   /// No description provided for @settings_section_about.

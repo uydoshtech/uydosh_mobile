@@ -931,7 +931,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_section_experience => 'Experience';
 
   @override
-  String get settings_section_map => 'Map';
+  String get settings_section_map => 'Map settings';
 
   @override
   String get settings_section_about => 'About';

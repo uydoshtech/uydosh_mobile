@@ -943,7 +943,7 @@ class AppLocalizationsUz extends AppLocalizations {
   String get settings_section_experience => 'Qulayliklar';
 
   @override
-  String get settings_section_map => 'Xarita';
+  String get settings_section_map => 'Xarita sozlamalari';
 
   @override
   String get settings_section_about => 'Ilova haqida';

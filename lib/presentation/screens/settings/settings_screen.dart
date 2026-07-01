@@ -293,16 +293,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
 
-            // MAP
-            _buildSectionHeader("settings_section_map"),
-            _buildSectionCard(
-              context,
-              [
-                _buildHomeStartViewToggleMenuItem(context),
-                _buildMapZoomSliderToggleMenuItem(context),
-              ],
-            ),
-
             // EXPERIENCE
             _buildSectionHeader("settings_section_experience"),
             _buildSectionCard(
@@ -314,6 +304,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildHapticFeedbackToggleMenuItem(context),
                 _buildSoundEffectsToggleMenuItem(context),
                 _buildAnimationsToggleMenuItems(context),
+              ],
+            ),
+
+            // MAP
+            _buildSectionHeader("settings_section_map"),
+            _buildSectionCard(
+              context,
+              [
+                _buildHomeStartViewToggleMenuItem(context),
+                _buildMapZoomSliderToggleMenuItem(context),
               ],
             ),
 
