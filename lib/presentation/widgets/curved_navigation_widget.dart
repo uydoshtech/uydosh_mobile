@@ -8,6 +8,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/presentation/router/main_shell_tabs.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/curved_nav_active_orb.dart";
@@ -121,8 +122,6 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
             clipBehavior: Clip.none,
             children: [
               Positioned.fill(
-                // Item count is fixed (4) post 2026-Q2 nav rework, so the
-                // package's cached `_length` no longer needs invalidation.
                 child: CurvedNavigationBar(
                   key: widget.navigationKey,
                   index: widget.currentIndex,
@@ -142,11 +141,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
                   items: items,
                 ),
               ),
-              // Tap-overlay over the trailing "+" item. The underlying
-              // [CurvedNavigationBar] item count is fixed at 4, so the create
-              // button is the right-most quarter of the bar. We capture taps
-              // here so the bar doesn't animate the orb to "+" and neither
-              // create flow is tied to a shell tab index.
+              // Tap-overlay over the trailing "+" item.
               if (widget.onCreatePressed != null)
                 Positioned(
                   right: 0,
@@ -238,39 +233,77 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     );
   }
 
-  // Build navigation items. Layout:
-  //   0 = Housing
-  //   1 = My hub while Services is hidden; Services when re-enabled
-  //   2 = Messages (auth required tab)
-  //   3 = "+" launcher (never a selected tab; overlay handles taps)
+  // Build navigation items. Layout when property is enabled:
+  //   0 = Housing, 1 = Property, 2 = My/Services, 3 = Messages, 4 = "+"
+  // When property is disabled (legacy four-slot bar):
+  //   0 = Housing, 1 = My/Services, 2 = Messages, 3 = "+"
   List<Widget> _buildNavigationItems(
     _NavPalette palette,
     ThemeState themeState,
   ) {
-    return <Widget>[
+    final items = <Widget>[
       _buildNavigationItem(
-          palette, Icons.home, "nav_housing", widget.currentIndex == 0),
+        palette,
+        Icons.home,
+        "nav_housing",
+        widget.currentIndex == MainShellTab.housing,
+      ),
+    ];
+
+    if (AppConfig.propertyFeatureEnabled) {
+      items.add(
+        _buildNavigationItem(
+          palette,
+          Icons.apartment_outlined,
+          "nav_property",
+          widget.currentIndex == MainShellTab.property,
+        ),
+      );
+    }
+
+    items.add(
       _buildNavigationItem(
         palette,
         AppConfig.servicesFeatureEnabled
             ? Icons.handyman_outlined
             : Icons.people_alt_outlined,
         AppConfig.servicesFeatureEnabled ? "menu_gigs" : "nav_my",
-        widget.currentIndex == 1,
+        widget.currentIndex == MainShellTab.myHub,
       ),
-      _buildConversationsItem(palette, themeState),
+    );
+    items.add(_buildConversationsItem(palette, themeState));
+    items.add(
       _buildNavigationItem(
         palette,
         Icons.add,
         "create_listing",
         false,
       ),
-    ];
+    );
+
+    return items;
   }
+
+  int? _shellTabIndexForBarIndex(int barIndex) {
+    if (AppConfig.propertyFeatureEnabled) {
+      return switch (barIndex) {
+        0 || 1 || 2 || 3 => barIndex,
+        _ => null,
+      };
+    }
+    return switch (barIndex) {
+      0 || 1 || 2 => barIndex,
+      _ => null,
+    };
+  }
+
+  int _messagesBarIndex() =>
+      AppConfig.propertyFeatureEnabled ? MainShellTab.messages : 2;
 
   // Build conversations item (selectable, like other navigation items)
   Widget _buildConversationsItem(_NavPalette palette, ThemeState themeState) {
-    final isSelected = widget.currentIndex == 2; // Conversations is at index 2
+    final isSelected =
+        widget.currentIndex == MainShellTab.messages;
     final unreadColor = _navUnreadIndicatorColor(themeState);
 
     final bubbleIcon = ThemeIcon(
@@ -317,27 +350,28 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }
 
   /// Handle a tap on a bar position (when not caught by the "+" overlay).
-  ///   0 = Housing, 1 = My/Services, 2 = Messages, 3 = "+" create launcher.
   void _handleNavigationTap(int barIndex, bool isAuthenticated) {
-    switch (barIndex) {
-      case 0:
-      case 1:
-        widget.onTap(barIndex);
-        return;
-      case 2:
-        if (isAuthenticated) {
-          widget.onTap(barIndex);
-        } else {
-          _launchAuthWizard(context);
-        }
-        return;
-      case 3:
-        if (isAuthenticated) {
-          widget.onCreatePressed?.call();
-        } else {
-          _launchAuthWizard(context);
-        }
-        return;
+    if (barIndex == _messagesBarIndex()) {
+      if (isAuthenticated) {
+        widget.onTap(MainShellTab.messages);
+      } else {
+        _launchAuthWizard(context);
+      }
+      return;
+    }
+
+    if (barIndex == MainShellTab.createBarIndex) {
+      if (isAuthenticated) {
+        widget.onCreatePressed?.call();
+      } else {
+        _launchAuthWizard(context);
+      }
+      return;
+    }
+
+    final shellIndex = _shellTabIndexForBarIndex(barIndex);
+    if (shellIndex != null) {
+      widget.onTap(shellIndex);
     }
   }
 

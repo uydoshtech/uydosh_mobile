@@ -32,10 +32,12 @@ import "package:uy_dosh/main.dart" show routeObserver;
 import "package:uy_dosh/presentation/router/app_router_keys.dart";
 import "package:uy_dosh/presentation/router/create_choice_sheet.dart";
 import "package:uy_dosh/presentation/router/main_navigation_widgets.dart";
+import "package:uy_dosh/presentation/router/main_shell_tabs.dart";
 import "package:uy_dosh/presentation/screens/gig/gig_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/home/home_screen.dart";
 import "package:uy_dosh/presentation/screens/messages/messages_inbox_screen.dart";
 import "package:uy_dosh/presentation/screens/my/my_hub_screen.dart";
+import "package:uy_dosh/presentation/screens/property/property_hub_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/edit_profile_screen.dart";
 import "package:uy_dosh/presentation/widgets/burger_menu_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/app_bar_profile_icon.dart";
@@ -100,10 +102,10 @@ class MainNavigationState extends State<MainNavigation>
   void initState() {
     super.initState();
     final requestedIndex = widget.initialIndex;
-    if (requestedIndex == 3) {
-      _currentIndex = 0;
+    if (MainShellTab.isLegacyCreateRouteIndex(requestedIndex)) {
+      _currentIndex = MainShellTab.housing;
     } else {
-      _currentIndex = requestedIndex.clamp(0, 2);
+      _currentIndex = requestedIndex.clamp(0, MainShellTab.maxTabIndex);
     }
     getIt<IPushNotificationService>().markNavigationShellReady();
 
@@ -112,7 +114,8 @@ class MainNavigationState extends State<MainNavigation>
       if (mounted) {
         getIt<DeepLinkService>().handlePendingLink();
         getIt<IPushNotificationService>().handlePendingNotificationTap();
-        if (requestedIndex == 3 && _isAuthenticated) {
+        if (MainShellTab.isLegacyCreateRouteIndex(requestedIndex) &&
+            _isAuthenticated) {
           context.pushCreateListing();
         }
       }
@@ -230,7 +233,7 @@ class MainNavigationState extends State<MainNavigation>
 
     // Play when unread increases and the user isn't currently on Messages tab.
     // (This is more robust than only 0 -> >0; many users already have unread.)
-    if (current > previous && _currentIndex != 2) {
+    if (current > previous && !MainShellTab.isMessagesTab(_currentIndex)) {
       final now = DateTime.now();
       final last = _lastTravelDotPlayedAt;
       // Additional global cooldown (even if multiple increments happen quickly).
@@ -318,11 +321,10 @@ class MainNavigationState extends State<MainNavigation>
         unawaited(ActiveSearchAlertsState().refresh());
       }
 
-      // Auth-gate the protected tabs. Logical indices:
-      //   0 = Housing
-      //   1 = My hub while Services is hidden; Services when re-enabled
-      //   2 = Messages (auth required)
-      if (!_isAuthenticated && mounted && _currentIndex == 2) {
+      // Auth-gate the Messages tab.
+      if (!_isAuthenticated &&
+          mounted &&
+          MainShellTab.isMessagesTab(_currentIndex)) {
         debugPrint(
           "🔐 AppRouter: User on messages screen but not authenticated, redirecting to auth wizard",
         );
@@ -673,31 +675,45 @@ class MainNavigationState extends State<MainNavigation>
   //     once, but data-heavy tabs receive a visibility flag so they can defer
   //     their initial fetch while IndexedStack keeps them mounted off-screen.
   //
-  // Logical indices: 0=Housing, 1=My/Services, 2=Messages.
+  // Logical indices when property is enabled:
+  //   0=Housing, 1=Property, 2=My/Services, 3=Messages.
   // Create flows are pushed routes via "+" / drawer, not tabs.
   // ---------------------------------------------------------------------------
 
   List<Widget> _getScreens() {
     final screens = <Widget>[
-      // Home uses the [ListingsBloc] from [AppRouter.buildMainNavigation] so
-      // the shell AppBar count and the feed stay on the same bloc instance.
       HomeScreen(
         key: _homeScreenKey,
-        isHomeTabActive: _currentIndex == 0,
+        isHomeTabActive: _currentIndex == MainShellTab.housing,
         showMapInitially: widget.showHomeMapInitially,
       ),
+    ];
+
+    if (AppConfig.propertyFeatureEnabled) {
+      screens.add(
+        PropertyHubScreen(
+          embedded: true,
+          tabVisible: _currentIndex == MainShellTab.property,
+        ),
+      );
+    }
+
+    screens.addAll([
       AppConfig.servicesFeatureEnabled
-          ? GigHubScreen(embedded: true, tabVisible: _currentIndex == 1)
+          ? GigHubScreen(
+              embedded: true,
+              tabVisible: _currentIndex == MainShellTab.myHub,
+            )
           : MyHubScreen(
               key: _myHubScreenKey,
               embedded: true,
-              tabVisible: _currentIndex == 1,
+              tabVisible: _currentIndex == MainShellTab.myHub,
             ),
       MessagesInboxScreen(
         showCustomHeader: false,
-        mainTabSelected: _currentIndex == 2,
+        mainTabSelected: MainShellTab.isMessagesTab(_currentIndex),
       ),
-    ];
+    ]);
     // IndexedStack keeps off-screen tabs mounted. Wrap each tab in TickerMode
     // so repeating animations/controllers do not burn CPU/GPU when hidden.
     return List<Widget>.generate(
@@ -725,7 +741,7 @@ class MainNavigationState extends State<MainNavigation>
   void navigateToMyHub({MyHubCategory category = MyHubCategory.groups}) {
     if (!mounted) return;
     setState(() {
-      _currentIndex = 1;
+      _currentIndex = MainShellTab.myHub;
     });
     _scheduleMaybeShowNotificationsBellTutorial();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -734,18 +750,18 @@ class MainNavigationState extends State<MainNavigation>
   }
 
   /// Method to navigate to a specific index (can be called from outside).
-  /// Index 3 is legacy: opens the housing create listing route instead of a tab.
+  /// Legacy create launcher index opens the housing create listing route.
   void navigateToIndex(int index) {
     debugPrint("🧭 MainNavigation: navigateToIndex called with index $index");
     if (!mounted) {
       debugPrint("❌ MainNavigation: Widget not mounted, navigation ignored");
       return;
     }
-    if (index == 3) {
+    if (MainShellTab.isLegacyCreateRouteIndex(index)) {
       context.pushCreateListing();
       return;
     }
-    final tabIndex = index.clamp(0, 2);
+    final tabIndex = index.clamp(0, MainShellTab.maxTabIndex);
     debugPrint(
       "🧭 MainNavigation: Setting _currentIndex from $_currentIndex to $tabIndex",
     );
@@ -778,19 +794,23 @@ class MainNavigationState extends State<MainNavigation>
           fontWeight: FontWeight.bold,
           color: Theme.of(context).colorScheme.onSurface,
         );
-    switch (_currentIndex) {
-      case 0:
-        return HomeListingsAppBarTitle(titleStyle: titleStyle);
-      case 1:
-        return L10n.text(
-          AppConfig.servicesFeatureEnabled ? "menu_gigs" : "nav_my",
-          style: titleStyle,
-        );
-      case 2:
-        return L10n.text("conversations", style: titleStyle);
-      default:
-        return const SizedBox.shrink();
+    if (_currentIndex == MainShellTab.housing) {
+      return HomeListingsAppBarTitle(titleStyle: titleStyle);
     }
+    if (AppConfig.propertyFeatureEnabled &&
+        _currentIndex == MainShellTab.property) {
+      return L10n.text("nav_property", style: titleStyle);
+    }
+    if (_currentIndex == MainShellTab.myHub) {
+      return L10n.text(
+        AppConfig.servicesFeatureEnabled ? "menu_gigs" : "nav_my",
+        style: titleStyle,
+      );
+    }
+    if (_currentIndex == MainShellTab.messages) {
+      return L10n.text("conversations", style: titleStyle);
+    }
+    return const SizedBox.shrink();
   }
 
   void _maybeShowNotificationsBellTutorial() {
@@ -799,7 +819,7 @@ class MainNavigationState extends State<MainNavigation>
     if (_notificationsBellTutorialPending) return;
     // Only show when the user is actually on the Home tab and the main
     // navigation route is the visible (top) route.
-    if (_currentIndex != 0) return;
+    if (_currentIndex != MainShellTab.housing) return;
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     if (!AuthenticationState().isAuthenticated) return;
     if (!ActiveSearchAlertsState().hasActiveEnabledAlerts) return;

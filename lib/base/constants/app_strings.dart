@@ -12,6 +12,10 @@ class AppStrings {
       // ===== NAVIGATION =====
       "home": "Listings",
       "nav_housing": "Housing",
+      "nav_property": "Property",
+      "property_hub_empty_title": "Property listings",
+      "property_hub_empty_subtitle":
+          "Browse and publish apartments, houses, and commercial property — coming soon.",
       "favorites": "Favorites",
       "add_to_favorites": "Add to favorites",
       "added_to_favorites": "Added to favorites",
@@ -2141,6 +2145,10 @@ class AppStrings {
       // ===== NAVIGATION =====
       "home": "Объявления",
       "nav_housing": "Жильё",
+      "nav_property": "Недвижимость",
+      "property_hub_empty_title": "Объявления о недвижимости",
+      "property_hub_empty_subtitle":
+          "Покупка и продажа квартир, домов и коммерции — скоро здесь.",
       "favorites": "Избранное",
       "add_to_favorites": "Добавить в избранное",
       "added_to_favorites": "Добавлено в избранное",
@@ -4320,6 +4328,10 @@ class AppStrings {
       // ===== NAVIGATION =====
       "home": "E'lonlar",
       "nav_housing": "Uy-joy",
+      "nav_property": "Ko'chmas mulk",
+      "property_hub_empty_title": "Ko'chmas mulk e'lonlari",
+      "property_hub_empty_subtitle":
+          "Kvartira, uy va tijorat mulklarini sotish va sotib olish — tez orada.",
       "favorites": "Sevimlilar",
       "add_to_favorites": "Sevimlilariga qo'shish",
       "added_to_favorites": "Sevimlilariga qo'shildi",

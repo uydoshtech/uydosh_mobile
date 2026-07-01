@@ -21,6 +21,7 @@ import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/favorite_service.dart";
 import "package:uy_dosh/domain/services/gig_service.dart";
 import "package:uy_dosh/presentation/router/app_router.dart";
+import "package:uy_dosh/presentation/router/main_shell_tabs.dart";
 import "package:uy_dosh/presentation/widgets/common/auth_required_state.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -920,7 +921,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                         // to the default Housing tab.
                         final mainState = mainNavigationKey.currentState;
                         if (mainState != null) {
-                          mainState.navigateToIndex(1);
+                          mainState.navigateToIndex(MainShellTab.myHub);
                           Navigator.of(context).popUntil(
                             (route) => route.isFirst,
                           );
@@ -928,7 +929,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute<void>(
                               builder: (_) => AppRouter.buildMainNavigation(
-                                initialIndex: 1,
+                                initialIndex: MainShellTab.myHub,
                               ),
                             ),
                           );
