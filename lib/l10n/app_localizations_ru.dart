@@ -2856,7 +2856,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get microwave => 'Микроволновка';
 
   @override
-  String get washing_machine => 'Стиральная машина';
+  String get washing_machine => 'Стиралка';
 
   @override
   String get pets => 'Домашние животные разрешены';

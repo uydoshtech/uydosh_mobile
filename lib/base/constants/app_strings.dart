@@ -4122,7 +4122,7 @@ class AppStrings {
       "air_conditioning": "Кондиционер",
       "tv": "Телевизор",
       "microwave": "Микроволновка",
-      "washing_machine": "Стиральная машина",
+      "washing_machine": "Стиралка",
       "pets": "Домашние животные разрешены",
 
       // ===== PRICING & FINANCIAL =====
