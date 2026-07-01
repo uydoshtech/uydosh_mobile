@@ -46,6 +46,7 @@ import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/state/map_settings_state.dart";
 import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
@@ -247,6 +248,7 @@ void main() async {
     // Local SharedPreferences reads — cheap, but still off the critical path.
     unawaited(TutorialState().initialize());
     unawaited(TooltipsState().initialize());
+    unawaited(MapSettingsState().initialize());
     unawaited(HapticFeedbackState().initialize());
     unawaited(SoundEffectsState().initialize());
     unawaited(AnimationSettingsState().initialize());

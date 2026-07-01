@@ -12,6 +12,7 @@ import "package:uy_dosh/base/cache/tashkent_district_boundary_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/map_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
@@ -682,9 +683,17 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
               ),
             ),
             if (widget.showBrandMark) _buildMapBrandMark(),
-            // Zoom controls (only when map is ready)
+            // Zoom controls (only when map is ready and enabled in settings)
             if (widget.showZoomControls && !kIsWeb && _isMapReady)
-              _buildZoomControls(),
+              ListenableBuilder(
+                listenable: MapSettingsState(),
+                builder: (context, _) {
+                  if (!MapSettingsState().showZoomSlider) {
+                    return const SizedBox.shrink();
+                  }
+                  return _buildZoomControls();
+                },
+              ),
           ],
         ),
       ),

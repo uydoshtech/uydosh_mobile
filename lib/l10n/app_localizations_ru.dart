@@ -929,6 +929,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get settings_section_experience => 'Удобства';
 
   @override
+  String get settings_section_map => 'Карта';
+
+  @override
   String get settings_section_about => 'О приложении';
 
   @override
@@ -1828,6 +1831,13 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get admin_app_setting_home_start_map_subtitle =>
       'Вкл — сначала карта. Выкл — сначала лента.';
+
+  @override
+  String get map_zoom_slider_toggle => 'Ползунок масштаба';
+
+  @override
+  String get map_zoom_slider_toggle_description =>
+      'Показывать вертикальный регулятор масштаба на карте';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>

@@ -815,6 +815,7 @@ class AppStrings {
       "settings_section_account": "Account",
       "settings_section_preferences": "Preferences",
       "settings_section_experience": "Experience",
+      "settings_section_map": "Map",
       "settings_section_about": "About",
       "settings_section_legal": "Legal",
       "theme": "Theme",
@@ -826,6 +827,9 @@ class AppStrings {
       "switch_theme": "Switch Theme",
       "tooltips_toggle": "Tips",
       "tooltips_toggle_description": "Show helpful hints and tooltips",
+      "map_zoom_slider_toggle": "Zoom slider",
+      "map_zoom_slider_toggle_description":
+          "Show the vertical zoom control on map views",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
@@ -2962,6 +2966,7 @@ class AppStrings {
       "settings_section_account": "Аккаунт",
       "settings_section_preferences": "Предпочтения",
       "settings_section_experience": "Удобства",
+      "settings_section_map": "Карта",
       "settings_section_about": "О приложении",
       "settings_section_legal": "Правовая информация",
       "theme": "Тема",
@@ -2973,6 +2978,9 @@ class AppStrings {
       "switch_theme": "Переключить тему",
       "tooltips_toggle": "Подсказки",
       "tooltips_toggle_description": "Показывать подсказки и тултипы",
+      "map_zoom_slider_toggle": "Ползунок масштаба",
+      "map_zoom_slider_toggle_description":
+          "Показывать вертикальный регулятор масштаба на карте",
 
       // ===== ABOUT & FEATURES =====
       "about_description":
@@ -5151,6 +5159,7 @@ class AppStrings {
       "settings_section_account": "Hisob",
       "settings_section_preferences": "Sozlamalar",
       "settings_section_experience": "Qulayliklar",
+      "settings_section_map": "Xarita",
       "settings_section_about": "Ilova haqida",
       "settings_section_legal": "Huquqiy ma'lumot",
       "theme": "Mavzu",
@@ -5163,6 +5172,9 @@ class AppStrings {
       "tooltips_toggle": "Maslahatlar",
       "tooltips_toggle_description":
           "Foydali maslahatlar va tooltiplarni ko'rsatish",
+      "map_zoom_slider_toggle": "Masshtab slayderi",
+      "map_zoom_slider_toggle_description":
+          "Xarita ko'rinishida vertikal masshtab boshqaruvini ko'rsatish",
 
       // ===== ABOUT & FEATURES =====
       "about_description":

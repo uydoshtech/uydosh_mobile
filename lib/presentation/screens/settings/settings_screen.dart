@@ -10,6 +10,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/animation_settings_state.dart";
 import "package:uy_dosh/base/state/haptic_feedback_state.dart";
 import "package:uy_dosh/base/state/home_start_view_settings_state.dart";
+import "package:uy_dosh/base/state/map_settings_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/sound_effects_state.dart";
@@ -292,13 +293,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
 
+            // MAP
+            _buildSectionHeader("settings_section_map"),
+            _buildSectionCard(
+              context,
+              [
+                _buildHomeStartViewToggleMenuItem(context),
+                _buildMapZoomSliderToggleMenuItem(context),
+              ],
+            ),
+
             // EXPERIENCE
             _buildSectionHeader("settings_section_experience"),
             _buildSectionCard(
               context,
               [
                 _buildOnboardingToggleMenuItem(context),
-                _buildHomeStartViewToggleMenuItem(context),
                 _buildTooltipsToggleMenuItem(context),
                 _buildRestoreFiltersToggleMenuItem(context),
                 _buildHapticFeedbackToggleMenuItem(context),
@@ -461,7 +471,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       listenable: HomeStartViewSettingsState(),
       builder: (context, child) {
         return UydoshToggle(
-          icon: Icons.map_outlined,
+          icon: Icons.home_outlined,
           iconColor: _getIconColor(),
           title: L10n.text(
             "admin_app_setting_home_start_map_title",
@@ -477,6 +487,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
           value: HomeStartViewSettingsState().showMapInitially,
           onChanged: (value) async {
             await HomeStartViewSettingsState().setShowMapInitially(value);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMapZoomSliderToggleMenuItem(BuildContext context) {
+    return ListenableBuilder(
+      listenable: MapSettingsState(),
+      builder: (context, child) {
+        return UydoshToggle(
+          icon: Icons.zoom_in_map_outlined,
+          iconColor: _getIconColor(),
+          title: L10n.text(
+            "map_zoom_slider_toggle",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: _getTextColor(),
+            ),
+          ),
+          subtitle: L10n.text(
+            "map_zoom_slider_toggle_description",
+            style: TextStyle(color: _getSecondaryTextColor(), fontSize: 12),
+          ),
+          value: MapSettingsState().showZoomSlider,
+          onChanged: (value) async {
+            await MapSettingsState().setShowZoomSlider(value);
           },
         );
       },

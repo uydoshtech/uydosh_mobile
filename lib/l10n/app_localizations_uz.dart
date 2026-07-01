@@ -943,6 +943,9 @@ class AppLocalizationsUz extends AppLocalizations {
   String get settings_section_experience => 'Qulayliklar';
 
   @override
+  String get settings_section_map => 'Xarita';
+
+  @override
   String get settings_section_about => 'Ilova haqida';
 
   @override
@@ -1845,6 +1848,13 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get admin_app_setting_home_start_map_subtitle =>
       'Yoniq — avval xarita. O‘chiq — avval lenta.';
+
+  @override
+  String get map_zoom_slider_toggle => 'Masshtab slayderi';
+
+  @override
+  String get map_zoom_slider_toggle_description =>
+      'Xarita ko\'rinishida vertikal masshtab boshqaruvini ko\'rsatish';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>

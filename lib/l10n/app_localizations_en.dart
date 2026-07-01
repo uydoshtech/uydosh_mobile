@@ -931,6 +931,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_section_experience => 'Experience';
 
   @override
+  String get settings_section_map => 'Map';
+
+  @override
   String get settings_section_about => 'About';
 
   @override
@@ -1820,6 +1823,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get admin_app_setting_home_start_map_subtitle =>
       'On: open map first. Off: open feed first.';
+
+  @override
+  String get map_zoom_slider_toggle => 'Zoom slider';
+
+  @override
+  String get map_zoom_slider_toggle_description =>
+      'Show the vertical zoom control on map views';
 
   @override
   String get admin_app_setting_listing_owner_conversations_title =>

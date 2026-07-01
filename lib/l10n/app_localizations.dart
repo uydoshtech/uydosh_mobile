@@ -1774,6 +1774,12 @@ abstract class AppLocalizations {
   /// **'Experience'**
   String get settings_section_experience;
 
+  /// No description provided for @settings_section_map.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get settings_section_map;
+
   /// No description provided for @settings_section_about.
   ///
   /// In en, this message translates to:
@@ -3429,6 +3435,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'On: open map first. Off: open feed first.'**
   String get admin_app_setting_home_start_map_subtitle;
+
+  /// No description provided for @map_zoom_slider_toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom slider'**
+  String get map_zoom_slider_toggle;
+
+  /// No description provided for @map_zoom_slider_toggle_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the vertical zoom control on map views'**
+  String get map_zoom_slider_toggle_description;
 
   /// No description provided for @admin_app_setting_listing_owner_conversations_title.
   ///
