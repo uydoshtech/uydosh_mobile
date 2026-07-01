@@ -1032,6 +1032,16 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
                 "🔄 About to update to: ${!loadedState.listingDetail.isActive}",
               );
 
+              final wasInactive = !loadedState.listingDetail.isActive;
+              if (wasInactive) {
+                getIt<AppAnalyticsService>().logListingPublished(
+                  listingId: listingId,
+                  source: "reactivate",
+                  listingTypeId: loadedState.listingDetail.listingTypeId,
+                  locationId: loadedState.listingDetail.locationId,
+                );
+              }
+
               // Create updated listing with toggled status
               final updatedListing = loadedState.listingDetail.copyWith(
                 isActive: !loadedState.listingDetail.isActive,

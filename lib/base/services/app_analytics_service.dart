@@ -372,6 +372,24 @@ class AppAnalyticsService {
     );
   }
 
+  /// Listing went live or was republished (create, edit, reactivate, moderation).
+  Future<void> logListingPublished({
+    required int listingId,
+    required String source,
+    int? listingTypeId,
+    int? locationId,
+  }) async {
+    await _analytics.logEvent(
+      name: "listing_published",
+      parameters: {
+        "listing_id": listingId,
+        "source": source,
+        if (listingTypeId != null) "listing_type_id": listingTypeId,
+        if (locationId != null) "location_id": locationId,
+      },
+    );
+  }
+
   Future<void> logListingEdited({required int listingId}) async {
     await _analytics.logEvent(
       name: "listing_edited",

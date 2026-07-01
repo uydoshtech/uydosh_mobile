@@ -2625,6 +2625,16 @@ class _EditListingScreenState extends State<EditListingScreen>
       // Mark home screen for refresh since we updated a listing
       HomeRefreshState().markForRefresh();
 
+      getIt<AppAnalyticsService>().logListingEdited(
+        listingId: widget.listingDetail.id,
+      );
+      getIt<AppAnalyticsService>().logListingPublished(
+        listingId: widget.listingDetail.id,
+        source: "edit",
+        listingTypeId: listingTypeId,
+        locationId: selectedLocation?.id,
+      );
+
       // Navigate back after PopScope allows pop (form still "dirty" vs baseline).
       setState(() => _allowPopWithoutConfirm = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {

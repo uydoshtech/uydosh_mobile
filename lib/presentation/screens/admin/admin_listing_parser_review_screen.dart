@@ -3,6 +3,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/cache/amenities_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -329,6 +330,10 @@ class _AdminListingParserReviewScreenState
     setState(() => _busy = true);
     try {
       await _moderationService.approveListing(widget.listingId);
+      getIt<AppAnalyticsService>().logListingPublished(
+        listingId: widget.listingId,
+        source: "admin_approve",
+      );
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
       ToastTheme.showSuccess(

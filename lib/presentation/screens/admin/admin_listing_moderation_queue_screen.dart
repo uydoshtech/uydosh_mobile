@@ -3,6 +3,7 @@ import "dart:async";
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/state/pending_listing_moderation_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -137,6 +138,10 @@ class _AdminListingModerationQueueScreenState
     setState(() => _approvingId = listing.id);
     try {
       await _service.approveListing(listing.id);
+      getIt<AppAnalyticsService>().logListingPublished(
+        listingId: listing.id,
+        source: "admin_approve",
+      );
       HapticFeedbackUtils.selectionClick();
       if (!mounted) return;
       ToastTheme.showSuccess(

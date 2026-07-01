@@ -3244,6 +3244,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         locationId: primaryLocation?.id,
         success: true,
       );
+      getIt<AppAnalyticsService>().logListingPublished(
+        listingId: createdListing.id,
+        source: "create",
+        listingTypeId: listingTypeId,
+        locationId: primaryLocation?.id,
+      );
       unawaited(getIt<AppAnalyticsService>().refreshHasActiveListingProperty());
 
       // Show success message
