@@ -5,6 +5,7 @@ import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
 import "package:uy_dosh/base/constants/app_config.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
+import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -107,58 +108,77 @@ Color _navUnreadIndicatorColor(ThemeState theme) {
 }
 
 class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
+  bool get _hideCreateAction =>
+      widget.currentIndex == MainShellTab.housing &&
+      HomeInlineSearchState().isMapViewActive;
+
   @override
   Widget build(BuildContext context) {
     final themeState = ThemeState();
     final palette = _NavPalette.fromTheme(themeState);
-    final items = _buildNavigationItems(palette, themeState);
 
-    return SizedBox(
-      height: 70.0,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final itemWidth = constraints.maxWidth / items.length;
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(
-                child: CurvedNavigationBar(
-                  key: widget.navigationKey,
-                  index: widget.currentIndex,
-                  height: 70.0,
-                  color: palette.curvedBarColor,
-                  // Active “disk” is drawn by [CurvedNavActiveOrb] on the selected item;
-                  // keep the package [Material] transparent so gradients/shadows show.
-                  buttonBackgroundColor: Colors.transparent,
-                  backgroundColor: palette.notchBackground,
-                  animationCurve: Curves.easeInOut,
-                  animationDuration: const Duration(milliseconds: 300),
-                  onTap: (index) {
-                    _handleNavigationTap(index, widget.isAuthenticated);
-                  },
-                  // Allow all index changes; authentication is enforced in _handleNavigationTap.
-                  letIndexChange: (_) => true,
-                  items: items,
-                ),
-              ),
-              // Tap-overlay over the trailing "+" item.
-              if (widget.onCreatePressed != null)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: itemWidth,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      _handleCreateTap(widget.isAuthenticated);
-                    },
+    return ListenableBuilder(
+      listenable: HomeInlineSearchState(),
+      builder: (context, _) {
+        final hideCreateAction = _hideCreateAction;
+        final items = _buildNavigationItems(
+          palette,
+          themeState,
+          hideCreateAction: hideCreateAction,
+        );
+
+        return SizedBox(
+          height: 70.0,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = constraints.maxWidth / items.length;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: CurvedNavigationBar(
+                      key: widget.navigationKey,
+                      index: widget.currentIndex,
+                      height: 70.0,
+                      color: palette.curvedBarColor,
+                      // Active “disk” is drawn by [CurvedNavActiveOrb] on the selected item;
+                      // keep the package [Material] transparent so gradients/shadows show.
+                      buttonBackgroundColor: Colors.transparent,
+                      backgroundColor: palette.notchBackground,
+                      animationCurve: Curves.easeInOut,
+                      animationDuration: const Duration(milliseconds: 300),
+                      onTap: (index) {
+                        _handleNavigationTap(
+                          index,
+                          widget.isAuthenticated,
+                          hideCreateAction: hideCreateAction,
+                        );
+                      },
+                      // Allow all index changes; authentication is enforced in _handleNavigationTap.
+                      letIndexChange: (_) => true,
+                      items: items,
+                    ),
                   ),
-                ),
-            ],
-          );
-        },
-      ),
+                  // Tap-overlay over the trailing "+" item.
+                  if (widget.onCreatePressed != null && !hideCreateAction)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: itemWidth,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _handleCreateTap(widget.isAuthenticated);
+                        },
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -239,8 +259,9 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   //   0 = Housing, 1 = My/Services, 2 = Messages, 3 = "+"
   List<Widget> _buildNavigationItems(
     _NavPalette palette,
-    ThemeState themeState,
-  ) {
+    ThemeState themeState, {
+    required bool hideCreateAction,
+  }) {
     final items = <Widget>[
       _buildNavigationItem(
         palette,
@@ -272,13 +293,18 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
       ),
     );
     items.add(_buildConversationsItem(palette, themeState));
+    final createItem = _buildNavigationItem(
+      palette,
+      Icons.add,
+      "create_listing",
+      false,
+    );
     items.add(
-      _buildNavigationItem(
-        palette,
-        Icons.add,
-        "create_listing",
-        false,
-      ),
+      hideCreateAction
+          ? IgnorePointer(
+              child: Opacity(opacity: 0, child: createItem),
+            )
+          : createItem,
     );
 
     return items;
@@ -350,7 +376,11 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
   }
 
   /// Handle a tap on a bar position (when not caught by the "+" overlay).
-  void _handleNavigationTap(int barIndex, bool isAuthenticated) {
+  void _handleNavigationTap(
+    int barIndex,
+    bool isAuthenticated, {
+    required bool hideCreateAction,
+  }) {
     if (barIndex == _messagesBarIndex()) {
       if (isAuthenticated) {
         widget.onTap(MainShellTab.messages);
@@ -361,6 +391,7 @@ class _CustomCurvedNavigationBarState extends State<CustomCurvedNavigationBar> {
     }
 
     if (barIndex == MainShellTab.createBarIndex) {
+      if (hideCreateAction) return;
       if (isAuthenticated) {
         widget.onCreatePressed?.call();
       } else {

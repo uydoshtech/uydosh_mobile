@@ -1446,6 +1446,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _showUniversitiesLayer = !_showUniversitiesLayer;
     if (!_showUniversitiesLayer) {
       _selectedUniversityMarker = null;
+    } else if (_universityMarkers.isEmpty) {
+      unawaited(_loadUniversityMarkers());
     }
     _syncAllMapProps();
   }

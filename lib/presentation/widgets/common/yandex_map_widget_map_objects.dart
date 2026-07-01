@@ -107,8 +107,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       widget.selectedUniversityMarkerId,
       widget.selectedMetroStationId,
       widget.userUniversityMarkerId,
+      _universityMapLayerEpoch,
     ]);
   }
+
+  String get _universityMapLayerScope => "university_l$_universityMapLayerEpoch";
 
   int _pinGroupCacheKey(_ListingPinGroup group) {
     // Same-coordinate listings are intentionally represented as one composite
@@ -1022,12 +1025,12 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
             longitude: marker.longitude,
           ),
           mapObjectId:
-              "university_${marker.id}_walking_radius_${widget.walkRadiusMinutes}",
+              "${_universityMapLayerScope}_${marker.id}_walking_radius_${widget.walkRadiusMinutes}",
         ),
         if (_isWalkAreaLabelVisibleAtCurrentZoom)
           if (_createWalkAreaRadiusLabel(
                 mapObjectId:
-                    "university_${marker.id}_walking_radius_label_${widget.walkRadiusMinutes}",
+                    "${_universityMapLayerScope}_${marker.id}_walking_radius_label_${widget.walkRadiusMinutes}",
                 latitude: marker.latitude,
                 longitude: marker.longitude,
               )
@@ -1076,7 +1079,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   MapObject _universityMarkerCollection(List<PlacemarkMapObject> placemarks) {
     return ClusterizedPlacemarkCollection(
-      mapId: const MapObjectId("university_marker_cluster_layer"),
+      mapId: MapObjectId("${_universityMapLayerScope}_cluster_layer"),
       placemarks: placemarks,
       radius: _YandexMapWidgetState._universityClusterRadius,
       minZoom: _YandexMapWidgetState._universityClusterMinZoom,
@@ -1091,7 +1094,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final userUniversityMarkerId = widget.userUniversityMarkerId;
     if (userUniversityMarkerId == null) return false;
     final userUniversityMapId =
-        MapObjectId("university_${userUniversityMarkerId}_placemark");
+        MapObjectId("${_universityMapLayerScope}_${userUniversityMarkerId}_placemark");
     return cluster.placemarks.any(
       (placemark) => placemark.mapId == userUniversityMapId,
     );
@@ -1159,7 +1162,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }) {
     final isUserUniversity = marker.id == widget.userUniversityMarkerId;
     return PlacemarkMapObject(
-      mapId: MapObjectId("university_${marker.id}_placemark"),
+      mapId: MapObjectId("${_universityMapLayerScope}_${marker.id}_placemark"),
       point: Point(
         latitude: marker.latitude,
         longitude: marker.longitude,

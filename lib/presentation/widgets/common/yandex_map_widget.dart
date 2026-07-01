@@ -381,6 +381,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   List<_YandexMapPoiMarker> _busStopMarkers = const [];
   int? _cachedMapObjectsKey;
   List<MapObject>? _cachedMapObjects;
+  /// Bumped whenever university markers are re-shown so map object IDs stay
+  /// unique across async Yandex MapKit add/remove updates (rapid layer toggles).
+  int _universityMapLayerEpoch = 0;
   int? _cachedListingPinGroupsKey;
   List<_ListingPinGroup>? _cachedListingPinGroups;
   int _zoomSliderRequestId = 0;
@@ -497,6 +500,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _requestMapRebuild();
       _syncListingGroupIconBytes();
       _syncListingTypePinIconBytes();
+    }
+    if (_universityMapLayerChanged(oldWidget)) {
+      if (oldWidget.universityMarkers.isEmpty &&
+          widget.universityMarkers.isNotEmpty) {
+        _universityMapLayerEpoch++;
+      }
+      if (_highlightedUniversityMarkerId != null &&
+          widget.universityMarkers.isEmpty) {
+        _clearSelectedUniversityMarker();
+      }
+      _invalidateMapObjectsCache();
+      _requestMapRebuild();
     }
     _syncSelectedUniversityMarker();
     final shouldMoveForPins =
@@ -1377,6 +1392,16 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  bool _universityMapLayerChanged(YandexMapWidget oldWidget) {
+    return _universityMarkersChanged(
+          oldWidget.universityMarkers,
+          widget.universityMarkers,
+        ) ||
+        oldWidget.selectedUniversityMarkerId !=
+            widget.selectedUniversityMarkerId ||
+        oldWidget.userUniversityMarkerId != widget.userUniversityMarkerId;
   }
 
   bool _universityMarkersChanged(
