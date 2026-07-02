@@ -2090,25 +2090,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get admin_panel_section_subway_heatmap => 'Subway line heat map';
 
   @override
-  String get admin_panel_section_subway_map => 'Subway map';
-
-  @override
-  String get admin_panel_section_universities_map => 'Universities map';
-
-  @override
-  String get admin_universities_map_title => 'Universities map';
-
-  @override
-  String get admin_universities_map_error => 'Could not load universities';
-
-  @override
-  String get admin_universities_map_retry => 'Retry';
-
-  @override
-  String get admin_universities_map_empty =>
-      'No universities with map coordinates yet.';
-
-  @override
   String get admin_panel_section_search_analytics => 'Search analytics';
 
   @override
@@ -2264,13 +2245,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get admin_subway_heatmap_no_data => 'No subway line data available';
-
-  @override
-  String get admin_subway_map_title => 'Subway map';
-
-  @override
-  String get admin_subway_map_description =>
-      'Simplified map with lines and stations only.';
 
   @override
   String get error_loading_map => 'Failed to load map';

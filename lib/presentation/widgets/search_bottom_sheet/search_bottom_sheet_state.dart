@@ -28,9 +28,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     _searchFiltersState.seedFromSheetOpenParams(
       listingTypeId: widget.currentListingTypeId,
-      // `null` means "no district filter" — coalesce so we clear any stale
-      // singleton location instead of skipping the seed (map passes null).
-      locationId: widget.metroOnly ? null : (widget.currentLocationId ?? 0),
+      locationId: widget.currentLocationId ?? 0,
       subwayLineId: widget.currentSubwayLineId,
       subwayStationId: widget.currentSubwayStationId,
       subwayStationIds: widget.currentSubwayStationIds,
@@ -631,7 +629,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                   ),
                   const SizedBox(height: 10),
 
-                  if (!widget.metroOnly && !isGroupFormingOnlySearch) ...[
+                  if (!isGroupFormingOnlySearch) ...[
                     // Location filter - Wheel Picker
                     RepaintBoundary(
                       child: SearchBottomSheetLocationSection(

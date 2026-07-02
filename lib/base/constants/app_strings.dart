@@ -1697,13 +1697,6 @@ class AppStrings {
       "admin_gig_moderation_approved_request_toast": "Task published",
       "admin_panel_section_district_heatmap": "District heat map",
       "admin_panel_section_subway_heatmap": "Subway line heat map",
-      "admin_panel_section_subway_map": "Subway map",
-      "admin_panel_section_universities_map": "Universities map",
-      "admin_universities_map_title": "Universities map",
-      "admin_universities_map_error": "Could not load universities",
-      "admin_universities_map_retry": "Retry",
-      "admin_universities_map_empty":
-          "No universities with map coordinates yet.",
       "admin_panel_section_search_analytics": "Search analytics",
       "admin_panel_section_listing_creation_analytics":
           "Listings creation analytics",
@@ -1761,8 +1754,6 @@ class AppStrings {
       "admin_subway_heatmap_count_label": "Listings",
       "admin_subway_heatmap_unavailable": "Unavailable",
       "admin_subway_heatmap_no_data": "No subway line data available",
-
-      "admin_subway_map_title": "Subway map",
 
       "admin_users_title": "Users",
       "admin_users_loading": "Loading users...",
@@ -3914,13 +3905,6 @@ class AppStrings {
       "admin_gig_moderation_approved_request_toast": "Задача опубликована",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
-      "admin_panel_section_subway_map": "Схема метро",
-      "admin_panel_section_universities_map": "Карта университетов",
-      "admin_universities_map_title": "Карта университетов",
-      "admin_universities_map_error": "Не удалось загрузить университеты",
-      "admin_universities_map_retry": "Повторить",
-      "admin_universities_map_empty":
-          "Пока нет университетов с координатами для карты.",
       "admin_panel_section_search_analytics": "Аналитика поиска",
       "admin_panel_section_listing_creation_analytics":
           "Аналитика создания объявлений",
@@ -3981,8 +3965,6 @@ class AppStrings {
       "admin_subway_heatmap_count_label": "Объявления",
       "admin_subway_heatmap_unavailable": "Недоступно",
       "admin_subway_heatmap_no_data": "Нет данных по линиям метро",
-
-      "admin_subway_map_title": "Схема метро",
 
       "admin_users_title": "Пользователи",
       "admin_users_loading": "Загрузка пользователей...",
@@ -6142,13 +6124,6 @@ class AppStrings {
       "admin_panel_section_district_heatmap": "Tumanlar issiqlik xaritasi",
       "admin_panel_section_subway_heatmap":
           "Metro liniyalari issiqlik xaritasi",
-      "admin_panel_section_subway_map": "Metro sxemasi",
-      "admin_panel_section_universities_map": "Universitetlar xaritasi",
-      "admin_universities_map_title": "Universitetlar xaritasi",
-      "admin_universities_map_error": "Universitetlar yuklanmadi",
-      "admin_universities_map_retry": "Qayta urinish",
-      "admin_universities_map_empty":
-          "Xarita koordinatalari bor universitetlar hali yo'q.",
       "admin_panel_section_search_analytics": "Qidiruv statistikasi",
       "admin_panel_section_listing_creation_analytics":
           "E'lonlar yaratilishi statistikasi",
@@ -6206,8 +6181,6 @@ class AppStrings {
       "admin_subway_heatmap_count_label": "E'lonlar",
       "admin_subway_heatmap_unavailable": "Mavjud emas",
       "admin_subway_heatmap_no_data": "Metro liniyalari bo'yicha ma'lumot yo'q",
-
-      "admin_subway_map_title": "Metro sxemasi",
 
       "admin_users_title": "Foydalanuvchilar",
       "admin_users_loading": "Foydalanuvchilar yuklanmoqda...",

@@ -87,7 +87,6 @@ class SearchBottomSheetWidget {
     BuildContext context, {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
-    bool metroOnly = false,
     bool applyProfileDefaults = true,
     bool commitFiltersOnApply = true,
     int? currentListingTypeId,
@@ -132,7 +131,6 @@ class SearchBottomSheetWidget {
           child: _SearchBottomSheetContent(
             replaceCurrentRoute: replaceCurrentRoute,
             openedFromHomeScreen: openedFromHomeScreen,
-            metroOnly: metroOnly,
             commitFiltersOnApply: commitFiltersOnApply,
             currentListingTypeId: resolvedListingTypeId,
             currentLocationId: currentLocationId,
@@ -172,7 +170,6 @@ class _SearchBottomSheetContent extends StatefulWidget {
   const _SearchBottomSheetContent({
     this.replaceCurrentRoute = false,
     this.openedFromHomeScreen = false,
-    this.metroOnly = false,
     this.commitFiltersOnApply = true,
     this.currentListingTypeId,
     this.currentLocationId,
@@ -192,7 +189,6 @@ class _SearchBottomSheetContent extends StatefulWidget {
   });
   final bool replaceCurrentRoute;
   final bool openedFromHomeScreen;
-  final bool metroOnly;
   final bool commitFiltersOnApply;
   final int? currentListingTypeId;
   final int? currentLocationId;

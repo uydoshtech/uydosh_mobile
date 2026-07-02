@@ -173,8 +173,6 @@ flutter:
     - assets/icon/components/
     - assets/images/
     - assets/images/room_scan_examples/
-    - assets/map_elements/
-    - assets/map_elements/airport.svg
     - assets/sounds/
 
   # No bundled fonts: en/ru/uz UI is covered by the system Roboto (Android) /

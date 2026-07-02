@@ -15,8 +15,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       await event.map(
         fetchListings: (e) async => _onFetchListings(emit, e),
         loadMore: (e) async => _onLoadMore(emit, e),
-        fetchListingsBySubwayStation: (e) async =>
-            _onFetchListingsBySubwayStation(emit, e),
         fetchListingsByLocation: (e) async =>
             _onFetchListingsByLocation(emit, e),
         searchListings: (e) async => _onSearchListings(emit, e),
@@ -46,9 +44,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   bool? _lastPrivateRoom;
   bool? _lastWithPhoto;
   List<int>? _lastExcludeUserIds;
-
-  /// When true, load more uses getListingsBySubwayStation (station-only, no transfer expansion)
-  bool _stationOnlyMode = false;
 
   /// Monotonic id for in-flight feed searches. Responses from older requests
   /// are ignored so a slow unfiltered prefetch cannot overwrite a newer
@@ -110,7 +105,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final isRefresh = event.map(
       fetchListings: (e) => e.isRefresh,
       loadMore: (e) => false,
-      fetchListingsBySubwayStation: (e) => e.isRefresh,
       fetchListingsByLocation: (e) => e.isRefresh,
       searchListings: (e) => e.isRefresh,
       fetchUserListings: (e) => e.isRefresh,
@@ -129,7 +123,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final page = event.map(
         fetchListings: (e) => e.page,
         loadMore: (e) => _currentPage,
-        fetchListingsBySubwayStation: (e) => e.page,
         fetchListingsByLocation: (e) => e.page,
         searchListings: (e) => e.page,
         fetchUserListings: (e) => e.page,
@@ -138,7 +131,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final limit = event.map(
         fetchListings: (e) => e.limit,
         loadMore: (e) => e.limit,
-        fetchListingsBySubwayStation: (e) => e.limit,
         fetchListingsByLocation: (e) => e.limit,
         searchListings: (e) => e.limit,
         fetchUserListings: (e) => e.limit,
@@ -147,7 +139,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final isActive = event.map(
         fetchListings: (e) => e.isActive,
         loadMore: (e) => e.isActive,
-        fetchListingsBySubwayStation: (e) => e.isActive,
         fetchListingsByLocation: (e) => e.isActive,
         searchListings: (e) => e.isActive,
         fetchUserListings: (e) => true,
@@ -221,7 +212,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final limit = event.map(
         fetchListings: (e) => e.limit,
         loadMore: (e) => e.limit,
-        fetchListingsBySubwayStation: (e) => e.limit,
         fetchListingsByLocation: (e) => e.limit,
         searchListings: (e) => e.limit,
         fetchUserListings: (e) => e.limit,
@@ -230,34 +220,10 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final isActive = event.map(
         fetchListings: (e) => e.isActive,
         loadMore: (e) => e.isActive,
-        fetchListingsBySubwayStation: (e) => e.isActive,
         fetchListingsByLocation: (e) => e.isActive,
         searchListings: (e) => e.isActive,
         fetchUserListings: (e) => true,
       );
-
-      // Station-only mode (from metro map): use getListingsBySubwayStation
-      if (_stationOnlyMode && _lastSubwayStationId != null) {
-        final listings = await _listingService
-            .getListingsBySubwayStation(
-              _lastSubwayStationId!,
-              page: _currentPage,
-              limit: limit,
-            )
-            .timeout(_requestTimeout);
-        _hasMore = listings.length >= limit;
-        final updatedListings = [...currentListings, ...listings];
-        emit(
-          _loadedState(
-            listings: updatedListings,
-            total: _totalResults,
-            hasMore: _hasMore,
-            currentPage: _currentPage,
-          ),
-        );
-        _currentPage++;
-        return;
-      }
 
       // Check if we have stored search parameters
       if (_hasStoredSearchContext) {
@@ -348,137 +314,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     }
   }
 
-  Future<void> _onFetchListingsBySubwayStation(
-    Emitter<ListingsState> emit,
-    ListingsEvent event,
-  ) async {
-    final isRefresh = event.map(
-      fetchListings: (e) => e.isRefresh,
-      loadMore: (e) => false,
-      fetchListingsBySubwayStation: (e) => e.isRefresh,
-      fetchListingsByLocation: (e) => e.isRefresh,
-      searchListings: (e) => e.isRefresh,
-      fetchUserListings: (e) => e.isRefresh,
-    );
-
-    final keepStaleWhileRefreshing = event.map(
-      fetchListings: (_) => false,
-      loadMore: (_) => false,
-      fetchListingsBySubwayStation: (e) => e.keepStaleWhileRefreshing,
-      fetchListingsByLocation: (_) => false,
-      searchListings: (_) => false,
-      fetchUserListings: (_) => false,
-    );
-
-    if (isRefresh) {
-      _currentPage = 1;
-      _hasMore = true;
-      if (!keepStaleWhileRefreshing) {
-        _currentListings = [];
-        _totalResults = null;
-      }
-    }
-
-    _stationOnlyMode = true;
-    event.map(
-      fetchListings: (_) {},
-      loadMore: (_) {},
-      fetchListingsBySubwayStation: (e) =>
-          _lastSubwayStationId = e.subwayStationId,
-      fetchListingsByLocation: (_) {},
-      searchListings: (_) {},
-      fetchUserListings: (_) {},
-    );
-
-    if (isRefresh) {
-      final subwayStationId = event.map(
-        fetchListings: (e) => 0,
-        loadMore: (e) => 0,
-        fetchListingsBySubwayStation: (e) => e.subwayStationId,
-        fetchListingsByLocation: (e) => 0,
-        searchListings: (e) => 0,
-        fetchUserListings: (e) => 0,
-      );
-      if (subwayStationId > 0) {
-        getIt<AppAnalyticsService>().logSearchPerformed(
-          subwayStationId: subwayStationId,
-        );
-      }
-    }
-
-    if (!(isRefresh && keepStaleWhileRefreshing)) {
-      emit(const ListingsState.loading());
-    }
-
-    try {
-      final subwayStationId = event.map(
-        fetchListings: (e) => 0,
-        loadMore: (e) => 0,
-        fetchListingsBySubwayStation: (e) => e.subwayStationId,
-        fetchListingsByLocation: (e) => 0,
-        searchListings: (e) => 0,
-        fetchUserListings: (e) => 0,
-      );
-
-      final page = event.map(
-        fetchListings: (e) => e.page,
-        loadMore: (e) => _currentPage,
-        fetchListingsBySubwayStation: (e) => e.page,
-        fetchListingsByLocation: (e) => e.page,
-        searchListings: (e) => e.page,
-        fetchUserListings: (e) => e.page,
-      );
-
-      final limit = event.map(
-        fetchListings: (e) => e.limit,
-        loadMore: (e) => e.limit,
-        fetchListingsBySubwayStation: (e) => e.limit,
-        fetchListingsByLocation: (e) => e.limit,
-        searchListings: (e) => e.limit,
-        fetchUserListings: (e) => e.limit,
-      );
-
-      // Service now automatically uses current app language
-      final listings = await _listingService
-          .getListingsBySubwayStation(
-            subwayStationId,
-            page: page,
-            limit: limit,
-          )
-          .timeout(_requestTimeout);
-
-      FavoritesState().syncFromListings(listings);
-
-      if (isRefresh) {
-        _currentListings = listings;
-      } else {
-        _currentListings = [..._currentListings, ...listings];
-      }
-
-      _hasMore = _computeHasMore(
-        loadedCount: _currentListings.length,
-        newPageItemCount: listings.length,
-        limit: limit,
-        currentPage: page,
-        responseTotalPages: page + (listings.length >= limit ? 1 : 0),
-        exactTotal: _totalResults,
-      );
-
-      emit(
-        _loadedState(
-          listings: _currentListings,
-          total: _totalResults,
-          hasMore: _hasMore,
-          currentPage: _currentPage,
-        ),
-      );
-
-      _currentPage++;
-    } catch (error) {
-      emit(ListingsState.error(error.toString()));
-    }
-  }
-
   Future<void> _onFetchListingsByLocation(
     Emitter<ListingsState> emit,
     ListingsEvent event,
@@ -486,7 +321,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final isRefresh = event.map(
       fetchListings: (e) => e.isRefresh,
       loadMore: (e) => false,
-      fetchListingsBySubwayStation: (e) => e.isRefresh,
       fetchListingsByLocation: (e) => e.isRefresh,
       searchListings: (e) => e.isRefresh,
       fetchUserListings: (e) => e.isRefresh,
@@ -505,7 +339,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final locationId = event.map(
         fetchListings: (e) => 0,
         loadMore: (e) => 0,
-        fetchListingsBySubwayStation: (e) => 0,
         fetchListingsByLocation: (e) => e.locationId,
         searchListings: (e) => 0,
         fetchUserListings: (e) => 0,
@@ -514,7 +347,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final page = event.map(
         fetchListings: (e) => e.page,
         loadMore: (e) => _currentPage,
-        fetchListingsBySubwayStation: (e) => e.page,
         fetchListingsByLocation: (e) => e.page,
         searchListings: (e) => e.page,
         fetchUserListings: (e) => e.page,
@@ -523,7 +355,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final limit = event.map(
         fetchListings: (e) => e.limit,
         loadMore: (e) => e.limit,
-        fetchListingsBySubwayStation: (e) => e.limit,
         fetchListingsByLocation: (e) => e.limit,
         searchListings: (e) => e.limit,
         fetchUserListings: (e) => e.limit,
@@ -576,7 +407,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   }
 
   void _storeSearchParams(Map<String, dynamic> searchParams) {
-    _stationOnlyMode = false;
     _lastListingTypeId = searchParams["listingTypeId"] as int?;
     _lastListingTypeIds = searchParams["listingTypeIds"] as List<int>?;
     _lastLocationId = searchParams["locationId"] as int?;
@@ -600,7 +430,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final isRefresh = event.map(
       fetchListings: (e) => e.isRefresh,
       loadMore: (e) => false,
-      fetchListingsBySubwayStation: (e) => e.isRefresh,
       fetchListingsByLocation: (e) => e.isRefresh,
       searchListings: (e) => e.isRefresh,
       fetchUserListings: (e) => e.isRefresh,
@@ -609,7 +438,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final keepStaleWhileRefreshing = event.map(
       fetchListings: (_) => false,
       loadMore: (_) => false,
-      fetchListingsBySubwayStation: (_) => false,
       fetchListingsByLocation: (_) => false,
       searchListings: (e) => e.keepStaleWhileRefreshing,
       fetchUserListings: (_) => false,
@@ -628,7 +456,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final searchParams = event.map(
       fetchListings: (e) => null,
       loadMore: (e) => null,
-      fetchListingsBySubwayStation: (e) => null,
       fetchListingsByLocation: (e) => null,
       searchListings: (e) => {
         "listingTypeId": e.listingTypeId,
@@ -660,7 +487,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final searchParams = event.map(
         fetchListings: (e) => null,
         loadMore: (e) => null,
-        fetchListingsBySubwayStation: (e) => null,
         fetchListingsByLocation: (e) => null,
         searchListings: (e) => {
           "listingTypeId": e.listingTypeId,
@@ -682,7 +508,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final page = event.map(
         fetchListings: (e) => e.page,
         loadMore: (e) => _currentPage,
-        fetchListingsBySubwayStation: (e) => e.page,
         fetchListingsByLocation: (e) => e.page,
         searchListings: (e) => e.page,
         fetchUserListings: (e) => e.page,
@@ -691,7 +516,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final limit = event.map(
         fetchListings: (e) => e.limit,
         loadMore: (e) => e.limit,
-        fetchListingsBySubwayStation: (e) => e.limit,
         fetchListingsByLocation: (e) => e.limit,
         searchListings: (e) => e.limit,
         fetchUserListings: (e) => e.limit,
@@ -813,7 +637,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     final isRefresh = event.map(
       fetchListings: (e) => false,
       loadMore: (e) => false,
-      fetchListingsBySubwayStation: (e) => false,
       fetchListingsByLocation: (e) => false,
       searchListings: (e) => false,
       fetchUserListings: (e) => e.isRefresh,
@@ -832,7 +655,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final page = event.map(
         fetchListings: (e) => 1,
         loadMore: (e) => 1,
-        fetchListingsBySubwayStation: (e) => 1,
         fetchListingsByLocation: (e) => 1,
         searchListings: (e) => 1,
         fetchUserListings: (e) => e.page,
@@ -841,7 +663,6 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final limit = event.map(
         fetchListings: (e) => 10,
         loadMore: (e) => 10,
-        fetchListingsBySubwayStation: (e) => 10,
         fetchListingsByLocation: (e) => 10,
         searchListings: (e) => 10,
         fetchUserListings: (e) => e.limit,

@@ -254,7 +254,12 @@ class DuplicateGroupCard extends StatelessWidget {
       keepListingId: keepListingId,
       deleteCount: members.length - 1,
     );
-    if (confirmed != true || !context.mounted) return;
+    // Note: intentionally NOT bailing out here on `!context.mounted`. The
+    // confirmation dialog's own closing transition can momentarily report
+    // this card's context as unmounted (e.g. while the underlying list is
+    // mid-rebuild), and bailing here silently drops the merge request
+    // entirely — the admin sees the confirm tap "do nothing" with no error.
+    if (confirmed != true) return;
 
     try {
       final result = await getIt<IAdminTelegramListingGroupsService>()
@@ -262,8 +267,14 @@ class DuplicateGroupCard extends StatelessWidget {
         listingIds: members.map((m) => m.id).toList(),
         keepListingId: keepListingId,
       );
-      if (!context.mounted) return;
+      // Apply the result unconditionally: this updates the parent screen's
+      // state (which guards its own `setState` via `setStateIfMounted`), so
+      // it must run even if this card's own context happens to be
+      // unmounted by the time the request completes. Only the toast below
+      // needs a live context.
       final expectedDeleteCount = members.length - 1;
+      onMerged(result);
+      if (!context.mounted) return;
       if (result.deletedIds.length < expectedDeleteCount) {
         // The server reports 200 even when some listings couldn't be
         // deleted (e.g. a stray FK it doesn't clean up yet), so a blanket
@@ -285,7 +296,6 @@ class DuplicateGroupCard extends StatelessWidget {
           "admin_telegram_listing_groups_merge_success",
         );
       }
-      onMerged(result);
     } catch (_) {
       if (!context.mounted) return;
       ToastReporting.errorKey(

@@ -7,7 +7,6 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_map_pin_data.dart";
 import "package:uy_dosh/domain/models/pageable_response.dart";
-import "package:flutter/foundation.dart";
 import "package:uy_dosh/domain/search/listing_browse_constants.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -38,14 +37,6 @@ abstract class IListingSearchService {
     int? gender,
     double? minPrice,
     double? maxPrice,
-    int createdWithinDays = listingBrowseCreatedWithinDays,
-  });
-
-  Future<List<Listing>> getListingsBySubwayStation(
-    int subwayStationId, {
-    int page = 1,
-    int limit = 10,
-    String? language,
     int createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
@@ -110,16 +101,6 @@ abstract class IListingSearchService {
     String? language,
   });
 
-  /// Subway station IDs that have at least one active listing (single API round-trip).
-  Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = listingBrowseCreatedWithinDays,
-    int? listingTypeId,
-    int? gender,
-    double? minPrice,
-    double? maxPrice,
-    bool? privateRoom,
-    bool? withPhoto,
-  });
 }
 
 class ListingSearchService implements IListingSearchService {
@@ -332,34 +313,6 @@ class ListingSearchService implements IListingSearchService {
       return _toPageableResponse(response, listings, page, limit);
     } catch (e) {
       logger.d("Error fetching listings: $e");
-      rethrow;
-    }
-  }
-
-  @override
-  Future<List<Listing>> getListingsBySubwayStation(
-    int subwayStationId, {
-    int page = 1,
-    int limit = 10,
-    String? language,
-    int createdWithinDays = listingBrowseCreatedWithinDays,
-  }) async {
-    final currentLanguage = language ?? LanguageState().currentLanguage;
-
-    try {
-      // Use OAuth client so auth token is sent when logged in (enables saving user searches)
-      final response = await _oauthApiClient.get<Map<String, dynamic>>(
-        "/listings/search?subwayStationId=$subwayStationId&page=$page&limit=$limit&language=$currentLanguage&createdWithinDays=$createdWithinDays",
-        (json) => json,
-        basePath: EnvironmentUtil.basePath,
-      );
-
-      final listingsData = _extractListingsData(response);
-      return listingsData
-          .map((item) => Listing.fromJson(item as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      logger.d("Error fetching listings by subway station: $e");
       rethrow;
     }
   }
@@ -659,59 +612,4 @@ class ListingSearchService implements IListingSearchService {
     }
   }
 
-  @override
-  Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = listingBrowseCreatedWithinDays,
-    int? listingTypeId,
-    int? gender,
-    double? minPrice,
-    double? maxPrice,
-    bool? privateRoom,
-    bool? withPhoto,
-  }) async {
-    try {
-      final queryParams = <String, dynamic>{
-        if (createdWithinDays > 0) ...{
-          "createdWithinDays": createdWithinDays,
-          "created_within_days": createdWithinDays,
-        },
-        if (listingTypeId != null) ...{
-          "listingTypeId": listingTypeId,
-          "listing_type_id": listingTypeId,
-        },
-        if (gender != null) "gender": gender,
-        if (minPrice != null) ...{
-          "minPrice": minPrice,
-          "min_price": minPrice,
-        },
-        if (maxPrice != null) ...{
-          "maxPrice": maxPrice,
-          "max_price": maxPrice,
-        },
-        if (privateRoom != null) ...{
-          "privateRoom": privateRoom,
-          "private_room": privateRoom,
-        },
-        if (withPhoto != null) ...{
-          "withPhoto": withPhoto,
-          "with_photo": withPhoto,
-        },
-      };
-      debugPrint(
-        "[ListingSearchService] subway-stations-with-listings params=$queryParams",
-      );
-      final response = await _oauthApiClient.get<Map<String, dynamic>>(
-        "/listings/subway-stations-with-listings",
-        (json) => json,
-        basePath: EnvironmentUtil.basePath,
-        queryParameters: queryParams,
-      );
-      final raw = response["subwayStationIds"];
-      if (raw is! List<dynamic>) return [];
-      return raw.map((e) => (e as num).toInt()).toList();
-    } catch (e) {
-      logger.d("Error fetching subway stations with listings: $e");
-      rethrow;
-    }
-  }
 }

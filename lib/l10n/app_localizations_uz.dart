@@ -2122,25 +2122,6 @@ class AppLocalizationsUz extends AppLocalizations {
       'Metro liniyalari issiqlik xaritasi';
 
   @override
-  String get admin_panel_section_subway_map => 'Metro sxemasi';
-
-  @override
-  String get admin_panel_section_universities_map => 'Universitetlar xaritasi';
-
-  @override
-  String get admin_universities_map_title => 'Universitetlar xaritasi';
-
-  @override
-  String get admin_universities_map_error => 'Universitetlar yuklanmadi';
-
-  @override
-  String get admin_universities_map_retry => 'Qayta urinish';
-
-  @override
-  String get admin_universities_map_empty =>
-      'Xarita koordinatalari bor universitetlar hali yo\'q.';
-
-  @override
   String get admin_panel_section_search_analytics => 'Qidiruv statistikasi';
 
   @override
@@ -2304,13 +2285,6 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get admin_subway_heatmap_no_data =>
       'Metro liniyalari bo\'yicha ma\'lumot yo\'q';
-
-  @override
-  String get admin_subway_map_title => 'Metro sxemasi';
-
-  @override
-  String get admin_subway_map_description =>
-      'Faqat yo\'nalishlar va bekatlardan iborat soddalashtirilgan sxema.';
 
   @override
   String get error_loading_map => 'Xaritani yuklab bo\'lmadi';

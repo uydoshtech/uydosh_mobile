@@ -27,31 +27,12 @@ abstract class IListingService {
     int createdWithinDays = 30,
   });
 
-  Future<List<Listing>> getListingsBySubwayStation(
-    int subwayStationId, {
-    int page = 1,
-    int limit = 10,
-    String? language,
-    int createdWithinDays = 30,
-  });
-
   Future<List<Listing>> getListingsByLocation(
     int locationId, {
     int page = 1,
     int limit = 10,
     String? language,
     int createdWithinDays = 30,
-  });
-
-  /// Subway station IDs that have at least one active listing (single request).
-  Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = 30,
-    int? listingTypeId,
-    int? gender,
-    double? minPrice,
-    double? maxPrice,
-    bool? privateRoom,
-    bool? withPhoto,
   });
 
   Future<ListingDetail> getListingDetail(int listingId, {String? language});
@@ -253,22 +234,6 @@ class ListingService implements IListingService {
       );
 
   @override
-  Future<List<Listing>> getListingsBySubwayStation(
-    int subwayStationId, {
-    int page = 1,
-    int limit = 10,
-    String? language,
-    int createdWithinDays = 30,
-  }) =>
-      _searchService.getListingsBySubwayStation(
-        subwayStationId,
-        page: page,
-        limit: limit,
-        language: language,
-        createdWithinDays: createdWithinDays,
-      );
-
-  @override
   Future<List<Listing>> getListingsByLocation(
     int locationId, {
     int page = 1,
@@ -282,26 +247,6 @@ class ListingService implements IListingService {
         limit: limit,
         language: language,
         createdWithinDays: createdWithinDays,
-      );
-
-  @override
-  Future<List<int>> getSubwayStationIdsWithListings({
-    int createdWithinDays = 30,
-    int? listingTypeId,
-    int? gender,
-    double? minPrice,
-    double? maxPrice,
-    bool? privateRoom,
-    bool? withPhoto,
-  }) =>
-      _searchService.getSubwayStationIdsWithListings(
-        createdWithinDays: createdWithinDays,
-        listingTypeId: listingTypeId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoom,
-        withPhoto: withPhoto,
       );
 
   @override

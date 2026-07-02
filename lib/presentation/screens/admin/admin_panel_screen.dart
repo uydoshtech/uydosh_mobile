@@ -18,11 +18,9 @@ import "package:uy_dosh/presentation/screens/admin/admin_listing_moderation_queu
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_subway_map_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_listing_groups_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
-import "package:uy_dosh/presentation/screens/admin/admin_universities_map_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -274,31 +272,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminSubwayLineHeatmapScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _AdminMenuRow(
-                      icon: Icons.subway,
-                      titleKey: "admin_panel_section_subway_map",
-                      iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AdminSubwayMapScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _AdminMenuRow(
-                      icon: Icons.school_outlined,
-                      titleKey: "admin_panel_section_universities_map",
-                      iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminUniversitiesMapScreen(),
                           ),
                         );
                       },

@@ -264,9 +264,7 @@ Surfaced in the burger menu for role-flagged users. Screens include:
 - Users list + detail, complaints per user, listings per user, search alerts
   per user.
 - All listings with complaints; individual listing complaints.
-- **Heatmaps**: district heatmap + subway-line heatmap, rendered over the
-  Tashkent metro map SVG.
-- **Subway map editor** with station pins.
+- **Heatmaps**: district heatmap + subway-line heatmap.
 - **Search analytics**, **listing-creation analytics**, **area-price cache**
   inspector.
 - **Telegram sync** dashboard and **content-moderation** feature flags.
@@ -281,8 +279,6 @@ Server-side feature flags (loaded at startup via `ClientGeminiListingUiConfig`,
 - **Yandex MapKit** (`yandex_mapkit`) for real-map context on the listing
   detail screen and admin heatmaps. Tashkent is the primary region, and
   Yandex is the most accurate choice for Uzbek addresses.
-- A simplified Tashkent metro map SVG is used as a compact picker and as the
-  canvas for admin heatmaps.
 - Coordinates and district/region lookups are cached
   (`base/cache/coordinates_cache.dart`, `location_cache.dart`, `region_cache.dart`).
 
@@ -419,7 +415,7 @@ token repository with encrypted storage.
 **3D / LiDAR**: `flutter_roomplan` (iOS RoomPlan), `path_provider`, native
 SceneKit viewer.
 
-**Maps**: `yandex_mapkit` 4, `flutter_svg` (Tashkent metro map).
+**Maps**: `yandex_mapkit` 4, `flutter_svg`.
 
 **AI**: `google_generative_ai` (Gemini) with backend proxy fallback.
 

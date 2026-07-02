@@ -23,9 +23,6 @@ mixin _$ListingsEvent {
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -56,9 +53,6 @@ mixin _$ListingsEvent {
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -88,9 +82,6 @@ mixin _$ListingsEvent {
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -120,8 +111,6 @@ mixin _$ListingsEvent {
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -132,8 +121,6 @@ mixin _$ListingsEvent {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -144,8 +131,6 @@ mixin _$ListingsEvent {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
@@ -306,9 +291,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -342,9 +324,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -377,9 +356,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -415,8 +391,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -430,8 +404,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -445,8 +417,6 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
@@ -566,9 +536,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -602,9 +569,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -637,9 +601,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -675,8 +636,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -690,8 +649,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -705,8 +662,6 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
@@ -734,341 +689,6 @@ abstract class _$LoadMoreImpl implements ListingsEvent {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$$LoadMoreImplImplCopyWith<_$$LoadMoreImplImpl> get copyWith =>
       throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$$FetchListingsBySubwayStationImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$FetchListingsBySubwayStationImplImplCopyWith(
-          _$$FetchListingsBySubwayStationImplImpl value,
-          $Res Function(_$$FetchListingsBySubwayStationImplImpl) then) =
-      __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int subwayStationId,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-      bool keepStaleWhileRefreshing});
-}
-
-/// @nodoc
-class __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res,
-        _$$FetchListingsBySubwayStationImplImpl>
-    implements _$$$FetchListingsBySubwayStationImplImplCopyWith<$Res> {
-  __$$$FetchListingsBySubwayStationImplImplCopyWithImpl(
-      _$$FetchListingsBySubwayStationImplImpl _value,
-      $Res Function(_$$FetchListingsBySubwayStationImplImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? subwayStationId = null,
-    Object? page = null,
-    Object? limit = null,
-    Object? isActive = null,
-    Object? isRefresh = null,
-    Object? keepStaleWhileRefreshing = null,
-  }) {
-    return _then(_$$FetchListingsBySubwayStationImplImpl(
-      subwayStationId: null == subwayStationId
-          ? _value.subwayStationId
-          : subwayStationId // ignore: cast_nullable_to_non_nullable
-              as int,
-      page: null == page
-          ? _value.page
-          : page // ignore: cast_nullable_to_non_nullable
-              as int,
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isRefresh: null == isRefresh
-          ? _value.isRefresh
-          : isRefresh // ignore: cast_nullable_to_non_nullable
-              as bool,
-      keepStaleWhileRefreshing: null == keepStaleWhileRefreshing
-          ? _value.keepStaleWhileRefreshing
-          : keepStaleWhileRefreshing // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$$FetchListingsBySubwayStationImplImpl
-    implements _$FetchListingsBySubwayStationImpl {
-  const _$$FetchListingsBySubwayStationImplImpl(
-      {required this.subwayStationId,
-      this.page = 1,
-      this.limit = 10,
-      this.isActive = true,
-      this.isRefresh = true,
-      this.keepStaleWhileRefreshing = false});
-
-  @override
-  final int subwayStationId;
-  @override
-  @JsonKey()
-  final int page;
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isActive;
-  @override
-  @JsonKey()
-  final bool isRefresh;
-
-  /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
-  /// [ListingsState.loading]) until the request completes — for UI that
-  /// animates in parallel (e.g. home filter ribbon).
-  @override
-  @JsonKey()
-  final bool keepStaleWhileRefreshing;
-
-  @override
-  String toString() {
-    return 'ListingsEvent.fetchListingsBySubwayStation(subwayStationId: $subwayStationId, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$FetchListingsBySubwayStationImplImpl &&
-            (identical(other.subwayStationId, subwayStationId) ||
-                other.subwayStationId == subwayStationId) &&
-            (identical(other.page, page) || other.page == page) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh) &&
-            (identical(
-                    other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) ||
-                other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, subwayStationId, page, limit,
-      isActive, isRefresh, keepStaleWhileRefreshing);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$FetchListingsBySubwayStationImplImplCopyWith<
-          _$$FetchListingsBySubwayStationImplImpl>
-      get copyWith => __$$$FetchListingsBySubwayStationImplImplCopyWithImpl<
-          _$$FetchListingsBySubwayStationImplImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return fetchListingsBySubwayStation(subwayStationId, page, limit, isActive,
-        isRefresh, keepStaleWhileRefreshing);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return fetchListingsBySubwayStation?.call(subwayStationId, page, limit,
-        isActive, isRefresh, keepStaleWhileRefreshing);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListingsBySubwayStation != null) {
-      return fetchListingsBySubwayStation(subwayStationId, page, limit,
-          isActive, isRefresh, keepStaleWhileRefreshing);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return fetchListingsBySubwayStation(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return fetchListingsBySubwayStation?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListingsBySubwayStation != null) {
-      return fetchListingsBySubwayStation(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _$FetchListingsBySubwayStationImpl implements ListingsEvent {
-  const factory _$FetchListingsBySubwayStationImpl(
-          {required final int subwayStationId,
-          final int page,
-          final int limit,
-          final bool isActive,
-          final bool isRefresh,
-          final bool keepStaleWhileRefreshing}) =
-      _$$FetchListingsBySubwayStationImplImpl;
-
-  int get subwayStationId;
-  int get page;
-  @override
-  int get limit;
-  bool get isActive;
-  bool get isRefresh;
-
-  /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
-  /// [ListingsState.loading]) until the request completes — for UI that
-  /// animates in parallel (e.g. home filter ribbon).
-  bool get keepStaleWhileRefreshing;
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$FetchListingsBySubwayStationImplImplCopyWith<
-          _$$FetchListingsBySubwayStationImplImpl>
-      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1197,9 +817,6 @@ class _$$FetchListingsByLocationImplImpl
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -1234,9 +851,6 @@ class _$$FetchListingsByLocationImplImpl
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -1270,9 +884,6 @@ class _$$FetchListingsByLocationImplImpl
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -1309,8 +920,6 @@ class _$$FetchListingsByLocationImplImpl
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -1324,8 +933,6 @@ class _$$FetchListingsByLocationImplImpl
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -1339,8 +946,6 @@ class _$$FetchListingsByLocationImplImpl
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
@@ -1683,9 +1288,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -1735,9 +1337,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -1786,9 +1385,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -1840,8 +1436,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -1855,8 +1449,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -1870,8 +1462,6 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,
@@ -2033,9 +1623,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             int page, int limit, bool isActive, bool isRefresh)
         fetchListings,
     required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(int subwayStationId, int page, int limit,
-            bool isActive, bool isRefresh, bool keepStaleWhileRefreshing)
-        fetchListingsBySubwayStation,
     required TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)
         fetchListingsByLocation,
@@ -2069,9 +1656,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
     TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult? Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -2104,9 +1688,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
     TResult Function(int page, int limit, bool isActive, bool isRefresh)?
         fetchListings,
     TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(int subwayStationId, int page, int limit, bool isActive,
-            bool isRefresh, bool keepStaleWhileRefreshing)?
-        fetchListingsBySubwayStation,
     TResult Function(
             int locationId, int page, int limit, bool isActive, bool isRefresh)?
         fetchListingsByLocation,
@@ -2142,8 +1723,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   TResult map<TResult extends Object?>({
     required TResult Function(_$FetchListingsImpl value) fetchListings,
     required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsBySubwayStationImpl value)
-        fetchListingsBySubwayStation,
     required TResult Function(_$FetchListingsByLocationImpl value)
         fetchListingsByLocation,
     required TResult Function(_$SearchListingsImpl value) searchListings,
@@ -2157,8 +1736,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_$FetchListingsImpl value)? fetchListings,
     TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult? Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult? Function(_$SearchListingsImpl value)? searchListings,
@@ -2172,8 +1749,6 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_$FetchListingsImpl value)? fetchListings,
     TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsBySubwayStationImpl value)?
-        fetchListingsBySubwayStation,
     TResult Function(_$FetchListingsByLocationImpl value)?
         fetchListingsByLocation,
     TResult Function(_$SearchListingsImpl value)? searchListings,

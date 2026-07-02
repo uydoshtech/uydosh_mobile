@@ -16,18 +16,6 @@ class ListingsEvent with _$ListingsEvent {
     @Default(true) bool isActive,
   }) = _$LoadMoreImpl;
 
-  const factory ListingsEvent.fetchListingsBySubwayStation({
-    required int subwayStationId,
-    @Default(1) int page,
-    @Default(10) int limit,
-    @Default(true) bool isActive,
-    @Default(true) bool isRefresh,
-    /// When true with [isRefresh], keeps [ListingsState.loaded] visible (no
-    /// [ListingsState.loading]) until the request completes — for UI that
-    /// animates in parallel (e.g. home filter ribbon).
-    @Default(false) bool keepStaleWhileRefreshing,
-  }) = _$FetchListingsBySubwayStationImpl;
-
   const factory ListingsEvent.fetchListingsByLocation({
     required int locationId,
     @Default(1) int page,

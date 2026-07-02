@@ -42,9 +42,6 @@ class $AssetsImagesGen {
   /// Directory path: assets/images/room_scan_examples
   $AssetsImagesRoomScanExamplesGen get roomScanExamples => const $AssetsImagesRoomScanExamplesGen();
 
-  /// File path: assets/images/tashkent_subway_map_simple.svg
-  String get tashkentSubwayMapSimple => 'assets/images/tashkent_subway_map_simple.svg';
-
   /// File path: assets/images/telegram_logo_white.svg
   String get telegramLogoWhite => 'assets/images/telegram_logo_white.svg';
 
@@ -72,77 +69,12 @@ class $AssetsImagesGen {
         googleGLogo,
         iosDarkRdCtn,
         iosNeutralRdCtn,
-        tashkentSubwayMapSimple,
         telegramLogoWhite,
         uydoshLightNoPhotoPlaceholder,
         uydoshLightRoomNeededNoPhotoPlaceholder,
         uydoshNoPhotoPlaceholder,
         uydoshRoomNeededNoPhotoPlaceholder,
         vectorOrig
-      ];
-}
-
-class $AssetsMapElementsGen {
-  const $AssetsMapElementsGen();
-
-  /// File path: assets/map_elements/airport.svg
-  String get airport => 'assets/map_elements/airport.svg';
-
-  /// File path: assets/map_elements/bazaar_chorsu.svg
-  String get bazaarChorsu => 'assets/map_elements/bazaar_chorsu.svg';
-
-  /// File path: assets/map_elements/bazaar_mirabad.svg
-  String get bazaarMirabad => 'assets/map_elements/bazaar_mirabad.svg';
-
-  /// File path: assets/map_elements/bus_hub.svg
-  String get busHub => 'assets/map_elements/bus_hub.svg';
-
-  /// File path: assets/map_elements/catholic_church.svg
-  String get catholicChurch => 'assets/map_elements/catholic_church.svg';
-
-  /// File path: assets/map_elements/circus.svg
-  String get circus => 'assets/map_elements/circus.svg';
-
-  /// File path: assets/map_elements/city_park.svg
-  String get cityPark => 'assets/map_elements/city_park.svg';
-
-  /// File path: assets/map_elements/monument.svg
-  String get monument => 'assets/map_elements/monument.svg';
-
-  /// File path: assets/map_elements/monument2.svg
-  String get monument2 => 'assets/map_elements/monument2.svg';
-
-  /// File path: assets/map_elements/stadium.svg
-  String get stadium => 'assets/map_elements/stadium.svg';
-
-  /// File path: assets/map_elements/tashkent_metro_map.svg
-  String get tashkentMetroMap => 'assets/map_elements/tashkent_metro_map.svg';
-
-  /// File path: assets/map_elements/train_station.svg
-  String get trainStation => 'assets/map_elements/train_station.svg';
-
-  /// File path: assets/map_elements/tv_tower.svg
-  String get tvTower => 'assets/map_elements/tv_tower.svg';
-
-  /// File path: assets/map_elements/tv_tower2.svg
-  String get tvTower2 => 'assets/map_elements/tv_tower2.svg';
-
-  /// List of all assets
-  List<String> get values => [
-        airport,
-        bazaarChorsu,
-        bazaarMirabad,
-        busHub,
-        catholicChurch,
-        circus,
-        cityPark,
-        monument,
-        monument2,
-        stadium,
-        tashkentMetroMap,
-        trainStation,
-        tvTower,
-        tvTower2
       ];
 }
 
@@ -234,7 +166,6 @@ class Assets {
 
   static const $AssetsIconGen icon = $AssetsIconGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
-  static const $AssetsMapElementsGen mapElements = $AssetsMapElementsGen();
   static const $AssetsSoundsGen sounds = $AssetsSoundsGen();
 }
 

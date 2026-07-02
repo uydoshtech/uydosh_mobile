@@ -3910,42 +3910,6 @@ abstract class AppLocalizations {
   /// **'Subway line heat map'**
   String get admin_panel_section_subway_heatmap;
 
-  /// No description provided for @admin_panel_section_subway_map.
-  ///
-  /// In en, this message translates to:
-  /// **'Subway map'**
-  String get admin_panel_section_subway_map;
-
-  /// No description provided for @admin_panel_section_universities_map.
-  ///
-  /// In en, this message translates to:
-  /// **'Universities map'**
-  String get admin_panel_section_universities_map;
-
-  /// No description provided for @admin_universities_map_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Universities map'**
-  String get admin_universities_map_title;
-
-  /// No description provided for @admin_universities_map_error.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load universities'**
-  String get admin_universities_map_error;
-
-  /// No description provided for @admin_universities_map_retry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get admin_universities_map_retry;
-
-  /// No description provided for @admin_universities_map_empty.
-  ///
-  /// In en, this message translates to:
-  /// **'No universities with map coordinates yet.'**
-  String get admin_universities_map_empty;
-
   /// No description provided for @admin_panel_section_search_analytics.
   ///
   /// In en, this message translates to:
@@ -4239,18 +4203,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No subway line data available'**
   String get admin_subway_heatmap_no_data;
-
-  /// No description provided for @admin_subway_map_title.
-  ///
-  /// In en, this message translates to:
-  /// **'Subway map'**
-  String get admin_subway_map_title;
-
-  /// No description provided for @admin_subway_map_description.
-  ///
-  /// In en, this message translates to:
-  /// **'Simplified map with lines and stations only.'**
-  String get admin_subway_map_description;
 
   /// No description provided for @error_loading_map.
   ///

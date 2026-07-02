@@ -1741,9 +1741,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final baseTopPad = _feedBaseTopPadding();
     return CommonListView(
       padding: EdgeInsets.fromLTRB(
-        14.0,
+        10.0,
         baseTopPad,
-        14.0,
+        10.0,
         _feedListBottomPadding(context),
       ),
       itemSpacing: 16.0,
@@ -1775,9 +1775,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
             itemCount: feedEntries.length + 1,
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(
-              14.0,
+              10.0,
               baseTopPad,
-              14.0,
+              10.0,
               _feedListBottomPadding(context),
             ),
             itemBuilder: (context, index) {
@@ -2306,29 +2306,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
           _searchResultsReady = false;
         }
       });
-    }
-
-    // When opened from metro map with only station: use station-only API (no transfer expansion, no other filters)
-    final isStationOnlyFromMap = widget.useExplicitFiltersOnly &&
-        widget.subwayStationId != null &&
-        widget.listingTypeId == null &&
-        widget.locationId == null &&
-        widget.subwayLineId == null &&
-        widget.gender == null &&
-        widget.minPrice == null &&
-        widget.maxPrice == null &&
-        widget.privateRoom == null &&
-        widget.withPhoto == null;
-
-    if (isStationOnlyFromMap) {
-      listingsBloc.add(
-        ListingsEvent.fetchListingsBySubwayStation(
-          subwayStationId: widget.subwayStationId!,
-          isRefresh: isRefresh,
-          keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
-        ),
-      );
-      return;
     }
 
     final filters = _resolveSearchFilters(
