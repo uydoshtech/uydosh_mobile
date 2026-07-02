@@ -1512,6 +1512,8 @@ class AppStrings {
       "admin_telegram_listing_groups_merge_confirm_message":
           "Listing #{id} will be kept. The other {count} listing(s) in this group will be permanently deleted.",
       "admin_telegram_listing_groups_merge_success": "Duplicates merged",
+      "admin_telegram_listing_groups_merge_partial":
+          "Only {deleted} of {total} duplicate(s) could be deleted",
       "admin_telegram_listing_groups_merge_error":
           "Failed to merge duplicates",
       "admin_telegram_sync_title": "Data import",
@@ -3726,6 +3728,8 @@ class AppStrings {
       "admin_telegram_listing_groups_merge_confirm_message":
           "Объявление #{id} останется. Остальные {count} объявление(й) в этой группе будут удалены безвозвратно.",
       "admin_telegram_listing_groups_merge_success": "Дубликаты объединены",
+      "admin_telegram_listing_groups_merge_partial":
+          "Удалено только {deleted} из {total} дубликат(ов)",
       "admin_telegram_listing_groups_merge_error":
           "Не удалось объединить дубликаты",
       "admin_telegram_sync_title": "Импорт данных",
@@ -5951,6 +5955,8 @@ class AppStrings {
           "#{id} e'loni qoladi. Ushbu guruhdagi qolgan {count} ta e'lon butunlay o'chiriladi.",
       "admin_telegram_listing_groups_merge_success":
           "Dublikatlar birlashtirildi",
+      "admin_telegram_listing_groups_merge_partial":
+          "{total} tadan faqat {deleted} tasi o'chirildi",
       "admin_telegram_listing_groups_merge_error":
           "Dublikatlarni birlashtirishda xatolik",
       "admin_telegram_sync_title": "Maʼlumot importi",

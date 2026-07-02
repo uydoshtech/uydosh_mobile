@@ -10,6 +10,7 @@ import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dar
 import "package:uy_dosh/presentation/widgets/admin/admin_listing_swipe_to_delete_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
@@ -258,10 +259,28 @@ class DuplicateGroupCard extends StatelessWidget {
         keepListingId: keepListingId,
       );
       if (!context.mounted) return;
-      ToastReporting.successKey(
-        context,
-        "admin_telegram_listing_groups_merge_success",
-      );
+      final expectedDeleteCount = members.length - 1;
+      if (result.deletedIds.length < expectedDeleteCount) {
+        // The server reports 200 even when some listings couldn't be
+        // deleted (e.g. a stray FK it doesn't clean up yet), so a blanket
+        // "success" toast here would be misleading — tell the admin exactly
+        // how many actually went away instead.
+        ToastTheme.showWarning(
+          context,
+          message: L10n.getWithParams(
+            "admin_telegram_listing_groups_merge_partial",
+            params: {
+              "deleted": "${result.deletedIds.length}",
+              "total": "$expectedDeleteCount",
+            },
+          ),
+        );
+      } else {
+        ToastReporting.successKey(
+          context,
+          "admin_telegram_listing_groups_merge_success",
+        );
+      }
       onMerged(result);
     } catch (_) {
       if (!context.mounted) return;
