@@ -1499,6 +1499,21 @@ class AppStrings {
       "admin_telegram_listing_groups_sort_count": "Most listings",
       "admin_telegram_listing_groups_sort_recent": "Most recent activity",
       "admin_telegram_listing_groups_sort_name": "Name (A–Z)",
+      "admin_telegram_listing_groups_duplicate_group_title":
+          "Possible duplicates ({count})",
+      "admin_telegram_listing_groups_merge_button": "Merge",
+      "admin_telegram_listing_groups_merge_picker_title":
+          "Choose which listing to keep",
+      "admin_telegram_listing_groups_merge_picker_message":
+          "The other {count} listing(s) will be permanently deleted.",
+      "admin_telegram_listing_groups_merge_keep_button":
+          "Keep #{id}, delete the rest",
+      "admin_telegram_listing_groups_merge_confirm_title": "Merge duplicates?",
+      "admin_telegram_listing_groups_merge_confirm_message":
+          "Listing #{id} will be kept. The other {count} listing(s) in this group will be permanently deleted.",
+      "admin_telegram_listing_groups_merge_success": "Duplicates merged",
+      "admin_telegram_listing_groups_merge_error":
+          "Failed to merge duplicates",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Custom chat (@handle or id)",
@@ -3697,6 +3712,22 @@ class AppStrings {
       "admin_telegram_listing_groups_sort_count": "Больше объявлений",
       "admin_telegram_listing_groups_sort_recent": "Недавняя активность",
       "admin_telegram_listing_groups_sort_name": "Имя (А–Я)",
+      "admin_telegram_listing_groups_duplicate_group_title":
+          "Возможные дубликаты ({count})",
+      "admin_telegram_listing_groups_merge_button": "Объединить",
+      "admin_telegram_listing_groups_merge_picker_title":
+          "Выберите объявление, которое нужно оставить",
+      "admin_telegram_listing_groups_merge_picker_message":
+          "Остальные {count} объявление(й) будут удалены безвозвратно.",
+      "admin_telegram_listing_groups_merge_keep_button":
+          "Оставить #{id}, удалить остальные",
+      "admin_telegram_listing_groups_merge_confirm_title":
+          "Объединить дубликаты?",
+      "admin_telegram_listing_groups_merge_confirm_message":
+          "Объявление #{id} останется. Остальные {count} объявление(й) в этой группе будут удалены безвозвратно.",
+      "admin_telegram_listing_groups_merge_success": "Дубликаты объединены",
+      "admin_telegram_listing_groups_merge_error":
+          "Не удалось объединить дубликаты",
       "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_chat_custom_label": "Другой чат (@handle или id)",
@@ -5905,6 +5936,23 @@ class AppStrings {
       "admin_telegram_listing_groups_sort_count": "Ko'p e'lonli",
       "admin_telegram_listing_groups_sort_recent": "So'nggi faollik",
       "admin_telegram_listing_groups_sort_name": "Nomi (A–Z)",
+      "admin_telegram_listing_groups_duplicate_group_title":
+          "Ehtimoliy dublikatlar ({count})",
+      "admin_telegram_listing_groups_merge_button": "Birlashtirish",
+      "admin_telegram_listing_groups_merge_picker_title":
+          "Qaysi e'lon qoldirilishini tanlang",
+      "admin_telegram_listing_groups_merge_picker_message":
+          "Qolgan {count} ta e'lon butunlay o'chiriladi.",
+      "admin_telegram_listing_groups_merge_keep_button":
+          "#{id} qoldirilsin, qolganlari o'chirilsin",
+      "admin_telegram_listing_groups_merge_confirm_title":
+          "Dublikatlarni birlashtirasizmi?",
+      "admin_telegram_listing_groups_merge_confirm_message":
+          "#{id} e'loni qoladi. Ushbu guruhdagi qolgan {count} ta e'lon butunlay o'chiriladi.",
+      "admin_telegram_listing_groups_merge_success":
+          "Dublikatlar birlashtirildi",
+      "admin_telegram_listing_groups_merge_error":
+          "Dublikatlarni birlashtirishda xatolik",
       "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Boshqa chat (@handle yoki id)",

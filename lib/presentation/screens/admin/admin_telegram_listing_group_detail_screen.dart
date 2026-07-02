@@ -7,13 +7,14 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
-import "package:uy_dosh/presentation/screens/home/home_feed_entries.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_telegram_duplicate_clustering.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_telegram_duplicate_group_card.dart";
+import "package:uy_dosh/presentation/widgets/admin/admin_listing_swipe_to_delete_wrapper.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminTelegramListingGroupDetailScreen extends StatefulWidget {
@@ -132,6 +133,24 @@ class _AdminTelegramListingGroupDetailScreenState
     await _fetchListings();
   }
 
+  void _removeListing(int listingId) {
+    setStateIfMounted(() {
+      _listings.removeWhere((l) => l.id == listingId);
+      _listingIds.remove(listingId);
+      _duplicateHints.remove(listingId);
+    });
+  }
+
+  void _handleMerged(TelegramGroupMergeResult result) {
+    setStateIfMounted(() {
+      for (final id in result.deletedIds) {
+        _listings.removeWhere((l) => l.id == id);
+        _listingIds.remove(id);
+        _duplicateHints.remove(id);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final headerCount = _listings.length;
@@ -176,33 +195,32 @@ class _AdminTelegramListingGroupDetailScreenState
       );
     }
 
-    final feedEntries = homeFeedEntriesWithDateHeaders(_listings);
+    final entries = buildGroupedDuplicateEntries(_listings, _duplicateHints);
 
     return CommonListView(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      itemCount: feedEntries.length,
+      itemCount: entries.length,
       itemSpacing: 8,
       itemBuilder: (context, index) {
-        final entry = feedEntries[index];
+        final entry = entries[index];
+        final cluster = entry.cluster;
+        if (cluster != null) {
+          return DuplicateGroupCard(
+            key: ValueKey("cluster-${cluster.first.id}"),
+            members: cluster,
+            hints: _duplicateHints,
+            onMemberDeleted: _removeListing,
+            onMerged: _handleMerged,
+          );
+        }
         final listing = entry.listing;
         if (listing != null) {
-          final hint = _duplicateHints[listing.id];
-          if (hint == null) {
-            return ListingTile(key: ValueKey(listing.id), listing: listing);
-          }
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: listingDuplicateHintBadge(context, hint),
-                ),
-              ),
-              ListingTile(key: ValueKey(listing.id), listing: listing),
-            ],
+          return AdminListingSwipeToDeleteWrapper(
+            key: ValueKey("swipe-${listing.id}"),
+            listingId: listing.id,
+            onDeleted: () => _removeListing(listing.id),
+            child: ListingTile(key: ValueKey(listing.id), listing: listing),
           );
         }
         final day = entry.day!;

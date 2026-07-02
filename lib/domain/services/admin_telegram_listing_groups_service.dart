@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -177,6 +178,41 @@ abstract class IAdminTelegramListingGroupsService {
     int page = 1,
     int limit = 20,
   });
+
+  /// POST `/admin/telegram/listing-groups/merge` — collapse a set of duplicate
+  /// listings into one, permanently deleting the rest.
+  Future<TelegramGroupMergeResult> mergeListings({
+    required List<int> listingIds,
+    required int keepListingId,
+  });
+}
+
+class TelegramGroupMergeResult {
+  TelegramGroupMergeResult({required this.keptListingId, required this.deletedIds});
+
+  factory TelegramGroupMergeResult.fromJson(Map<String, dynamic> json) {
+    final rawDeleted = json["deletedIds"] as List<dynamic>? ?? [];
+    return TelegramGroupMergeResult(
+      keptListingId: ((json["keptListingId"] as num?) ?? 0).toInt(),
+      deletedIds: rawDeleted.map((e) => (e as num).toInt()).toList(),
+    );
+  }
+
+  final int keptListingId;
+  final List<int> deletedIds;
+}
+
+class _MergeListingsRequest implements IJsonEncodable {
+  _MergeListingsRequest({required this.listingIds, required this.keepListingId});
+
+  final List<int> listingIds;
+  final int keepListingId;
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "listingIds": listingIds,
+    "keepListingId": keepListingId,
+  };
 }
 
 class TelegramGroupListingsPage {
@@ -268,6 +304,32 @@ class AdminTelegramListingGroupsService
       );
     } catch (e) {
       logger.d("Error fetching telegram listing group listings: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramGroupMergeResult> mergeListings({
+    required List<int> listingIds,
+    required int keepListingId,
+  }) async {
+    try {
+      final response = await _oauthApiClient
+          .post<dynamic, _MergeListingsRequest>(
+        "/admin/telegram/listing-groups/merge",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _MergeListingsRequest(
+          listingIds: listingIds,
+          keepListingId: keepListingId,
+        ),
+      );
+      if (response is! Map<String, dynamic>) {
+        throw Exception("Unexpected listing-group merge response");
+      }
+      return TelegramGroupMergeResult.fromJson(response);
+    } catch (e) {
+      logger.d("Error merging telegram listing group listings: $e");
       rethrow;
     }
   }

@@ -42,7 +42,6 @@ import "package:uy_dosh/presentation/widgets/common/language_aware_date_picker.d
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_app_bar_flexible_space.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_form_amenities_section.dart";
-import "package:uy_dosh/presentation/widgets/common/listing_form_metro_section.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_type_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/location_picker.dart";
 import "package:uy_dosh/presentation/widgets/common/multi_location_picker.dart";
@@ -95,7 +94,13 @@ class _EditListingScreenState extends State<EditListingScreen>
   bool get _isGroupFormingFlow =>
       _selectedListingTypeId == ListingTypeIds.groupForming;
 
-  bool get _supportsMultiSearch =>
+  /// Every listing type can search/list across multiple subway stations —
+  /// mirrors the create flow, where metro mode always uses [MultiStationPicker].
+  ///
+  /// Supply-side roommate listings describe a single apartment, so district
+  /// mode stays a single pick; demand-side flows (room_needed, group_forming)
+  /// can span several districts. Mirrors the create flow's `_supportsMultiLocation`.
+  bool get _supportsMultiLocation =>
       _selectedListingTypeId == ListingTypeIds.roomNeeded ||
       _isGroupFormingFlow;
 
@@ -472,18 +477,14 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     _seedMultiSearchFromDetail();
 
-    // Set subway line; station wheel is hidden on supply-side edit — location
-    // picker is the source of truth for district.
+    // Preload stations for the saved line so the metro tab's station list
+    // (and the saved selection) is ready as soon as the user opens it.
     if (_selectedSearchStations.isNotEmpty) {
       _selectedSubwayLine = _selectedSearchStations.first.line;
-      if (_supportsMultiSearch) {
-        _loadStationsForLine(_selectedSubwayLine);
-      }
+      _loadStationsForLine(_selectedSubwayLine);
     } else if (widget.listingDetail.subwayStation != null) {
       _selectedSubwayLine = widget.listingDetail.subwayStation!.line;
-      if (_supportsMultiSearch) {
-        _loadStationsForLine(_selectedSubwayLine);
-      }
+      _loadStationsForLine(_selectedSubwayLine);
     }
 
     // Set selected amenities
@@ -674,52 +675,6 @@ class _EditListingScreenState extends State<EditListingScreen>
         curve: Curves.easeInOut,
       );
     });
-    // Only derive location from the station when the listing has no saved
-    // location; otherwise the wheel must match [listingDetail.location] like
-    // the detail screen (station.location_id can differ).
-    if (!_supportsMultiSearch && widget.listingDetail.location == null) {
-      _syncLocationWithStation();
-    }
-  }
-
-  /// Sync location picker with the selected subway station's location_id
-  void _syncLocationWithStation() {
-    if (_currentStations.isNotEmpty &&
-        _selectedStationIndex >= 0 &&
-        _selectedStationIndex < _currentStations.length) {
-      final selectedStation = _currentStations[_selectedStationIndex];
-      final stationLocationId = selectedStation.locationId;
-
-      // Find the location index that matches the station's location_id
-      final locationIndex = _currentLocations.indexWhere(
-        (location) => location.id == stationLocationId,
-      );
-
-      if (locationIndex >= 0) {
-        setState(() {
-          _selectedLocationIndex = locationIndex;
-        });
-
-        // Animate the location picker to the correct position
-        // +1 because the first item is the "unselected" option
-        _locationScrollController?.animateToItem(
-          locationIndex + 1,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
-    }
-  }
-
-  /// Preserve the listing's saved station when the metro line is unchanged;
-  /// supply-side edit hides the station wheel so the district picker wins.
-  SubwayStation? _supplySideSubwayStationForUpdate() {
-    if (_selectedSubwayLine <= 0) return null;
-    final saved = widget.listingDetail.subwayStation;
-    if (saved != null && saved.line == _selectedSubwayLine) {
-      return _stationFromDetail(saved);
-    }
-    return null;
   }
 
   void _restoreSearchLocationsFromDetailIfNeeded() {
@@ -923,9 +878,6 @@ class _EditListingScreenState extends State<EditListingScreen>
 
       _isLoadingLocations = false;
     });
-    if (!_supportsMultiSearch && widget.listingDetail.location == null) {
-      _syncLocationWithStation();
-    }
   }
 
   // Helper method to get the appropriate name based on current language
@@ -1151,7 +1103,12 @@ class _EditListingScreenState extends State<EditListingScreen>
     );
   }
 
-  Widget _buildDemandSideGeoSection() {
+  /// Location step for the edit form: a metro/district tab, mirroring the
+  /// create flow. Metro mode always supports multi-station selection.
+  /// District mode is multi-select for demand-side flows (room_needed,
+  /// group_forming); supply-side roommate listings describe a single
+  /// apartment, so their district pick stays a single wheel.
+  Widget _buildLocationGeoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1179,7 +1136,7 @@ class _EditListingScreenState extends State<EditListingScreen>
             onStationsSelected: _onSearchStationsSelected,
           ),
           if (_selectedSearchStations.isNotEmpty) _buildSelectedStationChips(),
-        ] else ...[
+        ] else if (_supportsMultiLocation) ...[
           MultiLocationPicker(
             locations: _currentLocations,
             selectedLocationIds:
@@ -1196,6 +1153,25 @@ class _EditListingScreenState extends State<EditListingScreen>
           ),
           if (_selectedSearchLocations.isNotEmpty)
             _buildSelectedLocationChips(),
+        ] else ...[
+          LocationPicker(
+            locations: _currentLocations,
+            selectedLocationIndex: _selectedLocationIndex,
+            scrollController: _locationScrollController,
+            onLocationChanged: (locationIndex) {
+              setState(() {
+                _selectedLocationIndex = locationIndex;
+                if (_showLocationError && locationIndex >= 0) {
+                  _showLocationError = false;
+                }
+              });
+            },
+            isLoading: _isLoadingLocations,
+            useThemeColors: true,
+            useColoredIcons: true,
+            showError: _showLocationError,
+            showArrows: false,
+          ),
         ],
       ],
     );
@@ -1412,22 +1388,17 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("move_in_date_label", fallback: "Move-in date");
     }
 
-    if (_supportsMultiSearch) {
-      final multiLocationChanged =
-          _locationSearchMode == _LocationSearchMode.metro
-              ? !_searchStationsMatchBaseline()
-              : !_searchLocationsMatchBaseline();
-      if (multiLocationChanged) {
+    if (_locationSearchMode == _LocationSearchMode.metro) {
+      if (!_searchStationsMatchBaseline()) {
+        addLabel("location", fallback: "Location");
+      }
+    } else if (_supportsMultiLocation) {
+      if (!_searchLocationsMatchBaseline()) {
         addLabel("location", fallback: "Location");
       }
     } else {
       if (baseline.locationId != currentLocationId) {
         addLabel("location", fallback: "Location");
-      }
-
-      if (baseline.subwayStationId != currentSubwayStationId ||
-          baseline.subwayLineId != currentSubwayLineId) {
-        addLabel("select_metro_line_optional", fallback: "Metro");
       }
     }
 
@@ -1548,23 +1519,16 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     if (_moveInDateValue != _baselineMoveInDate(d)) return true;
 
-    if (_supportsMultiSearch) {
-      if (_locationSearchMode == _LocationSearchMode.metro) {
-        if (_selectedSearchLocations.isNotEmpty) return true;
-        if (!_searchStationsMatchBaseline()) return true;
-      } else {
-        if (_selectedSearchStations.isNotEmpty) return true;
-        if (!_searchLocationsMatchBaseline()) return true;
-      }
+    if (_locationSearchMode == _LocationSearchMode.metro) {
+      if (_selectedSearchLocations.isNotEmpty) return true;
+      if (!_searchStationsMatchBaseline()) return true;
+    } else if (_supportsMultiLocation) {
+      if (_selectedSearchStations.isNotEmpty) return true;
+      if (!_searchLocationsMatchBaseline()) return true;
     } else {
+      if (_selectedSearchStations.isNotEmpty) return true;
       if (!_isLoadingLocations && d.locationId != _currentLocationId()) {
         return true;
-      }
-
-      if (!_isLoadingStations) {
-        if (d.subwayStationId != _currentSubwayStationId()) return true;
-        final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
-        if (d.subwayLineId != curLine) return true;
       }
     }
 
@@ -1757,58 +1721,7 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ],
                         const SizedBox(height: 10),
 
-                        if (_supportsMultiSearch) ...[
-                          _buildDemandSideGeoSection(),
-                        ] else ...[
-                          // Metro Line and Station Selection (Third Row)
-                          ListingFormMetroSection(
-                            selectedSubwayLine: _selectedSubwayLine,
-                            selectedStationIndex: _selectedStationIndex,
-                            currentStations: _currentStations,
-                            isLoadingStations: _isLoadingStations,
-                            metroLineScrollController:
-                                _metroLineScrollController,
-                            metroStationScrollController:
-                                _metroStationScrollController,
-                            showStationPicker: false,
-                            onLineChanged: (index) {
-                              setState(() {
-                                _selectedSubwayLine = index;
-                                if (index > 0 && _supportsMultiSearch) {
-                                  _loadStationsForLine(index);
-                                } else {
-                                  _currentStations = [];
-                                  _selectedStationIndex = 0;
-                                }
-                              });
-                            },
-                            onStationChanged: (_) {},
-                            onDismissKeyboard: _dismissKeyboard,
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ), // Space between metro fields and location
-                          // Location Field - Full Row
-                          LocationPicker(
-                            locations: _currentLocations,
-                            selectedLocationIndex: _selectedLocationIndex,
-                            scrollController: _locationScrollController,
-                            onLocationChanged: (locationIndex) {
-                              setState(() {
-                                _selectedLocationIndex = locationIndex;
-                                // Clear location error when user selects a location
-                                if (_showLocationError && locationIndex >= 0) {
-                                  _showLocationError = false;
-                                }
-                              });
-                            },
-                            isLoading: _isLoadingLocations,
-                            useThemeColors: true,
-                            useColoredIcons: true,
-                            showError: _showLocationError,
-                            showArrows: false,
-                          ),
-                        ],
+                        _buildLocationGeoSection(),
                         const SizedBox(
                           height: 10,
                         ), // Space between location and price range
@@ -2462,15 +2375,13 @@ class _EditListingScreenState extends State<EditListingScreen>
       return;
     }
 
-    final usesMetroSearch = _supportsMultiSearch &&
-        _locationSearchMode == _LocationSearchMode.metro;
-    final usesDistrictSearch = _supportsMultiSearch &&
-        _locationSearchMode == _LocationSearchMode.district;
+    final usesMetroMode = _locationSearchMode == _LocationSearchMode.metro;
+    final usesDistrictMode = _locationSearchMode == _LocationSearchMode.district;
 
     // Validate location/search area (mandatory)
-    final missingLocation = usesMetroSearch
+    final missingLocation = usesMetroMode
         ? _selectedSearchStations.isEmpty
-        : usesDistrictSearch
+        : _supportsMultiLocation
             ? _selectedSearchLocations.isEmpty
             : _selectedLocationIndex < 0;
     if (missingLocation) {
@@ -2504,37 +2415,37 @@ class _EditListingScreenState extends State<EditListingScreen>
     });
 
     try {
-      // Get the selected location and station (if available)
-      final selectedLocation = usesDistrictSearch
-          ? _selectedSearchLocations.first
-          : !_supportsMultiSearch
-              ? _currentLocations[_selectedLocationIndex]
+      // Get the selected location and station (if available). Metro mode
+      // always persists the full multi-station selection (element 0 doubles
+      // as the primary station for backward-compatible display/search).
+      // District mode persists a multi-location set for demand-side flows,
+      // or a single legacy location for supply-side roommate listings.
+      final selectedLocation = !usesDistrictMode
+          ? null
+          : _supportsMultiLocation
+              ? (_selectedSearchLocations.isNotEmpty
+                  ? _selectedSearchLocations.first
+                  : null)
+              : (_selectedLocationIndex >= 0 &&
+                      _selectedLocationIndex < _currentLocations.length
+                  ? _currentLocations[_selectedLocationIndex]
+                  : null);
+      final selectedStation =
+          usesMetroMode && _selectedSearchStations.isNotEmpty
+              ? _selectedSearchStations.first
               : null;
-      final selectedStation = usesMetroSearch
-          ? _selectedSearchStations.first
-          : !_supportsMultiSearch
-              ? _supplySideSubwayStationForUpdate()
-              : _selectedSubwayLine > 0 &&
-                      _currentStations.isNotEmpty &&
-                      _selectedStationIndex >= 0 &&
-                      _selectedStationIndex < _currentStations.length
-                  ? _currentStations[_selectedStationIndex]
-                  : null;
-      final multiStationIds = _supportsMultiSearch
-          ? (usesMetroSearch
-              ? _selectedSearchStations.map((station) => station.id).toList()
-              : <int>[])
-          : null;
-      final multiLocationIds = _supportsMultiSearch
-          ? (usesDistrictSearch
+      final multiStationIds = usesMetroMode
+          ? _selectedSearchStations.map((station) => station.id).toList()
+          : <int>[];
+      // Only demand-side flows ever persist a multi-location set; leave the
+      // field untouched (null) for supply-side roommate listings, which use
+      // the legacy singular `locationId` instead.
+      final multiLocationIds = _supportsMultiLocation
+          ? (usesDistrictMode
               ? _selectedSearchLocations.map((location) => location.id).toList()
               : <int>[])
           : null;
-      final effectiveSubwayLineId = usesMetroSearch
-          ? selectedStation!.line
-          : usesDistrictSearch
-              ? null
-              : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
+      final effectiveSubwayLineId = usesMetroMode ? selectedStation?.line : null;
 
       // Determine listing type ID based on selection
       final listingTypeId = _selectedListingTypeId;
