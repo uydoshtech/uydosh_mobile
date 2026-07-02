@@ -133,15 +133,19 @@ class DuplicateGroupCard extends StatelessWidget {
         AdminListingSwipeToDeleteWrapper(
           listingId: listing.id,
           onDeleted: () => onMemberDeleted(listing.id),
-          child: ListingTile(key: ValueKey(listing.id), listing: listing),
+          child: ListingTile(
+            key: ValueKey(listing.id),
+            listing: listing,
+            trailingAction: _buildIdBadge(context, listing.id),
+          ),
         ),
       ],
     );
   }
 
-  /// Small "#id" tag shown in the top-right corner of each candidate tile in
-  /// the merge picker, so an admin can tell which listing a given "Keep #id"
-  /// button below actually refers to.
+  /// Small "#id" tag shown in the top-right corner of each candidate tile
+  /// (both in the group list and in the merge picker), so an admin can tell
+  /// which listing a given "Keep #id" button below actually refers to.
   Widget _buildIdBadge(BuildContext context, int id) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
