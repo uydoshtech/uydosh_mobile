@@ -262,6 +262,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         ? _MetroLayerMode.all
         : _MetroLayerMode.off;
     _showUniversitiesLayer = !isAndroidDevice && layerDefaults.universities;
+    if (widget.embedded && HomeInlineSearchState().ribbonDismissedByUser) {
+      _filterRibbonDismissedByUser = true;
+    }
     _syncFiltersFromWidget();
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
       final initialResult = _resultFromListings(
@@ -537,6 +540,11 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       HomeInlineSearchState().isActive;
 
   bool get _hasMapSearchFilters {
+    // User dismissed the ribbon — browse the unfiltered feed on the map, not a
+    // narrowed API search (profile defaults still look like "filters").
+    if (_filterRibbonDismissedByUser) {
+      return false;
+    }
     if (!_filterRibbonEnabled) {
       return _hasExplicitUserMapFilters;
     }
@@ -982,8 +990,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   }
 
   void _hideFilterRibbon() {
-    widget.onDismissFilterRibbon?.call();
     _filterRibbonDismissedByUser = true;
+    widget.onDismissFilterRibbon?.call();
     _showFilterRibbon = false;
     _loadError = null;
     _selectedPin = null;

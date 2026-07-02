@@ -712,7 +712,7 @@ class _MapLocationPromptCard extends StatelessWidget {
   }
 }
 
-class _NoMapResultsTile extends StatelessWidget {
+class _NoMapResultsTile extends StatefulWidget {
   const _NoMapResultsTile({
     required this.label,
     super.key,
@@ -721,24 +721,69 @@ class _NoMapResultsTile extends StatelessWidget {
   final String label;
 
   @override
+  State<_NoMapResultsTile> createState() => _NoMapResultsTileState();
+}
+
+class _NoMapResultsTileState extends State<_NoMapResultsTile>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _blinkController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+  late final Animation<double> _blinkOpacity = Tween<double>(
+    begin: 0.45,
+    end: 1.0,
+  ).animate(
+    CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncBlink();
+  }
+
+  void _syncBlink() {
+    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+        TickerMode.of(context);
+    if (enabled) {
+      if (!_blinkController.isAnimating) {
+        _blinkController.repeat(reverse: true);
+      }
+    } else {
+      _blinkController.stop();
+      _blinkController.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final borderRadius = BorderRadius.circular(18);
     final solidColors = UiPerformancePolicy.solidColorsPreferredForDevice;
+    final text = Text(
+      widget.label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: theme.textTheme.titleMedium?.copyWith(
+        color: scheme.onSurface,
+        fontWeight: FontWeight.w800,
+        height: 1.0,
+      ),
+    );
     final child = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Center(
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: scheme.onSurface,
-            fontWeight: FontWeight.w800,
-            height: 1.0,
-          ),
-        ),
+        child: _blinkController.isAnimating
+            ? FadeTransition(opacity: _blinkOpacity, child: text)
+            : text,
       ),
     );
 
