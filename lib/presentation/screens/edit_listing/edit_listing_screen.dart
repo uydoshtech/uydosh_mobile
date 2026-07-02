@@ -133,6 +133,9 @@ class _EditListingScreenState extends State<EditListingScreen>
   bool _isLoadingStations = false;
   bool _isLoadingLocations = false;
   bool _isSubmitting = false;
+  bool _isAdmin = false;
+
+  bool get _canChangeListingType => _isAdmin;
 
   // Validation state variables
   bool _showDescriptionError = false;
@@ -303,6 +306,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
     unawaited(_initGender());
+    unawaited(_initAdminRole());
     _listingTypeScrollController = FixedExtentScrollController(
       initialItem: _listingTypePickerOrder
           .indexOf(_selectedListingTypeId)
@@ -969,6 +973,63 @@ class _EditListingScreenState extends State<EditListingScreen>
     FocusScope.of(context).unfocus();
   }
 
+  Future<void> _initAdminRole() async {
+    final role = await SessionManager.getUserRole();
+    if (!mounted) return;
+    if (role == "admin") {
+      setState(() => _isAdmin = true);
+    }
+  }
+
+  void _onListingTypeChanged(int listingTypeId) {
+    setState(() {
+      final prevType = _selectedListingTypeId;
+      _selectedListingTypeId = listingTypeId;
+
+      final wasGroupForming = prevType == ListingTypeIds.groupForming;
+      final isGroupForming = listingTypeId == ListingTypeIds.groupForming;
+
+      if (isGroupForming) {
+        _isPrivateRoom = false;
+        _hostResident = false;
+        _groupSizeScrollController ??= FixedExtentScrollController(
+          initialItem: _groupSizeTarget - GroupSizeTargetPicker.minSize,
+        );
+      }
+
+      if (wasGroupForming && !isGroupForming) {
+        if (listingTypeId == ListingTypeIds.roomNeeded) {
+          _deriveBudgetRangeFromRoommatePrice();
+        } else if (listingTypeId == ListingTypeIds.roommateNeeded) {
+          _deriveRoommatePriceFromBudget();
+        }
+      } else if (prevType == ListingTypeIds.roommateNeeded &&
+          listingTypeId == ListingTypeIds.roomNeeded) {
+        _deriveBudgetRangeFromRoommatePrice();
+      } else if (prevType == ListingTypeIds.roomNeeded &&
+          listingTypeId == ListingTypeIds.roommateNeeded) {
+        _deriveRoommatePriceFromBudget();
+      } else if (!wasGroupForming && isGroupForming) {
+        if (prevType == ListingTypeIds.roommateNeeded) {
+          _deriveBudgetRangeFromRoommatePrice();
+        }
+      }
+    });
+    _markDirty();
+  }
+
+  Widget _buildListingTypePicker({required bool readOnly}) {
+    return ListingTypePicker(
+      selectedListingTypeId: _selectedListingTypeId,
+      scrollController: _listingTypeScrollController,
+      userGender: _selectedGender,
+      readOnly: readOnly,
+      onListingTypeChanged: _onListingTypeChanged,
+      useThemeColors: true,
+      showArrows: false,
+    );
+  }
+
   /// When switching to "room needed", seed a sensible range from the scalar rent.
   void _deriveBudgetRangeFromRoommatePrice() {
     final s = _roommatePrice.clamp(_priceSliderMin, _priceSliderMax);
@@ -1324,7 +1385,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
 
     final baselineTypeId = _listingTypeIdFromDetail(baseline);
-    if (!_isGroupFormingFlow && _selectedListingTypeId != baselineTypeId) {
+    if (_selectedListingTypeId != baselineTypeId) {
       addLabel("listing_type_label", fallback: "Listing type");
     }
 
@@ -1466,7 +1527,7 @@ class _EditListingScreenState extends State<EditListingScreen>
     }
 
     final baselineTypeId = _listingTypeIdFromDetail(d);
-    if (!_isGroupFormingFlow && _selectedListingTypeId != baselineTypeId) {
+    if (_selectedListingTypeId != baselineTypeId) {
       return true;
     }
 
@@ -1629,7 +1690,25 @@ class _EditListingScreenState extends State<EditListingScreen>
                     child: UydoshFormScrollBody(
                       topPadding: bodyTopPad,
                       children: [
-                        if (_isGroupFormingFlow) ...[
+                        if (_isGroupFormingFlow && !_canChangeListingType) ...[
+                          LabeledFieldOverlay(
+                            label: L10n.get("group_size_target_label"),
+                            child: GroupSizeTargetPicker(
+                              groupSizeTarget: _groupSizeTarget,
+                              scrollController: _groupSizeScrollController,
+                              onChanged: (value) {
+                                setState(() => _groupSizeTarget = value);
+                                _markDirty();
+                              },
+                            ),
+                          ),
+                        ] else if (_canChangeListingType &&
+                            _isGroupFormingFlow) ...[
+                          LabeledFieldOverlay(
+                            label: L10n.get("listing_type_label"),
+                            child: _buildListingTypePicker(readOnly: false),
+                          ),
+                          const SizedBox(height: 10),
                           LabeledFieldOverlay(
                             label: L10n.get("group_size_target_label"),
                             child: GroupSizeTargetPicker(
@@ -1651,33 +1730,8 @@ class _EditListingScreenState extends State<EditListingScreen>
                               Expanded(
                                 child: LabeledFieldOverlay(
                                   label: L10n.get("listing_type_label"),
-                                  child: ListingTypePicker(
-                                    selectedListingTypeId:
-                                        _selectedListingTypeId,
-                                    scrollController:
-                                        _listingTypeScrollController,
-                                    userGender: _selectedGender,
-                                    readOnly: true,
-                                    onListingTypeChanged: (listingTypeId) {
-                                      setState(() {
-                                        final prevType = _selectedListingTypeId;
-                                        _selectedListingTypeId = listingTypeId;
-                                        if (prevType ==
-                                                ListingTypeIds.roommateNeeded &&
-                                            listingTypeId ==
-                                                ListingTypeIds.roomNeeded) {
-                                          _deriveBudgetRangeFromRoommatePrice();
-                                        } else if (prevType ==
-                                                ListingTypeIds.roomNeeded &&
-                                            listingTypeId ==
-                                                ListingTypeIds.roommateNeeded) {
-                                          _deriveRoommatePriceFromBudget();
-                                        }
-                                      });
-                                      _markDirty();
-                                    },
-                                    useThemeColors: true,
-                                    showArrows: false,
+                                  child: _buildListingTypePicker(
+                                    readOnly: !_canChangeListingType,
                                   ),
                                 ),
                               ),

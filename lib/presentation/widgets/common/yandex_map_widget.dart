@@ -1260,20 +1260,20 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     final controller = _mapController;
     if (controller == null || !_isMapReady) return;
 
-    final moved = await _moveCameraAutomatically(
+    final cameraPosition = await controller.getCameraPosition();
+    final zoom = cameraPosition.zoom;
+
+    await _moveCameraAutomatically(
       controller,
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: Point(latitude: latitude, longitude: longitude),
-          zoom: 16.0,
-          azimuth: 0,
-          tilt: 0,
+          zoom: zoom,
+          azimuth: cameraPosition.azimuth,
+          tilt: cameraPosition.tilt,
         ),
       ),
     );
-    if (moved && _isCurrentMapOperation(controller, _mapOperationGeneration)) {
-      _setCurrentZoom(16.0);
-    }
   }
 
   Point? _selectedZoomFocusPoint() {
