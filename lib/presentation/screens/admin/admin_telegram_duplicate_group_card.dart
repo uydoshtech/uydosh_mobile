@@ -138,6 +138,28 @@ class DuplicateGroupCard extends StatelessWidget {
     );
   }
 
+  /// Small "#id" tag shown in the top-right corner of each candidate tile in
+  /// the merge picker, so an admin can tell which listing a given "Keep #id"
+  /// button below actually refers to.
+  Widget _buildIdBadge(BuildContext context, int id) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        "#$id",
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
   Future<void> _showMergePicker(BuildContext context) async {
     final scheme = Theme.of(context).colorScheme;
     await showModalBottomSheet<void>(
@@ -182,7 +204,11 @@ class DuplicateGroupCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   for (final member in members) ...[
-                    ListingTile(key: ValueKey("pick-${member.id}"), listing: member),
+                    ListingTile(
+                      key: ValueKey("pick-${member.id}"),
+                      listing: member,
+                      trailingAction: _buildIdBadge(context, member.id),
+                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
