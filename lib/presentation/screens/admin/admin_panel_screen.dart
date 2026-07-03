@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_scr
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_listing_groups_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_sync_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_telegram_user_locations_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
@@ -272,6 +273,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminSubwayLineHeatmapScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
+                      icon: Icons.person_pin_circle_outlined,
+                      titleKey: "admin_panel_section_telegram_locations",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminTelegramUserLocationsScreen(),
                           ),
                         );
                       },

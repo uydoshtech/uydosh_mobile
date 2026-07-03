@@ -1697,6 +1697,7 @@ class AppStrings {
       "admin_gig_moderation_approved_request_toast": "Task published",
       "admin_panel_section_district_heatmap": "District heat map",
       "admin_panel_section_subway_heatmap": "Subway line heat map",
+      "admin_panel_section_telegram_locations": "Telegram user locations",
       "admin_panel_section_search_analytics": "Search analytics",
       "admin_panel_section_listing_creation_analytics":
           "Listings creation analytics",
@@ -1742,6 +1743,15 @@ class AppStrings {
       "admin_district_heatmap_total": "Total listings",
       "admin_district_heatmap_max": "Max in district",
       "admin_district_heatmap_count_label": "Listings",
+
+      "admin_telegram_locations_title": "Telegram user locations",
+      "admin_telegram_locations_search_hint": "Search by username or Telegram id",
+      "admin_telegram_locations_error": "Failed to load Telegram users",
+      "admin_telegram_locations_empty": "No Telegram location reports yet",
+      "admin_telegram_locations_ping_count": "{count} location reports",
+      "admin_telegram_location_history_empty": "No location history for this user",
+      "admin_telegram_location_history_map_web_unavailable":
+          "Map preview isn't available on web — see the list below",
       "admin_district_heatmap_unavailable": "Unavailable",
       "admin_district_heatmap_no_data": "No district data available",
 
@@ -3905,6 +3915,7 @@ class AppStrings {
       "admin_gig_moderation_approved_request_toast": "Задача опубликована",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
+      "admin_panel_section_telegram_locations": "Локации пользователей Telegram",
       "admin_panel_section_search_analytics": "Аналитика поиска",
       "admin_panel_section_listing_creation_analytics":
           "Аналитика создания объявлений",
@@ -3954,6 +3965,18 @@ class AppStrings {
       "admin_district_heatmap_count_label": "Объявления",
       "admin_district_heatmap_unavailable": "Недоступно",
       "admin_district_heatmap_no_data": "Нет данных по районам",
+
+      "admin_telegram_locations_title": "Локации пользователей Telegram",
+      "admin_telegram_locations_search_hint":
+          "Поиск по имени пользователя или Telegram id",
+      "admin_telegram_locations_error":
+          "Не удалось загрузить пользователей Telegram",
+      "admin_telegram_locations_empty": "Пока нет отчётов о местоположении",
+      "admin_telegram_locations_ping_count": "Отчётов о местоположении: {count}",
+      "admin_telegram_location_history_empty":
+          "Нет истории местоположений для этого пользователя",
+      "admin_telegram_location_history_map_web_unavailable":
+          "Просмотр карты недоступен в веб-версии — см. список ниже",
 
       "admin_subway_heatmap_title": "Тепловая карта линий метро",
       "admin_subway_heatmap_loading": "Загрузка статистики по линиям метро...",
@@ -6124,6 +6147,8 @@ class AppStrings {
       "admin_panel_section_district_heatmap": "Tumanlar issiqlik xaritasi",
       "admin_panel_section_subway_heatmap":
           "Metro liniyalari issiqlik xaritasi",
+      "admin_panel_section_telegram_locations":
+          "Telegram foydalanuvchilari joylashuvi",
       "admin_panel_section_search_analytics": "Qidiruv statistikasi",
       "admin_panel_section_listing_creation_analytics":
           "E'lonlar yaratilishi statistikasi",
@@ -6170,6 +6195,19 @@ class AppStrings {
       "admin_district_heatmap_count_label": "E'lonlar",
       "admin_district_heatmap_unavailable": "Mavjud emas",
       "admin_district_heatmap_no_data": "Tumanlar bo'yicha ma'lumot yo'q",
+
+      "admin_telegram_locations_title": "Telegram foydalanuvchilari joylashuvi",
+      "admin_telegram_locations_search_hint":
+          "Username yoki Telegram id bo'yicha qidirish",
+      "admin_telegram_locations_error":
+          "Telegram foydalanuvchilarini yuklab bo'lmadi",
+      "admin_telegram_locations_empty":
+          "Hozircha joylashuv haqida ma'lumot yo'q",
+      "admin_telegram_locations_ping_count": "{count} ta joylashuv hisoboti",
+      "admin_telegram_location_history_empty":
+          "Bu foydalanuvchi uchun joylashuv tarixi yo'q",
+      "admin_telegram_location_history_map_web_unavailable":
+          "Xarita ko'rinishi web versiyada mavjud emas — pastdagi ro'yxatga qarang",
 
       "admin_subway_heatmap_title": "Metro liniyalari issiqlik xaritasi",
       "admin_subway_heatmap_loading":

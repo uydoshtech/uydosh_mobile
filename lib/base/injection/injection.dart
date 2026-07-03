@@ -15,6 +15,7 @@ import "package:uy_dosh/domain/services/admin_content_moderation_settings_servic
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_moderation_user_picker_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
+import "package:uy_dosh/domain/services/admin_telegram_mini_app_location_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_sync_service.dart";
 import "package:uy_dosh/domain/services/admin_user_search_alert_service.dart";
 import "package:uy_dosh/domain/services/admin_user_service.dart";
@@ -199,6 +200,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAdminTelegramSyncService>(
     () => AdminTelegramSyncService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminTelegramMiniAppLocationService>(
+    () => AdminTelegramMiniAppLocationService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAdminTelegramListingGroupsService>(
