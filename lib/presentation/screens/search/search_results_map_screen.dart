@@ -273,6 +273,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       );
       _result = initialResult;
       _selectedPin = _autoSelectedPin(initialResult);
+      _listingTooltipHeight = 0;
     }
     if (_hasMapSearchFilters) {
       _loadResults(showLoading: false);
@@ -460,11 +461,15 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _publishMapListingCount(_SearchMapResult? result) {
     if (!widget.embedded) return;
-    if (result == null) {
-      HomeInlineSearchState().setMapListingCount(0);
-      return;
-    }
-    HomeInlineSearchState().setMapListingCount(result.total);
+    final count = result?.total ?? 0;
+    // Deferred: this can be called synchronously from didUpdateWidget (e.g.
+    // when the feed revision or filters change), and HomeInlineSearchState's
+    // listeners rebuild ancestor widgets — notifying inline there triggers
+    // "setState() or markNeedsBuild() called during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      HomeInlineSearchState().setMapListingCount(count);
+    });
   }
 
   void _pruneSelectionForCurrentResult() {
@@ -748,6 +753,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _selectedPinGroup = const [];
       _selectedListingGroupIds = const [];
       _selectedMetroStation = null;
+      _listingTooltipHeight = 0;
       _pruneSelectionForCurrentResult();
       _syncAllMapProps();
       if (mountingMapBody) setState(() {});
@@ -1033,6 +1039,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedPinGroup = const [];
     _selectedListingGroupIds = const [];
     _selectedMetroStation = null;
+    _listingTooltipHeight = 0;
     _pruneSelectionForCurrentResult();
     _syncAllMapProps();
     _publishMapListingCount(result);
@@ -1535,11 +1542,18 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _handleSelectPin(ListingMapPin pin) {
     _markListingVisited(pin.listingId);
+    final isSameSelection = _selectedPin?.listingId == pin.listingId;
     _selectedPin = pin;
     _selectedPinGroup = const [];
     _selectedListingGroupIds = const [];
     _selectedUniversityMarker = null;
     _selectedMetroStation = null;
+    // Tapping a different pin swaps in a new tooltip whose real height isn't
+    // known yet — drop the previous pin's measured height so the lift falls
+    // back to the size estimate instead of the stale (possibly much smaller)
+    // value, which would otherwise leave the FABs under-lifted until the new
+    // tooltip is measured.
+    if (!isSameSelection) _listingTooltipHeight = 0;
     _syncCanvasProps();
     _syncOverlayProps();
   }
@@ -1552,6 +1566,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     ];
     _selectedUniversityMarker = null;
     _selectedMetroStation = null;
+    _listingTooltipHeight = 0;
     _syncCanvasProps();
     _syncOverlayProps();
   }

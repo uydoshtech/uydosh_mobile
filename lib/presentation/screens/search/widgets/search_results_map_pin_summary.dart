@@ -821,6 +821,7 @@ class _MapListingTooltipHeightReporterRenderObject extends RenderProxyBox {
 
   ValueChanged<double> onHeightChanged;
   Size? _oldSize;
+  bool _reportScheduled = false;
 
   @override
   void performLayout() {
@@ -828,8 +829,20 @@ class _MapListingTooltipHeightReporterRenderObject extends RenderProxyBox {
     final newSize = child?.size ?? Size.zero;
     if (_oldSize == newSize) return;
     _oldSize = newSize;
-    if (newSize.height > 0) {
+    if (newSize.height <= 0) return;
+    // Reporting synchronously from performLayout mutates state that feeds
+    // back into this same subtree's positioning (the FAB lift above the
+    // tooltip). Deferring to a post-frame callback avoids relying on the
+    // rebuild it triggers being flushed before paint, which is not
+    // guaranteed and can leave the FABs under-lifted for a frame (or, on
+    // some platforms/renderers, longer) — visible as buttons not rising to
+    // clear the tooltip when it opens.
+    if (_reportScheduled) return;
+    _reportScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reportScheduled = false;
+      if (!attached) return;
       onHeightChanged(newSize.height);
-    }
+    });
   }
 }
