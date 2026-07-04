@@ -35,8 +35,7 @@ class AppStrings {
       "create_choice_roommate_needed_subtitle":
           "I'll take in a roommate or rent out a room",
       "create_choice_room_needed": "Find housing",
-      "create_choice_room_needed_subtitle":
-          "Room, sublet, or apartment",
+      "create_choice_room_needed_subtitle": "Room, sublet, or apartment",
       "create_choice_group_forming": "Gather a group",
       "create_choice_group_forming_subtitle":
           "We'll find people and rent housing together",
@@ -1514,8 +1513,7 @@ class AppStrings {
       "admin_telegram_listing_groups_merge_success": "Duplicates merged",
       "admin_telegram_listing_groups_merge_partial":
           "Only {deleted} of {total} duplicate(s) could be deleted",
-      "admin_telegram_listing_groups_merge_error":
-          "Failed to merge duplicates",
+      "admin_telegram_listing_groups_merge_error": "Failed to merge duplicates",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Custom chat (@handle or id)",
@@ -1745,13 +1743,17 @@ class AppStrings {
       "admin_district_heatmap_count_label": "Listings",
 
       "admin_telegram_locations_title": "Telegram user locations",
-      "admin_telegram_locations_search_hint": "Search by username or Telegram id",
+      "admin_telegram_locations_search_hint":
+          "Search by username or Telegram id",
       "admin_telegram_locations_error": "Failed to load Telegram users",
       "admin_telegram_locations_empty": "No Telegram location reports yet",
-      "admin_telegram_locations_ping_count": "{count} location reports",
-      "admin_telegram_location_history_empty": "No location history for this user",
+      "admin_telegram_locations_ping_count": "Locations: {count}",
+      "admin_telegram_location_history_empty":
+          "No location history for this user",
       "admin_telegram_location_history_map_web_unavailable":
           "Map preview isn't available on web — see the list below",
+      "admin_telegram_location_dedup_button": "Merge: {distance}",
+      "admin_telegram_location_dedup_title": "Merge nearby points within",
       "admin_district_heatmap_unavailable": "Unavailable",
       "admin_district_heatmap_no_data": "No district data available",
 
@@ -2209,8 +2211,7 @@ class AppStrings {
       "create_choice_roommate_needed_subtitle":
           "Подселю к себе или сдам комнату",
       "create_choice_room_needed": "Найти жильё",
-      "create_choice_room_needed_subtitle":
-          "Комната, подселение или квартира",
+      "create_choice_room_needed_subtitle": "Комната, подселение или квартира",
       "create_choice_group_forming": "Собрать группу",
       "create_choice_group_forming_subtitle":
           "Найдём людей и снимем жильё вместе",
@@ -3915,7 +3916,8 @@ class AppStrings {
       "admin_gig_moderation_approved_request_toast": "Задача опубликована",
       "admin_panel_section_district_heatmap": "Тепловая карта районов",
       "admin_panel_section_subway_heatmap": "Тепловая карта линий метро",
-      "admin_panel_section_telegram_locations": "Локации пользователей Telegram",
+      "admin_panel_section_telegram_locations":
+          "Локации пользователей Telegram",
       "admin_panel_section_search_analytics": "Аналитика поиска",
       "admin_panel_section_listing_creation_analytics":
           "Аналитика создания объявлений",
@@ -3972,11 +3974,13 @@ class AppStrings {
       "admin_telegram_locations_error":
           "Не удалось загрузить пользователей Telegram",
       "admin_telegram_locations_empty": "Пока нет отчётов о местоположении",
-      "admin_telegram_locations_ping_count": "Отчётов о местоположении: {count}",
+      "admin_telegram_locations_ping_count": "Локаций: {count}",
       "admin_telegram_location_history_empty":
           "Нет истории местоположений для этого пользователя",
       "admin_telegram_location_history_map_web_unavailable":
           "Просмотр карты недоступен в веб-версии — см. список ниже",
+      "admin_telegram_location_dedup_button": "Слияние: {distance}",
+      "admin_telegram_location_dedup_title": "Объединять точки в радиусе",
 
       "admin_subway_heatmap_title": "Тепловая карта линий метро",
       "admin_subway_heatmap_loading": "Загрузка статистики по линиям метро...",
@@ -4437,8 +4441,7 @@ class AppStrings {
       "create_choice_roommate_needed_subtitle":
           "O'zimga xonadosh qo'shaman yoki xonani ijaraga beraman",
       "create_choice_room_needed": "Uy-joy topish",
-      "create_choice_room_needed_subtitle":
-          "Xona, xonadosh joy yoki kvartira",
+      "create_choice_room_needed_subtitle": "Xona, xonadosh joy yoki kvartira",
       "create_choice_group_forming": "Guruh yig'ish",
       "create_choice_group_forming_subtitle":
           "Odamlarni topamiz va birga uy-joy ijaraga olamiz",
@@ -6203,11 +6206,14 @@ class AppStrings {
           "Telegram foydalanuvchilarini yuklab bo'lmadi",
       "admin_telegram_locations_empty":
           "Hozircha joylashuv haqida ma'lumot yo'q",
-      "admin_telegram_locations_ping_count": "{count} ta joylashuv hisoboti",
+      "admin_telegram_locations_ping_count": "Joylashuvlar: {count}",
       "admin_telegram_location_history_empty":
           "Bu foydalanuvchi uchun joylashuv tarixi yo'q",
       "admin_telegram_location_history_map_web_unavailable":
           "Xarita ko'rinishi web versiyada mavjud emas — pastdagi ro'yxatga qarang",
+      "admin_telegram_location_dedup_button": "Birlashtirish: {distance}",
+      "admin_telegram_location_dedup_title":
+          "Yaqin nuqtalarni shu radiusda birlashtirish",
 
       "admin_subway_heatmap_title": "Metro liniyalari issiqlik xaritasi",
       "admin_subway_heatmap_loading":

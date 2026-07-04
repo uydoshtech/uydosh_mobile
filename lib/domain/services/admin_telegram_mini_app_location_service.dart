@@ -94,6 +94,9 @@ class TelegramMiniAppLocationUsersPage {
 
 /// One recorded device position for a Telegram user, optionally paired with a
 /// verified phone number (only present on the row where requestContact() was shared).
+///
+/// May represent several consecutive raw pings collapsed into one point when the
+/// visitor stayed at the exact same spot — see [repeatCount] / [lastSeenAt].
 class TelegramMiniAppLocationHistoryPoint {
   TelegramMiniAppLocationHistoryPoint({
     required this.id,
@@ -101,16 +104,24 @@ class TelegramMiniAppLocationHistoryPoint {
     required this.longitude,
     required this.phoneNumber,
     required this.createdAt,
+    required this.lastSeenAt,
+    required this.repeatCount,
   });
 
   factory TelegramMiniAppLocationHistoryPoint.fromJson(
       Map<String, dynamic> json) {
+    final createdAt = _asDateTime(json["createdAt"]);
     return TelegramMiniAppLocationHistoryPoint(
       id: _asInt(json["id"]),
       latitude: _asDouble(json["latitude"]),
       longitude: _asDouble(json["longitude"]),
       phoneNumber: json["phoneNumber"] as String?,
-      createdAt: _asDateTime(json["createdAt"]),
+      createdAt: createdAt,
+      lastSeenAt: json["lastSeenAt"] != null
+          ? _asDateTime(json["lastSeenAt"])
+          : createdAt,
+      repeatCount:
+          json["repeatCount"] != null ? _asInt(json["repeatCount"]) : 1,
     );
   }
 
@@ -119,6 +130,8 @@ class TelegramMiniAppLocationHistoryPoint {
   final double longitude;
   final String? phoneNumber;
   final DateTime createdAt;
+  final DateTime lastSeenAt;
+  final int repeatCount;
 }
 
 class TelegramMiniAppLocationHistoryPage {
@@ -165,10 +178,15 @@ abstract class IAdminTelegramMiniAppLocationService {
 
   /// GET `/admin/telegram-mini-app-locations/users/:telegramUserId/history` —
   /// chronological (oldest-first) location history for one Telegram user.
+  ///
+  /// [dedupPrecision] controls how aggressively consecutive near-duplicate points
+  /// are merged: decimal places for lat/long rounding, 2 (~1.1km, coarsest) to
+  /// 6 (~0.1m, finest); the backend defaults to 4 (~11m) when omitted.
   Future<TelegramMiniAppLocationHistoryPage> getHistory({
     required String telegramUserId,
     int page = 1,
     int limit = 1000,
+    int? dedupPrecision,
   });
 }
 
@@ -210,13 +228,18 @@ class AdminTelegramMiniAppLocationService
     required String telegramUserId,
     int page = 1,
     int limit = 1000,
+    int? dedupPrecision,
   }) async {
     try {
       final response = await _oauthApiClient.get<dynamic>(
         "/admin/telegram-mini-app-locations/users/$telegramUserId/history",
         (data) => data,
         basePath: EnvironmentUtil.basePath,
-        queryParameters: {"page": page, "limit": limit},
+        queryParameters: {
+          "page": page,
+          "limit": limit,
+          if (dedupPrecision != null) "dedupPrecision": dedupPrecision,
+        },
       );
       final map = _requireJsonMap(
           response, "Unexpected telegram mini app location history response");
