@@ -8,6 +8,8 @@ import "package:geolocator/geolocator.dart";
 import "package:intl/intl.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
+import "package:uy_dosh/base/cache/location_cache.dart";
+import "package:uy_dosh/base/cache/tashkent_district_boundary_cache.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -157,7 +159,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool get _pricePickerSingleHandle => _isRoommateNeededFlow;
   bool _isPrivateRoom = false; // Add private room toggle
   bool _hostResident = false;
-  int _selectedSubwayLine = 0;
+
+  /// Chilanzar — the busiest line, used as the sensible default so the
+  /// location step doesn't open on an empty metro-line selection.
+  static const int _defaultSubwayLine = 1;
+  int _selectedSubwayLine = _defaultSubwayLine;
   int _selectedStationIndex = 0;
   int _selectedLocationIndex = -1;
   _LocationSearchMode _locationSearchMode = _LocationSearchMode.metro;
@@ -250,6 +256,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       initialItem: _selectedStationIndex,
     );
     _loadLocations();
+    _loadStationsForLine(_selectedSubwayLine);
     _initProfileDefaults();
     // Initialize title with default generated title
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -830,6 +837,37 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     FocusScope.of(context).unfocus();
   }
 
+  /// Scrolls the district wheel to whichever district contains
+  /// [latitude]/[longitude] (falling back to the district with the closest
+  /// center point). No-op when the district can't be resolved or isn't in
+  /// the currently loaded location list.
+  void _syncLocationWithCoordinates(double latitude, double longitude) {
+    final locationId = TashkentDistrictBoundaryCache.findLocationIdForCoordinate(
+          latitude,
+          longitude,
+        ) ??
+        LocationCache.findNearestLocationId(latitude, longitude);
+    if (locationId == null) return;
+
+    final locationIndex =
+        _currentLocations.indexWhere((location) => location.id == locationId);
+    if (locationIndex < 0) return;
+
+    setState(() {
+      _selectedLocationIndex = locationIndex;
+      _showLocationError = false;
+    });
+
+    // +1 because the first wheel item is the "unselected" option.
+    if (_locationScrollController?.hasClients ?? false) {
+      _locationScrollController!.animateToItem(
+        locationIndex + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   Future<void> _useCurrentLocationForAddress() async {
     if (_isResolvingCurrentLocation) return;
     HapticFeedbackUtils.impact();
@@ -865,6 +903,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         desiredAccuracy: LocationAccuracy.medium,
         timeLimit: const Duration(seconds: 12),
       );
+
+      if (!mounted) return;
+      // Resolve the district independently of the address text lookup below,
+      // so the wheel still scrolls to the right place even if reverse
+      // geocoding fails or times out.
+      _syncLocationWithCoordinates(position.latitude, position.longitude);
 
       final result = await getIt<YandexGeosuggestService>().reverseGeocode(
         latitude: position.latitude,
@@ -3300,7 +3344,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _priceTouched = false;
         _isPrivateRoom = false;
         _hostResident = false;
-        _selectedSubwayLine = 0;
+        _selectedSubwayLine = _defaultSubwayLine;
         _selectedStationIndex = 0;
         _selectedLocationIndex = -1;
         _identifiedAddressText = null;
@@ -3325,6 +3369,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         // Reset the wizard back to the first step.
         _currentStep = 0;
       });
+      _loadStationsForLine(_defaultSubwayLine);
       if (_pageController.hasClients) {
         _pageController.jumpToPage(0);
       }

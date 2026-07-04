@@ -6,11 +6,12 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
+import "package:uy_dosh/presentation/widgets/common/labeled_field_overlay.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
+import "package:uy_dosh/presentation/widgets/common/metro_line_chip_row.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
-import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line wheel + multi-select station list, mirroring the control used in
 /// the search bottom sheet. A line is chosen on the left wheel; the right plate
@@ -76,64 +77,19 @@ class MultiStationPicker extends StatelessWidget {
   }
 
   Widget _buildLineWheel(BuildContext context) {
-    final language = LanguageState().currentLanguage;
-    final textColor = ThemeState().isBlueTheme ? Colors.white : Colors.black;
-    return LiquidGlassPlate(
-      height: 80,
-      borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
-      child: CupertinoPicker(
-        backgroundColor: Colors.transparent,
-        changeReportingBehavior: ChangeReportingBehavior.onScrollEnd,
-        itemExtent: 40,
-        scrollController: metroLineScrollController,
-        onSelectedItemChanged: (index) {
-          SendSoundUtils.playCupertinoWheelSound();
-          onSubwayLineChanged(index);
-        },
-        children: [
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const MLetterIcon(color: Colors.black, size: 20),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    L10n.get("select_metro_line"),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
+    return LabeledFieldOverlay(
+      label: L10n.get("select_metro_line"),
+      child: LiquidGlassPlate(
+        height: 56,
+        borderRadius: ThreeDSurfaceStyle.wheelPickerPlateRadius,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: MetroLineChipRow(
+            selectedLine: selectedSubwayLine,
+            onLineSelected: onSubwayLineChanged,
           ),
-          for (var line = 1; line <= 4; line++)
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  MLetterIcon(color: _lineColor(line), size: 20),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      MetroCache.getLineName(line, language),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

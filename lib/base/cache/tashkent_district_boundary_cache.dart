@@ -4892,6 +4892,54 @@ class TashkentDistrictBoundaryCache {
       "maxLon": maxLon,
     };
   }
+
+  /// Location id of the district whose polygon contains [latitude]/[longitude],
+  /// or null when the point falls outside every known district (e.g. GPS
+  /// noise just past a border, or a position outside Tashkent).
+  static int? findLocationIdForCoordinate(double latitude, double longitude) {
+    for (final district in districts) {
+      for (final polygon in district.polygons) {
+        if (_polygonContains(polygon, latitude, longitude)) {
+          return district.locationId;
+        }
+      }
+    }
+    return null;
+  }
+
+  static bool _polygonContains(
+    TashkentDistrictBoundaryPolygon polygon,
+    double latitude,
+    double longitude,
+  ) {
+    if (!_ringContains(polygon.outerRing, latitude, longitude)) return false;
+    for (final hole in polygon.innerRings) {
+      if (_ringContains(hole, latitude, longitude)) return false;
+    }
+    return true;
+  }
+
+  /// Standard even-odd ray-casting point-in-polygon test.
+  static bool _ringContains(
+    List<DistrictBoundaryPoint> ring,
+    double latitude,
+    double longitude,
+  ) {
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final pi = ring[i];
+      final pj = ring[j];
+      final intersects =
+          ((pi.latitude > latitude) != (pj.latitude > latitude)) &&
+              (longitude <
+                  (pj.longitude - pi.longitude) *
+                          (latitude - pi.latitude) /
+                          (pj.latitude - pi.latitude) +
+                      pi.longitude);
+      if (intersects) inside = !inside;
+    }
+    return inside;
+  }
 }
 
 class TashkentDistrictBoundary {

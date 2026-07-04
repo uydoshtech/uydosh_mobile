@@ -323,6 +323,28 @@ class LocationCache {
     return getAllLocationShortNames("uz");
   }
 
+  /// Location id whose center coordinate is closest to [latitude]/[longitude].
+  /// Fallback for [TashkentDistrictBoundaryCache.findLocationIdForCoordinate]
+  /// when the point falls outside every district polygon (GPS noise, or a
+  /// position just past a border).
+  static int? findNearestLocationId(double latitude, double longitude) {
+    int? bestId;
+    double? bestDistanceSquared;
+    for (final location in locations) {
+      final lat = location.latitude;
+      final lon = location.longitude;
+      if (lat == null || lon == null) continue;
+      final dLat = lat - latitude;
+      final dLon = lon - longitude;
+      final distanceSquared = dLat * dLat + dLon * dLon;
+      if (bestDistanceSquared == null || distanceSquared < bestDistanceSquared) {
+        bestDistanceSquared = distanceSquared;
+        bestId = location.id;
+      }
+    }
+    return bestId;
+  }
+
   /// Get coordinates for a location by ID
   static Map<String, double>? getLocationCoordinatesById(int locationId) {
     final location = getLocationById(locationId);
