@@ -49,17 +49,25 @@ class $AssetsImagesGen {
   AssetGenImage get uydoshLightNoPhotoPlaceholder =>
       const AssetGenImage('assets/images/uydosh_light_no_photo_placeholder.png');
 
-  /// File path: assets/images/uydosh_light_room_needed_no_photo_placeholder.png
-  AssetGenImage get uydoshLightRoomNeededNoPhotoPlaceholder =>
-      const AssetGenImage('assets/images/uydosh_light_room_needed_no_photo_placeholder.png');
-
   /// File path: assets/images/uydosh_no_photo_placeholder.png
   AssetGenImage get uydoshNoPhotoPlaceholder =>
       const AssetGenImage('assets/images/uydosh_no_photo_placeholder.png');
 
-  /// File path: assets/images/uydosh_room_needed_no_photo_placeholder.png
-  AssetGenImage get uydoshRoomNeededNoPhotoPlaceholder =>
-      const AssetGenImage('assets/images/uydosh_room_needed_no_photo_placeholder.png');
+  /// File path: assets/images/uydosh_no_photo_roommate_needed_female.jpg
+  AssetGenImage get uydoshNoPhotoRoommateNeededFemale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_female.jpg');
+
+  /// File path: assets/images/uydosh_no_photo_roommate_needed_male.jpg
+  AssetGenImage get uydoshNoPhotoRoommateNeededMale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_male.jpg');
+
+  /// File path: assets/images/uydosh_no_photo_room_needed_female.jpg
+  AssetGenImage get uydoshNoPhotoRoomNeededFemale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_room_needed_female.jpg');
+
+  /// File path: assets/images/uydosh_no_photo_room_needed_male.jpg
+  AssetGenImage get uydoshNoPhotoRoomNeededMale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_room_needed_male.jpg');
 
   /// File path: assets/images/vector_orig.svg
   String get vectorOrig => 'assets/images/vector_orig.svg';
@@ -71,9 +79,11 @@ class $AssetsImagesGen {
         iosNeutralRdCtn,
         telegramLogoWhite,
         uydoshLightNoPhotoPlaceholder,
-        uydoshLightRoomNeededNoPhotoPlaceholder,
         uydoshNoPhotoPlaceholder,
-        uydoshRoomNeededNoPhotoPlaceholder,
+        uydoshNoPhotoRoommateNeededFemale,
+        uydoshNoPhotoRoommateNeededMale,
+        uydoshNoPhotoRoomNeededFemale,
+        uydoshNoPhotoRoomNeededMale,
         vectorOrig
       ];
 }

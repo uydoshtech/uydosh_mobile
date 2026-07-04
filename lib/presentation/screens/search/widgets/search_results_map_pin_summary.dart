@@ -367,6 +367,7 @@ class _PinGroupListingCard extends StatelessWidget {
               _PinSummaryPhoto(
                 photoUrl: pin.photoUrl,
                 listingTypeId: pin.listingTypeId,
+                gender: pin.gender,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -436,6 +437,7 @@ class _PinSummaryMediaColumn extends StatelessWidget {
           _PinSummaryPhoto(
             photoUrl: pin.photoUrl,
             listingTypeId: pin.listingTypeId,
+            gender: pin.gender,
           ),
         ],
       ),
@@ -711,20 +713,26 @@ class _PinSummaryPhoto extends StatelessWidget {
   const _PinSummaryPhoto({
     required this.photoUrl,
     required this.listingTypeId,
+    required this.gender,
   });
 
   static const String _noPhotoPlaceholderAsset =
       "assets/images/uydosh_no_photo_placeholder.png";
   static const String _noPhotoPlaceholderAssetLight =
       "assets/images/uydosh_light_no_photo_placeholder.png";
-  static const String _roomNeededPlaceholderAsset =
-      "assets/images/uydosh_room_needed_no_photo_placeholder.png";
-  static const String _roomNeededPlaceholderAssetLight =
-      "assets/images/uydosh_light_room_needed_no_photo_placeholder.png";
+  static const String _roomNeededPlaceholderMaleAsset =
+      "assets/images/uydosh_no_photo_room_needed_male.jpg";
+  static const String _roomNeededPlaceholderFemaleAsset =
+      "assets/images/uydosh_no_photo_room_needed_female.jpg";
+  static const String _roommateNeededPlaceholderMaleAsset =
+      "assets/images/uydosh_no_photo_roommate_needed_male.jpg";
+  static const String _roommateNeededPlaceholderFemaleAsset =
+      "assets/images/uydosh_no_photo_roommate_needed_female.jpg";
   static const double size = 104.0;
 
   final String? photoUrl;
   final int? listingTypeId;
+  final int? gender;
 
   @override
   Widget build(BuildContext context) {
@@ -758,14 +766,49 @@ class _PinSummaryPhoto extends StatelessWidget {
     );
   }
 
+  /// Gendered "no photo yet" illustration for `room_needed` /
+  /// `roommate_needed` pins, or `null` when the type + gender combo has no
+  /// dedicated artwork (matches [ListingTileState._genderedPlaceholderAsset]).
+  String? _genderedPlaceholderAsset() {
+    if (gender != 1 && gender != 2) return null;
+    switch (listingTypeId) {
+      case ListingTypeIds.roomNeeded:
+        return gender == 1
+            ? _roomNeededPlaceholderMaleAsset
+            : _roomNeededPlaceholderFemaleAsset;
+      case ListingTypeIds.roommateNeeded:
+        return gender == 1
+            ? _roommateNeededPlaceholderMaleAsset
+            : _roommateNeededPlaceholderFemaleAsset;
+      default:
+        return null;
+    }
+  }
+
   Widget _placeholder(BuildContext context, ColorScheme scheme) {
+    Widget errorBuilder(BuildContext context, Object error, StackTrace? st) {
+      return Center(
+        child: ThemeIcon(
+          Icons.photo_outlined,
+          color: scheme.onSurfaceVariant,
+          size: 24,
+          useThemeColor: false,
+        ),
+      );
+    }
+
+    final genderedAsset = _genderedPlaceholderAsset();
+    if (genderedAsset != null) {
+      return Image.asset(
+        genderedAsset,
+        fit: BoxFit.cover,
+        errorBuilder: errorBuilder,
+      );
+    }
+
     final isLight = ThemeState().isLightTheme;
-    final isRoomNeeded = listingTypeId == ListingTypeIds.roomNeeded;
-    final asset = isRoomNeeded
-        ? (isLight
-            ? _roomNeededPlaceholderAssetLight
-            : _roomNeededPlaceholderAsset)
-        : (isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset);
+    final asset =
+        isLight ? _noPhotoPlaceholderAssetLight : _noPhotoPlaceholderAsset;
     final gradient = isLight
         ? const LinearGradient(
             begin: Alignment.topCenter,
@@ -782,14 +825,7 @@ class _PinSummaryPhoto extends StatelessWidget {
       child: Image.asset(
         asset,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Center(
-          child: ThemeIcon(
-            Icons.photo_outlined,
-            color: scheme.onSurfaceVariant,
-            size: 24,
-            useThemeColor: false,
-          ),
-        ),
+        errorBuilder: errorBuilder,
       ),
     );
   }
