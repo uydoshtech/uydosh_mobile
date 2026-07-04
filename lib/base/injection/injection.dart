@@ -12,6 +12,7 @@ import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/base/services/yandex_geosuggest_service.dart";
 import "package:uy_dosh/domain/services/admin_area_price_cache_service.dart";
 import "package:uy_dosh/domain/services/admin_content_moderation_settings_service.dart";
+import "package:uy_dosh/domain/services/admin_login_management_settings_service.dart";
 import "package:uy_dosh/domain/services/admin_entity_ownership_service.dart";
 import "package:uy_dosh/domain/services/admin_moderation_user_picker_service.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
@@ -196,6 +197,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IAdminContentModerationSettingsService>(
     () => AdminContentModerationSettingsService(getIt<IOAuthApiClient>()),
+  );
+
+  getIt.registerLazySingleton<IAdminLoginManagementSettingsService>(
+    () => AdminLoginManagementSettingsService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IAdminTelegramSyncService>(

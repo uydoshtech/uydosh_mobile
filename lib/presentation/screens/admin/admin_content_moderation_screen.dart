@@ -8,7 +8,6 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
-import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_property_feature_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -61,8 +60,6 @@ class _AdminContentModerationScreenState
   bool _isSavingListingContacts = false;
   bool _listingGigModerationQueueEnabled = true;
   bool _isSavingModerationQueue = false;
-  bool _phoneSignInEnabled = false;
-  bool _isSavingPhoneSignIn = false;
   bool _propertyNavEnabled = true;
   bool _isSavingPropertyNav = false;
   bool _homeStartsWithMap = true;
@@ -116,15 +113,6 @@ class _AdminContentModerationScreenState
       } catch (e) {
         logger.d(
           "Listing/gig moderation queue setting skipped (is the API updated?): $e",
-        );
-      }
-      var phoneSignInEnabled = false;
-      try {
-        final phoneRes = await _settingsService.getPhoneSignInEnabledSetting();
-        phoneSignInEnabled = phoneRes.enabled;
-      } catch (e) {
-        logger.d(
-          "Phone sign-in enabled setting skipped (is the API updated?): $e",
         );
       }
       var propertyNavEnabled = true;
@@ -201,7 +189,6 @@ class _AdminContentModerationScreenState
         _dictationMeterEnabled = !dictationMeterRes.disabled;
         _listingContactsVisible = contactsRes.visible;
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
-        _phoneSignInEnabled = phoneSignInEnabled;
         _propertyNavEnabled = propertyNavEnabled;
         _homeStartsWithMap = homeStartsWithMap;
         _mapDefaultShowDistricts = mapDefaultShowDistricts;
@@ -221,7 +208,6 @@ class _AdminContentModerationScreenState
       ClientListingContactsConfig.applyVisible(
         visible: _listingContactsVisible,
       );
-      ClientPhoneSignInConfig.applyEnabled(enabled: phoneSignInEnabled);
       ClientPropertyFeatureConfig.applyEnabled(enabled: propertyNavEnabled);
       ClientHomeStartViewConfig.applyView(
         homeStartsWithMap
@@ -393,26 +379,6 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingModerationQueue = false);
-    }
-  }
-
-  Future<void> _onPhoneSignInEnabledChanged(bool value) async {
-    if (_isSavingPhoneSignIn) return;
-    setState(() => _isSavingPhoneSignIn = true);
-    try {
-      HapticFeedbackUtils.impact();
-      final res = await _settingsService.setPhoneSignInEnabled(enabled: value);
-      setStateIfMounted(() {
-        _phoneSignInEnabled = res.enabled;
-      });
-      ClientPhoneSignInConfig.applyEnabled(enabled: res.enabled);
-    } catch (e) {
-      ToastTheme.showErrorSimple(
-        context,
-        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
-      );
-    } finally {
-      setStateIfMounted(() => _isSavingPhoneSignIn = false);
     }
   }
 
@@ -691,7 +657,6 @@ class _AdminContentModerationScreenState
               builder: (context, _) => _tooltipsTile(context),
             ),
             _homeStartViewTile(context),
-            _phoneSignInTile(context),
             _propertyNavTile(context),
           ],
         ),
@@ -951,23 +916,6 @@ class _AdminContentModerationScreenState
         value: _homeStartsWithMap,
         enabled: !_isSavingHomeStartView,
         onChanged: _onHomeStartsWithMapChanged,
-      ),
-    );
-  }
-
-  Widget _phoneSignInTile(BuildContext context) {
-    return ListTile(
-      leading:
-          _savingLeading(Icons.phone_android_outlined, _isSavingPhoneSignIn),
-      title: Text(L10n.get("admin_app_setting_phone_sign_in_enabled_title")),
-      subtitle: Text(
-        L10n.get("admin_app_setting_phone_sign_in_enabled_subtitle"),
-        style: _subtitleStyle(context),
-      ),
-      trailing: NeumorphicThemeAwareToggle(
-        value: _phoneSignInEnabled,
-        enabled: !_isSavingPhoneSignIn,
-        onChanged: _onPhoneSignInEnabledChanged,
       ),
     );
   }

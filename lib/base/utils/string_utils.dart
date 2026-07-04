@@ -14,7 +14,7 @@ class StringUtils {
   /// Returns first 2 letters for single names
   /// Returns empty string if name is null or empty
   /// Splits a full name into a first line and optional second line.
-  /// Uses the first whitespace as the boundary (e.g. "Artur Musin" → "Artur", "Musin").
+  /// Uses the first whitespace as the boundary (e.g. "UyDosh Tech" → "Artur", "Musin").
   static (String firstName, String? lastName) splitFullName(String? name) {
     if (name == null || name.trim().isEmpty) {
       return ("", null);

@@ -20,6 +20,9 @@ class PublicAppSettingsSnapshot {
     required this.listingContactsVisible,
     required this.listingDescriptionDictationMeterDisabled,
     required this.phoneSignInEnabled,
+    required this.googleSignInEnabled,
+    required this.appleSignInEnabled,
+    required this.telegramSignInEnabled,
     required this.propertyNavEnabled,
     required this.homeStartView,
     required this.mapDefaultShowDistricts,
@@ -40,6 +43,18 @@ class PublicAppSettingsSnapshot {
       listingDescriptionDictationMeterDisabled: _readPublicSettingBool(
           json["listingDescriptionDictationMeterDisabled"]),
       phoneSignInEnabled: _readPublicSettingBool(json["phoneSignInEnabled"]),
+      googleSignInEnabled: _readPublicSettingBool(
+        json["googleSignInEnabled"],
+        defaultValue: true,
+      ),
+      appleSignInEnabled: _readPublicSettingBool(
+        json["appleSignInEnabled"],
+        defaultValue: true,
+      ),
+      telegramSignInEnabled: _readPublicSettingBool(
+        json["telegramSignInEnabled"],
+        defaultValue: true,
+      ),
       propertyNavEnabled: _readPublicSettingBool(
         json["propertyNavEnabled"],
         defaultValue: true,
@@ -61,6 +76,9 @@ class PublicAppSettingsSnapshot {
   final bool listingContactsVisible;
   final bool listingDescriptionDictationMeterDisabled;
   final bool phoneSignInEnabled;
+  final bool googleSignInEnabled;
+  final bool appleSignInEnabled;
+  final bool telegramSignInEnabled;
   final bool propertyNavEnabled;
   final String homeStartView;
   final bool mapDefaultShowDistricts;
@@ -88,6 +106,12 @@ abstract class IPublicAppSettingsService {
   Future<bool> getListingDescriptionDictationMeterDisabled();
 
   Future<bool> getPhoneSignInEnabled();
+
+  Future<bool> getGoogleSignInEnabled();
+
+  Future<bool> getAppleSignInEnabled();
+
+  Future<bool> getTelegramSignInEnabled();
 
   Future<bool> getPropertyNavEnabled();
 
@@ -142,6 +166,9 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
         listingContactsVisible: false,
         listingDescriptionDictationMeterDisabled: false,
         phoneSignInEnabled: false,
+        googleSignInEnabled: true,
+        appleSignInEnabled: true,
+        telegramSignInEnabled: true,
         propertyNavEnabled: true,
         homeStartView: "map",
         mapDefaultShowDistricts: true,
@@ -191,6 +218,24 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
   Future<bool> getPhoneSignInEnabled() async {
     await _ensureLoaded();
     return _cached?.phoneSignInEnabled ?? false;
+  }
+
+  @override
+  Future<bool> getGoogleSignInEnabled() async {
+    await _ensureLoaded();
+    return _cached?.googleSignInEnabled ?? true;
+  }
+
+  @override
+  Future<bool> getAppleSignInEnabled() async {
+    await _ensureLoaded();
+    return _cached?.appleSignInEnabled ?? true;
+  }
+
+  @override
+  Future<bool> getTelegramSignInEnabled() async {
+    await _ensureLoaded();
+    return _cached?.telegramSignInEnabled ?? true;
   }
 
   @override

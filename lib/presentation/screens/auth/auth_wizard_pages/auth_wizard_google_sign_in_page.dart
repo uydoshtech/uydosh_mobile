@@ -22,6 +22,9 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 class AuthWizardGoogleSignInPage extends StatelessWidget {
   const AuthWizardGoogleSignInPage({
     required this.phoneSignInEnabled,
+    required this.googleSignInEnabled,
+    required this.appleSignInEnabled,
+    required this.telegramSignInEnabled,
     required this.isAuthenticating,
     required this.isGoogleSignedIn,
     required this.currentUser,
@@ -56,6 +59,16 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
 
   /// When false, the phone sign-in affordance (and its "or" separator) is hidden.
   final bool phoneSignInEnabled;
+
+  /// When false, the Google sign-in button is hidden (admin-controlled).
+  final bool googleSignInEnabled;
+
+  /// When false, the Apple sign-in button is hidden (admin-controlled), in
+  /// addition to the existing platform-availability check.
+  final bool appleSignInEnabled;
+
+  /// When false, the Telegram sign-in button is hidden (admin-controlled).
+  final bool telegramSignInEnabled;
 
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
@@ -106,22 +119,25 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
                   if (!isGoogleSignedIn) ...[
-                    Center(
-                      child: SizedBox(
-                        width: buttonWidth,
-                        height: 44,
-                        child: GoogleSignInBrandedButton(
-                          label: L10n.get("sign_in_with_google"),
-                          onPressed: enabled
-                              ? () {
-                                  HapticFeedbackUtils.impact();
-                                  onSignInWithGoogle();
-                                }
-                              : null,
+                    if (googleSignInEnabled) ...[
+                      Center(
+                        child: SizedBox(
+                          width: buttonWidth,
+                          height: 44,
+                          child: GoogleSignInBrandedButton(
+                            label: L10n.get("sign_in_with_google"),
+                            onPressed: enabled
+                                ? () {
+                                    HapticFeedbackUtils.impact();
+                                    onSignInWithGoogle();
+                                  }
+                                : null,
+                          ),
                         ),
                       ),
-                    ),
-                    if (AppleAuthService.isAvailable || kIsWeb) ...[
+                    ],
+                    if (appleSignInEnabled &&
+                        (AppleAuthService.isAvailable || kIsWeb)) ...[
                       const SizedBox(height: 12),
                       Center(
                         child: SizedBox(
@@ -145,22 +161,24 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    Center(
-                      child: SizedBox(
-                        width: buttonWidth,
-                        height: 44,
-                        child: TelegramSignInBrandedButton(
-                          label: L10n.get("sign_in_with_telegram"),
-                          onPressed: enabled
-                              ? () {
-                                  HapticFeedbackUtils.impact();
-                                  onSignInWithTelegram();
-                                }
-                              : null,
+                    if (telegramSignInEnabled) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: SizedBox(
+                          width: buttonWidth,
+                          height: 44,
+                          child: TelegramSignInBrandedButton(
+                            label: L10n.get("sign_in_with_telegram"),
+                            onPressed: enabled
+                                ? () {
+                                    HapticFeedbackUtils.impact();
+                                    onSignInWithTelegram();
+                                  }
+                                : null,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                     if (phoneSignInEnabled) ...[
                       const SizedBox(height: 20),
                       Row(
@@ -176,7 +194,8 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                             child: Text(
                               L10n.get("auth_separator_or"),
                               style: TextStyle(
-                                color: _getOnboardingTextSecondaryColor(context),
+                                color:
+                                    _getOnboardingTextSecondaryColor(context),
                                 fontSize: 13,
                               ),
                             ),

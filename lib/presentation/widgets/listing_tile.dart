@@ -1199,83 +1199,32 @@ class _ListingTileState extends State<ListingTile> {
   }
 
   Widget _buildOwnerFooterStatus() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ValueListenableBuilder<_ListingViewCountState>(
-          valueListenable: _viewCountState,
-          builder: (context, vc, _) {
-            if (vc.loading) {
-              return const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.textGrey600,
-                  ),
-                ),
-              );
-            }
-            final count = vc.count;
-            if (count == null) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const ThemeIcon(
-                    CupertinoIcons.eye,
-                    size: 16,
-                    color: AppColors.textGrey600,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    L10n.plural("listing_views_count", count),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textGrey600,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+    // View count now surfaces as a compact badge on top of the thumbnail
+    // (see [_buildViewCountBadge]) rather than a labelled "N просмотров" line
+    // here, so the footer only carries the active/inactive pill.
+    final isActive = widget.listing.isActive;
+    // Inactive badge is deliberately bolder (thicker border, stronger fill)
+    // than the active one so an owner immediately notices a listing has gone
+    // inactive while scanning "My Listings".
+    final badgeColor =
+        isActive ? AppColors.statusActive : AppColors.statusInactive;
+    final borderWidth = isActive ? 1.0 : 1.5;
+    final fillAlpha = isActive ? 0.2 : 0.28;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: fillAlpha),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: badgeColor, width: borderWidth),
+      ),
+      child: Text(
+        L10n.get(isActive ? "listing_active" : "listing_inactive"),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: badgeColor,
         ),
-        Builder(
-          builder: (context) {
-            final isActive = widget.listing.isActive;
-            // Inactive badge is deliberately bolder (thicker border, stronger
-            // fill) than the active one so an owner immediately notices a
-            // listing has gone inactive while scanning "My Listings".
-            final badgeColor =
-                isActive ? AppColors.statusActive : AppColors.statusInactive;
-            final borderWidth = isActive ? 1.0 : 1.5;
-            final fillAlpha = isActive ? 0.2 : 0.28;
-            return Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: badgeColor.withValues(alpha: fillAlpha),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: badgeColor, width: borderWidth),
-              ),
-              child: Text(
-                L10n.get(isActive ? "listing_active" : "listing_inactive"),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: badgeColor,
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+      ),
     );
   }
 
@@ -1378,10 +1327,67 @@ class _ListingTileState extends State<ListingTile> {
             width: thumbWidth,
             height: thumbWidth,
             child: Stack(
-              children: [Positioned.fill(child: content)],
+              children: [
+                Positioned.fill(child: content),
+                if (widget.showActiveStatus) _buildViewCountBadge(),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Compact "eye + count" badge overlaid on the top-right corner of the
+  /// thumbnail ("My Listings" screen only). Replaces the old labelled
+  /// "N просмотров" line in the footer — just the icon and the raw number,
+  /// which also keeps it legible on the narrow viewport of the Telegram
+  /// mini app.
+  Widget _buildViewCountBadge() {
+    return Positioned(
+      top: 6,
+      right: 6,
+      child: ValueListenableBuilder<_ListingViewCountState>(
+        valueListenable: _viewCountState,
+        builder: (context, vc, _) {
+          final count = vc.count;
+          if (!vc.loading && count == null) return const SizedBox.shrink();
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: vc.loading
+                ? const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ThemeIcon(
+                        CupertinoIcons.eye,
+                        size: 13,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        "$count",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }

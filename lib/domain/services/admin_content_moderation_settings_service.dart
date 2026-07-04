@@ -200,18 +200,6 @@ class _PatchListingGigModerationQueueRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
-class PhoneSignInEnabledResponse {
-  PhoneSignInEnabledResponse({required this.enabled});
-
-  factory PhoneSignInEnabledResponse.fromJson(Map<String, dynamic> json) {
-    return PhoneSignInEnabledResponse(
-      enabled: _parseBoolLoose(json["enabled"], defaultValue: false),
-    );
-  }
-
-  final bool enabled;
-}
-
 class PropertyNavEnabledResponse {
   PropertyNavEnabledResponse({required this.enabled});
 
@@ -222,15 +210,6 @@ class PropertyNavEnabledResponse {
   }
 
   final bool enabled;
-}
-
-class _PatchPhoneSignInEnabledRequest implements IJsonEncodable {
-  _PatchPhoneSignInEnabledRequest({required this.enabled});
-
-  final bool enabled;
-
-  @override
-  dynamic toJson() => {"enabled": enabled};
 }
 
 class _PatchPropertyNavEnabledRequest implements IJsonEncodable {
@@ -415,12 +394,6 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<ListingGigModerationQueueResponse>
       setListingGigModerationQueueEnabled({
-    required bool enabled,
-  });
-
-  Future<PhoneSignInEnabledResponse> getPhoneSignInEnabledSetting();
-
-  Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
     required bool enabled,
   });
 
@@ -774,49 +747,6 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating listing/gig moderation queue setting: $e");
-      rethrow;
-    }
-  }
-
-  @override
-  Future<PhoneSignInEnabledResponse> getPhoneSignInEnabledSetting() async {
-    try {
-      final response = await _oauthApiClient.get<dynamic>(
-        "/admin/settings/phone-sign-in-enabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-      );
-      return PhoneSignInEnabledResponse.fromJson(
-        _requireJsonMap(
-          response,
-          "Unexpected response from phone sign-in setting",
-        ),
-      );
-    } catch (e) {
-      logger.d("Error loading phone sign-in enabled setting: $e");
-      rethrow;
-    }
-  }
-
-  @override
-  Future<PhoneSignInEnabledResponse> setPhoneSignInEnabled({
-    required bool enabled,
-  }) async {
-    try {
-      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
-        "/admin/settings/phone-sign-in-enabled",
-        (data) => data,
-        basePath: EnvironmentUtil.basePath,
-        data: _PatchPhoneSignInEnabledRequest(enabled: enabled),
-      );
-      return PhoneSignInEnabledResponse.fromJson(
-        _requireJsonMap(
-          response,
-          "Unexpected response from phone sign-in setting",
-        ),
-      );
-    } catch (e) {
-      logger.d("Error updating phone sign-in enabled setting: $e");
       rethrow;
     }
   }

@@ -1407,6 +1407,25 @@ class AppStrings {
       "admin_panel_category_analytics": "Analytics",
       "admin_panel_category_settings": "Application Settings",
       "admin_panel_section_content_moderation": "Client configuration",
+      "admin_panel_section_login_management": "Login Management",
+      "admin_login_management_title": "Login Management",
+      "admin_login_management_subtitle":
+          "Turn sign-in providers on or off for all users.",
+      "admin_login_management_loading": "Loading login settings...",
+      "admin_login_management_error": "Could not load login settings",
+      "admin_login_management_save_error": "Could not save setting",
+      "admin_login_management_google_title": "Google sign-in",
+      "admin_login_management_google_subtitle":
+          "Allow signing in with a Google account.",
+      "admin_login_management_apple_title": "Apple sign-in",
+      "admin_login_management_apple_subtitle":
+          "Allow signing in with an Apple account (iOS/macOS).",
+      "admin_login_management_telegram_title": "Telegram sign-in",
+      "admin_login_management_telegram_subtitle":
+          "Allow signing in with a Telegram account.",
+      "admin_login_management_phone_title": "Phone sign-in",
+      "admin_login_management_phone_subtitle":
+          "Firebase SMS sign-in in the auth wizard.",
       "admin_content_moderation_title": "Client configuration",
       "admin_settings_category_app_experience": "App experience",
       "admin_settings_category_maps": "Maps",
@@ -1461,10 +1480,6 @@ class AppStrings {
           "Require approval for new listings and gigs",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
           "New listings and gigs hidden until admin approval.",
-      "admin_app_setting_phone_sign_in_enabled_title":
-          "Allow sign-in with phone",
-      "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "Firebase SMS sign-in in the auth wizard.",
       "admin_app_setting_property_nav_enabled_title":
           "Show Property tab in navigation",
       "admin_app_setting_property_nav_enabled_subtitle":
@@ -3614,6 +3629,25 @@ class AppStrings {
       "admin_panel_category_analytics": "Аналитика",
       "admin_panel_category_settings": "Настройки приложения",
       "admin_panel_section_content_moderation": "Настройки клиента",
+      "admin_panel_section_login_management": "Управление входом",
+      "admin_login_management_title": "Управление входом",
+      "admin_login_management_subtitle":
+          "Включайте или отключайте способы входа для всех пользователей.",
+      "admin_login_management_loading": "Загрузка настроек входа...",
+      "admin_login_management_error": "Не удалось загрузить настройки входа",
+      "admin_login_management_save_error": "Не удалось сохранить настройку",
+      "admin_login_management_google_title": "Вход через Google",
+      "admin_login_management_google_subtitle":
+          "Разрешить вход через аккаунт Google.",
+      "admin_login_management_apple_title": "Вход через Apple",
+      "admin_login_management_apple_subtitle":
+          "Разрешить вход через аккаунт Apple (iOS/macOS).",
+      "admin_login_management_telegram_title": "Вход через Telegram",
+      "admin_login_management_telegram_subtitle":
+          "Разрешить вход через аккаунт Telegram.",
+      "admin_login_management_phone_title": "Вход по номеру телефона",
+      "admin_login_management_phone_subtitle":
+          "Вход по SMS через Firebase в мастере авторизации.",
       "admin_content_moderation_title": "Настройки клиента",
       "admin_settings_category_app_experience": "Опыт в приложении",
       "admin_settings_category_maps": "Карты",
@@ -3673,10 +3707,6 @@ class AppStrings {
           "Ручное одобрение новых объявлений и гигов",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
           "Новые объявления и гиги скрыты до одобрения админом.",
-      "admin_app_setting_phone_sign_in_enabled_title":
-          "Разрешить вход по номеру телефона",
-      "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "SMS-вход через Firebase в мастере авторизации.",
       "admin_app_setting_property_nav_enabled_title":
           "Показывать вкладку «Недвижимость»",
       "admin_app_setting_property_nav_enabled_subtitle":
@@ -5853,6 +5883,25 @@ class AppStrings {
       "admin_panel_category_analytics": "Analitika",
       "admin_panel_category_settings": "Ilova sozlamalari",
       "admin_panel_section_content_moderation": "Klient sozlamalari",
+      "admin_panel_section_login_management": "Kirish sozlamalari",
+      "admin_login_management_title": "Kirish sozlamalari",
+      "admin_login_management_subtitle":
+          "Barcha foydalanuvchilar uchun kirish usullarini yoqing yoki o'chiring.",
+      "admin_login_management_loading": "Kirish sozlamalari yuklanmoqda...",
+      "admin_login_management_error": "Kirish sozlamalarini yuklab bo'lmadi",
+      "admin_login_management_save_error": "Sozlamani saqlab bo'lmadi",
+      "admin_login_management_google_title": "Google orqali kirish",
+      "admin_login_management_google_subtitle":
+          "Google hisobi orqali kirishga ruxsat berish.",
+      "admin_login_management_apple_title": "Apple orqali kirish",
+      "admin_login_management_apple_subtitle":
+          "Apple hisobi orqali kirishga ruxsat berish (iOS/macOS).",
+      "admin_login_management_telegram_title": "Telegram orqali kirish",
+      "admin_login_management_telegram_subtitle":
+          "Telegram hisobi orqali kirishga ruxsat berish.",
+      "admin_login_management_phone_title": "Telefon raqami orqali kirish",
+      "admin_login_management_phone_subtitle":
+          "Kirish sehrgarida Firebase SMS orqali kirish.",
       "admin_content_moderation_title": "Klient sozlamalari",
       "admin_settings_category_app_experience": "Ilova tajribasi",
       "admin_settings_category_maps": "Xaritalar",
@@ -5913,10 +5962,6 @@ class AppStrings {
           "Yangi e'lon va gig'larni tasdiqlash",
       "admin_app_setting_listing_gig_moderation_queue_subtitle":
           "Yangi e'lon va giglar admin tasdig'igacha yashiriladi.",
-      "admin_app_setting_phone_sign_in_enabled_title":
-          "Telefon raqami bilan kirishga ruxsat",
-      "admin_app_setting_phone_sign_in_enabled_subtitle":
-          "Kirish oynasida Firebase SMS orqali kirish.",
       "admin_app_setting_property_nav_enabled_title":
           "Navigatsiyada «Ko'chmas mulk» yorlig'ini ko'rsatish",
       "admin_app_setting_property_nav_enabled_subtitle":

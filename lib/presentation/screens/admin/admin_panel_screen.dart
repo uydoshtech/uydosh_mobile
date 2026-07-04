@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/screens/admin/admin_listing_creation_analyt
 import "package:uy_dosh/presentation/screens/admin/admin_gig_moderation_queue_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listing_moderation_queue_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_listings_with_complaints_screen.dart";
+import "package:uy_dosh/presentation/screens/admin/admin_login_management_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_search_analytics_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_subway_line_heatmap_screen.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_support_chat_screen.dart";
@@ -374,6 +375,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminContentModerationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
+                      icon: Icons.login,
+                      titleKey: "admin_panel_section_login_management",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminLoginManagementScreen(),
                           ),
                         );
                       },

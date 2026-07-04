@@ -8,7 +8,10 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:google_sign_in/google_sign_in.dart";
+import "package:uy_dosh/base/config/client_apple_sign_in_config.dart";
+import "package:uy_dosh/base/config/client_google_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
+import "package:uy_dosh/base/config/client_telegram_sign_in_config.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -2299,18 +2302,43 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           valueListenable:
                               ClientPhoneSignInConfig.phoneSignInEnabled,
                           builder: (context, phoneEnabled, _) {
-                            return AuthWizardGoogleSignInPage(
-                              phoneSignInEnabled: phoneEnabled,
-                              isAuthenticating: _isAuthenticating,
-                              isGoogleSignedIn: _isGoogleSignedIn,
-                              currentUser: _currentUser,
-                              onSignInWithGoogle: _signInWithGoogle,
-                              onSignInWithApple: _signInWithApple,
-                              onSignInWithPhone: _signInWithPhone,
-                              onSignInWithTelegram: _signInWithTelegram,
-                              delayAppleAvatarReveal:
-                                  _authMethod == _AuthMethod.apple,
-                              backendResolvedAvatarUrl: _oauthSummaryAvatarUrl,
+                            return ValueListenableBuilder<bool>(
+                              valueListenable:
+                                  ClientGoogleSignInConfig.googleSignInEnabled,
+                              builder: (context, googleEnabled, _) {
+                                return ValueListenableBuilder<bool>(
+                                  valueListenable: ClientAppleSignInConfig
+                                      .appleSignInEnabled,
+                                  builder: (context, appleEnabled, _) {
+                                    return ValueListenableBuilder<bool>(
+                                      valueListenable:
+                                          ClientTelegramSignInConfig
+                                              .telegramSignInEnabled,
+                                      builder: (context, telegramEnabled, _) {
+                                        return AuthWizardGoogleSignInPage(
+                                          phoneSignInEnabled: phoneEnabled,
+                                          googleSignInEnabled: googleEnabled,
+                                          appleSignInEnabled: appleEnabled,
+                                          telegramSignInEnabled:
+                                              telegramEnabled,
+                                          isAuthenticating: _isAuthenticating,
+                                          isGoogleSignedIn: _isGoogleSignedIn,
+                                          currentUser: _currentUser,
+                                          onSignInWithGoogle: _signInWithGoogle,
+                                          onSignInWithApple: _signInWithApple,
+                                          onSignInWithPhone: _signInWithPhone,
+                                          onSignInWithTelegram:
+                                              _signInWithTelegram,
+                                          delayAppleAvatarReveal:
+                                              _authMethod == _AuthMethod.apple,
+                                          backendResolvedAvatarUrl:
+                                              _oauthSummaryAvatarUrl,
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
                             );
                           },
                         ),

@@ -15,7 +15,10 @@ import "package:uy_dosh/base/config/client_home_start_view_config.dart";
 import "package:uy_dosh/base/state/home_start_view_settings_state.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
+import "package:uy_dosh/base/config/client_apple_sign_in_config.dart";
+import "package:uy_dosh/base/config/client_google_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_phone_sign_in_config.dart";
+import "package:uy_dosh/base/config/client_telegram_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_property_feature_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
@@ -246,6 +249,9 @@ void main() async {
     unawaited(ClientListingContactsConfig.load());
     unawaited(ClientListingDictationMeterConfig.load());
     unawaited(ClientPhoneSignInConfig.load());
+    unawaited(ClientGoogleSignInConfig.load());
+    unawaited(ClientAppleSignInConfig.load());
+    unawaited(ClientTelegramSignInConfig.load());
     unawaited(ClientPropertyFeatureConfig.load());
     // Local SharedPreferences reads — cheap, but still off the critical path.
     unawaited(TutorialState().initialize());
