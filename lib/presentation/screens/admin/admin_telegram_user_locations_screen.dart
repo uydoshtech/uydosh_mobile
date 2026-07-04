@@ -252,7 +252,7 @@ class _UserTile extends StatelessWidget {
                 ThemeIcon(
                   Icons.person_pin_circle_outlined,
                   size: 28,
-                  color: theme.colorScheme.primary,
+                  color: theme.colorScheme.onSurface,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
