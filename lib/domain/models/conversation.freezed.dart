@@ -1558,9 +1558,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   List<SubwayStationDetail>? get searchSubwayStations {
     final value = _searchSubwayStations;
     if (value == null) return null;
-    if (_searchSubwayStations is EqualUnmodifiableListView) {
+    if (_searchSubwayStations is EqualUnmodifiableListView)
       return _searchSubwayStations;
-    }
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -1589,9 +1588,7 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
   List<LocationDetail>? get searchLocations {
     final value = _searchLocations;
     if (value == null) return null;
-    if (_searchLocations is EqualUnmodifiableListView) {
-      return _searchLocations;
-    }
+    if (_searchLocations is EqualUnmodifiableListView) return _searchLocations;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -1678,10 +1675,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.subwayStationLine == subwayStationLine) &&
             (identical(other.subwayStationOrdinal, subwayStationOrdinal) ||
                 other.subwayStationOrdinal == subwayStationOrdinal) &&
-            const DeepCollectionEquality().equals(
-              other._searchSubwayStations,
-              _searchSubwayStations,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._searchSubwayStations, _searchSubwayStations) &&
             (identical(other.locationNameUz, locationNameUz) ||
                 other.locationNameUz == locationNameUz) &&
             (identical(other.locationNameRu, locationNameRu) ||
@@ -1694,10 +1689,8 @@ class _$ConversationSummaryImpl implements _ConversationSummary {
                 other.locationShortNameRu == locationShortNameRu) &&
             (identical(other.locationShortNameEn, locationShortNameEn) ||
                 other.locationShortNameEn == locationShortNameEn) &&
-            const DeepCollectionEquality().equals(
-              other._searchLocations,
-              _searchLocations,
-            ));
+            const DeepCollectionEquality()
+                .equals(other._searchLocations, _searchLocations));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)

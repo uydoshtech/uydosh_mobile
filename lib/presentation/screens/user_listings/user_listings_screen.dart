@@ -41,6 +41,7 @@ import "package:uy_dosh/presentation/widgets/gig/gig_feed_tile_swipe_wrapper.dar
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_request_tile.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
+import "package:uy_dosh/presentation/widgets/user_listing_owner_actions_row.dart";
 
 class UserListingsScreen extends StatelessWidget {
   const UserListingsScreen({super.key, this.embedded = false});
@@ -124,6 +125,36 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
   int? _userId;
   bool _loadingUserId = true;
   bool _didAutoSelectInitialTab = false;
+
+  // Local overlay applied on top of the bloc's listings so a renew/delete on
+  // this screen updates the row immediately without needing a full refetch
+  // (the shared [ListingsBloc] backs several other screens, so we avoid
+  // adding screen-specific mutation events to it).
+  final Map<int, Listing> _listingOverrides = {};
+  final Set<int> _removedListingIds = {};
+
+  List<Listing> _applyLocalOverlay(List<Listing> listings) {
+    if (_listingOverrides.isEmpty && _removedListingIds.isEmpty) {
+      return listings;
+    }
+    return listings
+        .where((listing) => !_removedListingIds.contains(listing.id))
+        .map((listing) => _listingOverrides[listing.id] ?? listing)
+        .toList();
+  }
+
+  void _onListingRenewed(Listing updated) {
+    if (!mounted) return;
+    setState(() => _listingOverrides[updated.id] = updated);
+  }
+
+  void _onListingDeleted(int listingId) {
+    if (!mounted) return;
+    setState(() {
+      _removedListingIds.add(listingId);
+      _listingOverrides.remove(listingId);
+    });
+  }
 
   Color _emptyStateTitleColor() =>
       ThemeState().isBlueTheme ? AppColors.textLight : AppColors.textGrey600;
@@ -237,6 +268,11 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
   }
 
   Future<void> _refreshListings() async {
+    // A refetch returns fresh `renewedAt`/`nextRenewalAt`/existence from the
+    // server, so any local renew/delete overlay is now redundant (or, worse,
+    // stale) — drop it.
+    _listingOverrides.clear();
+    _removedListingIds.clear();
     context.read<ListingsBloc>().add(
           const ListingsEvent.fetchUserListings(isRefresh: true),
         );
@@ -419,7 +455,8 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
         if (data.hasError) {
           return _buildListingsErrorState(data.errorMessage);
         }
-        if (data.listings.isEmpty) {
+        final listings = _applyLocalOverlay(data.listings);
+        if (listings.isEmpty) {
           return _buildListingsEmptyState();
         }
 
@@ -429,22 +466,33 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
             child: CommonListView(
               controller: _listingsScrollController,
               padding: const EdgeInsets.fromLTRB(16, _listTopPad, 16, 16),
-              itemCount: data.listings.length + (data.hasMore ? 1 : 0),
+              itemCount: listings.length + (data.hasMore ? 1 : 0),
               itemSpacing: 16,
               itemBuilder: (context, index) {
-                if (index >= data.listings.length) {
+                if (index >= listings.length) {
                   return const Padding(
                     padding: EdgeInsets.all(16),
                     child: Center(child: HouseLoadingIndicator()),
                   );
                 }
-                final listing = data.listings[index];
-                return ListingTile(
+                final listing = listings[index];
+                return Column(
                   key: ValueKey(listing.id),
-                  listing: listing,
-                  forceFavorite: false,
-                  showHeartIcon: false,
-                  showActiveStatus: true,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ListingTile(
+                      listing: listing,
+                      forceFavorite: false,
+                      showHeartIcon: false,
+                      showActiveStatus: true,
+                    ),
+                    const SizedBox(height: 10),
+                    UserListingOwnerActionsRow(
+                      listing: listing,
+                      onRenewed: _onListingRenewed,
+                      onDeleted: () => _onListingDeleted(listing.id),
+                    ),
+                  ],
                 );
               },
               showRefreshIndicator: false,

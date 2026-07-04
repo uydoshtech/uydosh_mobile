@@ -8,6 +8,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/models/create_listing_request.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/domain/services/listing_service_common.dart";
 
@@ -100,6 +101,10 @@ abstract class IListingCrudService {
   });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
+
+  /// Free, server-enforced-cooldown bump that resets a listing's recency.
+  /// See [RenewListingResult] for how success/cooldown/failure are reported.
+  Future<RenewListingResult> renewListing(int listingId);
 }
 
 class ListingCrudService implements IListingCrudService {
@@ -636,6 +641,42 @@ class ListingCrudService implements IListingCrudService {
         logger.d("❌ Error featuring listing: $e");
       }
       rethrow;
+    }
+  }
+
+  @override
+  Future<RenewListingResult> renewListing(int listingId) async {
+    try {
+      final response = await _oauthApiClient
+          .patch<Map<String, dynamic>, EmptyListingRequest>(
+        "/listings/$listingId/renew",
+        (json) => json as Map<String, dynamic>,
+        basePath: EnvironmentUtil.basePath,
+        data: EmptyListingRequest(),
+      );
+
+      final listingJson = response["listing"];
+      if (listingJson is Map<String, dynamic>) {
+        return RenewListingResult.renewed(Listing.fromJson(listingJson));
+      }
+      return RenewListingResult.failure();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 429) {
+        final data = e.response?.data;
+        final nextRenewalAt = data is Map ? data["nextRenewalAt"] : null;
+        return RenewListingResult.cooldown(
+          nextRenewalAt is String ? nextRenewalAt : null,
+        );
+      }
+      if (kDebugMode) {
+        logger.d("❌ Error renewing listing: ${e.message}");
+      }
+      return RenewListingResult.failure();
+    } catch (e) {
+      if (kDebugMode) {
+        logger.d("❌ Error renewing listing: $e");
+      }
+      return RenewListingResult.failure();
     }
   }
 

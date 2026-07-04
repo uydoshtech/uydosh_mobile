@@ -1244,35 +1244,36 @@ class _ListingTileState extends State<ListingTile> {
             );
           },
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 4,
-          ),
-          decoration: BoxDecoration(
-            color: widget.listing.isActive
-                ? AppColors.statusActive.withValues(alpha: 0.2)
-                : AppColors.statusInactive.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: widget.listing.isActive
-                  ? AppColors.statusActive
-                  : AppColors.statusInactive,
-              width: 1,
-            ),
-          ),
-          child: Text(
-            L10n.get(
-              widget.listing.isActive ? "listing_active" : "listing_inactive",
-            ),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: widget.listing.isActive
-                  ? AppColors.statusActive
-                  : AppColors.statusInactive,
-            ),
-          ),
+        Builder(
+          builder: (context) {
+            final isActive = widget.listing.isActive;
+            // Inactive badge is deliberately bolder (thicker border, stronger
+            // fill) than the active one so an owner immediately notices a
+            // listing has gone inactive while scanning "My Listings".
+            final badgeColor =
+                isActive ? AppColors.statusActive : AppColors.statusInactive;
+            final borderWidth = isActive ? 1.0 : 1.5;
+            final fillAlpha = isActive ? 0.2 : 0.28;
+            return Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: fillAlpha),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: badgeColor, width: borderWidth),
+              ),
+              child: Text(
+                L10n.get(isActive ? "listing_active" : "listing_inactive"),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: badgeColor,
+                ),
+              ),
+            );
+          },
         ),
       ],
     );

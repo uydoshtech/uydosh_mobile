@@ -3133,6 +3133,21 @@ class AppLocalizationsUz extends AppLocalizations {
   String get delete_listing_error => 'E\'loni o\'chirishda xatolik';
 
   @override
+  String get renew_listing => 'Yangilash';
+
+  @override
+  String get renew_listing_success => 'E\'lon yangilandi';
+
+  @override
+  String get renew_listing_error =>
+      'E\'lonni yangilab bo\'lmadi. Qayta urinib ko\'ring.';
+
+  @override
+  String renew_in_days(String days) {
+    return '$days kunda yangilash';
+  }
+
+  @override
   String get unknown => 'Noma\'lum';
 
   @override

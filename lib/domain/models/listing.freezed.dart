@@ -53,6 +53,10 @@ mixin _$Listing {
   int? get gender => throw _privateConstructorUsedError;
   @JsonKey(name: "featured_at")
   String? get featuredAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "renewed_at")
+  String? get renewedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "next_renewal_at")
+  String? get nextRenewalAt => throw _privateConstructorUsedError;
   @JsonKey(name: "move_in_date")
   String? get moveInDate => throw _privateConstructorUsedError;
   @JsonKey(name: "private_room")
@@ -128,6 +132,8 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "location_id") int? locationId,
       @JsonKey(name: "gender") int? gender,
       @JsonKey(name: "featured_at") String? featuredAt,
+      @JsonKey(name: "renewed_at") String? renewedAt,
+      @JsonKey(name: "next_renewal_at") String? nextRenewalAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "host_resident") bool? hostResident,
@@ -192,6 +198,8 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? locationId = freezed,
     Object? gender = freezed,
     Object? featuredAt = freezed,
+    Object? renewedAt = freezed,
+    Object? nextRenewalAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
     Object? hostResident = freezed,
@@ -281,6 +289,14 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
       featuredAt: freezed == featuredAt
           ? _value.featuredAt
           : featuredAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      renewedAt: freezed == renewedAt
+          ? _value.renewedAt
+          : renewedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nextRenewalAt: freezed == nextRenewalAt
+          ? _value.nextRenewalAt
+          : nextRenewalAt // ignore: cast_nullable_to_non_nullable
               as String?,
       moveInDate: freezed == moveInDate
           ? _value.moveInDate
@@ -433,6 +449,8 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "location_id") int? locationId,
       @JsonKey(name: "gender") int? gender,
       @JsonKey(name: "featured_at") String? featuredAt,
+      @JsonKey(name: "renewed_at") String? renewedAt,
+      @JsonKey(name: "next_renewal_at") String? nextRenewalAt,
       @JsonKey(name: "move_in_date") String? moveInDate,
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "host_resident") bool? hostResident,
@@ -498,6 +516,8 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? locationId = freezed,
     Object? gender = freezed,
     Object? featuredAt = freezed,
+    Object? renewedAt = freezed,
+    Object? nextRenewalAt = freezed,
     Object? moveInDate = freezed,
     Object? privateRoom = freezed,
     Object? hostResident = freezed,
@@ -587,6 +607,14 @@ class __$$ListingImplCopyWithImpl<$Res>
       featuredAt: freezed == featuredAt
           ? _value.featuredAt
           : featuredAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      renewedAt: freezed == renewedAt
+          ? _value.renewedAt
+          : renewedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nextRenewalAt: freezed == nextRenewalAt
+          ? _value.nextRenewalAt
+          : nextRenewalAt // ignore: cast_nullable_to_non_nullable
               as String?,
       moveInDate: freezed == moveInDate
           ? _value.moveInDate
@@ -693,6 +721,8 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "location_id") this.locationId,
       @JsonKey(name: "gender") this.gender,
       @JsonKey(name: "featured_at") this.featuredAt,
+      @JsonKey(name: "renewed_at") this.renewedAt,
+      @JsonKey(name: "next_renewal_at") this.nextRenewalAt,
       @JsonKey(name: "move_in_date") this.moveInDate,
       @JsonKey(name: "private_room") this.privateRoom,
       @JsonKey(name: "host_resident") this.hostResident,
@@ -779,6 +809,12 @@ class _$ListingImpl implements _Listing {
   @JsonKey(name: "featured_at")
   final String? featuredAt;
   @override
+  @JsonKey(name: "renewed_at")
+  final String? renewedAt;
+  @override
+  @JsonKey(name: "next_renewal_at")
+  final String? nextRenewalAt;
+  @override
   @JsonKey(name: "move_in_date")
   final String? moveInDate;
   @override
@@ -817,9 +853,8 @@ class _$ListingImpl implements _Listing {
   List<SubwayStationDetail>? get searchSubwayStations {
     final value = _searchSubwayStations;
     if (value == null) return null;
-    if (_searchSubwayStations is EqualUnmodifiableListView) {
+    if (_searchSubwayStations is EqualUnmodifiableListView)
       return _searchSubwayStations;
-    }
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -833,9 +868,7 @@ class _$ListingImpl implements _Listing {
   List<LocationDetail>? get searchLocations {
     final value = _searchLocations;
     if (value == null) return null;
-    if (_searchLocations is EqualUnmodifiableListView) {
-      return _searchLocations;
-    }
+    if (_searchLocations is EqualUnmodifiableListView) return _searchLocations;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -876,7 +909,7 @@ class _$ListingImpl implements _Listing {
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, renewedAt: $renewedAt, nextRenewalAt: $nextRenewalAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
   }
 
   @override
@@ -912,6 +945,10 @@ class _$ListingImpl implements _Listing {
             (identical(other.gender, gender) || other.gender == gender) &&
             (identical(other.featuredAt, featuredAt) ||
                 other.featuredAt == featuredAt) &&
+            (identical(other.renewedAt, renewedAt) ||
+                other.renewedAt == renewedAt) &&
+            (identical(other.nextRenewalAt, nextRenewalAt) ||
+                other.nextRenewalAt == nextRenewalAt) &&
             (identical(other.moveInDate, moveInDate) ||
                 other.moveInDate == moveInDate) &&
             (identical(other.privateRoom, privateRoom) ||
@@ -978,6 +1015,8 @@ class _$ListingImpl implements _Listing {
         locationId,
         gender,
         featuredAt,
+        renewedAt,
+        nextRenewalAt,
         moveInDate,
         privateRoom,
         hostResident,
@@ -1035,6 +1074,8 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "location_id") final int? locationId,
       @JsonKey(name: "gender") final int? gender,
       @JsonKey(name: "featured_at") final String? featuredAt,
+      @JsonKey(name: "renewed_at") final String? renewedAt,
+      @JsonKey(name: "next_renewal_at") final String? nextRenewalAt,
       @JsonKey(name: "move_in_date") final String? moveInDate,
       @JsonKey(name: "private_room") final bool? privateRoom,
       @JsonKey(name: "host_resident") final bool? hostResident,
@@ -1117,6 +1158,12 @@ abstract class _Listing implements Listing {
   @override
   @JsonKey(name: "featured_at")
   String? get featuredAt;
+  @override
+  @JsonKey(name: "renewed_at")
+  String? get renewedAt;
+  @override
+  @JsonKey(name: "next_renewal_at")
+  String? get nextRenewalAt;
   @override
   @JsonKey(name: "move_in_date")
   String? get moveInDate;

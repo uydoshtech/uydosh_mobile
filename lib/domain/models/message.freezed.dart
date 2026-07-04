@@ -48,6 +48,7 @@ mixin _$Message {
   MessageSender? get sender => throw _privateConstructorUsedError;
   List<MessageAttachment>? get attachments =>
       throw _privateConstructorUsedError;
+  @JsonKey(name: "reply_to_message")
   Message? get replyToMessage => throw _privateConstructorUsedError;
   @JsonKey(name: "is_read_by_current_user")
   bool? get isReadByCurrentUser => throw _privateConstructorUsedError;
@@ -97,7 +98,7 @@ abstract class $MessageCopyWith<$Res> {
       @JsonKey(name: "previous_content") String? previousContent,
       MessageSender? sender,
       List<MessageAttachment>? attachments,
-      Message? replyToMessage,
+      @JsonKey(name: "reply_to_message") Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
       @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
       @JsonKey(
@@ -293,7 +294,7 @@ abstract class _$$MessageImplCopyWith<$Res> implements $MessageCopyWith<$Res> {
       @JsonKey(name: "previous_content") String? previousContent,
       MessageSender? sender,
       List<MessageAttachment>? attachments,
-      Message? replyToMessage,
+      @JsonKey(name: "reply_to_message") Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") bool? isReadByCurrentUser,
       @JsonKey(name: "is_read_by_recipient") bool? isReadByRecipient,
       @JsonKey(
@@ -457,7 +458,7 @@ class _$MessageImpl implements _Message {
       @JsonKey(name: "previous_content") this.previousContent,
       this.sender,
       final List<MessageAttachment>? attachments,
-      this.replyToMessage,
+      @JsonKey(name: "reply_to_message") this.replyToMessage,
       @JsonKey(name: "is_read_by_current_user") this.isReadByCurrentUser,
       @JsonKey(name: "is_read_by_recipient") this.isReadByRecipient,
       @JsonKey(
@@ -528,6 +529,7 @@ class _$MessageImpl implements _Message {
   }
 
   @override
+  @JsonKey(name: "reply_to_message")
   final Message? replyToMessage;
   @override
   @JsonKey(name: "is_read_by_current_user")
@@ -670,7 +672,7 @@ abstract class _Message implements Message {
       @JsonKey(name: "previous_content") final String? previousContent,
       final MessageSender? sender,
       final List<MessageAttachment>? attachments,
-      final Message? replyToMessage,
+      @JsonKey(name: "reply_to_message") final Message? replyToMessage,
       @JsonKey(name: "is_read_by_current_user") final bool? isReadByCurrentUser,
       @JsonKey(name: "is_read_by_recipient") final bool? isReadByRecipient,
       @JsonKey(
@@ -729,6 +731,7 @@ abstract class _Message implements Message {
   @override
   List<MessageAttachment>? get attachments;
   @override
+  @JsonKey(name: "reply_to_message")
   Message? get replyToMessage;
   @override
   @JsonKey(name: "is_read_by_current_user")

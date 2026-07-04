@@ -1,4 +1,5 @@
 import "package:uy_dosh/base/api/client/json_encodable.dart";
+import "package:uy_dosh/domain/models/listing.dart";
 
 /// Empty request for endpoints that don't require a request body.
 class EmptyListingRequest implements IJsonEncodable {
@@ -111,3 +112,41 @@ class PhotoReorderRequest implements IJsonEncodable {
   @override
   Map<String, dynamic> toJson() => {"photoIds": photoIds};
 }
+
+/// Outcome of `PATCH /listings/:id/renew`. Distinguishes a successful bump
+/// (carries the refreshed [listing]) from a still-on-cooldown response
+/// (carries [nextRenewalAt] so callers can sync their local countdown) and
+/// any other failure.
+class RenewListingResult {
+  const RenewListingResult._({
+    required this.status,
+    this.listing,
+    this.nextRenewalAt,
+  });
+
+  factory RenewListingResult.renewed(Listing listing) =>
+      RenewListingResult._(status: RenewListingStatus.renewed, listing: listing);
+
+  factory RenewListingResult.cooldown(String? nextRenewalAt) =>
+      RenewListingResult._(
+        status: RenewListingStatus.cooldown,
+        nextRenewalAt: nextRenewalAt,
+      );
+
+  factory RenewListingResult.failure() =>
+      const RenewListingResult._(status: RenewListingStatus.failure);
+
+  final RenewListingStatus status;
+
+  /// Populated only when [status] is [RenewListingStatus.renewed].
+  final Listing? listing;
+
+  /// Populated only when [status] is [RenewListingStatus.cooldown] (may still
+  /// be null if the server didn't return one).
+  final String? nextRenewalAt;
+
+  bool get isSuccess => status == RenewListingStatus.renewed;
+  bool get isCooldown => status == RenewListingStatus.cooldown;
+}
+
+enum RenewListingStatus { renewed, cooldown, failure }

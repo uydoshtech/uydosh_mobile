@@ -3084,6 +3084,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete_listing_error => 'Error deleting listing';
 
   @override
+  String get renew_listing => 'Renew';
+
+  @override
+  String get renew_listing_success => 'Listing renewed';
+
+  @override
+  String get renew_listing_error =>
+      'Could not renew the listing. Please try again.';
+
+  @override
+  String renew_in_days(String days) {
+    return 'Renew in ${days}d';
+  }
+
+  @override
   String get unknown => 'Unknown';
 
   @override

@@ -1259,6 +1259,18 @@
   "delete_listing_confirmation": "Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.",
   "delete_listing_success": "Объявление успешно удалено",
   "delete_listing_error": "Ошибка удаления объявления",
+  "renew_listing": "Обновить",
+  "renew_listing_success": "Объявление обновлено",
+  "renew_listing_error": "Не удалось обновить объявление. Попробуйте ещё раз.",
+  "renew_in_days": "Через {days} дн.",
+  "@renew_in_days": {
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
   "unknown": "Неизвестно",
   "create_complaint": "Создать жалобу",
   "complaint_description_hint": "Добавьте подробности (необязательно)",

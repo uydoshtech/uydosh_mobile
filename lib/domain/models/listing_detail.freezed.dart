@@ -825,7 +825,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           : areaPriceStats // ignore: cast_nullable_to_non_nullable
               as AreaPriceStats?,
       nearbyStores: freezed == nearbyStores
-          ? _value.nearbyStores
+          ? _value._nearbyStores
           : nearbyStores // ignore: cast_nullable_to_non_nullable
               as List<ListingNearbyStore>?,
       groupSizeTarget: freezed == groupSizeTarget
@@ -1027,9 +1027,8 @@ class _$ListingDetailImpl implements _ListingDetail {
   List<SubwayStationDetail>? get searchSubwayStations {
     final value = _searchSubwayStations;
     if (value == null) return null;
-    if (_searchSubwayStations is EqualUnmodifiableListView) {
+    if (_searchSubwayStations is EqualUnmodifiableListView)
       return _searchSubwayStations;
-    }
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -1042,9 +1041,7 @@ class _$ListingDetailImpl implements _ListingDetail {
   List<LocationDetail>? get searchLocations {
     final value = _searchLocations;
     if (value == null) return null;
-    if (_searchLocations is EqualUnmodifiableListView) {
-      return _searchLocations;
-    }
+    if (_searchLocations is EqualUnmodifiableListView) return _searchLocations;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
@@ -1098,7 +1095,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, addressLatitude: $addressLatitude, addressLongitude: $addressLongitude, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, nearbyStores: $nearbyStores, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, addressLatitude: $addressLatitude, addressLongitude: $addressLongitude, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, nearbyStores: $nearbyStores, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
   }
 
   @override
@@ -1192,11 +1189,8 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.groupSizeTarget == groupSizeTarget) &&
             (identical(other.groupFormingStatus, groupFormingStatus) ||
                 other.groupFormingStatus == groupFormingStatus) &&
-            (identical(
-                    other.groupCompatibilityReport, groupCompatibilityReport) ||
-                other.groupCompatibilityReport == groupCompatibilityReport) &&
-            (identical(other.groupContext, groupContext) ||
-                other.groupContext == groupContext));
+            (identical(other.groupCompatibilityReport, groupCompatibilityReport) || other.groupCompatibilityReport == groupCompatibilityReport) &&
+            (identical(other.groupContext, groupContext) || other.groupContext == groupContext));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)

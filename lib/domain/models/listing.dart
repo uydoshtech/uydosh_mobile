@@ -33,6 +33,8 @@ class Listing with _$Listing {
     @JsonKey(name: "location_id") int? locationId,
     @JsonKey(name: "gender") int? gender,
     @JsonKey(name: "featured_at") String? featuredAt,
+    @JsonKey(name: "renewed_at") String? renewedAt,
+    @JsonKey(name: "next_renewal_at") String? nextRenewalAt,
     @JsonKey(name: "move_in_date") String? moveInDate,
     @JsonKey(name: "private_room") bool? privateRoom,
     @JsonKey(name: "host_resident") bool? hostResident,

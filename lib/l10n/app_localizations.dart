@@ -5771,6 +5771,30 @@ abstract class AppLocalizations {
   /// **'Error deleting listing'**
   String get delete_listing_error;
 
+  /// No description provided for @renew_listing.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew'**
+  String get renew_listing;
+
+  /// No description provided for @renew_listing_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing renewed'**
+  String get renew_listing_success;
+
+  /// No description provided for @renew_listing_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not renew the listing. Please try again.'**
+  String get renew_listing_error;
+
+  /// No description provided for @renew_in_days.
+  ///
+  /// In en, this message translates to:
+  /// **'Renew in {days}d'**
+  String renew_in_days(String days);
+
   /// No description provided for @unknown.
   ///
   /// In en, this message translates to:

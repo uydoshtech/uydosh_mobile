@@ -1231,6 +1231,18 @@
   "delete_listing_confirmation": "Are you sure you want to delete this listing? This action cannot be undone.",
   "delete_listing_success": "Listing deleted successfully",
   "delete_listing_error": "Error deleting listing",
+  "renew_listing": "Renew",
+  "renew_listing_success": "Listing renewed",
+  "renew_listing_error": "Could not renew the listing. Please try again.",
+  "renew_in_days": "Renew in {days}d",
+  "@renew_in_days": {
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
   "unknown": "Unknown",
   "create_complaint": "Create Complaint",
   "complaint_description_hint": "Add details (optional)",

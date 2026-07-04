@@ -175,6 +175,7 @@ abstract class IListingService {
   });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
+  Future<RenewListingResult> renewListing(int listingId);
   Future<void> recordListingView(int listingId);
   Future<PageableResponse<Listing>> getViewedListings({
     int page = 1,
@@ -558,6 +559,10 @@ class ListingService implements IListingService {
     bool isCurrentlyFeatured,
   ) =>
       _crudService.toggleFeatureListing(listingId, isCurrentlyFeatured);
+
+  @override
+  Future<RenewListingResult> renewListing(int listingId) =>
+      _crudService.renewListing(listingId);
 
   @override
   Future<void> recordListingView(int listingId) =>

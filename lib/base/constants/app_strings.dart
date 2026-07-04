@@ -2169,6 +2169,10 @@ class AppStrings {
           "Are you sure you want to delete this listing? This action cannot be undone.",
       "delete_listing_success": "Listing deleted successfully",
       "delete_listing_error": "Error deleting listing",
+      "renew_listing": "Renew",
+      "renew_listing_success": "Listing renewed",
+      "renew_listing_error": "Could not renew the listing. Please try again.",
+      "renew_in_days": "Renew in {days}d",
       "unknown": "Unknown",
 
       // ===== COMPLAINTS =====
@@ -4398,6 +4402,10 @@ class AppStrings {
           "Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.",
       "delete_listing_success": "Объявление успешно удалено",
       "delete_listing_error": "Ошибка удаления объявления",
+      "renew_listing": "Обновить",
+      "renew_listing_success": "Объявление обновлено",
+      "renew_listing_error": "Не удалось обновить объявление. Попробуйте ещё раз.",
+      "renew_in_days": "Через {days} дн.",
       "unknown": "Неизвестно",
 
       // ===== COMPLAINTS =====
@@ -6633,6 +6641,10 @@ class AppStrings {
           "Bu e'loni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
       "delete_listing_success": "E'lon muvaffaqiyatli o'chirildi",
       "delete_listing_error": "E'loni o'chirishda xatolik",
+      "renew_listing": "Yangilash",
+      "renew_listing_success": "E'lon yangilandi",
+      "renew_listing_error": "E'lonni yangilab bo'lmadi. Qayta urinib ko'ring.",
+      "renew_in_days": "{days} kunda yangilash",
       "unknown": "Noma'lum",
 
       // ===== COMPLAINTS =====

@@ -1231,6 +1231,18 @@
   "delete_listing_confirmation": "Bu e'loni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
   "delete_listing_success": "E'lon muvaffaqiyatli o'chirildi",
   "delete_listing_error": "E'loni o'chirishda xatolik",
+  "renew_listing": "Yangilash",
+  "renew_listing_success": "E'lon yangilandi",
+  "renew_listing_error": "E'lonni yangilab bo'lmadi. Qayta urinib ko'ring.",
+  "renew_in_days": "{days} kunda yangilash",
+  "@renew_in_days": {
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
   "unknown": "Noma'lum",
   "create_complaint": "Shikoyat yaratish",
   "complaint_description_hint": "Tafsilotlar qo'shing (ixtiyoriy)",

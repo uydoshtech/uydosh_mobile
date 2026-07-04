@@ -3100,6 +3100,21 @@ class AppLocalizationsRu extends AppLocalizations {
   String get delete_listing_error => 'Ошибка удаления объявления';
 
   @override
+  String get renew_listing => 'Обновить';
+
+  @override
+  String get renew_listing_success => 'Объявление обновлено';
+
+  @override
+  String get renew_listing_error =>
+      'Не удалось обновить объявление. Попробуйте ещё раз.';
+
+  @override
+  String renew_in_days(String days) {
+    return 'Через $days дн.';
+  }
+
+  @override
   String get unknown => 'Неизвестно';
 
   @override
