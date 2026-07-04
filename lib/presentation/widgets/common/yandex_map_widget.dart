@@ -1043,7 +1043,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         icon: PlacemarkIcon.single(
           PlacemarkIconStyle(
             image: _bitmapDescriptorFromBytes(pinIconBytes),
-            scale: 1.0,
+            scale: 2.0,
           ),
         ),
       ),
@@ -1053,7 +1053,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
           PlacemarkIconStyle(
             image: _bitmapDescriptorFromBytes(arrowIconBytes),
             rotationType: RotationType.rotate,
-            scale: 1.0,
+            scale: 2.0,
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import "dart:async" show unawaited;
 import "dart:math";
 import "dart:typed_data";
 import "dart:ui" as ui;
@@ -617,10 +618,16 @@ class _TelegramLocationHistoryMapState
 
   void _onMapCreated(YandexMapController controller) {
     _controller = controller;
-    if (!_didFitBounds) {
-      _didFitBounds = true;
-      _fitBounds();
-    }
+    if (_didFitBounds) return;
+    _didFitBounds = true;
+    // The native map view needs a frame to finish attaching after creation —
+    // calling moveCamera synchronously here is unreliable and can leave the
+    // map at its default, fully-zoomed-out world view (see YandexMapWidget's
+    // own onMapCreated handler, which follows the same pattern).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_fitBounds());
+    });
   }
 
   Future<void> _fitBounds() async {
