@@ -2709,7 +2709,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: stepIndex == null ? null : () => _goToStep(stepIndex),
+        onTap: stepIndex == null
+            ? null
+            : () {
+                HapticFeedbackUtils.impact();
+                _goToStep(stepIndex);
+              },
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
@@ -2768,7 +2773,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: () => _goToStep(2),
+        onTap: () {
+          HapticFeedbackUtils.impact();
+          _goToStep(2);
+        },
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: ThreeDSurfaceStyle.wheelPickerPlateDecoration(
