@@ -2405,9 +2405,7 @@ class UniversityMapTooltip extends StatelessWidget {
             ? Colors.white
             : Colors.white.withValues(alpha: 0.82)
         : scheme.onSurfaceVariant;
-    final shortTitle = marker.title == marker.fullTitle
-        ? _toTitleCase(marker.title)
-        : marker.title;
+    final shortTitle = _toTitleCase(marker.title);
     final fullTitle = _toTitleCase(marker.fullTitle);
 
     return Material(

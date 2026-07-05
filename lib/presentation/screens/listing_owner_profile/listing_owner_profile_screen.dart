@@ -1068,7 +1068,9 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   }
 
   String _getLocalizedUniversityName(UserProfileUniversity university) {
-    return university.getLocalizedName(LanguageState().currentLanguage);
+    return university.getLocalizedNameCapitalized(
+      LanguageState().currentLanguage,
+    );
   }
 
   IconData _getGenderIcon(int gender) {
