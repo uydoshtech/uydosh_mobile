@@ -127,6 +127,7 @@ class _AdminTelegramUserLocationHistoryScreenState
     }
     final page = _page;
     final history = page?.history ?? const [];
+    final dayGroups = _computeDayGroups(history);
     if (page == null || history.isEmpty) {
       return Center(
         child: Padding(
@@ -152,6 +153,7 @@ class _AdminTelegramUserLocationHistoryScreenState
               borderRadius: BorderRadius.circular(16),
               child: _TelegramLocationHistoryMap(
                 history: history,
+                dayGroups: dayGroups,
                 selectedIndex: _selectedIndex,
                 onSelect: (index) => setState(() => _selectedIndex = index),
               ),
@@ -164,25 +166,48 @@ class _AdminTelegramUserLocationHistoryScreenState
         // the rest of the timeline is still reachable by scrolling.
         SizedBox(
           height: _historyListVisibleHeight,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            itemCount: history.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 4),
-            itemBuilder: (context, index) {
-              // Most-recent-first for the timeline list; the map still draws
-              // the polyline in chronological (oldest-first) order.
-              final reversedIndex = history.length - 1 - index;
-              final point = history[reversedIndex];
-              return _HistoryPointTile(
-                index: reversedIndex,
-                point: point,
-                selected: _selectedIndex == reversedIndex,
-                onTap: () => setState(() => _selectedIndex = reversedIndex),
-              );
-            },
-          ),
+          child: _buildTimelineList(context, history, dayGroups),
         ),
       ],
+    );
+  }
+
+  /// Most-recent-first timeline, with a date divider inserted every time the
+  /// calendar day changes so weeks of pings don't read as one undifferentiated
+  /// scroll — mirrors the day-colored grouping drawn on the map above.
+  Widget _buildTimelineList(
+    BuildContext context,
+    List<TelegramMiniAppLocationHistoryPoint> history,
+    _DayGroups dayGroups,
+  ) {
+    final rows = <Widget>[];
+    int? lastGroupIndex;
+    for (var i = history.length - 1; i >= 0; i--) {
+      final groupIndex = dayGroups.groupIndexForPoint[i];
+      if (groupIndex != lastGroupIndex) {
+        if (lastGroupIndex != null) rows.add(const SizedBox(height: 10));
+        rows.add(
+          _DayHeader(
+            date: history[i].createdAt,
+            color: dayGroups.colorForPoint[i],
+          ),
+        );
+        lastGroupIndex = groupIndex;
+      } else {
+        rows.add(const SizedBox(height: 4));
+      }
+      rows.add(
+        _HistoryPointTile(
+          index: i,
+          point: history[i],
+          selected: _selectedIndex == i,
+          onTap: () => setState(() => _selectedIndex = i),
+        ),
+      );
+    }
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      children: rows,
     );
   }
 
@@ -362,6 +387,109 @@ String _formatDedupDistance(int precision) {
   return "${meters.toStringAsFixed(1)} m";
 }
 
+/// Distinct, saturated-enough-for-white-text colors cycled across consecutive
+/// calendar days so a user's trail reads as separate daily segments instead
+/// of one continuous line spanning days or weeks.
+const List<Color> _dayColorPalette = [
+  Color(0xFF1565C0),
+  Color(0xFF2E7D32),
+  Color(0xFFC62828),
+  Color(0xFF6A1B9A),
+  Color(0xFFEF6C00),
+  Color(0xFF00838F),
+  Color(0xFF4E342E),
+  Color(0xFF283593),
+  Color(0xFF9E9D24),
+  Color(0xFFAD1457),
+];
+
+/// Precomputed per-point day-bucket assignment for a chronological (oldest-
+/// first) history list, shared by the timeline list (date dividers) and the
+/// map (one polyline segment + badge color per day) so both stay in sync.
+class _DayGroups {
+  const _DayGroups({
+    required this.groupIndexForPoint,
+    required this.colorForPoint,
+    required this.chronologicalGroups,
+  });
+
+  /// Same length as the history list; a 0-based, chronologically increasing
+  /// id for the calendar day each point falls on.
+  final List<int> groupIndexForPoint;
+
+  /// Same length as the history list; the color assigned to that point's day,
+  /// cycling through [_dayColorPalette].
+  final List<Color> colorForPoint;
+
+  /// Original history indices bucketed by day, in chronological order — used
+  /// to draw one polyline per day instead of a single line spanning the
+  /// user's entire history.
+  final List<List<int>> chronologicalGroups;
+}
+
+_DayGroups _computeDayGroups(List<TelegramMiniAppLocationHistoryPoint> points) {
+  final groupIndexForPoint = List<int>.filled(points.length, 0);
+  final colorForPoint =
+      List<Color>.filled(points.length, _dayColorPalette.first);
+  final chronologicalGroups = <List<int>>[];
+  DateTime? currentDay;
+  for (var i = 0; i < points.length; i++) {
+    final createdAt = points[i].createdAt;
+    final day = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    if (currentDay == null || day != currentDay) {
+      chronologicalGroups.add([]);
+      currentDay = day;
+    }
+    final groupIndex = chronologicalGroups.length - 1;
+    chronologicalGroups[groupIndex].add(i);
+    groupIndexForPoint[i] = groupIndex;
+    colorForPoint[i] = _dayColorPalette[groupIndex % _dayColorPalette.length];
+  }
+  return _DayGroups(
+    groupIndexForPoint: groupIndexForPoint,
+    colorForPoint: colorForPoint,
+    chronologicalGroups: chronologicalGroups,
+  );
+}
+
+/// Date divider shown above the first (most recent) entry of each calendar
+/// day in the timeline, colored to match that day's map badges/polyline.
+class _DayHeader extends StatelessWidget {
+  const _DayHeader({required this.date, required this.color});
+
+  final DateTime date;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            DateFormat("EEEE, d MMM yyyy").format(date),
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Divider(color: theme.colorScheme.outlineVariant),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _HistoryPointTile extends StatelessWidget {
   const _HistoryPointTile({
     required this.index,
@@ -503,11 +631,13 @@ class _RepeatCountBadge extends StatelessWidget {
 class _TelegramLocationHistoryMap extends StatefulWidget {
   const _TelegramLocationHistoryMap({
     required this.history,
+    required this.dayGroups,
     required this.selectedIndex,
     required this.onSelect,
   });
 
   final List<TelegramMiniAppLocationHistoryPoint> history;
+  final _DayGroups dayGroups;
   final int? selectedIndex;
   final ValueChanged<int> onSelect;
 
@@ -518,16 +648,21 @@ class _TelegramLocationHistoryMap extends StatefulWidget {
 
 class _TelegramLocationHistoryMapState
     extends State<_TelegramLocationHistoryMap> {
-  static const int _badgeIconSize = 72;
-  static const double _badgeIconRadius = 24;
+  // Rendered at a high backing resolution and then scaled down (see
+  // [_unselectedBadgeScale]/[_selectedBadgeScale]) so the numbers stay crisp
+  // instead of blurring into an illegible smudge once shrunk onto the map.
+  static const int _badgeIconSize = 108;
+  static const double _badgeIconRadius = 36;
+  static const double _unselectedBadgeScale = 0.5;
+  static const double _selectedBadgeScale = 0.65;
 
   YandexMapController? _controller;
   bool _didFitBounds = false;
 
-  /// Numbered-badge icon bytes keyed by the 1-based label ("1", "2", ...).
-  /// Built once up front since [BitmapDescriptor.fromBytes] needs raw PNG
-  /// bytes synchronously at build time, but rendering them is async.
-  final Map<String, Uint8List> _badgeIconBytes = {};
+  /// Numbered-badge icon bytes keyed by history index. Built once up front
+  /// since [BitmapDescriptor.fromBytes] needs raw PNG bytes synchronously at
+  /// build time, but rendering them is async.
+  final Map<int, Uint8List> _badgeIconBytes = {};
   bool _iconsReady = false;
 
   @override
@@ -542,20 +677,19 @@ class _TelegramLocationHistoryMapState
     if (oldWidget.selectedIndex != widget.selectedIndex) {
       _focusSelected();
     }
-    if (oldWidget.history.length != widget.history.length) {
+    if (!identical(oldWidget.history, widget.history)) {
       _generateBadgeIcons();
     }
   }
 
   Future<void> _generateBadgeIcons() async {
-    final labels = {
-      for (var i = 0; i < widget.history.length; i++) "${i + 1}",
-    };
-    final entries = await Future.wait(
-      labels.map(
-        (label) async => MapEntry(label, await _createBadgeIconBytes(label)),
-      ),
-    );
+    final history = widget.history;
+    final colors = widget.dayGroups.colorForPoint;
+    final entries = await Future.wait([
+      for (var i = 0; i < history.length; i++)
+        _createBadgeIconBytes(label: "${i + 1}", color: colors[i])
+            .then((bytes) => MapEntry(i, bytes)),
+    ]);
     if (!mounted) return;
     setState(() {
       _badgeIconBytes
@@ -565,9 +699,13 @@ class _TelegramLocationHistoryMapState
     });
   }
 
-  /// Draws a solid black circle (with a thin white outline for contrast
-  /// against dark map tiles) with the ping's index in white, bold text.
-  Future<Uint8List> _createBadgeIconBytes(String label) async {
+  /// Draws a solid circle — filled with that ping's day color, with a thick
+  /// white outline for contrast against both light and dark map tiles — with
+  /// the ping's index in bold white text.
+  Future<Uint8List> _createBadgeIconBytes({
+    required String label,
+    required Color color,
+  }) async {
     const size = _badgeIconSize;
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
@@ -576,10 +714,10 @@ class _TelegramLocationHistoryMapState
     final outlinePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, _badgeIconRadius + 4, outlinePaint);
+    canvas.drawCircle(center, _badgeIconRadius + 6, outlinePaint);
 
     final circlePaint = Paint()
-      ..color = Colors.black
+      ..color = color
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, _badgeIconRadius, circlePaint);
 
@@ -588,8 +726,9 @@ class _TelegramLocationHistoryMapState
         text: label,
         style: TextStyle(
           color: Colors.white,
-          fontSize: label.length > 2 ? 16 : 20,
-          fontWeight: FontWeight.w800,
+          fontSize: label.length > 2 ? 28 : 34,
+          fontWeight: FontWeight.w900,
+          height: 1,
         ),
       ),
       textDirection: ui.TextDirection.ltr,
