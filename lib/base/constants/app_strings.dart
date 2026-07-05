@@ -355,6 +355,7 @@ class AppStrings {
       "error_internet_connection": "Check your internet connection",
       "error_resource_conflict":
           "You have already complained about this listing.",
+      "error_self_complaint": "You cannot complain about your own listing.",
 
       // ===== MESSAGING =====
       "conversations": "Messages",
@@ -2556,6 +2557,7 @@ class AppStrings {
       "error_request_cancelled": "Запрос был отменён.",
       "error_internet_connection": "Проверьте подключение к интернету",
       "error_resource_conflict": "Вы уже пожаловались на это объявление.",
+      "error_self_complaint": "Вы не можете пожаловаться на своё объявление.",
 
       // ===== MESSAGING =====
       "conversations": "Сообщения",
@@ -4806,6 +4808,7 @@ class AppStrings {
       "error_internet_connection": "Internet aloqangizni tekshiring",
       "error_resource_conflict":
           "Siz bu e'lon haqida allaqachon shikoyat qilgansiz.",
+      "error_self_complaint": "O'zingizning e'loningiz haqida shikoyat qila olmaysiz.",
 
       // ===== MESSAGING =====
       "conversations": "Xabarlar",

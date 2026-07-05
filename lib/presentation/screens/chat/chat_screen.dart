@@ -1589,7 +1589,12 @@ class _ChatScreenState extends State<ChatScreen> {
           message: L10n.get("chat_safety_sheet_copied"),
         );
       },
-      onReportPressed: widget.listingId == null ? null : _createComplaint,
+      // Reporting here files a complaint against the listing (there's no
+      // per-message report endpoint), so — like the menu's "complain" item —
+      // it's not offered to the listing's own owner.
+      onReportPressed: (widget.listingId == null || _isViewerListingOwner)
+          ? null
+          : _createComplaint,
     );
   }
 
@@ -3547,8 +3552,11 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
 
-    // Complain option - only show when listingId is available
-    if (widget.listingId != null) {
+    // Complain option - only show when listingId is available and the viewer
+    // isn't the listing's own owner (matches listing_detail_screen, which
+    // hides this action for owners too — you can't complain about your own
+    // listing, server-side rejects it now regardless).
+    if (widget.listingId != null && !_isViewerListingOwner) {
       items.add(
         ActionMenuItem(
           value: "complain",

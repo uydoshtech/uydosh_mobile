@@ -58,11 +58,17 @@ class ComplaintBloc extends Bloc<ComplaintEvent, ComplaintState> {
       // Handle DioException to extract status code
       if (error is DioException) {
         final statusCode = error.response?.statusCode;
+        final currentLanguage = LanguageState().currentLanguage;
         if (statusCode == 409) {
           // Get localized error message directly in the bloc
-          final currentLanguage = LanguageState().currentLanguage;
           final localizedMessage = AppStrings.get(
             "error_resource_conflict",
+            currentLanguage,
+          );
+          emit(ComplaintState.error(message: localizedMessage));
+        } else if (statusCode == 403) {
+          final localizedMessage = AppStrings.get(
+            "error_self_complaint",
             currentLanguage,
           );
           emit(ComplaintState.error(message: localizedMessage));
