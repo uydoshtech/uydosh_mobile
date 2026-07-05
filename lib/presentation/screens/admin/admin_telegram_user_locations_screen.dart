@@ -124,8 +124,8 @@ class _AdminTelegramUserLocationsScreenState
     }
   }
 
-  void _openHistory(TelegramMiniAppLocationUserSummary user) {
-    Navigator.of(context).push(
+  Future<void> _openHistory(TelegramMiniAppLocationUserSummary user) async {
+    final deleted = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => AdminTelegramUserLocationHistoryScreen(
           telegramUserId: user.telegramUserId,
@@ -133,6 +133,16 @@ class _AdminTelegramUserLocationsScreenState
         ),
       ),
     );
+    // The user's entire location history was wiped from the history screen —
+    // refresh so the (now stale) summary row reflects that.
+    if (deleted == true) {
+      setStateIfMounted(() {
+        _page = 1;
+        _hasMore = true;
+        _users.clear();
+      });
+      unawaited(_fetch());
+    }
   }
 
   @override

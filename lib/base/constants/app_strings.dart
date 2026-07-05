@@ -1770,6 +1770,13 @@ class AppStrings {
           "Map preview isn't available on web — see the list below",
       "admin_telegram_location_dedup_button": "Merge: {distance}",
       "admin_telegram_location_dedup_title": "Merge nearby points within",
+      "admin_telegram_location_delete_tooltip": "Delete this user's locations",
+      "admin_telegram_location_delete_confirm_title": "Delete all locations?",
+      "admin_telegram_location_delete_confirm_body":
+          "This permanently deletes every recorded location for this user. This can't be undone.",
+      "admin_telegram_location_delete_done": "Deleted {locations_str}.",
+      "telegram_locations_count_one": "{count} location",
+      "telegram_locations_count_other": "{count} locations",
       "admin_district_heatmap_unavailable": "Unavailable",
       "admin_district_heatmap_no_data": "No district data available",
 
@@ -4017,6 +4024,16 @@ class AppStrings {
           "Просмотр карты недоступен в веб-версии — см. список ниже",
       "admin_telegram_location_dedup_button": "Слияние: {distance}",
       "admin_telegram_location_dedup_title": "Объединять точки в радиусе",
+      "admin_telegram_location_delete_tooltip":
+          "Удалить локации этого пользователя",
+      "admin_telegram_location_delete_confirm_title":
+          "Удалить все локации?",
+      "admin_telegram_location_delete_confirm_body":
+          "Будут безвозвратно удалены все записанные локации этого пользователя. Отменить нельзя.",
+      "admin_telegram_location_delete_done": "Удалено: {locations_str}.",
+      "telegram_locations_count_one": "{count} локация",
+      "telegram_locations_count_few": "{count} локации",
+      "telegram_locations_count_many": "{count} локаций",
 
       "admin_subway_heatmap_title": "Тепловая карта линий метро",
       "admin_subway_heatmap_loading": "Загрузка статистики по линиям метро...",
@@ -6270,6 +6287,14 @@ class AppStrings {
       "admin_telegram_location_dedup_button": "Birlashtirish: {distance}",
       "admin_telegram_location_dedup_title":
           "Yaqin nuqtalarni shu radiusda birlashtirish",
+      "admin_telegram_location_delete_tooltip":
+          "Bu foydalanuvchi joylashuvlarini o'chirish",
+      "admin_telegram_location_delete_confirm_title":
+          "Barcha joylashuvlar o'chirilsinmi?",
+      "admin_telegram_location_delete_confirm_body":
+          "Bu foydalanuvchining barcha saqlangan joylashuvlari butunlay o'chiriladi. Buni bekor qilib bo'lmaydi.",
+      "admin_telegram_location_delete_done": "{locations_str} o'chirildi.",
+      "telegram_locations_count_other": "{count} joylashuv",
 
       "admin_subway_heatmap_title": "Metro liniyalari issiqlik xaritasi",
       "admin_subway_heatmap_loading":

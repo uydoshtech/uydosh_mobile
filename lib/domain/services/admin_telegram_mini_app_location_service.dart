@@ -1,3 +1,4 @@
+import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
@@ -188,6 +189,11 @@ abstract class IAdminTelegramMiniAppLocationService {
     int limit = 1000,
     int? dedupPrecision,
   });
+
+  /// DELETE `/admin/telegram-mini-app-locations/users/:telegramUserId/history` —
+  /// permanently wipes every recorded location ping for one Telegram user. Irreversible.
+  /// Returns the number of rows deleted.
+  Future<int> deleteHistory({required String telegramUserId});
 }
 
 class AdminTelegramMiniAppLocationService
@@ -249,4 +255,29 @@ class AdminTelegramMiniAppLocationService
       rethrow;
     }
   }
+
+  @override
+  Future<int> deleteHistory({required String telegramUserId}) async {
+    try {
+      final response = await _oauthApiClient.delete<dynamic, IJsonEncodable>(
+        "/admin/telegram-mini-app-locations/users/$telegramUserId/history",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: const _EmptyRequest(),
+      );
+      final map = _requireJsonMap(
+          response, "Unexpected delete telegram mini app location response");
+      return _asInt(map["deleted"]);
+    } catch (e) {
+      logger.d("Delete telegram mini app location history error: $e");
+      rethrow;
+    }
+  }
+}
+
+class _EmptyRequest implements IJsonEncodable {
+  const _EmptyRequest();
+
+  @override
+  Map<String, dynamic> toJson() => {};
 }

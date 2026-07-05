@@ -9,11 +9,16 @@ import "package:intl/intl.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/dio_api_error_message.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/domain/services/admin_telegram_mini_app_location_service.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
+import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
+import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
@@ -54,6 +59,10 @@ class _AdminTelegramUserLocationHistoryScreenState
   String? _errorMessage;
   int? _selectedIndex;
   int _dedupPrecision = 4;
+  bool _isDeleting = false;
+  /// Whether this user's history was wiped — reported back to the caller
+  /// (the Telegram users list) via [Navigator.pop] so it can refresh.
+  bool _didDeleteHistory = false;
 
   @override
   void initState() {
@@ -95,17 +104,110 @@ class _AdminTelegramUserLocationHistoryScreenState
   Widget build(BuildContext context) {
     final username = _page?.telegramUsername ?? widget.telegramUsername;
     final title = username != null ? "@$username" : "#${widget.telegramUserId}";
+    final hasHistory = (_page?.history ?? const []).isNotEmpty;
 
-    return Scaffold(
-      appBar: UydoshAppBar(
-        leading: ThreeDAppBarIconButton.backLeading(context),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return PopScope<bool>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.of(context).pop(_didDeleteHistory);
+      },
+      child: Scaffold(
+        appBar: UydoshAppBar(
+          leading: ThreeDAppBarIconButton.backLeading(
+            context,
+            onPressed: () => Navigator.of(context).pop(_didDeleteHistory),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            if (hasHistory || _isDeleting)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Align(
+                  child: _isDeleting
+                      ? const Padding(
+                          padding: EdgeInsets.all(14),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : ThreeDAppBarIconButton(
+                          iconData: Icons.delete_outline,
+                          onPressed: _confirmAndDeleteHistory,
+                          semanticsLabel: L10n.get(
+                            "admin_telegram_location_delete_tooltip",
+                          ),
+                        ),
+                ),
+              ),
+          ],
         ),
+        body: _buildBody(context),
       ),
-      body: _buildBody(context),
     );
+  }
+
+  Future<void> _confirmAndDeleteHistory() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return UydoshAlertDialog(
+          scrollable: true,
+          title: Text(L10n.get("admin_telegram_location_delete_confirm_title")),
+          content: Text(L10n.get("admin_telegram_location_delete_confirm_body")),
+          actions: [
+            TextButtonThemed(
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(ctx).pop(false);
+              },
+              child: Text(L10n.get("cancel")),
+            ),
+            PrimaryButton(
+              surfaceGradientBase: theme.colorScheme.error,
+              textColor: theme.colorScheme.onError,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              onPressed: () {
+                HapticFeedbackUtils.impact();
+                Navigator.of(ctx).pop(true);
+              },
+              child: Text(L10n.get("delete")),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    setStateIfMounted(() => _isDeleting = true);
+    try {
+      final deletedCount = await _service.deleteHistory(
+        telegramUserId: widget.telegramUserId,
+      );
+      _didDeleteHistory = true;
+      if (!mounted) return;
+      ToastTheme.showSuccess(
+        context,
+        message: L10n.getWithParams(
+          "admin_telegram_location_delete_done",
+          params: {
+            "locations_str": L10n.plural("telegram_locations_count", deletedCount),
+          },
+        ),
+      );
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ToastTheme.showError(context, message: throwableUserMessage(e));
+    } finally {
+      setStateIfMounted(() => _isDeleting = false);
+    }
   }
 
   Widget _buildBody(BuildContext context) {
@@ -180,34 +282,43 @@ class _AdminTelegramUserLocationHistoryScreenState
     List<TelegramMiniAppLocationHistoryPoint> history,
     _DayGroups dayGroups,
   ) {
-    final rows = <Widget>[];
+    final rows = <_TimelineRow>[];
     int? lastGroupIndex;
     for (var i = history.length - 1; i >= 0; i--) {
       final groupIndex = dayGroups.groupIndexForPoint[i];
       if (groupIndex != lastGroupIndex) {
-        if (lastGroupIndex != null) rows.add(const SizedBox(height: 10));
         rows.add(
-          _DayHeader(
+          _TimelineRow.header(
             date: history[i].createdAt,
             color: dayGroups.colorForPoint[i],
           ),
         );
         lastGroupIndex = groupIndex;
-      } else {
-        rows.add(const SizedBox(height: 4));
       }
-      rows.add(
-        _HistoryPointTile(
-          index: i,
-          point: history[i],
-          selected: _selectedIndex == i,
-          onTap: () => setState(() => _selectedIndex = i),
-        ),
-      );
+      rows.add(_TimelineRow.point(i));
     }
-    return ListView(
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      children: rows,
+      itemCount: rows.length,
+      itemBuilder: (context, i) {
+        final row = rows[i];
+        final header = row.headerDate;
+        if (header != null) {
+          return Padding(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 10, bottom: 2),
+            child: _DayHeader(date: header, color: row.headerColor!),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: _HistoryPointTile(
+            index: row.pointIndex!,
+            point: history[row.pointIndex!],
+            selected: _selectedIndex == row.pointIndex,
+            onTap: () => setState(() => _selectedIndex = row.pointIndex),
+          ),
+        );
+      },
     );
   }
 
@@ -216,9 +327,6 @@ class _AdminTelegramUserLocationHistoryScreenState
     TelegramMiniAppLocationHistoryPage page,
   ) {
     final theme = Theme.of(context);
-    final phone = page.history
-        .map((h) => h.phoneNumber)
-        .firstWhere((p) => p != null, orElse: () => null);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
@@ -240,21 +348,6 @@ class _AdminTelegramUserLocationHistoryScreenState
             loading: _isLoading,
             onChanged: _onDedupPrecisionChanged,
           ),
-          if (phone != null) const SizedBox(width: 8),
-          if (phone != null)
-            Row(
-              children: [
-                ThemeIcon(Icons.phone,
-                    size: 16, color: theme.colorScheme.tertiary),
-                const SizedBox(width: 4),
-                Text(
-                  phone,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
         ],
       ),
     );
@@ -450,6 +543,25 @@ _DayGroups _computeDayGroups(List<TelegramMiniAppLocationHistoryPoint> points) {
     colorForPoint: colorForPoint,
     chronologicalGroups: chronologicalGroups,
   );
+}
+
+/// A single row in the timeline list: either a day-divider header or a point
+/// tile, so [ListView.builder] can lazily build a flat list that still reads
+/// as day-grouped sections.
+class _TimelineRow {
+  const _TimelineRow.header({required DateTime date, required Color color})
+      : headerDate = date,
+        headerColor = color,
+        pointIndex = null;
+
+  const _TimelineRow.point(int index)
+      : pointIndex = index,
+        headerDate = null,
+        headerColor = null;
+
+  final DateTime? headerDate;
+  final Color? headerColor;
+  final int? pointIndex;
 }
 
 /// Date divider shown above the first (most recent) entry of each calendar
@@ -832,19 +944,31 @@ class _TelegramLocationHistoryMapState
       return _buildWebFallback(context);
     }
 
-    final theme = Theme.of(context);
     final selected = widget.selectedIndex;
 
-    final polyline = PolylineMapObject(
-      mapId: const MapObjectId("telegram_location_history_polyline"),
-      polyline: Polyline(
-        points: widget.history
-            .map((p) => Point(latitude: p.latitude, longitude: p.longitude))
-            .toList(),
-      ),
-      strokeColor: theme.colorScheme.primary.withValues(alpha: 0.75),
-      strokeWidth: 3,
-    );
+    // One polyline segment per calendar day — colors match that day's badges
+    // — instead of a single line connecting every ping across the user's
+    // entire history, which reads as unbroken noise once it spans days/weeks.
+    final polylines = <PolylineMapObject>[
+      for (var g = 0; g < widget.dayGroups.chronologicalGroups.length; g++)
+        if (widget.dayGroups.chronologicalGroups[g].length > 1)
+          PolylineMapObject(
+            mapId: MapObjectId("telegram_location_history_polyline_$g"),
+            polyline: Polyline(
+              points: [
+                for (final index in widget.dayGroups.chronologicalGroups[g])
+                  Point(
+                    latitude: widget.history[index].latitude,
+                    longitude: widget.history[index].longitude,
+                  ),
+              ],
+            ),
+            strokeColor:
+                _dayColorPalette[g % _dayColorPalette.length]
+                    .withValues(alpha: 0.8),
+            strokeWidth: 3,
+          ),
+    ];
 
     final placemarks = <PlacemarkMapObject>[
       if (_iconsReady)
@@ -861,17 +985,17 @@ class _TelegramLocationHistoryMapState
             zIndex: i == selected ? 1 : 0,
             icon: PlacemarkIcon.single(
               PlacemarkIconStyle(
-                image: BitmapDescriptor.fromBytes(
-                  _badgeIconBytes["${i + 1}"]!,
-                ),
-                scale: i == selected ? 0.85 : 0.65,
+                image: BitmapDescriptor.fromBytes(_badgeIconBytes[i]!),
+                scale: i == selected
+                    ? _selectedBadgeScale
+                    : _unselectedBadgeScale,
               ),
             ),
           ),
     ];
 
     return YandexMap(
-      mapObjects: [polyline, ...placemarks],
+      mapObjects: [...polylines, ...placemarks],
       onMapCreated: _onMapCreated,
     );
   }
