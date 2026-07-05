@@ -301,6 +301,75 @@ post_install do |installer|
     end
   end
 
+  # Restyle the "Finish" / "Scan Other Rooms" buttons to look like a matched pair of
+  # pill-shaped buttons instead of the upstream mismatched rectangle sizes (120x44 vs
+  # 160x44) — the outlined "Scan Other Rooms" button in particular looked cramped and
+  # boxy. Finish stays filled/brand-brown; Scan Other Rooms becomes a soft tinted
+  # outline so the two read as a clear primary/secondary action pair.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: nicer roomplan button styling */'
+    unless src.include?(marker)
+      src = src.sub(
+        "        // Configure Finish Button - Filled style\n" \
+        "        finishButton.setTitle((uydoshFinishTitle?.isEmpty == false ? uydoshFinishTitle! : uydoshL(\"roomplan_finish\", \"Finish\")), for: .normal)",
+        "        // Configure Finish Button - Filled style\n" \
+        "        #{marker}\n" \
+        "        finishButton.setTitle((uydoshFinishTitle?.isEmpty == false ? uydoshFinishTitle! : uydoshL(\"roomplan_finish\", \"Finish\")), for: .normal)"
+      )
+
+      src = src.sub(
+        "        finishButton.layer.cornerRadius = 12\n" \
+        "        finishButton.addTarget(self, action: #selector(finishAndReturnResult), for: .touchUpInside)",
+        "        finishButton.layer.cornerRadius = 24\n" \
+        "        finishButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)\n" \
+        "        finishButton.layer.shadowColor = UIColor.black.cgColor\n" \
+        "        finishButton.layer.shadowOpacity = 0.25\n" \
+        "        finishButton.layer.shadowRadius = 6\n" \
+        "        finishButton.layer.shadowOffset = CGSize(width: 0, height: 3)\n" \
+        "        finishButton.addTarget(self, action: #selector(finishAndReturnResult), for: .touchUpInside)"
+      )
+
+      src = src.sub(
+        "        scanOtherRoomsButton.backgroundColor = UIColor.clear\n" \
+        "        scanOtherRoomsButton.setTitleColor(UIColor(red: 75/255.0, green: 58/255.0, blue: 47/255.0, alpha: 1.0), for: .normal)\n" \
+        "        scanOtherRoomsButton.layer.cornerRadius = 12\n" \
+        "        scanOtherRoomsButton.layer.borderWidth = 2.0\n" \
+        "        scanOtherRoomsButton.layer.borderColor = UIColor(red: 75/255.0, green: 58/255.0, blue: 47/255.0, alpha: 1.0).cgColor",
+        "        scanOtherRoomsButton.backgroundColor = UIColor(red: 75/255.0, green: 58/255.0, blue: 47/255.0, alpha: 0.08)\n" \
+        "        scanOtherRoomsButton.setTitleColor(UIColor(red: 75/255.0, green: 58/255.0, blue: 47/255.0, alpha: 1.0), for: .normal)\n" \
+        "        scanOtherRoomsButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)\n" \
+        "        scanOtherRoomsButton.layer.cornerRadius = 24\n" \
+        "        scanOtherRoomsButton.layer.borderWidth = 1.5\n" \
+        "        scanOtherRoomsButton.layer.borderColor = UIColor(red: 75/255.0, green: 58/255.0, blue: 47/255.0, alpha: 1.0).cgColor"
+      )
+
+      # Make the two buttons an equal-width pair (was 120x44 / 160x44 — lopsided).
+      src = src.sub(
+        "                finishButton.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -10),\n" \
+        "                finishButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),\n" \
+        "                finishButton.widthAnchor.constraint(equalToConstant: 120),\n" \
+        "                finishButton.heightAnchor.constraint(equalToConstant: 44),\n" \
+        "\n" \
+        "                scanOtherRoomsButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 10),\n" \
+        "                scanOtherRoomsButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),\n" \
+        "                scanOtherRoomsButton.widthAnchor.constraint(equalToConstant: 160),\n" \
+        "                scanOtherRoomsButton.heightAnchor.constraint(equalToConstant: 44),",
+        "                finishButton.trailingAnchor.constraint(equalTo: view.centerXAnchor, constant: -8),\n" \
+        "                finishButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),\n" \
+        "                finishButton.widthAnchor.constraint(equalToConstant: 140),\n" \
+        "                finishButton.heightAnchor.constraint(equalToConstant: 48),\n" \
+        "\n" \
+        "                scanOtherRoomsButton.leadingAnchor.constraint(equalTo: view.centerXAnchor, constant: 8),\n" \
+        "                scanOtherRoomsButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),\n" \
+        "                scanOtherRoomsButton.widthAnchor.constraint(equalToConstant: 140),\n" \
+        "                scanOtherRoomsButton.heightAnchor.constraint(equalToConstant: 48),"
+      )
+
+      File.write(room_capture_file, src)
+    end
+  end
+
   # Inject a small UyDosh logo overlay on top of Apple's native RoomCaptureView,
   # pinned to the bottom-right corner. Apple does not allow replacing the built-in
   # coaching animation (the phone-over-box illustration) or its instruction text,
