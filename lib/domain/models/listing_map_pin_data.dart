@@ -43,6 +43,8 @@ class ListingMapPinData {
     this.subwayStationId,
     this.locationId,
     this.subwayLineId,
+    this.isApproximateLocation,
+    this.accuracyRadiusM,
   });
 
   final int id;
@@ -60,6 +62,8 @@ class ListingMapPinData {
   final int? subwayStationId;
   final int? locationId;
   final int? subwayLineId;
+  final bool? isApproximateLocation;
+  final int? accuracyRadiusM;
 
   factory ListingMapPinData.fromJson(Map<String, dynamic> json) {
     return ListingMapPinData(
@@ -78,6 +82,9 @@ class ListingMapPinData {
       subwayStationId: _nullableMapPinIntFromJson(json['subway_station_id']),
       locationId: _nullableMapPinIntFromJson(json['location_id']),
       subwayLineId: _nullableMapPinIntFromJson(json['subway_line_id']),
+      isApproximateLocation:
+          _nullableMapPinBoolFromJson(json['is_approximate_location']),
+      accuracyRadiusM: _nullableMapPinIntFromJson(json['accuracy_radius_m']),
     );
   }
 }

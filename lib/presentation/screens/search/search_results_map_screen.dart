@@ -853,6 +853,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       photoUrl: pin.photoUrl != null
           ? EnvironmentUtil.hostedImageUrl(pin.photoUrl!)
           : null,
+      isApproximateLocation: pin.isApproximateLocation ?? false,
     );
   }
 
@@ -1091,10 +1092,53 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     );
   }
 
+  /// Same-city sanity bounds mirroring the backend's
+  /// `resolveListingMapCoordinates` guard against bogus/legacy coordinates.
+  static const double _tashkentMinLatitude = 41.15;
+  static const double _tashkentMaxLatitude = 41.42;
+  static const double _tashkentMinLongitude = 69.05;
+  static const double _tashkentMaxLongitude = 69.45;
+
+  static bool _isValidTashkentCoordinate(double latitude, double longitude) {
+    return latitude >= _tashkentMinLatitude &&
+        latitude <= _tashkentMaxLatitude &&
+        longitude >= _tashkentMinLongitude &&
+        longitude <= _tashkentMaxLongitude;
+  }
+
   ListingMapPin? _pinForListing(Listing listing) {
+    // Listings processed by the location-approx pipeline carry a stable,
+    // deterministically distributed display point (or `unknown`, meaning no
+    // pin at all) — prefer that over the legacy station/district centroid so
+    // pins stop stacking. Mirrors resolveListingMapCoordinates() server-side.
+    if (listing.locationPrecision == "unknown") return null;
+
     final pinMeta = _pinMetaForListing(listing);
     final listingTypeCode = listing.listingType?.code ??
         _listingTypeCodeFromId(listing.listingTypeId);
+    final displayLat = listing.displayLat;
+    final displayLng = listing.displayLng;
+    if (displayLat != null &&
+        displayLng != null &&
+        _isValidTashkentCoordinate(displayLat, displayLng)) {
+      return ListingMapPin(
+        listingId: listing.id,
+        latitude: displayLat,
+        longitude: displayLng,
+        title: _listingTitle(listing),
+        subtitle: _listingPriceLabel(listing),
+        locationLabel: pinMeta.locationLabel,
+        stationLabel: pinMeta.stationLabel,
+        subwayLineIds: pinMeta.subwayLineIds,
+        listingTypeId: listing.listingTypeId,
+        listingTypeCode: listingTypeCode,
+        gender: listing.gender,
+        photoUrl: _listingPrimaryPhotoUrl(listing),
+        createdAt: listing.createdAt,
+        isApproximateLocation: listing.isApproximateLocation ?? false,
+      );
+    }
+
     final stationId = listing.subwayStationId ??
         listing.subwayStation?.id ??
         (listing.searchSubwayStations?.isNotEmpty == true

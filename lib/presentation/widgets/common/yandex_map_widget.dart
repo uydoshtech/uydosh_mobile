@@ -44,6 +44,7 @@ class ListingMapPin {
     this.gender,
     this.photoUrl,
     this.createdAt,
+    this.isApproximateLocation = false,
   });
 
   final int listingId;
@@ -60,6 +61,11 @@ class ListingMapPin {
   final int? gender;
   final String? photoUrl;
   final String? createdAt;
+
+  /// True when [latitude]/[longitude] are a stable, deterministically
+  /// generated point around a metro/district/landmark anchor rather than the
+  /// listing's real address — shown to users as an "Approximate location" hint.
+  final bool isApproximateLocation;
 }
 
 class UniversityMapMarker {

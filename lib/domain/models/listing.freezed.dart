@@ -51,6 +51,16 @@ mixin _$Listing {
   int? get locationId => throw _privateConstructorUsedError;
   @JsonKey(name: "gender")
   int? get gender => throw _privateConstructorUsedError;
+  @JsonKey(name: "location_precision")
+  String? get locationPrecision => throw _privateConstructorUsedError;
+  @JsonKey(name: "display_lat")
+  double? get displayLat => throw _privateConstructorUsedError;
+  @JsonKey(name: "display_lng")
+  double? get displayLng => throw _privateConstructorUsedError;
+  @JsonKey(name: "accuracy_radius_m")
+  int? get accuracyRadiusM => throw _privateConstructorUsedError;
+  @JsonKey(name: "is_approximate_location")
+  bool? get isApproximateLocation => throw _privateConstructorUsedError;
   @JsonKey(name: "featured_at")
   String? get featuredAt => throw _privateConstructorUsedError;
   @JsonKey(name: "renewed_at")
@@ -131,6 +141,11 @@ abstract class $ListingCopyWith<$Res> {
       @JsonKey(name: "subway_line_id") int? subwayLineId,
       @JsonKey(name: "location_id") int? locationId,
       @JsonKey(name: "gender") int? gender,
+      @JsonKey(name: "location_precision") String? locationPrecision,
+      @JsonKey(name: "display_lat") double? displayLat,
+      @JsonKey(name: "display_lng") double? displayLng,
+      @JsonKey(name: "accuracy_radius_m") int? accuracyRadiusM,
+      @JsonKey(name: "is_approximate_location") bool? isApproximateLocation,
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "renewed_at") String? renewedAt,
       @JsonKey(name: "next_renewal_at") String? nextRenewalAt,
@@ -197,6 +212,11 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
     Object? gender = freezed,
+    Object? locationPrecision = freezed,
+    Object? displayLat = freezed,
+    Object? displayLng = freezed,
+    Object? accuracyRadiusM = freezed,
+    Object? isApproximateLocation = freezed,
     Object? featuredAt = freezed,
     Object? renewedAt = freezed,
     Object? nextRenewalAt = freezed,
@@ -286,6 +306,26 @@ class _$ListingCopyWithImpl<$Res, $Val extends Listing>
           ? _value.gender
           : gender // ignore: cast_nullable_to_non_nullable
               as int?,
+      locationPrecision: freezed == locationPrecision
+          ? _value.locationPrecision
+          : locationPrecision // ignore: cast_nullable_to_non_nullable
+              as String?,
+      displayLat: freezed == displayLat
+          ? _value.displayLat
+          : displayLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      displayLng: freezed == displayLng
+          ? _value.displayLng
+          : displayLng // ignore: cast_nullable_to_non_nullable
+              as double?,
+      accuracyRadiusM: freezed == accuracyRadiusM
+          ? _value.accuracyRadiusM
+          : accuracyRadiusM // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isApproximateLocation: freezed == isApproximateLocation
+          ? _value.isApproximateLocation
+          : isApproximateLocation // ignore: cast_nullable_to_non_nullable
+              as bool?,
       featuredAt: freezed == featuredAt
           ? _value.featuredAt
           : featuredAt // ignore: cast_nullable_to_non_nullable
@@ -448,6 +488,11 @@ abstract class _$$ListingImplCopyWith<$Res> implements $ListingCopyWith<$Res> {
       @JsonKey(name: "subway_line_id") int? subwayLineId,
       @JsonKey(name: "location_id") int? locationId,
       @JsonKey(name: "gender") int? gender,
+      @JsonKey(name: "location_precision") String? locationPrecision,
+      @JsonKey(name: "display_lat") double? displayLat,
+      @JsonKey(name: "display_lng") double? displayLng,
+      @JsonKey(name: "accuracy_radius_m") int? accuracyRadiusM,
+      @JsonKey(name: "is_approximate_location") bool? isApproximateLocation,
       @JsonKey(name: "featured_at") String? featuredAt,
       @JsonKey(name: "renewed_at") String? renewedAt,
       @JsonKey(name: "next_renewal_at") String? nextRenewalAt,
@@ -515,6 +560,11 @@ class __$$ListingImplCopyWithImpl<$Res>
     Object? subwayLineId = freezed,
     Object? locationId = freezed,
     Object? gender = freezed,
+    Object? locationPrecision = freezed,
+    Object? displayLat = freezed,
+    Object? displayLng = freezed,
+    Object? accuracyRadiusM = freezed,
+    Object? isApproximateLocation = freezed,
     Object? featuredAt = freezed,
     Object? renewedAt = freezed,
     Object? nextRenewalAt = freezed,
@@ -604,6 +654,26 @@ class __$$ListingImplCopyWithImpl<$Res>
           ? _value.gender
           : gender // ignore: cast_nullable_to_non_nullable
               as int?,
+      locationPrecision: freezed == locationPrecision
+          ? _value.locationPrecision
+          : locationPrecision // ignore: cast_nullable_to_non_nullable
+              as String?,
+      displayLat: freezed == displayLat
+          ? _value.displayLat
+          : displayLat // ignore: cast_nullable_to_non_nullable
+              as double?,
+      displayLng: freezed == displayLng
+          ? _value.displayLng
+          : displayLng // ignore: cast_nullable_to_non_nullable
+              as double?,
+      accuracyRadiusM: freezed == accuracyRadiusM
+          ? _value.accuracyRadiusM
+          : accuracyRadiusM // ignore: cast_nullable_to_non_nullable
+              as int?,
+      isApproximateLocation: freezed == isApproximateLocation
+          ? _value.isApproximateLocation
+          : isApproximateLocation // ignore: cast_nullable_to_non_nullable
+              as bool?,
       featuredAt: freezed == featuredAt
           ? _value.featuredAt
           : featuredAt // ignore: cast_nullable_to_non_nullable
@@ -720,6 +790,11 @@ class _$ListingImpl implements _Listing {
       @JsonKey(name: "subway_line_id") this.subwayLineId,
       @JsonKey(name: "location_id") this.locationId,
       @JsonKey(name: "gender") this.gender,
+      @JsonKey(name: "location_precision") this.locationPrecision,
+      @JsonKey(name: "display_lat") this.displayLat,
+      @JsonKey(name: "display_lng") this.displayLng,
+      @JsonKey(name: "accuracy_radius_m") this.accuracyRadiusM,
+      @JsonKey(name: "is_approximate_location") this.isApproximateLocation,
       @JsonKey(name: "featured_at") this.featuredAt,
       @JsonKey(name: "renewed_at") this.renewedAt,
       @JsonKey(name: "next_renewal_at") this.nextRenewalAt,
@@ -805,6 +880,21 @@ class _$ListingImpl implements _Listing {
   @override
   @JsonKey(name: "gender")
   final int? gender;
+  @override
+  @JsonKey(name: "location_precision")
+  final String? locationPrecision;
+  @override
+  @JsonKey(name: "display_lat")
+  final double? displayLat;
+  @override
+  @JsonKey(name: "display_lng")
+  final double? displayLng;
+  @override
+  @JsonKey(name: "accuracy_radius_m")
+  final int? accuracyRadiusM;
+  @override
+  @JsonKey(name: "is_approximate_location")
+  final bool? isApproximateLocation;
   @override
   @JsonKey(name: "featured_at")
   final String? featuredAt;
@@ -909,7 +999,7 @@ class _$ListingImpl implements _Listing {
 
   @override
   String toString() {
-    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, renewedAt: $renewedAt, nextRenewalAt: $nextRenewalAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
+    return 'Listing(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, description: $description, cityId: $cityId, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, locationPrecision: $locationPrecision, displayLat: $displayLat, displayLng: $displayLng, accuracyRadiusM: $accuracyRadiusM, isApproximateLocation: $isApproximateLocation, featuredAt: $featuredAt, renewedAt: $renewedAt, nextRenewalAt: $nextRenewalAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, listingType: $listingType, amenities: $amenities, photos: $photos, isFavorited: $isFavorited, groupSizeTarget: $groupSizeTarget, groupMemberCount: $groupMemberCount)';
   }
 
   @override
@@ -943,6 +1033,16 @@ class _$ListingImpl implements _Listing {
             (identical(other.locationId, locationId) ||
                 other.locationId == locationId) &&
             (identical(other.gender, gender) || other.gender == gender) &&
+            (identical(other.locationPrecision, locationPrecision) ||
+                other.locationPrecision == locationPrecision) &&
+            (identical(other.displayLat, displayLat) ||
+                other.displayLat == displayLat) &&
+            (identical(other.displayLng, displayLng) ||
+                other.displayLng == displayLng) &&
+            (identical(other.accuracyRadiusM, accuracyRadiusM) ||
+                other.accuracyRadiusM == accuracyRadiusM) &&
+            (identical(other.isApproximateLocation, isApproximateLocation) ||
+                other.isApproximateLocation == isApproximateLocation) &&
             (identical(other.featuredAt, featuredAt) ||
                 other.featuredAt == featuredAt) &&
             (identical(other.renewedAt, renewedAt) ||
@@ -1014,6 +1114,11 @@ class _$ListingImpl implements _Listing {
         subwayLineId,
         locationId,
         gender,
+        locationPrecision,
+        displayLat,
+        displayLng,
+        accuracyRadiusM,
+        isApproximateLocation,
         featuredAt,
         renewedAt,
         nextRenewalAt,
@@ -1073,6 +1178,12 @@ abstract class _Listing implements Listing {
       @JsonKey(name: "subway_line_id") final int? subwayLineId,
       @JsonKey(name: "location_id") final int? locationId,
       @JsonKey(name: "gender") final int? gender,
+      @JsonKey(name: "location_precision") final String? locationPrecision,
+      @JsonKey(name: "display_lat") final double? displayLat,
+      @JsonKey(name: "display_lng") final double? displayLng,
+      @JsonKey(name: "accuracy_radius_m") final int? accuracyRadiusM,
+      @JsonKey(name: "is_approximate_location")
+      final bool? isApproximateLocation,
       @JsonKey(name: "featured_at") final String? featuredAt,
       @JsonKey(name: "renewed_at") final String? renewedAt,
       @JsonKey(name: "next_renewal_at") final String? nextRenewalAt,
@@ -1155,6 +1266,21 @@ abstract class _Listing implements Listing {
   @override
   @JsonKey(name: "gender")
   int? get gender;
+  @override
+  @JsonKey(name: "location_precision")
+  String? get locationPrecision;
+  @override
+  @JsonKey(name: "display_lat")
+  double? get displayLat;
+  @override
+  @JsonKey(name: "display_lng")
+  double? get displayLng;
+  @override
+  @JsonKey(name: "accuracy_radius_m")
+  int? get accuracyRadiusM;
+  @override
+  @JsonKey(name: "is_approximate_location")
+  bool? get isApproximateLocation;
   @override
   @JsonKey(name: "featured_at")
   String? get featuredAt;

@@ -65,13 +65,15 @@ class _PinSummaryTooltip extends StatelessWidget {
                         ),
                         if (pin.locationLabel?.isNotEmpty == true ||
                             pin.stationLabel?.isNotEmpty == true ||
-                            pin.createdAt?.isNotEmpty == true) ...[
+                            pin.createdAt?.isNotEmpty == true ||
+                            pin.isApproximateLocation) ...[
                           const SizedBox(height: 4),
                           _PinGeoLabelsRow(
                             locationLabel: pin.locationLabel,
                             stationLabel: pin.stationLabel,
                             lineIds: pin.subwayLineIds,
                             createdAt: pin.createdAt,
+                            isApproximateLocation: pin.isApproximateLocation,
                           ),
                         ],
                       ],
@@ -402,13 +404,15 @@ class _PinGroupListingCard extends StatelessWidget {
                     ),
                     if (pin.locationLabel?.isNotEmpty == true ||
                         pin.stationLabel?.isNotEmpty == true ||
-                        pin.createdAt?.isNotEmpty == true) ...[
+                        pin.createdAt?.isNotEmpty == true ||
+                        pin.isApproximateLocation) ...[
                       const SizedBox(height: 4),
                       _PinGeoLabelsRow(
                         locationLabel: pin.locationLabel,
                         stationLabel: pin.stationLabel,
                         lineIds: pin.subwayLineIds,
                         createdAt: pin.createdAt,
+                        isApproximateLocation: pin.isApproximateLocation,
                       ),
                     ],
                   ],
@@ -550,6 +554,7 @@ class _PinGeoLabelsRow extends StatelessWidget {
     required this.stationLabel,
     required this.lineIds,
     this.createdAt,
+    this.isApproximateLocation = false,
   });
 
   static const double _inlineIconSize = 16;
@@ -558,6 +563,7 @@ class _PinGeoLabelsRow extends StatelessWidget {
   final String? stationLabel;
   final List<int> lineIds;
   final String? createdAt;
+  final bool isApproximateLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -589,6 +595,13 @@ class _PinGeoLabelsRow extends StatelessWidget {
         _PinInlineMetroLabel(
           lineIds: lineIds,
           label: stationLabel!,
+          style: metaStyle,
+        ),
+      if (isApproximateLocation)
+        _PinInlineMetaLabel(
+          icon: Icons.location_searching,
+          iconColor: theme.colorScheme.onSurfaceVariant,
+          label: L10n.get("map_pin_approximate_location"),
           style: metaStyle,
         ),
     ];
