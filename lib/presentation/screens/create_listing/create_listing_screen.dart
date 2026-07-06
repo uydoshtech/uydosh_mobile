@@ -27,6 +27,7 @@ import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
+import "package:uy_dosh/base/utils/nearby_metro_stations.dart";
 import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
@@ -42,6 +43,7 @@ import "package:uy_dosh/presentation/screens/create_listing/post_create_listing_
 import "package:uy_dosh/presentation/screens/group_housing/group_housing_search_alerts.dart";
 import "package:uy_dosh/presentation/screens/permissions/notification_permission_gate.dart";
 import "package:uy_dosh/presentation/screens/room_plan/room_plan_scan_screen.dart";
+import "package:uy_dosh/presentation/widgets/common/address_pin_map_preview.dart";
 import "package:uy_dosh/presentation/widgets/common/applied_search_filters_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/description_counter_toolbar.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
@@ -101,6 +103,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String? _identifiedAddressText;
   double? _addressLatitude;
   double? _addressLongitude;
+
+  /// Roommate-needed only: "stations near you" chips computed from the
+  /// address coordinates, mirroring the Telegram Mini App wizard.
+  static const List<int> _nearbyStationRadiusOptions = [10, 20, 30];
+  List<NearbyStationEstimate> _nearbyStations = [];
+  int _nearbyStationsRadiusMinutes = _nearbyStationRadiusOptions.first;
+  bool _isResolvingAddressLocation = false;
+  int _addressGeocodeGeneration = 0;
 
   // Wizard navigation
   final PageController _pageController = PageController();
@@ -299,6 +309,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _identifiedAddressText = null;
       _addressLatitude = null;
       _addressLongitude = null;
+      _nearbyStations = [];
     }
     _markDirty();
   }
@@ -910,6 +921,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       // geocoding fails or times out.
       _syncLocationWithCoordinates(position.latitude, position.longitude);
 
+      // Nearby-metro chips only need coordinates, so populate them
+      // immediately rather than waiting on the (separate) reverse-geocode
+      // call below — mirrors the Telegram Mini App's "Моя локация" handler.
+      setState(() {
+        _addressLatitude = position.latitude;
+        _addressLongitude = position.longitude;
+      });
+      _recomputeNearbyStations();
+
       final result = await getIt<YandexGeosuggestService>().reverseGeocode(
         latitude: position.latitude,
         longitude: position.longitude,
@@ -950,6 +970,126 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       if (mounted) {
         setState(() => _isResolvingCurrentLocation = false);
       }
+    }
+  }
+
+  /// Forward-geocodes the typed address into coordinates once the field
+  /// loses focus, then refreshes the nearby-metro chips for it — the
+  /// roommate-needed flow's replacement for a manual station picker.
+  /// Mirrors the Telegram Mini App's `resolveAddressLocation`.
+  Future<void> _resolveAddressLocation(String text) async {
+    if (!_isRoommateNeededFlow) return;
+    final query = text.trim();
+    if (query.isEmpty || query == _identifiedAddressText) return;
+
+    final generation = ++_addressGeocodeGeneration;
+    setState(() => _isResolvingAddressLocation = true);
+    try {
+      final result = await getIt<YandexGeosuggestService>().forwardGeocode(
+        text: query,
+        lang: L10n.currentLanguage,
+      );
+      if (!mounted || generation != _addressGeocodeGeneration) return;
+      if (result.hasCoordinates) {
+        setState(() {
+          _addressLatitude = result.latitude;
+          _addressLongitude = result.longitude;
+          _identifiedAddressText = query;
+          _showLocationError = false;
+        });
+        _recomputeNearbyStations();
+      }
+    } catch (e, st) {
+      logger.w("Failed to forward-geocode address", error: e, stackTrace: st);
+    } finally {
+      if (mounted && generation == _addressGeocodeGeneration) {
+        setState(() => _isResolvingAddressLocation = false);
+      }
+    }
+  }
+
+  /// Recomputes the "stations near you" chips from the current address
+  /// coordinates and the selected walk-time radius.
+  void _recomputeNearbyStations() {
+    final latitude = _addressLatitude;
+    final longitude = _addressLongitude;
+    if (latitude == null || longitude == null) {
+      setState(() => _nearbyStations = []);
+      return;
+    }
+    setState(() {
+      _nearbyStations = NearbyMetroStations.find(
+        latitude,
+        longitude,
+        maxMinutes: _nearbyStationsRadiusMinutes,
+      );
+    });
+  }
+
+  void _onNearbyRadiusSelected(int minutes) {
+    if (minutes == _nearbyStationsRadiusMinutes) return;
+    HapticFeedbackUtils.selection();
+    setState(() => _nearbyStationsRadiusMinutes = minutes);
+    _recomputeNearbyStations();
+  }
+
+  void _toggleNearbyStation(SubwayStation station) {
+    HapticFeedbackUtils.selection();
+    setState(() {
+      final index =
+          _selectedSearchStations.indexWhere((s) => s.id == station.id);
+      if (index >= 0) {
+        _selectedSearchStations.removeAt(index);
+      } else {
+        _selectedSearchStations.add(station);
+      }
+      if (_showLocationError &&
+          _addressTextController.text.trim().isNotEmpty) {
+        _showLocationError = false;
+      }
+    });
+  }
+
+  /// Fired once the author releases the address-map pin after dragging it —
+  /// updates coordinates and nearby stations immediately, then reverse
+  /// geocodes in the background to keep the address text in sync (mirrors
+  /// the Telegram Mini App's `handleAddressPinDragEnd`).
+  void _handleAddressPinDragEnd(double latitude, double longitude) {
+    HapticFeedbackUtils.selection();
+    setState(() {
+      _addressLatitude = latitude;
+      _addressLongitude = longitude;
+      _showLocationError = false;
+    });
+    _recomputeNearbyStations();
+    unawaited(_reverseGeocodeAfterPinDrag(latitude, longitude));
+  }
+
+  Future<void> _reverseGeocodeAfterPinDrag(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      final result = await getIt<YandexGeosuggestService>().reverseGeocode(
+        latitude: latitude,
+        longitude: longitude,
+        lang: L10n.currentLanguage,
+      );
+      if (!mounted ||
+          _addressLatitude != latitude ||
+          _addressLongitude != longitude ||
+          !result.hasAddress) {
+        return;
+      }
+      final address = result.addressText!.trim();
+      setState(() => _identifiedAddressText = address);
+      _addressTextController.text = address;
+    } catch (e, st) {
+      logger.w(
+        "Reverse geocode after pin drag failed",
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 
@@ -1236,6 +1376,22 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _validateStep(int index) {
     switch (index) {
       case 0: // Location
+        if (_isRoommateNeededFlow) {
+          // Roommate-needed's merged flow: the address drives the
+          // nearby-metro suggestions, so it's the only required field here —
+          // tagging a nearby station is just an optional refinement (mirrors
+          // the Telegram Mini App's `validateStep`).
+          if (_addressTextController.text.trim().isEmpty) {
+            ToastTheme.showError(
+              context,
+              message: L10n.get("create_listing_address_required"),
+            );
+            setState(() => _showLocationError = true);
+            return false;
+          }
+          setState(() => _showLocationError = false);
+          return true;
+        }
         if (_supportsMultiStation &&
             _locationSearchMode == _LocationSearchMode.metro &&
             _selectedSearchStations.isEmpty) {
@@ -1503,6 +1659,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // ===========================================================================
 
   Widget _buildStepLocation() {
+    if (_isRoommateNeededFlow) {
+      return _buildRoommateLocationStep();
+    }
     return UydoshFormScrollBody(
       topPadding: 12,
       children: [
@@ -1603,66 +1762,294 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             showArrows: false,
           ),
         ],
-        if (_isRoommateNeededFlow) ...[
-          const SizedBox(height: 12),
-          LabeledFieldOverlay(
-            label: L10n.get("listing_address_field_label"),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: YandexAddressSuggestField(
+      ],
+    );
+  }
+
+  /// Roommate-needed's location step: address + "my location" + a draggable
+  /// map pin + nearby-metro chips, replacing the metro/district picker used
+  /// by the other listing types. Mirrors the Telegram Mini App's merged
+  /// address step (`roommateLocationSectionHtml`).
+  Widget _buildRoommateLocationStep() {
+    final theme = Theme.of(context);
+    final hasCoordinates = _addressLatitude != null && _addressLongitude != null;
+    return UydoshFormScrollBody(
+      topPadding: 12,
+      children: [
+        LabeledFieldOverlay(
+          label: L10n.get("listing_address_field_label"),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: YandexAddressSuggestField(
+                    hintText: L10n.get("listing_address_text_label"),
+                    controller: _addressTextController,
+                    dirtyOutlineColor: _getBorderColor(),
+                    decoration: UydoshPlateFieldDecoration.forHint(
+                      context,
                       hintText: L10n.get("listing_address_text_label"),
-                      controller: _addressTextController,
-                      dirtyOutlineColor: _getBorderColor(),
-                      decoration: UydoshPlateFieldDecoration.forHint(
-                        context,
-                        hintText: L10n.get("listing_address_text_label"),
-                      ),
                     ),
+                    onEditingFinished: _resolveAddressLocation,
                   ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 56,
-                    child: Tooltip(
-                      message: L10n.get("use_current_location"),
-                      child: Semantics(
-                        button: true,
-                        label: L10n.get("use_current_location"),
-                        child: OutlinedButton(
-                          onPressed: _isResolvingCurrentLocation
-                              ? null
-                              : _useCurrentLocationForAddress,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: _getBorderColor(),
-                            side: BorderSide(color: _getBorderColor()),
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(56, 56),
-                          ),
-                          child: _isResolvingCurrentLocation
-                              ? const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.my_location,
-                                  size: 20,
-                                  color: _getCurrentLocationIconColor(),
-                                ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 56,
+                  child: Tooltip(
+                    message: L10n.get("use_current_location"),
+                    child: Semantics(
+                      button: true,
+                      label: L10n.get("use_current_location"),
+                      child: OutlinedButton(
+                        onPressed: _isResolvingCurrentLocation
+                            ? null
+                            : _useCurrentLocationForAddress,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _getBorderColor(),
+                          side: BorderSide(color: _getBorderColor()),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(56, 56),
                         ),
+                        child: _isResolvingCurrentLocation
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                Icons.my_location,
+                                size: 20,
+                                color: _getCurrentLocationIconColor(),
+                              ),
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (hasCoordinates) ...[
+          const SizedBox(height: 12),
+          AddressPinMapPreview(
+            latitude: _addressLatitude!,
+            longitude: _addressLongitude!,
+            onPinDragEnd: _handleAddressPinDragEnd,
+            pinColor: _getBorderColor(),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  L10n.get("address_map_drag_hint"),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildNearbyStationsSection(),
+        ] else if (_isResolvingAddressLocation) ...[
+          const SizedBox(height: 16),
+          const Center(
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ] else ...[
+          const SizedBox(height: 8),
+          Text(
+            L10n.get("nearby_stations_hint"),
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
       ],
+    );
+  }
+
+  /// "Stations near you": a walk-time radius toggle plus the matching
+  /// station chips, populated once the address resolves to coordinates.
+  /// Selecting a chip toggles it in/out of [_selectedSearchStations], the
+  /// same list the metro/district pickers feed for other listing types.
+  Widget _buildNearbyStationsSection() {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final minutes in _nearbyStationRadiusOptions)
+              _buildNearbyRadiusChip(minutes),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_nearbyStations.isEmpty)
+          Text(
+            L10n.getWithParams(
+              "nearby_stations_empty",
+              params: {"minutes": "$_nearbyStationsRadiusMinutes"},
+            ),
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          )
+        else ...[
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              L10n.get(
+                _nearbyStationsIsFallback
+                    ? "nearby_stations_fallback"
+                    : "nearby_stations_label",
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final estimate in _nearbyStations)
+                _buildNearbyStationChip(estimate),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  bool get _nearbyStationsIsFallback =>
+      _nearbyStations.length == 1 &&
+      _nearbyStations.first.walkMinutes > _nearbyStationsRadiusMinutes;
+
+  Widget _buildNearbyRadiusChip(int minutes) {
+    final theme = Theme.of(context);
+    final accent = _getBorderColor();
+    final selected = minutes == _nearbyStationsRadiusMinutes;
+    return GestureDetector(
+      onTap: () => _onNearbyRadiusSelected(minutes),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? accent.withValues(alpha: 0.16) : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? accent : theme.colorScheme.outlineVariant,
+          ),
+        ),
+        child: Text(
+          L10n.getWithParams(
+            "nearby_radius_minutes_label",
+            params: {"minutes": "$minutes"},
+          ),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected
+                ? (ThemeState().isLightTheme
+                    ? Colors.black
+                    : theme.colorScheme.onSurface)
+                : theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNearbyStationChip(NearbyStationEstimate estimate) {
+    final theme = Theme.of(context);
+    final station = estimate.station;
+    final accent = AppColors.getMetroLineColor(station.line);
+    final selected = _selectedSearchStations.any((s) => s.id == station.id);
+    final name = _getLocalizedName(
+      nameUz: station.nameUz,
+      nameRu: station.nameRu,
+      nameEn: station.nameEn,
+    );
+    final minutesLabel = L10n.getWithParams(
+      "nearby_walk_minutes_label",
+      params: {
+        "minutes": "${estimate.walkMinutes.round().clamp(1, 999)}",
+      },
+    );
+    return GestureDetector(
+      onTap: () => _toggleNearbyStation(station),
+      child: Container(
+        decoration: BoxDecoration(
+          color: selected
+              ? accent.withValues(alpha: 0.16)
+              : accent.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? accent : accent.withValues(alpha: 0.35),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: ThemeState().isLightTheme
+                    ? Colors.black
+                    : theme.colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              Icons.directions_walk,
+              size: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              minutesLabel,
+              style: TextStyle(
+                fontSize: 11,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2505,11 +2892,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             value: L10n.plural("group_size_target_option", _groupSizeTarget),
             stepIndex: 1,
           ),
-        _summaryTile(
-          label: _summaryLabel("location", fallback: "Location"),
-          value: locationValue ?? notSet,
-          stepIndex: 0,
-        ),
+        // Roommate-needed shows the address + "selected stations" tiles
+        // below instead — the generic location tile only ever surfaces a
+        // vague "Metro" label for this flow, since stations here come from
+        // the address's nearby-metro suggestions rather than a picked line.
+        if (!_isRoommateNeededFlow)
+          _summaryTile(
+            label: _summaryLabel("location", fallback: "Location"),
+            value: locationValue ?? notSet,
+            stepIndex: 0,
+          ),
         if (_isRoommateNeededFlow)
           _summaryTile(
             label: _summaryLabel("listing_address_text_label",

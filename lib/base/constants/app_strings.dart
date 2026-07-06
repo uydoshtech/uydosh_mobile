@@ -868,7 +868,7 @@ class AppStrings {
       "listing_description_hint": "Enter listing text",
       "listing_description_label": "Description",
       "listing_address_field_label": "Address:",
-      "listing_address_text_label": "Address (optional)",
+      "listing_address_text_label": "Address",
       "use_current_location": "Use current location",
       "location_services_disabled":
           "Location services are off. Turn them on to use current location.",
@@ -876,6 +876,16 @@ class AppStrings {
           "Location permission is required to use current location.",
       "current_location_address_failed":
           "Could not determine the address from your current location.",
+      "create_listing_address_required": "Please enter an address",
+      "address_locating": "Locating address…",
+      "address_map_drag_hint": "Drag the pin to fine-tune the point",
+      "nearby_stations_hint":
+          "Enter an address or use your location to see the nearest metro stations",
+      "nearby_stations_label": "Stations near you",
+      "nearby_stations_fallback": "Closest station",
+      "nearby_stations_empty": "No metro stations within a {minutes}-minute walk",
+      "nearby_radius_minutes_label": "{minutes} min",
+      "nearby_walk_minutes_label": "{minutes} min walk",
       "listing_title_hint": "Enter listing title",
       "view_similar_results": "View similar",
       "listing_detail_nearby_room_offers": "Find housing",
@@ -3090,7 +3100,7 @@ class AppStrings {
       "listing_description_hint": "Введите текст объявления",
       "listing_description_label": "Описание",
       "listing_address_field_label": "Адрес:",
-      "listing_address_text_label": "Адрес (необязательно)",
+      "listing_address_text_label": "Адрес",
       "use_current_location": "Моя геолокация",
       "location_services_disabled":
           "Геолокация выключена. Включите её, чтобы использовать текущее местоположение.",
@@ -3098,6 +3108,16 @@ class AppStrings {
           "Для текущего местоположения нужен доступ к геолокации.",
       "current_location_address_failed":
           "Не удалось определить адрес по текущему местоположению.",
+      "create_listing_address_required": "Пожалуйста, введите адрес",
+      "address_locating": "Определяем адрес…",
+      "address_map_drag_hint": "Перетащите метку, чтобы уточнить точку",
+      "nearby_stations_hint":
+          "Введите адрес или используйте свою локацию, чтобы увидеть ближайшие станции метро",
+      "nearby_stations_label": "Станции рядом с вами",
+      "nearby_stations_fallback": "Ближайшая станция",
+      "nearby_stations_empty": "В радиусе {minutes} минут пешком станций метро нет",
+      "nearby_radius_minutes_label": "{minutes} мин",
+      "nearby_walk_minutes_label": "{minutes} мин пешком",
       "listing_title_hint": "Введите заголовок объявления",
       "view_similar_results": "Похожие объявления",
       "listing_detail_nearby_room_offers": "Найти жилье",
@@ -5354,7 +5374,7 @@ class AppStrings {
       "listing_description_hint": "E'lon matnini kiriting",
       "listing_description_label": "Tavsif",
       "listing_address_field_label": "Manzil:",
-      "listing_address_text_label": "Manzil (ixtiyoriy)",
+      "listing_address_text_label": "Manzil",
       "use_current_location": "Joriy joylashuv",
       "location_services_disabled":
           "Joylashuv xizmatlari o‘chiq. Joriy joylashuvdan foydalanish uchun ularni yoqing.",
@@ -5362,6 +5382,16 @@ class AppStrings {
           "Joriy joylashuvdan foydalanish uchun joylashuv ruxsati kerak.",
       "current_location_address_failed":
           "Joriy joylashuv bo‘yicha manzilni aniqlab bo‘lmadi.",
+      "create_listing_address_required": "Iltimos, manzilni kiriting",
+      "address_locating": "Manzil aniqlanmoqda…",
+      "address_map_drag_hint": "Nuqtani aniqlashtirish uchun belgini suring",
+      "nearby_stations_hint":
+          "Eng yaqin metro bekatlarini ko‘rish uchun manzilni kiriting yoki joylashuvingizdan foydalaning",
+      "nearby_stations_label": "Sizga yaqin bekatlar",
+      "nearby_stations_fallback": "Eng yaqin bekat",
+      "nearby_stations_empty": "{minutes} daqiqalik piyoda masofada metro bekati topilmadi",
+      "nearby_radius_minutes_label": "{minutes} daq",
+      "nearby_walk_minutes_label": "{minutes} daq. piyoda",
       "listing_title_hint": "E'lon sarlavhasini kiriting",
       "view_similar_results": "O‘xshash e'lonlar",
       "listing_detail_nearby_room_offers": "Uy-joy topish",

@@ -26,6 +26,7 @@ class YandexAddressSuggestField extends StatefulWidget {
     this.geosuggestService,
     this.lang,
     this.onChanged,
+    this.onEditingFinished,
     this.enabled = true,
   });
 
@@ -37,6 +38,11 @@ class YandexAddressSuggestField extends StatefulWidget {
   final YandexGeosuggestService? geosuggestService;
   final String? lang;
   final ValueChanged<String>? onChanged;
+
+  /// Fired once the field loses focus (including immediately after the user
+  /// taps a suggestion, since selecting one also unfocuses the field) — the
+  /// right moment to resolve the typed address into coordinates.
+  final ValueChanged<String>? onEditingFinished;
   final bool enabled;
 
   @override
@@ -178,6 +184,7 @@ class _YandexAddressSuggestFieldState extends State<YandexAddressSuggestField>
         _loading = false;
       });
       _applyOverlayVisibility(immediate: true);
+      widget.onEditingFinished?.call(widget.controller.text);
     });
   }
 

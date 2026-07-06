@@ -56,6 +56,30 @@ class YandexReverseGeocodeResult {
   bool get hasAddress => addressText != null && addressText!.trim().isNotEmpty;
 }
 
+/// Result of resolving a free-text address into coordinates (forward
+/// geocoding) — used by the roommate-needed create-listing wizard once the
+/// author picks/finishes typing an address, so nearby metro stations can be
+/// suggested for it (mirrors the Telegram Mini App wizard).
+class YandexForwardGeocodeResult {
+  const YandexForwardGeocodeResult({
+    this.latitude,
+    this.longitude,
+    this.addressText,
+    this.httpStatus,
+    this.errorMessage,
+    this.isConnectionError = false,
+  });
+
+  final double? latitude;
+  final double? longitude;
+  final String? addressText;
+  final int? httpStatus;
+  final String? errorMessage;
+  final bool isConnectionError;
+
+  bool get hasCoordinates => latitude != null && longitude != null;
+}
+
 /// Client for Yandex Geosuggest address hints.
 ///
 /// Prefers the authenticated backend proxy (`GET /app/geosuggest/suggest`) so
@@ -81,6 +105,7 @@ class YandexGeosuggestService {
   static const directEndpoint = "https://suggest-maps.yandex.ru/v1/suggest";
   static const backendPath = "/app/geosuggest/suggest";
   static const reverseBackendPath = "/app/geosuggest/reverse";
+  static const geocodeBackendPath = "/app/geosuggest/geocode";
 
   /// Greater Tashkent — biases suggestions toward the app's primary market.
   static const defaultBBox = "69.05,41.15~69.45,41.42";
@@ -224,6 +249,100 @@ class YandexGeosuggestService {
       logger.w("Reverse geocode backend parse error", error: e, stackTrace: st);
       return const YandexReverseGeocodeResult(
         errorMessage: "Reverse geocode parse/network error",
+        isConnectionError: true,
+      );
+    }
+  }
+
+  /// Resolves a free-text address into coordinates via the authenticated
+  /// backend proxy (`GET /app/geosuggest/geocode`, Yandex Geocoder forward
+  /// geocoding). Used once the author finishes editing the address field.
+  Future<YandexForwardGeocodeResult> forwardGeocode({
+    required String text,
+    String lang = "ru",
+  }) async {
+    final query = text.trim();
+    if (query.isEmpty) {
+      return const YandexForwardGeocodeResult();
+    }
+
+    final oauthApiClient = _oauthApiClient;
+    if (oauthApiClient == null) {
+      return const YandexForwardGeocodeResult(
+        errorMessage: "Forward geocode backend unavailable",
+        isConnectionError: true,
+      );
+    }
+
+    try {
+      final uri = _geocodeBackendUri();
+      _logTerminal(
+        "geocode backend request uri=$uri text=\"$query\" "
+        "lang=${_normalizeLang(lang)}",
+      );
+
+      final response = await oauthApiClient.dio.get<Map<String, dynamic>>(
+        uri,
+        queryParameters: <String, dynamic>{
+          "text": query,
+          "lang": _normalizeLang(lang),
+        },
+        options: Options(
+          validateStatus: (status) => status != null && status < 600,
+        ),
+      );
+
+      final status = response.statusCode;
+      final data = response.data;
+      if (status != null && status >= 200 && status < 300) {
+        final latitude = _asDouble(data?["latitude"]);
+        final longitude = _asDouble(data?["longitude"]);
+        final rawAddress = data?["addressText"];
+        final addressText =
+            rawAddress is String && rawAddress.trim().isNotEmpty
+                ? rawAddress.trim()
+                : null;
+        _logTerminal(
+          "geocode backend response status=$status "
+          "hasCoordinates=${latitude != null && longitude != null}",
+        );
+        return YandexForwardGeocodeResult(
+          latitude: latitude,
+          longitude: longitude,
+          addressText: addressText,
+          httpStatus: status,
+        );
+      }
+
+      final message = _messageFromBackendBody(data, status);
+      _logTerminal("geocode backend failed: $message body=$data");
+      return YandexForwardGeocodeResult(
+        httpStatus: status,
+        errorMessage: message,
+        isConnectionError: status == null,
+      );
+    } on DioException catch (e, st) {
+      final status = e.response?.statusCode;
+      final data = e.response?.data is Map<String, dynamic>
+          ? e.response!.data as Map<String, dynamic>
+          : null;
+      final message = _messageFromBackendBody(data, status);
+      _logTerminal("geocode backend failed: $message");
+      logger.w(
+        "Forward geocode backend failed ← status=$status",
+        error: e,
+        stackTrace: st,
+      );
+      return YandexForwardGeocodeResult(
+        httpStatus: status,
+        errorMessage: message,
+        isConnectionError: e.response == null,
+      );
+    } catch (e, st) {
+      _logTerminal("geocode backend parse error: $e");
+      logger.w("Forward geocode backend parse error", error: e, stackTrace: st);
+      return const YandexForwardGeocodeResult(
+        errorMessage: "Forward geocode parse/network error",
         isConnectionError: true,
       );
     }
@@ -426,6 +545,18 @@ class YandexGeosuggestService {
     return base.endsWith("/")
         ? "${base}app/geosuggest/reverse"
         : "$base$reverseBackendPath";
+  }
+
+  String _geocodeBackendUri() {
+    final base = EnvironmentUtil.basePath;
+    return base.endsWith("/")
+        ? "${base}app/geosuggest/geocode"
+        : "$base$geocodeBackendPath";
+  }
+
+  static double? _asDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return null;
   }
 
   static bool _shouldFallbackToDirect(DioException error) {
