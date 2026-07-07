@@ -73,6 +73,8 @@ class _AdminContentModerationScreenState
   bool _isSavingTelegramMessageBridge = false;
   int _groupFormingMaxActiveMemberships = 2;
   bool _isSavingGroupFormingLimit = false;
+  int _telegramMiniAppDailyListingLimit = 0;
+  bool _isSavingTelegramMiniAppDailyListingLimit = false;
   bool _isSavingPriceInsights = false;
   bool _isSavingPushDebug = false;
   bool _isSavingListingMoveToTop = false;
@@ -179,6 +181,16 @@ class _AdminContentModerationScreenState
           "Group forming membership limit setting skipped (is the API updated?): $e",
         );
       }
+      var telegramMiniAppDailyListingLimit = 0;
+      try {
+        final dailyListingLimitRes = await _settingsService
+            .getTelegramMiniAppDailyListingLimitSetting();
+        telegramMiniAppDailyListingLimit = dailyListingLimitRes.limit;
+      } catch (e) {
+        logger.d(
+          "Telegram Mini App daily listing limit setting skipped (is the API updated?): $e",
+        );
+      }
       setStateIfMounted(() {
         _blurEnabled = blurRes.enabled;
         // UI is positive: ON means enabled/shown.
@@ -196,6 +208,7 @@ class _AdminContentModerationScreenState
         _adminListingConversationsEnabled = adminListingConversationsEnabled;
         _telegramMessageBridgeEnabled = telegramMessageBridgeEnabled;
         _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
+        _telegramMiniAppDailyListingLimit = telegramMiniAppDailyListingLimit;
         _isLoading = false;
       });
       ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
@@ -527,6 +540,30 @@ class _AdminContentModerationScreenState
     }
   }
 
+  /// `value == 0` disables the daily cap entirely (unlimited listings).
+  Future<void> _setTelegramMiniAppDailyListingLimit(int value) async {
+    if (_isSavingTelegramMiniAppDailyListingLimit) return;
+    final next = value < 0 ? 0 : (value > 100 ? 100 : value);
+    if (next == _telegramMiniAppDailyListingLimit) return;
+    setState(() => _isSavingTelegramMiniAppDailyListingLimit = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setTelegramMiniAppDailyListingLimit(
+        limit: next,
+      );
+      setStateIfMounted(() {
+        _telegramMiniAppDailyListingLimit = res.limit;
+      });
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingTelegramMiniAppDailyListingLimit = false);
+    }
+  }
+
   Future<void> _onShowPriceInsightsChanged(bool value) async {
     if (_isSavingPriceInsights) return;
     setState(() => _isSavingPriceInsights = true);
@@ -699,6 +736,7 @@ class _AdminContentModerationScreenState
           children: [
             _listingContactsTile(context),
             _groupFormingLimitTile(context),
+            _telegramMiniAppDailyListingLimitTile(context),
             _geminiTile(context),
             _lidarTile(context),
             _customCameraTile(context),
@@ -995,6 +1033,36 @@ class _AdminContentModerationScreenState
     );
   }
 
+  Widget _telegramMiniAppDailyListingLimitTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.send_time_extension_outlined,
+        _isSavingTelegramMiniAppDailyListingLimit,
+      ),
+      title: Text(
+        L10n.get("admin_app_setting_telegram_miniapp_daily_listing_limit_title"),
+      ),
+      subtitle: Text(
+        _telegramMiniAppDailyListingLimit <= 0
+            ? L10n.get(
+                "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_off",
+              )
+            : L10n.get(
+                "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_on",
+              ),
+        style: _subtitleStyle(context),
+      ),
+      trailing: _NumericLimitStepper(
+        value: _telegramMiniAppDailyListingLimit,
+        min: 0,
+        max: 100,
+        zeroLabel: L10n.get("admin_app_setting_limit_off_label"),
+        enabled: !_isSavingTelegramMiniAppDailyListingLimit,
+        onChanged: _setTelegramMiniAppDailyListingLimit,
+      ),
+    );
+  }
+
   Widget _geminiTile(BuildContext context) {
     return ListTile(
       leading: _savingLeading(Icons.auto_awesome_outlined, _isSavingGemini),
@@ -1258,6 +1326,70 @@ class _GroupLimitStepper extends StatelessWidget {
             color: enabled && value < 10 ? color : disabledColor,
             onPressed:
                 enabled && value < 10 ? () => onChanged(value + 1) : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Generic +/- stepper for admin-configurable numeric limits, with an
+/// optional [zeroLabel] shown instead of "0" (e.g. "Off" for an unlimited cap).
+class _NumericLimitStepper extends StatelessWidget {
+  const _NumericLimitStepper({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.enabled,
+    required this.onChanged,
+    this.zeroLabel,
+  });
+
+  final int value;
+  final int min;
+  final int max;
+  final bool enabled;
+  final ValueChanged<int> onChanged;
+  final String? zeroLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurface;
+    final disabledColor = theme.disabledColor;
+    final label = value == 0 && zeroLabel != null ? zeroLabel! : "$value";
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color:
+            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove),
+            color: enabled && value > min ? color : disabledColor,
+            onPressed:
+                enabled && value > min ? () => onChanged(value - 1) : null,
+          ),
+          SizedBox(
+            width: 36,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add),
+            color: enabled && value < max ? color : disabledColor,
+            onPressed:
+                enabled && value < max ? () => onChanged(value + 1) : null,
           ),
         ],
       ),

@@ -1507,6 +1507,13 @@ class AppStrings {
           "Max active groups per user",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Includes groups the user created and groups they joined.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_title":
+          "Telegram Mini App daily listing limit",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_off":
+          "Off: users can post unlimited listings per day from the Telegram Mini App.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_on":
+          "Users can post up to this many listings per rolling 24 hours from the Telegram Mini App.",
+      "admin_app_setting_limit_off_label": "Off",
       "admin_app_setting_telegram_bridge_title": "Telegram messaging bridge",
       "admin_app_setting_telegram_bridge_subtitle":
           "When on, listing publishers can receive and reply to UyDosh chat messages through the bot. Off keeps classic in-app chat only.",
@@ -3761,6 +3768,13 @@ class AppStrings {
           "Максимум активных групп на пользователя",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Учитываются группы, которые пользователь создал или к которым присоединился.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_title":
+          "Дневной лимит объявлений в Telegram Mini App",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_off":
+          "Выключено: пользователи могут публиковать неограниченное число объявлений в сутки через Telegram Mini App.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_on":
+          "Пользователи могут публиковать не более этого числа объявлений за скользящие 24 часа через Telegram Mini App.",
+      "admin_app_setting_limit_off_label": "Выкл",
       "admin_app_setting_telegram_bridge_title": "Telegram-мост сообщений",
       "admin_app_setting_telegram_bridge_subtitle":
           "Когда включено, авторы объявлений получают сообщения из чата UyDosh в боте и могут отвечать через него. Выкл — только классический чат в приложении.",
@@ -6043,6 +6057,13 @@ class AppStrings {
           "Har foydalanuvchi uchun aktiv guruhlar limiti",
       "admin_app_setting_group_forming_membership_limit_subtitle":
           "Foydalanuvchi yaratgan va qo'shilgan guruhlar hisobga olinadi.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_title":
+          "Telegram Mini App uchun kunlik e'lon limiti",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_off":
+          "O'chirilgan: foydalanuvchilar Telegram Mini App orqali kuniga cheklovsiz e'lon joylashtira oladi.",
+      "admin_app_setting_telegram_miniapp_daily_listing_limit_subtitle_on":
+          "Foydalanuvchilar Telegram Mini App orqali har 24 soatda shu miqdordan ko'p bo'lmagan e'lon joylashtira oladi.",
+      "admin_app_setting_limit_off_label": "O'chiq",
       "admin_app_setting_telegram_bridge_title": "Telegram xabar ko‘prigi",
       "admin_app_setting_telegram_bridge_subtitle":
           "Yoqilganda eʼlon egalari UyDosh chat xabarlarini botda olib, bot orqali javob bera oladi. O‘chiq bo‘lsa, faqat klassik ilova chati ishlaydi.",

@@ -352,6 +352,33 @@ class _PatchGroupFormingMaxActiveMembershipsRequest implements IJsonEncodable {
   dynamic toJson() => {"limit": limit};
 }
 
+/// `limit == 0` means no daily cap is enforced on Telegram Mini App listing creation.
+class TelegramMiniAppDailyListingLimitResponse {
+  TelegramMiniAppDailyListingLimitResponse({required this.limit});
+
+  factory TelegramMiniAppDailyListingLimitResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final raw = json["limit"];
+    final parsed =
+        raw is num ? raw.toInt() : int.tryParse(raw?.toString() ?? "");
+    return TelegramMiniAppDailyListingLimitResponse(
+      limit: parsed == null || parsed < 0 ? 0 : parsed,
+    );
+  }
+
+  final int limit;
+}
+
+class _PatchTelegramMiniAppDailyListingLimitRequest implements IJsonEncodable {
+  _PatchTelegramMiniAppDailyListingLimitRequest({required this.limit});
+
+  final int limit;
+
+  @override
+  dynamic toJson() => {"limit": limit};
+}
+
 abstract class IAdminContentModerationSettingsService {
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
@@ -432,6 +459,12 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<GroupFormingMaxActiveMembershipsResponse>
       setGroupFormingMaxActiveMemberships({required int limit});
+
+  Future<TelegramMiniAppDailyListingLimitResponse>
+      getTelegramMiniAppDailyListingLimitSetting();
+
+  Future<TelegramMiniAppDailyListingLimitResponse>
+      setTelegramMiniAppDailyListingLimit({required int limit});
 }
 
 class AdminContentModerationSettingsService
@@ -1010,6 +1043,53 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating group forming membership limit setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramMiniAppDailyListingLimitResponse>
+      getTelegramMiniAppDailyListingLimitSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/telegram-miniapp-daily-listing-limit",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return TelegramMiniAppDailyListingLimitResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from Telegram Mini App daily listing limit setting",
+        ),
+      );
+    } catch (e) {
+      logger.d(
+        "Error loading Telegram Mini App daily listing limit setting: $e",
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TelegramMiniAppDailyListingLimitResponse>
+      setTelegramMiniAppDailyListingLimit({required int limit}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/telegram-miniapp-daily-listing-limit",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchTelegramMiniAppDailyListingLimitRequest(limit: limit),
+      );
+      return TelegramMiniAppDailyListingLimitResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from Telegram Mini App daily listing limit setting",
+        ),
+      );
+    } catch (e) {
+      logger.d(
+        "Error updating Telegram Mini App daily listing limit setting: $e",
+      );
       rethrow;
     }
   }
