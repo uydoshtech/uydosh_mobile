@@ -7,7 +7,6 @@ class _SearchMapLayoutMetrics {
   static const double listingTooltipBottomMargin = 10.0;
   static const double listingTooltipHorizontalInset = 12.0;
   static const double singlePinTooltipFallbackHeight = 124.0;
-  static const double pinGroupTooltipFallbackHeight = 172.0;
   static const double embeddedSearchAboveShellInset = 55.0;
   static const double standaloneLocationBottomMargin = 8.0;
   static const Duration chromeShiftDuration = Duration(milliseconds: 220);
@@ -16,16 +15,11 @@ class _SearchMapLayoutMetrics {
 
 double _listingTooltipLiftFor({
   required ListingMapPin? selectedPin,
-  required List<ListingMapPin> selectedPinGroup,
   required double measuredHeight,
   required bool placeViewToggleAtBottom,
 }) {
-  final hasListingTooltip =
-      selectedPin != null || selectedPinGroup.isNotEmpty;
-  if (!hasListingTooltip) return 0;
-  final fallback = selectedPinGroup.length > 1
-      ? _SearchMapLayoutMetrics.pinGroupTooltipFallbackHeight
-      : _SearchMapLayoutMetrics.singlePinTooltipFallbackHeight;
+  if (selectedPin == null) return 0;
+  const fallback = _SearchMapLayoutMetrics.singlePinTooltipFallbackHeight;
   final tooltipBlockHeight = (measuredHeight > 0 ? measuredHeight : fallback) +
       _SearchMapLayoutMetrics.listingTooltipGap +
       _SearchMapLayoutMetrics.listingTooltipBottomMargin;
@@ -81,7 +75,6 @@ class _SearchMapCanvasProps {
     required this.universityMarkers,
     required this.userUniversityMarkerId,
     required this.selectedListingId,
-    required this.selectedListingGroupIds,
     required this.visitedListingIds,
     required this.selectedUniversityMarkerId,
     required this.selectedUniversityZoomFocusId,
@@ -111,7 +104,6 @@ class _SearchMapCanvasProps {
   final List<UniversityMapMarker> universityMarkers;
   final String? userUniversityMarkerId;
   final int? selectedListingId;
-  final List<int> selectedListingGroupIds;
   final Set<int> visitedListingIds;
   final String? selectedUniversityMarkerId;
   final String? selectedUniversityZoomFocusId;
@@ -146,7 +138,6 @@ class _SearchMapCanvasProps {
             identical(universityMarkers, other.universityMarkers) &&
             userUniversityMarkerId == other.userUniversityMarkerId &&
             selectedListingId == other.selectedListingId &&
-            _intListsEqual(selectedListingGroupIds, other.selectedListingGroupIds) &&
             _intSetsEqual(visitedListingIds, other.visitedListingIds) &&
             selectedUniversityMarkerId == other.selectedUniversityMarkerId &&
             selectedUniversityZoomFocusId == other.selectedUniversityZoomFocusId &&
@@ -178,7 +169,6 @@ class _SearchMapCanvasProps {
         universityMarkers,
         userUniversityMarkerId,
         selectedListingId,
-        Object.hashAll(selectedListingGroupIds),
         Object.hashAll(visitedListingIds),
         selectedUniversityMarkerId,
         selectedUniversityZoomFocusId,
@@ -220,7 +210,6 @@ class _SearchMapOverlayProps {
     required this.privateRoom,
     required this.withPhoto,
     required this.selectedPin,
-    required this.selectedPinGroup,
     required this.selectedUniversityMarker,
     required this.selectedMetroStation,
     required this.showDistrictLayer,
@@ -254,7 +243,6 @@ class _SearchMapOverlayProps {
   final bool privateRoom;
   final bool withPhoto;
   final ListingMapPin? selectedPin;
-  final List<ListingMapPin> selectedPinGroup;
   final UniversityMapMarker? selectedUniversityMarker;
   final SubwayStation? selectedMetroStation;
   final bool showDistrictLayer;
@@ -291,7 +279,6 @@ class _SearchMapOverlayProps {
             privateRoom == other.privateRoom &&
             withPhoto == other.withPhoto &&
             selectedPin == other.selectedPin &&
-            identical(selectedPinGroup, other.selectedPinGroup) &&
             selectedUniversityMarker == other.selectedUniversityMarker &&
             selectedMetroStation == other.selectedMetroStation &&
             showDistrictLayer == other.showDistrictLayer &&
@@ -327,7 +314,6 @@ class _SearchMapOverlayProps {
         privateRoom,
         withPhoto,
         selectedPin,
-        selectedPinGroup,
         selectedUniversityMarker,
         selectedMetroStation,
         showDistrictLayer,

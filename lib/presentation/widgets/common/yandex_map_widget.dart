@@ -337,12 +337,10 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   final Map<String, Uint8List> _cachedVisitedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedDarkVisitedListingTypeIconBytes = {};
   final Map<String, Uint8List> _cachedSelectedListingTypeIconBytes = {};
-  final Map<String, Uint8List> _cachedListingGroupIconBytes = {};
   final Map<int, Uint8List> _cachedMetroStationIconBytes = {};
   final Map<int, Uint8List> _cachedSelectedMetroStationIconBytes = {};
   final Map<String, Uint8List> _cachedMetroWalkAreaLabelIconBytes = {};
   final Map<String, Uint8List> _cachedDistrictLabelIconBytes = {};
-  final Set<String> _pendingListingGroupIconKeys = {};
   final Set<String> _pendingListingTypePinIconKeys = {};
   final Set<String> _pendingMetroWalkAreaLabelIconKeys = {};
   final Set<String> _pendingDistrictLabelIconKeys = {};
@@ -412,7 +410,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _zoomNotifier = ValueNotifier<double>(_currentZoom);
     _showListingDetailTooltip = _canShowListingDetailTooltip;
     _initializeIcon();
-    _syncListingGroupIconBytes();
     _syncListingTypePinIconBytes();
     _initializeMapWithDelay();
   }
@@ -475,16 +472,9 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _requestMapRebuild();
       unawaited(_refreshUserLocationLayerAppearance());
     }
-    if (_pinsChanged(oldWidget.pins, widget.pins) ||
-        !_intListsEqual(
-          oldWidget.selectedListingGroupIds,
-          widget.selectedListingGroupIds,
-        )) {
+    if (_pinsChanged(oldWidget.pins, widget.pins)) {
       _invalidateMapObjectsCache();
-      _cachedListingPinGroups = null;
-      _cachedListingPinGroupsKey = null;
       _requestMapRebuild();
-      _syncListingGroupIconBytes();
       _syncListingTypePinIconBytes();
     }
     if (_universityMapLayerChanged(oldWidget)) {
@@ -536,8 +526,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _mapController = null;
     _cachedMapObjects = null;
     _cachedMapObjectsKey = null;
-    _cachedListingPinGroups = null;
-    _cachedListingPinGroupsKey = null;
     _zoomNotifier.dispose();
     super.dispose();
   }
@@ -586,7 +574,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _cachedSelectedMetroStationIconBytes
         ..clear()
         ..addAll(sharedIcons.selectedMetroStationIconBytes);
-      _syncListingGroupIconBytes();
       _syncListingTypePinIconBytes();
       unawaited(_refreshUserLocationLayerAppearance());
       if (kDebugMode) {
@@ -1267,21 +1254,18 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   Point? _selectedListingZoomFocusPoint() {
-    final selectedListingIds = <int>{
-      if (widget.selectedListingId != null) widget.selectedListingId!,
-      ...widget.selectedListingGroupIds,
-    };
-    if (selectedListingIds.isEmpty) return null;
+    final selectedListingId = widget.selectedListingId;
+    if (selectedListingId == null) return null;
 
-    final points = [
-      for (final pin in widget.pins)
-        if (selectedListingIds.contains(pin.listingId))
-          _listingPlacemarkPoint(
-            latitude: pin.latitude,
-            longitude: pin.longitude,
-          ),
-    ];
-    return _averagePoint(points);
+    for (final pin in widget.pins) {
+      if (pin.listingId == selectedListingId) {
+        return _listingPlacemarkPoint(
+          latitude: pin.latitude,
+          longitude: pin.longitude,
+        );
+      }
+    }
+    return null;
   }
 
   Point? _selectedUniversityZoomFocusPoint() {
@@ -1298,21 +1282,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
     }
     return null;
-  }
-
-  Point? _averagePoint(List<Point> points) {
-    if (points.isEmpty) return null;
-    final latitude = points.fold<double>(
-          0,
-          (sum, point) => sum + point.latitude,
-        ) /
-        points.length;
-    final longitude = points.fold<double>(
-          0,
-          (sum, point) => sum + point.longitude,
-        ) /
-        points.length;
-    return Point(latitude: latitude, longitude: longitude);
   }
 
   bool _isCurrentMapOperation(
@@ -1361,15 +1330,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       }
     }
     return false;
-  }
-
-  bool _intListsEqual(List<int> a, List<int> b) {
-    if (identical(a, b)) return true;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 
   bool _universityMapLayerChanged(YandexMapWidget oldWidget) {

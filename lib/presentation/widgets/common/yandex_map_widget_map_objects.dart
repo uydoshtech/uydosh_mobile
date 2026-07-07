@@ -52,7 +52,6 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     final universityWalkAreaLabelVisible =
         _selectedUniversityForWalkRadius != null &&
             _isWalkAreaLabelVisibleAtCurrentZoom;
-    final listingPinGroups = _groupListingPins(widget.pins);
     return Object.hashAll([
       widget.layerOptions.showDistrictLayer,
       widget.layerOptions.highlightedLocationId,
@@ -71,7 +70,6 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _highlightedMetroStationId,
       _selectedUniversityMarker?.id,
       widget.selectedListingId,
-      Object.hashAll(widget.selectedListingGroupIds),
       Object.hashAll(widget.visitedListingIds),
       widget.latitude,
       widget.longitude,
@@ -94,7 +92,6 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       _cachedVisitedListingTypeIconBytes.length,
       _cachedDarkVisitedListingTypeIconBytes.length,
       _cachedSelectedListingTypeIconBytes.length,
-      _cachedListingGroupIconBytes.length,
       _cachedMetroStationIconBytes.length,
       _cachedSelectedMetroStationIconBytes.length,
       _cachedMetroWalkAreaLabelIconBytes.length,
@@ -102,7 +99,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       Object.hashAll(_groceryStoreMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_busStopMarkers.map(_poiMarkerCacheKey)),
       Object.hashAll(_visibleMetroStationIds),
-      Object.hashAll(listingPinGroups.map(_pinGroupCacheKey)),
+      Object.hashAll(widget.pins.map(_pinCacheKey)),
       Object.hashAll(widget.universityMarkers.map(_universityMarkerCacheKey)),
       widget.selectedUniversityMarkerId,
       widget.selectedMetroStationId,
@@ -112,17 +109,6 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   }
 
   String get _universityMapLayerScope => "university_l$_universityMapLayerEpoch";
-
-  int _pinGroupCacheKey(_ListingPinGroup group) {
-    // Same-coordinate listings are intentionally represented as one composite
-    // marker. Cache and future clustering logic should treat this key as atomic.
-    return Object.hashAll([
-      group.key,
-      group.latitude,
-      group.longitude,
-      Object.hashAll(group.pins.map(_pinCacheKey)),
-    ]);
-  }
 
   int _pinCacheKey(ListingMapPin pin) {
     return Object.hash(
@@ -308,7 +294,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
 
   MapObject _listingPinCollection(List<PlacemarkMapObject> placemarks) {
     if (placemarks.length <
-        _YandexMapWidgetState._minClusterableListingPinGroups) {
+        _YandexMapWidgetState._minClusterableListingPins) {
       return MapObjectCollection(
         mapId: const MapObjectId("listing_pin_layer"),
         mapObjects: placemarks,
@@ -328,40 +314,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     );
   }
 
-  int _listingCountForPlacemark(MapObjectId mapId) {
-    const groupPrefix = "listing_group_";
-    const placemarkSuffix = "_placemark";
-    final id = mapId.value;
-    if (id.startsWith(groupPrefix) && id.endsWith(placemarkSuffix)) {
-      final key = id.substring(
-        groupPrefix.length,
-        id.length - placemarkSuffix.length,
-      );
-      for (final group in _groupListingPins(widget.pins)) {
-        if (group.key == key) return group.pins.length;
-      }
-      return 1;
-    }
-    if (id.startsWith("listing_") && id.endsWith(placemarkSuffix)) {
-      return 1;
-    }
-    return 1;
-  }
-
-  int _listingCountForCluster(Cluster cluster) {
-    var total = 0;
-    for (final placemark in cluster.placemarks) {
-      total += _listingCountForPlacemark(placemark.mapId);
-    }
-    return total;
-  }
-
   Future<Cluster?> _handleListingClusterAdded(
     ClusterizedPlacemarkCollection self,
     Cluster cluster,
   ) async {
-    final listingCount = _listingCountForCluster(cluster);
-    final iconBytes = await _listingClusterIconBytes(listingCount);
+    final iconBytes = await _listingClusterIconBytes(cluster.size);
     return cluster.copyWith(
       appearance: cluster.appearance.copyWith(
         zIndex: _YandexMapWidgetState._selectedListingPinZIndex,
@@ -1203,45 +1160,23 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
       logger.w("📍 Listing pin icon is not ready yet");
       return [];
     }
-    final selectedListingIds = <int>{
-      if (widget.selectedListingId != null) widget.selectedListingId!,
-      ...widget.selectedListingGroupIds,
-    };
+    final selectedListingId = widget.selectedListingId;
     final visitedListingIds = widget.visitedListingIds;
-    final groups = _groupListingPins(widget.pins);
-    final orderedGroups = <_ListingPinGroup>[
-      for (final group in groups)
-        if (!group.pins
-            .any((pin) => selectedListingIds.contains(pin.listingId)))
-          group,
-      for (final group in groups)
-        if (group.pins.any((pin) => selectedListingIds.contains(pin.listingId)))
-          group,
+    final orderedPins = <ListingMapPin>[
+      for (final pin in widget.pins)
+        if (pin.listingId != selectedListingId) pin,
+      for (final pin in widget.pins)
+        if (pin.listingId == selectedListingId) pin,
     ];
 
     return [
-      for (final group in orderedGroups)
-        if (group.pins.length > 1)
-          _createListingGroupPlacemark(
-            group,
-            selected: group.pins.any(
-              (pin) => selectedListingIds.contains(pin.listingId),
-            ),
-            visited: !group.pins.any(
-                  (pin) => selectedListingIds.contains(pin.listingId),
-                ) &&
-                group.pins.every(
-                  (pin) => visitedListingIds.contains(pin.listingId),
-                ),
-          )
-        else if (selectedListingIds.contains(group.pins.first.listingId))
-          _createListingPlacemark(group.pins.first, selected: true)
-        else
-          _createListingPlacemark(
-            group.pins.first,
-            selected: false,
-            visited: visitedListingIds.contains(group.pins.first.listingId),
-          ),
+      for (final pin in orderedPins)
+        _createListingPlacemark(
+          pin,
+          selected: pin.listingId == selectedListingId,
+          visited: pin.listingId != selectedListingId &&
+              visitedListingIds.contains(pin.listingId),
+        ),
     ];
   }
 
@@ -1278,71 +1213,6 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         _clearSelectedUniversityMarker();
         _setSelectedMetroStation(null, notify: true);
         widget.onPinTap?.call(pin);
-      },
-    );
-  }
-
-  PlacemarkMapObject _createListingGroupPlacemark(
-    _ListingPinGroup group, {
-    required bool selected,
-    bool visited = false,
-  }) {
-    final count = group.pins.length;
-    final listingTypeCode = _listingGroupTypeCode(group.pins);
-    _ensureListingGroupIconBytes(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-      visited: visited && !selected,
-    );
-    final groupIconBytes = _cachedListingGroupIconBytes[_listingGroupIconKey(
-      count,
-      listingTypeCode: listingTypeCode,
-      selected: selected,
-      visited: visited && !selected,
-      darkMap: widget.nightModeEnabled && !selected && !visited,
-    )];
-    final fallbackBytes = selected
-        ? _cachedSelectedIconBytes!
-        : visited
-            ? widget.nightModeEnabled
-                ? _cachedDarkVisitedIconBytes ?? _cachedDarkIconBytes!
-                : _cachedVisitedIconBytes ?? _cachedIconBytes!
-            : widget.nightModeEnabled
-                ? _cachedDarkIconBytes!
-                : _cachedIconBytes!;
-    return PlacemarkMapObject(
-      mapId: MapObjectId("listing_group_${group.key}_placemark"),
-      point: _listingPlacemarkPoint(
-        latitude: group.latitude,
-        longitude: group.longitude,
-      ),
-      zIndex: selected
-          ? _YandexMapWidgetState._selectedListingPinZIndex
-          : _YandexMapWidgetState._listingGroupPinZIndex,
-      opacity: 1.0,
-      consumeTapEvents: true,
-      icon: PlacemarkIcon.single(
-        PlacemarkIconStyle(
-          image: groupIconBytes == null
-              ? _bitmapDescriptorFromBytes(fallbackBytes)
-              : _bitmapDescriptorFromBytes(groupIconBytes),
-          anchor: const Offset(0.5, 0.5),
-          zIndex: selected
-              ? _YandexMapWidgetState._selectedListingPinZIndex
-              : _YandexMapWidgetState._listingGroupPinZIndex,
-          scale: selected ? 1.5 : 1.425,
-        ),
-      ),
-      onTap: (_, __) {
-        _clearSelectedUniversityMarker();
-        _setSelectedMetroStation(null, notify: true);
-        final onPinGroupTap = widget.onPinGroupTap;
-        if (onPinGroupTap != null) {
-          onPinGroupTap(group.pins);
-          return;
-        }
-        widget.onPinTap?.call(group.pins.first);
       },
     );
   }
@@ -1427,53 +1297,11 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         : null;
   }
 
-  String? _listingGroupTypeCode(List<ListingMapPin> pins) {
-    String? groupCode;
-    for (final pin in pins) {
-      final code = _resolveListingTypeCode(
-        listingTypeCode: pin.listingTypeCode,
-        listingTypeId: pin.listingTypeId,
-      );
-      if (code == null) return null;
-      groupCode ??= code;
-      if (groupCode != code) return null;
-    }
-    return groupCode;
-  }
-
-  List<_ListingPinGroup> _groupListingPins(List<ListingMapPin> pins) {
-    final key = Object.hashAll(pins.map(_pinCacheKey));
-    final cached = _cachedListingPinGroups;
-    if (_cachedListingPinGroupsKey == key && cached != null) return cached;
-
-    final pinsByCoordinate = <String, List<ListingMapPin>>{};
-    for (final pin in pins) {
-      final key = _listingPinCoordinateKey(pin.latitude, pin.longitude);
-      pinsByCoordinate.putIfAbsent(key, () => <ListingMapPin>[]).add(pin);
-    }
-    final groups = [
-      for (final entry in pinsByCoordinate.entries)
-        _ListingPinGroup(
-          key: entry.key,
-          latitude: entry.value.first.latitude,
-          longitude: entry.value.first.longitude,
-          pins: List<ListingMapPin>.unmodifiable(entry.value),
-        ),
-    ];
-    _cachedListingPinGroupsKey = key;
-    _cachedListingPinGroups = groups;
-    return groups;
-  }
-
   BitmapDescriptor _bitmapDescriptorFromBytes(Uint8List bytes) {
     return _cachedBitmapDescriptors.putIfAbsent(
       bytes,
       () => BitmapDescriptor.fromBytes(bytes),
     );
-  }
-
-  String _listingPinCoordinateKey(double latitude, double longitude) {
-    return _mapCoordinateKey(latitude, longitude);
   }
 
   Point _listingPlacemarkPoint({

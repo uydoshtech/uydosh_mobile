@@ -8,7 +8,6 @@ import "package:flutter/rendering.dart";
 import "package:geolocator/geolocator.dart" as geo;
 import "package:permission_handler/permission_handler.dart";
 import "package:pointer_interceptor/pointer_interceptor.dart";
-import "package:smooth_page_indicator/smooth_page_indicator.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/cache/university_cache.dart";
@@ -188,8 +187,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _isLoading = true;
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
-  List<ListingMapPin> _selectedPinGroup = const [];
-  List<int> _selectedListingGroupIds = const [];
   final Set<int> _visitedListingIds = {};
   UniversityMapMarker? _selectedUniversityMarker;
   SubwayStation? _selectedMetroStation;
@@ -231,8 +228,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   late final ArgumentCallback<Point> _onMapBackgroundTap = _handleMapBackgroundTap;
   late final ValueChanged<ListingMapPin> _onSelectPin = _handleSelectPin;
-  late final ValueChanged<List<ListingMapPin>> _onSelectPinGroup =
-      _handleSelectPinGroup;
   late final ValueChanged<UniversityMapMarker> _onSelectUniversityMarker =
       _handleSelectUniversityMarker;
   late final ValueChanged<SubwayStation?> _onSelectedMetroStationChanged =
@@ -243,8 +238,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   late final VoidCallback _onClearSelectedMetroStation =
       _handleClearSelectedMetroStation;
   late final ValueChanged<ListingMapPin> _onOpenPin = _handleOpenPin;
-  late final ValueChanged<List<ListingMapPin>>
-      _onAllListingsViewedInCarousel = _handleAllListingsViewedInCarousel;
   late final VoidCallback _onToggleDistrictLayer = _handleToggleDistrictLayer;
   late final VoidCallback _onToggleWalkRadiusMinutes =
       _handleToggleWalkRadiusMinutes;
@@ -309,8 +302,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     if (filtersChanged) {
       _syncFiltersFromWidget();
       _selectedPin = null;
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
       _selectedUniversityMarker = null;
       _selectedMetroStation = null;
       if (!_filterRibbonDismissedByUser) {
@@ -351,7 +342,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
     final listingTooltipLift = _listingTooltipLiftFor(
       selectedPin: _selectedPin,
-      selectedPinGroup: _selectedPinGroup,
       measuredHeight: _listingTooltipHeight,
       placeViewToggleAtBottom: widget.embedded,
     );
@@ -364,7 +354,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
           _showUniversitiesLayer ? _universityMarkers : const [],
       userUniversityMarkerId: _currentUserUniversityMarkerId,
       selectedListingId: _selectedPin?.listingId,
-      selectedListingGroupIds: _selectedListingGroupIds,
       visitedListingIds: _visitedListingIds,
       selectedUniversityMarkerId: _selectedUniversityMarker?.id,
       selectedUniversityZoomFocusId: _selectedUniversityMarker?.id,
@@ -392,7 +381,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final result = _result ?? const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
     final listingTooltipLift = _listingTooltipLiftFor(
       selectedPin: _selectedPin,
-      selectedPinGroup: _selectedPinGroup,
       measuredHeight: _listingTooltipHeight,
       placeViewToggleAtBottom: widget.embedded,
     );
@@ -411,7 +399,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
-      selectedPinGroup: _selectedPinGroup,
       selectedUniversityMarker: _selectedUniversityMarker,
       selectedMetroStation: _selectedMetroStation,
       showDistrictLayer: _showDistrictLayer,
@@ -481,13 +468,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     if (selectedPin != null &&
         !visibleListingIds.contains(selectedPin.listingId)) {
       _selectedPin = null;
-    }
-    if (_selectedPinGroup.isNotEmpty &&
-        _selectedPinGroup.any(
-          (pin) => !visibleListingIds.contains(pin.listingId),
-        )) {
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
     }
   }
 
@@ -721,8 +701,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _loadError = null;
       _isLoading = false;
       _selectedPin = null;
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
       _selectedUniversityMarker = null;
       _selectedMetroStation = null;
       _showFilterRibbon = false;
@@ -735,8 +713,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _isLoading = true;
       _loadError = null;
       _selectedPin = null;
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
       _selectedUniversityMarker = null;
       _selectedMetroStation = null;
       _syncCanvasProps();
@@ -751,8 +727,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _loadError = null;
       _isLoading = false;
       _selectedPin = _autoSelectedPin(result);
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
       _selectedMetroStation = null;
       _listingTooltipHeight = 0;
       _pruneSelectionForCurrentResult();
@@ -988,8 +962,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _privateRoom = result.privateRoom;
         _withPhoto = result.withPhoto;
         _selectedPin = null;
-        _selectedPinGroup = const [];
-        _selectedListingGroupIds = const [];
         _selectedUniversityMarker = null;
         _selectedMetroStation = null;
         _loadResults();
@@ -1003,8 +975,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _showFilterRibbon = false;
     _loadError = null;
     _selectedPin = null;
-    _selectedPinGroup = const [];
-    _selectedListingGroupIds = const [];
     _selectedUniversityMarker = null;
     _selectedMetroStation = null;
     _syncAllMapProps();
@@ -1038,8 +1008,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _loadError = null;
     _isLoading = false;
     _selectedPin = _autoSelectedPin(result);
-    _selectedPinGroup = const [];
-    _selectedListingGroupIds = const [];
     _selectedMetroStation = null;
     _listingTooltipHeight = 0;
     _pruneSelectionForCurrentResult();
@@ -1494,10 +1462,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onClearSelectedPin: _onClearSelectedPin,
       onClearSelectedUniversityMarker: _onClearSelectedUniversityMarker,
       onSelectPin: _onSelectPin,
-      onSelectPinGroup: _onSelectPinGroup,
       onSelectUniversityMarker: _onSelectUniversityMarker,
       onOpenPin: _onOpenPin,
-      onAllListingsViewedInCarousel: _onAllListingsViewedInCarousel,
       onListingTooltipHeightChanged: _handleListingTooltipHeightChanged,
     );
   }
@@ -1544,14 +1510,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _syncCanvasProps();
   }
 
-  void _handleAllListingsViewedInCarousel(List<ListingMapPin> pins) {
-    var changed = false;
-    for (final pin in pins) {
-      changed |= _visitedListingIds.add(pin.listingId);
-    }
-    if (changed) _syncCanvasProps();
-  }
-
   void _handleMapBackgroundTap(Point point) {
     _handleClearSelectedPin();
     _handleClearSelectedUniversityMarker();
@@ -1566,8 +1524,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   void _handleClearSelectedPin() {
     _selectedPin = null;
-    _selectedPinGroup = const [];
-    _selectedListingGroupIds = const [];
     _listingTooltipHeight = 0;
     _syncCanvasProps();
     _syncOverlayProps();
@@ -1589,8 +1545,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _markListingVisited(pin.listingId);
     final isSameSelection = _selectedPin?.listingId == pin.listingId;
     _selectedPin = pin;
-    _selectedPinGroup = const [];
-    _selectedListingGroupIds = const [];
     _selectedUniversityMarker = null;
     _selectedMetroStation = null;
     // Tapping a different pin swaps in a new tooltip whose real height isn't
@@ -1603,23 +1557,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _syncOverlayProps();
   }
 
-  void _handleSelectPinGroup(List<ListingMapPin> pins) {
-    _selectedPin = null;
-    _selectedPinGroup = List<ListingMapPin>.unmodifiable(pins);
-    _selectedListingGroupIds = [
-      for (final pin in pins) pin.listingId,
-    ];
-    _selectedUniversityMarker = null;
-    _selectedMetroStation = null;
-    _listingTooltipHeight = 0;
-    _syncCanvasProps();
-    _syncOverlayProps();
-  }
-
   void _handleSelectUniversityMarker(UniversityMapMarker marker) {
     _selectedPin = null;
-    _selectedPinGroup = const [];
-    _selectedListingGroupIds = const [];
     _selectedUniversityMarker = marker;
     _selectedMetroStation = null;
     _syncCanvasProps();
@@ -1631,8 +1570,6 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _selectedMetroStation = station;
     if (station != null) {
       _selectedPin = null;
-      _selectedPinGroup = const [];
-      _selectedListingGroupIds = const [];
       _selectedUniversityMarker = null;
     }
     _syncCanvasProps();
