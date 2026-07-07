@@ -142,20 +142,6 @@ class YandexMapZoomControlsOptions {
   final double? bottom;
 }
 
-class _ListingPinGroup {
-  const _ListingPinGroup({
-    required this.key,
-    required this.latitude,
-    required this.longitude,
-    required this.pins,
-  });
-
-  final String key;
-  final double latitude;
-  final double longitude;
-  final List<ListingMapPin> pins;
-}
-
 class _YandexMapPoiMarker {
   const _YandexMapPoiMarker({
     required this.id,
@@ -227,10 +213,8 @@ class YandexMapWidget extends StatefulWidget {
     this.userUniversityMarkerId,
     this.selectedUniversityZoomFocusId,
     this.selectedListingId,
-    this.selectedListingGroupIds = const [],
     this.visitedListingIds = const {},
     this.onPinTap,
-    this.onPinGroupTap,
     this.onUniversityMarkerTap,
     this.onMapTap,
     this.onMapCreated,
@@ -268,10 +252,8 @@ class YandexMapWidget extends StatefulWidget {
   final String? userUniversityMarkerId;
   final String? selectedUniversityZoomFocusId;
   final int? selectedListingId;
-  final List<int> selectedListingGroupIds;
   final Set<int> visitedListingIds;
   final ValueChanged<ListingMapPin>? onPinTap;
-  final ValueChanged<List<ListingMapPin>>? onPinGroupTap;
   final ValueChanged<UniversityMapMarker>? onUniversityMarkerTap;
   final ValueChanged<Point>? onMapTap;
   final MapCreatedCallback? onMapCreated;
@@ -308,7 +290,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   static const double _districtLabelZIndex = 1.0;
   static const double _highlightedDistrictLabelZIndex = 1.2;
   static const double _listingPinZIndex = 100.0;
-  static const double _listingGroupPinZIndex = 101.0;
   static const double _selectedListingPinZIndex = 110.0;
   static const double _walkingSpeedMetersPerMinute = 110.0;
   static const double _minMetroStationWalkAreaLabelZoom = 12.0;
@@ -325,7 +306,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         : _metroStationPlacemarkScale;
     return borderPx / scale;
   }
-  static int get _minClusterableListingPinGroups =>
+  static int get _minClusterableListingPins =>
       isAndroidDevice ? 8 : 16;
   static const double _listingClusterRadius = 44.0;
   static int get _listingClusterMinZoom => isAndroidDevice ? 14 : 15;
@@ -391,8 +372,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   /// Bumped whenever university markers are re-shown so map object IDs stay
   /// unique across async Yandex MapKit add/remove updates (rapid layer toggles).
   int _universityMapLayerEpoch = 0;
-  int? _cachedListingPinGroupsKey;
-  List<_ListingPinGroup>? _cachedListingPinGroups;
   int _zoomSliderRequestId = 0;
   int _mapOperationGeneration = 0;
   late final ValueNotifier<double> _zoomNotifier;
