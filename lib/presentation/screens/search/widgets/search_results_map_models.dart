@@ -210,6 +210,7 @@ class _SearchMapOverlayProps {
     required this.privateRoom,
     required this.withPhoto,
     required this.selectedPin,
+    required this.visiblePins,
     required this.selectedUniversityMarker,
     required this.selectedMetroStation,
     required this.showDistrictLayer,
@@ -243,6 +244,11 @@ class _SearchMapOverlayProps {
   final bool privateRoom;
   final bool withPhoto;
   final ListingMapPin? selectedPin;
+
+  /// All pins currently visible on screen (map viewport), in stable result
+  /// order, used to drive a swipeable carousel through them. Always includes
+  /// [selectedPin] even if it has scrolled just outside the viewport.
+  final List<ListingMapPin> visiblePins;
   final UniversityMapMarker? selectedUniversityMarker;
   final SubwayStation? selectedMetroStation;
   final bool showDistrictLayer;
@@ -279,6 +285,7 @@ class _SearchMapOverlayProps {
             privateRoom == other.privateRoom &&
             withPhoto == other.withPhoto &&
             selectedPin == other.selectedPin &&
+            _pinListsEqual(visiblePins, other.visiblePins) &&
             selectedUniversityMarker == other.selectedUniversityMarker &&
             selectedMetroStation == other.selectedMetroStation &&
             showDistrictLayer == other.showDistrictLayer &&
@@ -314,6 +321,7 @@ class _SearchMapOverlayProps {
         privateRoom,
         withPhoto,
         selectedPin,
+        Object.hashAll(visiblePins.map((pin) => pin.listingId)),
         selectedUniversityMarker,
         selectedMetroStation,
         showDistrictLayer,
@@ -339,6 +347,15 @@ bool _intListsEqual(List<int> a, List<int> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _pinListsEqual(List<ListingMapPin> a, List<ListingMapPin> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].listingId != b[i].listingId) return false;
   }
   return true;
 }

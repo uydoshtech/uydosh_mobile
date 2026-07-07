@@ -6,6 +6,17 @@ import "package:uy_dosh/domain/models/photo.dart";
 part "listing_detail.freezed.dart";
 part "listing_detail.g.dart";
 
+/// Postgres `NUMERIC` columns (e.g. precise address coordinates) are
+/// serialized as JSON strings, not numbers, so a plain `as num?` cast in
+/// generated `fromJson` code throws and takes down the whole listing detail
+/// parse. Accept either shape here.
+double? numericStringToDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value.trim());
+  return null;
+}
+
 @freezed
 class ListingDetail with _$ListingDetail {
   const factory ListingDetail({
@@ -45,8 +56,10 @@ class ListingDetail with _$ListingDetail {
     double? roomScanNorthCorrectionDeg,
     @JsonKey(name: "contact_phone") String? contactPhone,
     @JsonKey(name: "contact_telegram") String? contactTelegram,
-    @JsonKey(name: "address_latitude") double? addressLatitude,
-    @JsonKey(name: "address_longitude") double? addressLongitude,
+    @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
+    double? addressLatitude,
+    @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
+    double? addressLongitude,
     @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
     @JsonKey(name: "search_subway_stations")
     List<SubwayStationDetail>? searchSubwayStations,

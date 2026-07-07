@@ -368,19 +368,33 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           required String label,
           required double value,
           required ValueChanged<double> onChanged,
+          bool alignEnd = false,
         }) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsetsDirectional.only(start: 4, bottom: 2),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: textColor.withValues(alpha: 0.75),
-                  ),
+                padding: EdgeInsetsDirectional.only(
+                  start: alignEnd ? 0 : 4,
+                  end: alignEnd ? 4 : 0,
+                  bottom: 2,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment:
+                      alignEnd ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  children: [
+                    _unitIcon(textColor.withValues(alpha: 0.75)),
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: textColor.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SliderTheme(
@@ -487,6 +501,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   label: L10n.get("price_picker_max_label"),
                   value: scaledMax,
                   onChanged: handleMaxChanged,
+                  alignEnd: true,
                 ),
               ),
             ],
@@ -499,23 +514,18 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (!widget.useSinglePrice) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _unitIcon(themeState.priceBadgeActiveColor),
-                    const SizedBox(width: 6),
-                    Text(
-                      "${formatLabel(scaledMin)} – ${formatLabel(scaledMax)}",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: themeState.priceBadgeActiveColor,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 6),
+                Text(
+                  "${formatLabel(scaledMin)} – ${formatLabel(scaledMax)}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.1,
+                    color: themeState.priceBadgeActiveColor,
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 buildMinMaxSlidersRow(),
               ] else
                 buildSingleSliderRow(),

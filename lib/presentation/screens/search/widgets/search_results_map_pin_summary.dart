@@ -1,5 +1,254 @@
 part of "../search_results_map_screen.dart";
 
+/// Swipeable carousel through every listing pin currently visible on the map
+/// (its viewport), starting on [selectedListingId]. Dragging between pages
+/// updates the map's selected/highlighted marker via [onPageChanged], while
+/// [onClose] hides the whole carousel and [onOpen] opens listing detail.
+class _PinSummaryCarousel extends StatefulWidget {
+  const _PinSummaryCarousel({
+    required this.pins,
+    required this.selectedListingId,
+    required this.onPageChanged,
+    required this.onClose,
+    required this.onOpen,
+    required this.onHeightChanged,
+    super.key,
+  });
+
+  final List<ListingMapPin> pins;
+  final int? selectedListingId;
+  final ValueChanged<ListingMapPin> onPageChanged;
+  final VoidCallback onClose;
+  final ValueChanged<ListingMapPin> onOpen;
+  final ValueChanged<double> onHeightChanged;
+
+  @override
+  State<_PinSummaryCarousel> createState() => _PinSummaryCarouselState();
+}
+
+class _PinSummaryCarouselState extends State<_PinSummaryCarousel> {
+  static const double _estimatedInitialHeight =
+      _SearchMapLayoutMetrics.singlePinTooltipFallbackHeight;
+
+  late final PageController _controller;
+  late int _currentIndex;
+  late List<double> _heights;
+
+  /// Guards against feeding a programmatic [PageController.jumpToPage] (used
+  /// to follow external selection, e.g. tapping a different marker) back
+  /// into [widget.onPageChanged] as if the user had swiped.
+  bool _suppressPageCallback = false;
+
+  int _indexForListing(int? listingId) {
+    if (listingId == null || widget.pins.isEmpty) return 0;
+    final index = widget.pins.indexWhere((pin) => pin.listingId == listingId);
+    return index < 0 ? 0 : index;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = _indexForListing(widget.selectedListingId);
+    _controller = PageController(initialPage: _currentIndex);
+    _heights = List<double>.filled(widget.pins.length, _estimatedInitialHeight);
+  }
+
+  @override
+  void didUpdateWidget(covariant _PinSummaryCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_pinIdsEqual(oldWidget.pins, widget.pins)) {
+      final nextHeights = List<double>.filled(
+        widget.pins.length,
+        _estimatedInitialHeight,
+      );
+      for (var i = 0; i < widget.pins.length; i++) {
+        final oldIndex = oldWidget.pins.indexWhere(
+          (pin) => pin.listingId == widget.pins[i].listingId,
+        );
+        if (oldIndex >= 0 && oldIndex < _heights.length) {
+          nextHeights[i] = _heights[oldIndex];
+        }
+      }
+      _heights = nextHeights;
+    }
+
+    final targetIndex = _indexForListing(widget.selectedListingId);
+    if (targetIndex == _currentIndex || widget.pins.isEmpty) return;
+    _currentIndex = targetIndex;
+    if (!_controller.hasClients) return;
+    _suppressPageCallback = true;
+    _controller.jumpToPage(targetIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _suppressPageCallback = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  bool _pinIdsEqual(List<ListingMapPin> a, List<ListingMapPin> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].listingId != b[i].listingId) return false;
+    }
+    return true;
+  }
+
+  void _setHeight(int index, double height) {
+    if (index < 0 || index >= _heights.length) return;
+    if ((_heights[index] - height).abs() < 0.5) return;
+    setState(() => _heights[index] = height);
+  }
+
+  double get _currentHeight {
+    if (_heights.isEmpty) return _estimatedInitialHeight;
+    final index = _currentIndex.clamp(0, _heights.length - 1);
+    return _heights[index];
+  }
+
+  void _handlePageChanged(int index) {
+    setState(() => _currentIndex = index);
+    if (_suppressPageCallback) return;
+    if (index < 0 || index >= widget.pins.length) return;
+    widget.onPageChanged(widget.pins[index]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pins = widget.pins;
+    if (pins.isEmpty) return const SizedBox.shrink();
+    final currentIndex = _currentIndex.clamp(0, pins.length - 1);
+
+    return _MapListingTooltipHeightReporter(
+      onHeightChanged: widget.onHeightChanged,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            height: _currentHeight,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: pins.length,
+              onPageChanged: _handlePageChanged,
+              itemBuilder: (context, index) {
+                final pin = pins[index];
+                return _PinCarouselPageMeasurer(
+                  onSizeChanged: (size) => _setHeight(index, size.height),
+                  child: _PinSummaryTooltip(
+                    key: ValueKey("pin-${pin.listingId}"),
+                    pin: pin,
+                    onClose: widget.onClose,
+                    onOpen: () => widget.onOpen(pin),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (pins.length > 1)
+            Positioned(
+              // Matches the close button's 40×40 tap target (top: 0, right:
+              // 0, 8px padding + 24px icon) so the pill's vertical center
+              // lines up with the X regardless of the pill's own height.
+              top: 0,
+              right: 44,
+              height: _closeButtonTapTargetSize,
+              child: IgnorePointer(
+                child: Center(
+                  child: _PinCarouselCounterBadge(
+                    index: currentIndex,
+                    count: pins.length,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Reports its child's laid-out size to [onSizeChanged] after each layout
+/// pass, letting [_PinSummaryCarouselState] size each carousel page's
+/// container to the currently displayed card without an inner scroll.
+class _PinCarouselPageMeasurer extends SingleChildRenderObjectWidget {
+  const _PinCarouselPageMeasurer({
+    required this.onSizeChanged,
+    required super.child,
+  });
+
+  final ValueChanged<Size> onSizeChanged;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _PinCarouselPageMeasurerRenderObject(onSizeChanged);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _PinCarouselPageMeasurerRenderObject renderObject,
+  ) {
+    renderObject.onSizeChanged = onSizeChanged;
+  }
+}
+
+class _PinCarouselPageMeasurerRenderObject extends RenderProxyBox {
+  _PinCarouselPageMeasurerRenderObject(this.onSizeChanged);
+
+  ValueChanged<Size> onSizeChanged;
+  Size? _oldSize;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final newSize = child?.size ?? Size.zero;
+    if (_oldSize == newSize) return;
+    _oldSize = newSize;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onSizeChanged(newSize);
+    });
+  }
+}
+
+/// Matches the close button's [IconButton] tap target (8px padding + 24px
+/// icon) in [_PinSummaryTooltip], used to vertically center the counter
+/// pill against it.
+const double _closeButtonTapTargetSize = 40;
+
+class _PinCarouselCounterBadge extends StatelessWidget {
+  const _PinCarouselCounterBadge({required this.index, required this.count});
+
+  final int index;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return LiquidGlassPlate(
+      // Always the dark frosted variant: this pill sits over the tooltip's
+      // photo/text content (not the map tiles), so it needs guaranteed
+      // contrast for its white text regardless of the app theme or the
+      // map's own day/night mode.
+      mapNightModeEnabled: true,
+      borderRadius: BorderRadius.circular(999),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      child: Text(
+        "${index + 1}/$count",
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          height: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
 class _PinSummaryTooltip extends StatelessWidget {
   const _PinSummaryTooltip({
     required this.pin,
@@ -65,15 +314,13 @@ class _PinSummaryTooltip extends StatelessWidget {
                         ),
                         if (pin.locationLabel?.isNotEmpty == true ||
                             pin.stationLabel?.isNotEmpty == true ||
-                            pin.createdAt?.isNotEmpty == true ||
-                            pin.isApproximateLocation) ...[
+                            pin.createdAt?.isNotEmpty == true) ...[
                           const SizedBox(height: 4),
                           _PinGeoLabelsRow(
                             locationLabel: pin.locationLabel,
                             stationLabel: pin.stationLabel,
                             lineIds: pin.subwayLineIds,
                             createdAt: pin.createdAt,
-                            isApproximateLocation: pin.isApproximateLocation,
                           ),
                         ],
                       ],
@@ -290,7 +537,6 @@ class _PinGeoLabelsRow extends StatelessWidget {
     required this.stationLabel,
     required this.lineIds,
     this.createdAt,
-    this.isApproximateLocation = false,
   });
 
   static const double _inlineIconSize = 16;
@@ -299,7 +545,6 @@ class _PinGeoLabelsRow extends StatelessWidget {
   final String? stationLabel;
   final List<int> lineIds;
   final String? createdAt;
-  final bool isApproximateLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -331,13 +576,6 @@ class _PinGeoLabelsRow extends StatelessWidget {
         _PinInlineMetroLabel(
           lineIds: lineIds,
           label: stationLabel!,
-          style: metaStyle,
-        ),
-      if (isApproximateLocation)
-        _PinInlineMetaLabel(
-          icon: Icons.location_searching,
-          iconColor: theme.colorScheme.onSurfaceVariant,
-          label: L10n.get("map_pin_approximate_location"),
           style: metaStyle,
         ),
     ];

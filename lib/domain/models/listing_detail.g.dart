@@ -47,8 +47,8 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
           (json['room_scan_north_correction_deg'] as num?)?.toDouble(),
       contactPhone: json['contact_phone'] as String?,
       contactTelegram: json['contact_telegram'] as String?,
-      addressLatitude: (json['address_latitude'] as num?)?.toDouble(),
-      addressLongitude: (json['address_longitude'] as num?)?.toDouble(),
+      addressLatitude: numericStringToDouble(json['address_latitude']),
+      addressLongitude: numericStringToDouble(json['address_longitude']),
       subwayStation: json['subway_station'] == null
           ? null
           : SubwayStationDetail.fromJson(

@@ -237,6 +237,7 @@ class YandexMapWidget extends StatefulWidget {
     this.userLocationLongitude,
     this.selectedMetroStationId,
     this.onSelectedMetroStationChanged,
+    this.onVisibleListingPinsChanged,
   });
 
   final double? latitude;
@@ -274,6 +275,11 @@ class YandexMapWidget extends StatefulWidget {
   final double? userLocationLatitude;
   final double? userLocationLongitude;
   final ValueChanged<SubwayStation?>? onSelectedMetroStationChanged;
+
+  /// Called whenever the set of [pins] currently inside the visible map
+  /// viewport changes (e.g. after panning/zooming settles), so callers can
+  /// drive a carousel through the listings that are actually on screen.
+  final ValueChanged<List<int>>? onVisibleListingPinsChanged;
 
   @override
   State<YandexMapWidget> createState() => _YandexMapWidgetState();
@@ -363,6 +369,8 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   int _metroViewportGeneration = 0;
   String? _metroViewportRegionKey;
   List<int> _visibleMetroStationIds = const [];
+  int _listingViewportGeneration = 0;
+  List<int> _visibleListingPinIds = const [];
   List<_YandexMapPoiMarker> _groceryStoreMarkers = const [];
   List<_YandexMapPoiMarker> _busStopMarkers = const [];
   int? _cachedMapObjectsKey;
@@ -476,6 +484,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _invalidateMapObjectsCache();
       _requestMapRebuild();
       _syncListingTypePinIconBytes();
+      _syncListingViewport();
     }
     if (_universityMapLayerChanged(oldWidget)) {
       if (oldWidget.universityMarkers.isEmpty &&
@@ -521,6 +530,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     _zoomSliderRequestId++;
     _poiSearchGeneration++;
     _metroViewportGeneration++;
+    _listingViewportGeneration++;
     unawaited(_groceryStoreSearchSession?.close());
     unawaited(_busStopSearchSession?.close());
     _mapController = null;
@@ -1624,6 +1634,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _setCurrentZoom(cameraPosition.zoom);
       _syncPoiLayers();
       _syncMetroLayerViewport();
+      _syncListingViewport();
     }
     if (_automaticCameraFinishesToIgnore > 0) {
       if (finished) {
@@ -1797,6 +1808,57 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       _metroViewportRegionKey = regionKey;
       _visibleMetroStationIds = stationIds;
     });
+  }
+
+  void _syncListingViewport() {
+    if (widget.onVisibleListingPinsChanged == null) return;
+    if (!mounted || kIsWeb || !_isMapReady || _mapController == null) return;
+    unawaited(_refreshVisibleListingPins());
+  }
+
+  Future<void> _refreshVisibleListingPins() async {
+    final callback = widget.onVisibleListingPinsChanged;
+    if (callback == null) return;
+    final controller = _mapController;
+    if (controller == null || kIsWeb) return;
+
+    if (widget.pins.isEmpty) {
+      if (_visibleListingPinIds.isNotEmpty) {
+        _visibleListingPinIds = const [];
+        callback(const []);
+      }
+      return;
+    }
+
+    final generation = ++_listingViewportGeneration;
+    final mapGeneration = _mapOperationGeneration;
+    final visibleRegion = await controller.getVisibleRegion();
+    if (!_isCurrentMapOperation(controller, mapGeneration) ||
+        generation != _listingViewportGeneration) {
+      return;
+    }
+
+    final box = _visibleRegionBoundingBox(visibleRegion);
+    final visibleIds = <int>[
+      for (final pin in widget.pins)
+        if (_pointInBoundingBox(
+          Point(latitude: pin.latitude, longitude: pin.longitude),
+          box,
+        ))
+          pin.listingId,
+    ];
+    if (_intListEquals(_visibleListingPinIds, visibleIds)) return;
+    _visibleListingPinIds = visibleIds;
+    callback(visibleIds);
+  }
+
+  bool _intListEquals(List<int> a, List<int> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   Future<void> _refreshVisiblePoiLayers() async {
@@ -2071,6 +2133,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     setState(() => _areMapObjectsReady = true);
     _syncPoiLayers();
     _syncMetroLayerViewport();
+    _syncListingViewport();
   }
 }
 

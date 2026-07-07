@@ -187,6 +187,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   bool _isLoading = true;
   int _loadGeneration = 0;
   ListingMapPin? _selectedPin;
+  List<int> _visibleViewportListingIds = const [];
   final Set<int> _visitedListingIds = {};
   UniversityMapMarker? _selectedUniversityMarker;
   SubwayStation? _selectedMetroStation;
@@ -207,6 +208,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   /// True only after the user taps X on the map filter ribbon — not when the
   /// ribbon is hidden because filters are profile defaults only.
   bool _filterRibbonDismissedByUser = false;
+  // Set once the user explicitly submits the filter sheet (regardless of the
+  // resulting values) so the ribbon reliably shows a filled state afterwards
+  // — see `_hasMapSearchFilters`.
+  bool _filterRibbonAppliedByUser = false;
   int _userLocationRequestToken = 0;
   int _userLocationFocusToken = 0;
   int _userLocationLoadGeneration = 0;
@@ -228,6 +233,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   late final ArgumentCallback<Point> _onMapBackgroundTap = _handleMapBackgroundTap;
   late final ValueChanged<ListingMapPin> _onSelectPin = _handleSelectPin;
+  late final ValueChanged<List<int>> _onVisibleListingPinsChanged =
+      _handleVisibleListingPinsChanged;
   late final ValueChanged<UniversityMapMarker> _onSelectUniversityMarker =
       _handleSelectUniversityMarker;
   late final ValueChanged<SubwayStation?> _onSelectedMetroStationChanged =
@@ -260,7 +267,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _filterRibbonDismissedByUser = true;
     }
     _syncFiltersFromWidget();
+    _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
+    var hasOptimisticPins = false;
     if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
+      // Optimistic paint from whatever the feed already has loaded in
+      // memory, so the map isn't blank while the full fetch below is in
+      // flight. Replaced as soon as that fetch resolves.
       final initialResult = _resultFromListings(
         widget.initialListings,
         total: widget.initialTotal ?? widget.initialListings.length,
@@ -268,20 +280,18 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _result = initialResult;
       _selectedPin = _autoSelectedPin(initialResult);
       _listingTooltipHeight = 0;
-    }
-    if (_hasMapSearchFilters) {
-      _loadResults(showLoading: false);
-      _showFilterRibbon = _filterRibbonEnabled;
-    } else if (widget.initialListings.isNotEmpty || widget.initialTotal != null) {
-      _isLoading = false;
-      _showFilterRibbon = false;
+      hasOptimisticPins = initialResult.pins.isNotEmpty;
     } else {
       _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
-      _isLoading = false;
-      _showFilterRibbon = false;
     }
+    _isLoading = !hasOptimisticPins;
     _canvasPropsNotifier = ValueNotifier(_buildCanvasProps());
     _overlayPropsNotifier = ValueNotifier(_buildOverlayProps());
+    // Always fetch the complete matching set from the backend — relying only
+    // on the feed's own lazily-loaded page(s) (`widget.initialListings`)
+    // would show far fewer pins than the total reported in the AppBar/ribbon
+    // once the feed has more pages than it has scrolled through yet.
+    _loadResults(showLoading: !hasOptimisticPins);
     if (!isAndroidDevice || _showUniversitiesLayer) {
       _loadUniversityMarkers();
     }
@@ -307,11 +317,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       if (!_filterRibbonDismissedByUser) {
         _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
       }
-      if (_hasMapSearchFilters) {
-        _loadResults();
-      } else {
-        _applyFeedListingsFromWidget();
-      }
+      _loadResults();
       return;
     }
 
@@ -319,11 +325,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       if (_filterRibbonDismissedByUser) {
         _syncFiltersFromWidget();
       }
-      if (_hasMapSearchFilters) {
-        _loadResults(showLoading: false);
-      } else {
-        _applyFeedListingsFromWidget();
-      }
+      _loadResults(showLoading: false);
       return;
     }
   }
@@ -399,6 +401,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
       selectedPin: _selectedPin,
+      visiblePins: _carouselPinsFor(result),
       selectedUniversityMarker: _selectedUniversityMarker,
       selectedMetroStation: _selectedMetroStation,
       showDistrictLayer: _showDistrictLayer,
@@ -458,6 +461,29 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       if (!mounted) return;
       HomeInlineSearchState().setMapListingCount(count);
     });
+  }
+
+  void _handleVisibleListingPinsChanged(List<int> listingIds) {
+    if (_intListsEqual(_visibleViewportListingIds, listingIds)) return;
+    _visibleViewportListingIds = listingIds;
+    _syncOverlayProps();
+  }
+
+  /// Pins to page through in the bottom carousel: everything currently
+  /// visible in the map viewport, plus [_selectedPin] itself so the card
+  /// stays on screen even if its marker has just scrolled out of view.
+  /// Ordering follows [result.pins] so swiping stays stable while panning.
+  List<ListingMapPin> _carouselPinsFor(_SearchMapResult result) {
+    final selectedId = _selectedPin?.listingId;
+    if (_visibleViewportListingIds.isEmpty && selectedId == null) {
+      return const [];
+    }
+    final visibleIds = _visibleViewportListingIds.toSet();
+    if (selectedId != null) visibleIds.add(selectedId);
+    return [
+      for (final pin in result.pins)
+        if (visibleIds.contains(pin.listingId)) pin,
+    ];
   }
 
   void _pruneSelectionForCurrentResult() {
@@ -530,6 +556,12 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     // narrowed API search (profile defaults still look like "filters").
     if (_filterRibbonDismissedByUser) {
       return false;
+    }
+    // An explicit filter-sheet submission always counts, even if the chosen
+    // values don't otherwise match the type+gender "profile default" shape
+    // below (e.g. a listing-type change with no gender set).
+    if (_filterRibbonAppliedByUser) {
+      return true;
     }
     if (!_filterRibbonEnabled) {
       return _hasExplicitUserMapFilters;
@@ -692,22 +724,13 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         (longitude - 69.2401).abs() < 0.000001;
   }
 
+  /// Always performs a full paginated fetch of every listing matching the
+  /// current filters (which may all be unset — i.e. plain unfiltered
+  /// browsing) so the map's pins line up with the total shown in the
+  /// AppBar/ribbon, rather than only whatever the feed has lazily loaded.
   Future<void> _loadResults({
     bool showLoading = true,
   }) async {
-    if (!_hasMapSearchFilters) {
-      _loadGeneration++;
-      _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
-      _loadError = null;
-      _isLoading = false;
-      _selectedPin = null;
-      _selectedUniversityMarker = null;
-      _selectedMetroStation = null;
-      _showFilterRibbon = false;
-      _syncAllMapProps();
-      return;
-    }
-
     final loadGeneration = ++_loadGeneration;
     if (showLoading) {
       _isLoading = true;
@@ -726,9 +749,14 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _result = result;
       _loadError = null;
       _isLoading = false;
-      _selectedPin = _autoSelectedPin(result);
-      _selectedMetroStation = null;
-      _listingTooltipHeight = 0;
+      // A deliberate (foreground) load starts fresh; a silent background
+      // refresh (e.g. feed revision bump) keeps whatever the user already
+      // had open as long as it still exists in the refreshed result.
+      if (showLoading) {
+        _selectedPin = _autoSelectedPin(result);
+        _selectedMetroStation = null;
+        _listingTooltipHeight = 0;
+      }
       _pruneSelectionForCurrentResult();
       _syncAllMapProps();
       if (mountingMapBody) setState(() {});
@@ -939,15 +967,20 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       primaryIcon: Icons.check,
       primaryAction: SearchBottomSheetAction.map,
       onApply: (result) {
-        final hasMapFilters = _hasMapSearchFiltersFor(result);
+        // Reaching this callback means the user explicitly used the filter
+        // sheet — always surface that in the ribbon, regardless of whether
+        // the chosen values happen to match the type+gender "looks like a
+        // default" heuristic below (that heuristic used to silently hide,
+        // e.g., a listing-type-only change made without a profile gender).
+        _filterRibbonAppliedByUser = true;
         if (_matchesCurrentFilters(result)) {
-          _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
+          _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
           _syncOverlayProps();
           return;
         }
 
         _filterRibbonDismissedByUser = false;
-        _showFilterRibbon = _filterRibbonEnabled && hasMapFilters;
+        _showFilterRibbon = _filterRibbonEnabled && _hasMapSearchFilters;
         _listingTypeId = result.listingTypeId;
         _listingTypeIds = result.listingTypeIds == null
             ? null
@@ -981,54 +1014,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_filterRibbonDismissedByUser) return;
       _syncFiltersFromWidget();
-      if (_hasMapSearchFilters) {
-        _loadResults(showLoading: false);
-      } else {
-        _applyFeedListingsFromWidget();
-      }
+      _loadResults(showLoading: false);
     });
-  }
-
-  void _applyFeedListingsFromWidget() {
-    final listings = widget.initialListings;
-    if (listings.isEmpty) {
-      _loadGeneration++;
-      _result = const _SearchMapResult(pins: [], total: 0, mappableCount: 0);
-      _loadError = null;
-      _isLoading = false;
-      _syncAllMapProps();
-      _publishMapListingCount(_result);
-      return;
-    }
-    final result = _resultFromListings(
-      listings,
-      total: widget.initialTotal ?? listings.length,
-    );
-    _result = result;
-    _loadError = null;
-    _isLoading = false;
-    _selectedPin = _autoSelectedPin(result);
-    _selectedMetroStation = null;
-    _listingTooltipHeight = 0;
-    _pruneSelectionForCurrentResult();
-    _syncAllMapProps();
-    _publishMapListingCount(result);
-  }
-
-  bool _hasMapSearchFiltersFor(SearchBottomSheetResult result) {
-    final hasProfileDefaults = _filterRibbonEnabled &&
-        result.listingTypeId >= 1 &&
-        result.gender != null &&
-        result.gender! >= 1 &&
-        result.gender! <= 2;
-    return hasProfileDefaults ||
-        result.locationId != null ||
-        result.subwayStationId != null ||
-        result.subwayStationIds.isNotEmpty ||
-        result.subwayLineId != null ||
-        _hasCustomMapPriceRange(result.minPrice, result.maxPrice) ||
-        result.privateRoom ||
-        result.withPhoto;
   }
 
   void _openFeedView() {
@@ -1463,6 +1450,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       onClearSelectedUniversityMarker: _onClearSelectedUniversityMarker,
       onSelectPin: _onSelectPin,
       onSelectUniversityMarker: _onSelectUniversityMarker,
+      onVisibleListingPinsChanged: _onVisibleListingPinsChanged,
       onOpenPin: _onOpenPin,
       onListingTooltipHeightChanged: _handleListingTooltipHeightChanged,
     );

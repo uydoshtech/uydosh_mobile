@@ -20,6 +20,7 @@ class _SearchResultsMapBody extends StatelessWidget {
     required this.onMapBackgroundTap,
     required this.onSelectPin,
     required this.onSelectUniversityMarker,
+    required this.onVisibleListingPinsChanged,
     required this.onClearSelectedMetroStation,
     required this.onSelectedMetroStationChanged,
     required this.onOpenPin,
@@ -44,6 +45,7 @@ class _SearchResultsMapBody extends StatelessWidget {
   final ArgumentCallback<Point> onMapBackgroundTap;
   final ValueChanged<ListingMapPin> onSelectPin;
   final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
+  final ValueChanged<List<int>> onVisibleListingPinsChanged;
   final VoidCallback onClearSelectedMetroStation;
   final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
   final ValueChanged<ListingMapPin> onOpenPin;
@@ -105,6 +107,7 @@ class _SearchResultsMapBody extends StatelessWidget {
                       onMapBackgroundTap: onMapBackgroundTap,
                       onSelectPin: onSelectPin,
                       onSelectUniversityMarker: onSelectUniversityMarker,
+                      onVisibleListingPinsChanged: onVisibleListingPinsChanged,
                       onSelectedMetroStationChanged:
                           onSelectedMetroStationChanged,
                     );
@@ -118,6 +121,7 @@ class _SearchResultsMapBody extends StatelessWidget {
                     return _SearchMapOverlays(
                       props: overlay,
                       onOpenFeedView: onOpenFeedView,
+                      onSelectPin: onSelectPin,
                       onOpenEmbeddedSearch: onOpenEmbeddedSearch,
                       onRequestUserLocation: onRequestUserLocation,
                       onUpdateUserLocation: onUpdateUserLocation,
@@ -151,6 +155,7 @@ class _SearchMapCanvas extends StatelessWidget {
     required this.onMapBackgroundTap,
     required this.onSelectPin,
     required this.onSelectUniversityMarker,
+    required this.onVisibleListingPinsChanged,
     required this.onSelectedMetroStationChanged,
   });
 
@@ -158,6 +163,7 @@ class _SearchMapCanvas extends StatelessWidget {
   final ArgumentCallback<Point> onMapBackgroundTap;
   final ValueChanged<ListingMapPin> onSelectPin;
   final ValueChanged<UniversityMapMarker> onSelectUniversityMarker;
+  final ValueChanged<List<int>> onVisibleListingPinsChanged;
   final ValueChanged<SubwayStation?> onSelectedMetroStationChanged;
 
   @override
@@ -241,6 +247,7 @@ class _SearchMapCanvas extends StatelessWidget {
                       : null),
             ),
             onSelectedMetroStationChanged: onSelectedMetroStationChanged,
+            onVisibleListingPinsChanged: onVisibleListingPinsChanged,
             onMapTap: onMapBackgroundTap,
             onPinTap: onSelectPin,
             onUniversityMarkerTap: onSelectUniversityMarker,
@@ -255,6 +262,7 @@ class _SearchMapOverlays extends StatelessWidget {
   const _SearchMapOverlays({
     required this.props,
     required this.onOpenFeedView,
+    required this.onSelectPin,
     required this.onOpenEmbeddedSearch,
     required this.onRequestUserLocation,
     required this.onUpdateUserLocation,
@@ -272,6 +280,7 @@ class _SearchMapOverlays extends StatelessWidget {
 
   final _SearchMapOverlayProps props;
   final VoidCallback onOpenFeedView;
+  final ValueChanged<ListingMapPin> onSelectPin;
   final VoidCallback? onOpenEmbeddedSearch;
   final VoidCallback onRequestUserLocation;
   final VoidCallback onUpdateUserLocation;
@@ -367,7 +376,7 @@ class _SearchMapOverlays extends StatelessWidget {
       height: feedViewButtonHeight,
       iconSize: 19,
       backgroundColor: Colors.white,
-      foregroundColor: AppColors.secondary,
+      foregroundColor: AppColors.secondaryDark,
       borderSide: mapOverlayButtonBorder,
       mapOverlay: true,
       elevation: ThemeState().isBlueTheme ? null : 8,
@@ -506,16 +515,14 @@ class _SearchMapOverlays extends StatelessWidget {
             bottom: bottomOverlayInset +
                 _SearchMapLayoutMetrics.listingTooltipBottomMargin,
             child: PointerInterceptor(
-              child: _MapListingTooltipHeightReporter(
+              child: _PinSummaryCarousel(
+                key: const ValueKey("pin-carousel"),
+                pins: overlay.visiblePins.isEmpty ? [pin] : overlay.visiblePins,
+                selectedListingId: pin.listingId,
+                onPageChanged: onSelectPin,
+                onClose: onClearSelectedPin,
+                onOpen: onOpenPin,
                 onHeightChanged: onListingTooltipHeightChanged,
-                child: MapTooltipFadeTransition(
-                  child: _PinSummaryTooltip(
-                    key: ValueKey("pin-${pin.listingId}"),
-                    pin: pin,
-                    onClose: onClearSelectedPin,
-                    onOpen: () => onOpenPin(pin),
-                  ),
-                ),
               ),
             ),
           ),
