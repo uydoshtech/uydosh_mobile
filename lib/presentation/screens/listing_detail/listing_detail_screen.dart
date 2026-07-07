@@ -3453,6 +3453,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           SliverFillRemaining(
             hasScrollBody: false,
             child: ListingDetailFetchErrorBody(
+              message: message,
               onRetry: () {
                 context.read<ListingDetailBloc>().add(
                   ListingDetailEvent.fetchListingDetail(id: widget.listingId),

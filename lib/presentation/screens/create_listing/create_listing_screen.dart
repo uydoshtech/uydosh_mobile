@@ -72,6 +72,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -1830,7 +1831,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           minimumSize: const Size(56, 56),
                         ),
                         child: _isResolvingCurrentLocation
-                            ? const UydoshLogoSpinner(size: 14)
+                            ? UydoshInlineSpinner(
+                                color: _getBorderColor(),
+                                dimension: 14,
+                              )
                             : Icon(
                                 Icons.my_location,
                                 size: 20,

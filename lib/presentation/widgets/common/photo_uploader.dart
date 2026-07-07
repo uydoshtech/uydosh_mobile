@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Photo section used by the edit-listing screen.
@@ -722,7 +723,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ? null
                     : () => widget.onDeleteExistingPhoto(index),
                 child: isDeleting
-                    ? const UydoshLogoSpinner(size: 16)
+                    ? const UydoshInlineSpinner(color: Colors.white, dimension: 16)
                     : const ThemeIcon(
                         Icons.close,
                         color: Colors.white,

@@ -7,7 +7,7 @@ import "package:uy_dosh/domain/models/listing_detail.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 /// Matches native 3D viewer: SF `rectangle` → [Icons.rectangle_outlined],
 /// `arrow.up.and.down` → [Icons.height], `rectangle.on.rectangle` →
@@ -201,7 +201,7 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
                 ),
                 const SizedBox(width: 8),
                 if (widget.isLoading)
-                  const UydoshLogoSpinner(size: 20)
+                  UydoshInlineSpinner(color: variant, dimension: 20)
                 else
                   ThemeIcon(
                     Icons.chevron_right,

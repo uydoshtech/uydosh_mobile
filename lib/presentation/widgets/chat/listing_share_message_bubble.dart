@@ -18,7 +18,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_row.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.dart";
 import "package:uy_dosh/presentation/widgets/common/network_avatar_image.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
 class ListingShareMessageBubble extends StatelessWidget {
@@ -682,7 +682,10 @@ class _StarRatingRowState extends State<_StarRatingRow> {
               }),
               if (_isSaving) ...[
                 const SizedBox(width: 6),
-                const UydoshLogoSpinner(size: 16),
+                UydoshInlineSpinner(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  dimension: 16,
+                ),
               ],
             ],
           ),

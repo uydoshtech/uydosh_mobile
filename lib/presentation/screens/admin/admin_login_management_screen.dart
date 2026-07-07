@@ -17,7 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 /// Admin-only screen letting admins turn each sign-in provider (Google, Apple,
 /// Telegram, phone) on/off platform-wide. Backed by `/admin/settings/*-sign-in-enabled`.
@@ -159,7 +159,10 @@ class _AdminLoginManagementScreenState
 
   Widget _savingLeading(IconData icon, bool isSaving) {
     return isSaving
-        ? const UydoshLogoSpinner(size: 24)
+        ? UydoshInlineSpinner(
+            color: Theme.of(context).colorScheme.onSurface,
+            dimension: 24,
+          )
         : ThemeIcon(icon);
   }
 

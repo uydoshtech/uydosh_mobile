@@ -20,7 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_photo_pill.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/reorderable_photo_grid.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 
@@ -405,7 +405,10 @@ class _PhotoPickerState extends State<PhotoPicker> {
                         padding: const EdgeInsets.all(8),
                         child:
                             _isProcessingImage
-                                ? const UydoshLogoSpinner(size: 20)
+                                ? const UydoshInlineSpinner(
+                                  color: Colors.white,
+                                  dimension: 20,
+                                )
                                 : const ThemeIcon(
                                   Icons.add,
                                   color: Colors.white,

@@ -6,7 +6,7 @@ import "package:uy_dosh/base/utils/ui_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/button_icon_label.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 class GhostButton extends StatefulWidget {
   const GhostButton({
@@ -184,7 +184,7 @@ class _GhostButtonState extends State<GhostButton> {
                       data: IconThemeData(color: fg),
                     child:
                         widget.isLoading
-                            ? const UydoshLogoSpinner(size: 20)
+                            ? UydoshInlineSpinner(color: fg, dimension: 20)
                             : widget.child,
                     ),
                   ),

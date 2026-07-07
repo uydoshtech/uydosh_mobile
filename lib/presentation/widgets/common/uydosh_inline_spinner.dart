@@ -1,12 +1,12 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
-/// Rotating UyDosh logo for inline/button loading slots, replacing the
-/// default Material [CircularProgressIndicator].
+/// Plain circular loading indicator for buttons and other small inline
+/// controls.
 ///
-/// [color] and [strokeWidth] are kept for backwards compatibility with
-/// existing call sites but are ignored — the spinner always renders the
-/// brand mark in its natural colors.
+/// The rotating brand-mark [UydoshLogoSpinner] is reserved for major
+/// screen-level loading states; buttons and controls use this lightweight
+/// indicator instead so the brand animation doesn't compete for attention
+/// on every tap.
 class UydoshInlineSpinner extends StatelessWidget {
   const UydoshInlineSpinner({
     required this.color,
@@ -21,6 +21,13 @@ class UydoshInlineSpinner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UydoshLogoSpinner(size: dimension);
+    return SizedBox(
+      width: dimension,
+      height: dimension,
+      child: CircularProgressIndicator(
+        strokeWidth: strokeWidth,
+        valueColor: AlwaysStoppedAnimation<Color>(color),
+      ),
+    );
   }
 }

@@ -14,7 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 /// Opens the shared "search area" editor for a forming group. Returns the
 /// saved [GroupSearchPrefs] when the user persists changes, otherwise null.
@@ -229,7 +229,10 @@ class _GroupSearchPrefsEditSheetState
               child: FilledButton(
                 onPressed: _saving ? null : _save,
                 child: _saving
-                    ? const UydoshLogoSpinner(size: 18)
+                    ? UydoshInlineSpinner(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        dimension: 18,
+                      )
                     : Text(L10n.get("save_changes")),
               ),
             ),

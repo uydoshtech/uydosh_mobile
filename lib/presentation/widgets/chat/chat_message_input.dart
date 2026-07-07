@@ -9,7 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/listing_description_dictatio
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 class ChatMessageInput extends StatefulWidget {
   const ChatMessageInput({
@@ -189,7 +189,10 @@ class _ChatMessageInputState extends State<ChatMessageInput> {
                       height: 24,
                       child: Center(
                         child: widget.isSendingMessage
-                            ? const UydoshLogoSpinner(size: 20)
+                            ? UydoshInlineSpinner(
+                                color: sendButtonColor,
+                                dimension: 20,
+                              )
                             : ThemeIcon(Icons.send, color: sendButtonColor),
                       ),
                     ),

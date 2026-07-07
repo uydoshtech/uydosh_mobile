@@ -698,7 +698,10 @@ class _UserSupportChatThreadScreenState
                   height: 28,
                   child: Center(
                     child: _isSending
-                        ? const UydoshLogoSpinner(size: 20)
+                        ? UydoshInlineSpinner(
+                            color: themeState.sendButtonColor,
+                            dimension: 20,
+                          )
                         : ThemeIcon(
                             Icons.send,
                             color: themeState.sendButtonColor,

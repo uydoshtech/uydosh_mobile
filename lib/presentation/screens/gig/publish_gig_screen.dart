@@ -46,7 +46,7 @@ import "package:uy_dosh/presentation/widgets/common/form_dirty_field_outline.dar
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -717,7 +717,7 @@ class _PublishGigScreenState extends State<PublishGigScreen> {
     if (submitting) {
       return IconButton(
         onPressed: null,
-        icon: const UydoshLogoSpinner(size: 20),
+        icon: UydoshInlineSpinner(color: theme.colorScheme.onSurface, dimension: 20),
         tooltip: L10n.get("save_changes"),
       );
     }

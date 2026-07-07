@@ -1,8 +1,12 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 
-/// Rotating UyDosh brand-mark (red roof + white "U") used app-wide in place
-/// of the default Material [CircularProgressIndicator].
+/// Rotating UyDosh brand-mark (red roof + white "U") used for major
+/// screen-level loading states (initial screen loads, full-page loaders).
+///
+/// Do not use this for buttons or other small inline controls — use
+/// `UydoshInlineSpinner` (a plain [CircularProgressIndicator]) there instead,
+/// so the brand animation is reserved for moments that matter.
 ///
 /// Always renders the dark-themed brand mark (white glyph, red roof) so the
 /// spinner reads consistently regardless of the surrounding theme or the

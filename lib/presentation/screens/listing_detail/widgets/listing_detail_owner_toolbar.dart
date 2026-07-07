@@ -8,7 +8,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_views_stats_
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 /// Owner toolbar with view count and promote button for listing detail.
 class ListingDetailOwnerToolbar extends StatelessWidget {
@@ -76,7 +76,10 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                           ),
                         )
                       else
-                        const UydoshLogoSpinner(size: 16),
+                        UydoshInlineSpinner(
+                          color: ListingDetailThemeHelper.iconColor,
+                          dimension: 16,
+                        ),
                     ],
                   ),
                 )
@@ -90,7 +93,10 @@ class ListingDetailOwnerToolbar extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (isToggling)
-                        const UydoshLogoSpinner(size: 16)
+                        UydoshInlineSpinner(
+                          color: promoteActionColor,
+                          dimension: 16,
+                        )
                       else
                         ThemeIcon(
                           isUnfeature

@@ -60,6 +60,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/profile/linked_telegram_account_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
@@ -1573,7 +1574,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                 padding: const EdgeInsets.only(right: 16.0),
                 child: IconButton(
                   onPressed: null,
-                  icon: const UydoshLogoSpinner(size: 20),
+                  icon: UydoshInlineSpinner(color: theme.colorScheme.onSurface, dimension: 20),
                   tooltip: L10n.get("save_changes"),
                 ),
               );
@@ -1699,7 +1700,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   foregroundColor: theme.colorScheme.error,
                 ),
                 child: _isUnlinkingTelegram
-                    ? const UydoshLogoSpinner(size: 20)
+                    ? UydoshInlineSpinner(color: theme.colorScheme.error, dimension: 20)
                     : Text(L10n.get("unlink_telegram")),
               ),
             ),

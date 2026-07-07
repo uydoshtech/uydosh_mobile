@@ -24,7 +24,7 @@ import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
@@ -401,7 +401,7 @@ class _ProfileHeaderSectionState extends State<ProfileHeaderSection> {
                       color: Colors.black.withValues(alpha: 0.45),
                     ),
                     child: const Center(
-                      child: UydoshLogoSpinner(size: 28),
+                      child: UydoshInlineSpinner(color: Colors.white, dimension: 28),
                     ),
                   ),
               ],

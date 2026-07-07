@@ -47,7 +47,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
@@ -232,7 +232,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     ),
                     const SizedBox(width: 10),
                     if (_pushStatusLoading)
-                      const UydoshLogoSpinner(size: 18)
+                      const UydoshInlineSpinner(color: fg, dimension: 18)
                     else
                       AnimatedRotation(
                         turns: _pushEnableExpanded ? 0.5 : 0,
@@ -1646,9 +1646,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           ),
         ),
         if (_bulkWorking)
-          const Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: UydoshLogoSpinner(size: 18),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: UydoshInlineSpinner(
+              color: Theme.of(context).appBarTheme.foregroundColor ??
+                  Theme.of(context).colorScheme.onSurface,
+              dimension: 18,
+            ),
           ),
       ],
     );

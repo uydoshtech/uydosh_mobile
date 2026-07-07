@@ -21,13 +21,11 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/neumorphic_toggle.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
-
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 const _kSettingsCategoryExpandDuration = Duration(milliseconds: 200);
 
@@ -865,7 +863,10 @@ class _AdminContentModerationScreenState
 
   Widget _savingLeading(IconData icon, bool isSaving) {
     return isSaving
-        ? const UydoshLogoSpinner(size: 24)
+        ? UydoshInlineSpinner(
+            color: Theme.of(context).colorScheme.onSurface,
+            dimension: 24,
+          )
         : ThemeIcon(icon);
   }
 

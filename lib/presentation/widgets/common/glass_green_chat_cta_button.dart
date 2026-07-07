@@ -6,7 +6,7 @@ import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 /// Frosted “glass” primary CTA used for in-app UyDosh chat entry points: a
 /// translucent forest-green panel, backdrop blur, and a brighter green rim
@@ -105,7 +105,7 @@ class _GlassGreenChatCtaButtonState extends State<GlassGreenChatCtaButton> {
         child: Opacity(
           opacity: enabled ? 1 : 0.55,
           child: widget.isLoading
-              ? const UydoshLogoSpinner(size: 22)
+              ? UydoshInlineSpinner(color: fg, dimension: 22)
               : ButtonIconLabel(
                   leading:
                       ThemeIcon(widget.icon, size: widget.iconSize, color: fg),

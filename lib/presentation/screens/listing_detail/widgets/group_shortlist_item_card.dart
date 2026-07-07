@@ -17,7 +17,7 @@ import "package:uy_dosh/domain/utils/group_housing_listing_fit.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_theme_helper.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
-import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 
 TextStyle _plusOneFontSize(BuildContext context, TextStyle? style) {
   final fallbackStyle = DefaultTextStyle.of(context).style;
@@ -207,7 +207,10 @@ class GroupShortlistItemCard extends StatelessWidget {
                             onRemove();
                           },
                     icon: isRemoving
-                        ? const UydoshLogoSpinner(size: 18)
+                        ? UydoshInlineSpinner(
+                            color: theme.colorScheme.error,
+                            dimension: 18,
+                          )
                         : const Icon(Icons.delete_outline),
                     color: theme.colorScheme.error,
                     visualDensity: VisualDensity.compact,
