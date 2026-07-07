@@ -131,13 +131,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   double _roommatePrice = 10.0;
 
   /// Room-needed and group-forming listings: budget range (API stores midpoint).
-  double _roomBudgetMin = 10.0;
+  double _roomBudgetMin = 0.0;
   double _roomBudgetMax = 50.0;
 
   /// Whether the user has interacted with the price slider at least once.
   bool _priceTouched = false;
 
-  static const double _priceSliderMin = 10.0;
+  static const double _priceSliderMin = 0.0;
   static const double _priceSliderMax = 1000.0;
   static const double _priceSliderInitialVisibleMax = 500.0;
   static const double _priceSliderExpansionStep = 100.0;
@@ -234,7 +234,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String _baselineAddressText = "";
   int _baselineListingTypeId = 2;
   double _baselineRoommatePrice = 10.0;
-  double _baselineRoomBudgetMin = 10.0;
+  double _baselineRoomBudgetMin = 0.0;
   double _baselineRoomBudgetMax = 50.0;
   bool _baselinePriceTouched = false;
   bool _baselinePrivateRoom = false;
@@ -1852,6 +1852,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             onPinDragEnd: _handleAddressPinDragEnd,
             pinColor: _getBorderColor(),
             pathTargets: _selectedStationPathTargets,
+            height: 400,
           ),
           const SizedBox(height: 6),
           Row(
@@ -1944,9 +1945,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               for (final estimate in _nearbyStations)
                 _buildNearbyStationChip(estimate),
+              _buildNearbyStationAddLink(),
             ],
           ),
         ],
@@ -1962,6 +1965,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final theme = Theme.of(context);
     final accent = _getBorderColor();
     final selected = minutes == _nearbyStationsRadiusMinutes;
+    // The selected chip spells out the full "N-minute walk to the metro"
+    // copy instead of the terse "N min" used by the others, mirroring the
+    // Telegram Mini App's `walkRadiusOptionSelected` label.
+    final label = L10n.getWithParams(
+      selected
+          ? "nearby_radius_minutes_selected_label"
+          : "nearby_radius_minutes_label",
+      params: {"minutes": "$minutes"},
+    );
     return GestureDetector(
       onTap: () => _onNearbyRadiusSelected(minutes),
       child: AnimatedContainer(
@@ -1975,10 +1987,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ),
         ),
         child: Text(
-          L10n.getWithParams(
-            "nearby_radius_minutes_label",
-            params: {"minutes": "$minutes"},
-          ),
+          label,
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -1988,6 +1997,35 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     : theme.colorScheme.onSurface)
                 : theme.colorScheme.onSurfaceVariant,
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Plain link (not a pill, to avoid reading as its own toggle) that adds
+  /// the nearest suggested station — sits in the same row as the station
+  /// chips above, mirroring the Telegram Mini App's "Добавить" button.
+  Widget _buildNearbyStationAddLink() {
+    final accent = _getBorderColor();
+    final nearest = _nearbyStations.first.station;
+    return GestureDetector(
+      onTap: () => _toggleNearbyStation(nearest),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add, size: 16, color: accent),
+            const SizedBox(width: 2),
+            Text(
+              L10n.get("nearby_station_add_label"),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: accent,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -3747,7 +3785,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedListingTypeId = _defaultListingTypeFromProfile;
         _selectedGender = _defaultGenderFromProfile;
         _roommatePrice = 10.0;
-        _roomBudgetMin = 10.0;
+        _roomBudgetMin = 0.0;
         _roomBudgetMax = 50.0;
         _priceTouched = false;
         _isPrivateRoom = false;

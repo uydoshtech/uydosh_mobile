@@ -49,6 +49,8 @@ class AppStrings {
       "group_budget_per_person_heading": "Budget per person",
       "price_picker_single_title": "Monthly price",
       "price_picker_range_title": "Monthly budget range",
+      "price_picker_min_label": "Min",
+      "price_picker_max_label": "Max",
       "group_budget_per_person_amount_line":
           "Each member pays {range} per month",
       "group_budget_total_apartment_line":
@@ -885,7 +887,9 @@ class AppStrings {
       "nearby_stations_fallback": "Closest station",
       "nearby_stations_empty": "No metro stations within a {minutes}-minute walk",
       "nearby_radius_minutes_label": "{minutes} min",
+      "nearby_radius_minutes_selected_label": "{minutes}-minute walk to the metro",
       "nearby_walk_minutes_label": "{minutes} min walk",
+      "nearby_station_add_label": "Add",
       "listing_title_hint": "Enter listing title",
       "view_similar_results": "View similar",
       "listing_detail_nearby_room_offers": "Find housing",
@@ -2264,6 +2268,8 @@ class AppStrings {
       "group_budget_per_person_heading": "Бюджет на человека",
       "price_picker_single_title": "Цена за месяц",
       "price_picker_range_title": "Диапазон бюджета в месяц",
+      "price_picker_min_label": "Мин",
+      "price_picker_max_label": "Макс",
       "group_budget_per_person_amount_line":
           "С каждого участника: {range} в месяц",
       "group_budget_total_apartment_line":
@@ -3117,7 +3123,9 @@ class AppStrings {
       "nearby_stations_fallback": "Ближайшая станция",
       "nearby_stations_empty": "В радиусе {minutes} минут пешком станций метро нет",
       "nearby_radius_minutes_label": "{minutes} мин",
+      "nearby_radius_minutes_selected_label": "{minutes} минут пешком до метро",
       "nearby_walk_minutes_label": "{minutes} мин пешком",
+      "nearby_station_add_label": "Добавить",
       "listing_title_hint": "Введите заголовок объявления",
       "view_similar_results": "Похожие объявления",
       "listing_detail_nearby_room_offers": "Найти жилье",
@@ -4534,6 +4542,8 @@ class AppStrings {
       "group_budget_per_person_heading": "Har bir kishi uchun byudjet",
       "price_picker_single_title": "Oylik narx",
       "price_picker_range_title": "Oylik byudjet diapazoni",
+      "price_picker_min_label": "Min",
+      "price_picker_max_label": "Maks",
       "group_budget_per_person_amount_line":
           "Har bir a'zo oyiga {range} to'laydi",
       "group_budget_total_apartment_line":
@@ -5391,7 +5401,9 @@ class AppStrings {
       "nearby_stations_fallback": "Eng yaqin bekat",
       "nearby_stations_empty": "{minutes} daqiqalik piyoda masofada metro bekati topilmadi",
       "nearby_radius_minutes_label": "{minutes} daq",
+      "nearby_radius_minutes_selected_label": "{minutes} daqiqa piyoda metrogacha",
       "nearby_walk_minutes_label": "{minutes} daq. piyoda",
+      "nearby_station_add_label": "Qo‘shish",
       "listing_title_hint": "E'lon sarlavhasini kiriting",
       "view_similar_results": "O‘xshash e'lonlar",
       "listing_detail_nearby_room_offers": "Uy-joy topish",

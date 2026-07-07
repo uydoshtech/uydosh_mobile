@@ -1,6 +1,9 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/constants/app_config.dart";
+import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -284,32 +287,11 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           return (scaled / rate).round().toDouble();
         }
 
-        final content = Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
+        // Single-thumb slider row: icon+value on each side, matching the
+        // pre-existing design (unchanged).
+        Widget buildSingleSliderRow() {
+          return Row(
             children: [
-              if (!widget.useSinglePrice)
-                Container(
-                  width: 48,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-                  alignment: Alignment.center,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _unitIcon(textColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          formatLabel(scaledMin),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 13, color: textColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               Expanded(
                 child: SliderTheme(
                   data: UydoshSliderChrome.priceRangeTrack(
@@ -317,78 +299,34 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                     sliderColor: sliderColor,
                     inactiveTrackColor: getInactiveTrackColor(),
                   ),
-                  child: widget.useSinglePrice
-                      ? Slider(
-                          value: scaledMin,
-                          min: scaledRangeMin,
-                          max: scaledRangeMax,
-                          divisions: divisions > 0 ? divisions : null,
-                          activeColor: sliderColor,
-                          inactiveColor: getInactiveTrackColor(),
-                          label: formatLabel(scaledMin),
-                          onChanged: (value) {
-                            final newScaled = _snapToStepInRange(
-                              value,
-                              scaledRangeMin,
-                              scaledRangeMax,
-                              step,
-                            );
-                            final newUsd = emitFromScaled(newScaled);
-                            if ((newScaled / step).round() !=
-                                (scaledMin / step).round()) {
-                              UiFeedbackUtils.tap();
-                            }
-                            setState(() {
-                              _minPrice = newUsd;
-                              _maxPrice = newUsd;
-                              _maybeExpandVisibleMaxFor(newUsd);
-                            });
-                            widget.onPriceRangeChanged(newUsd, newUsd);
-                          },
-                        )
-                      : Transform.translate(
-                          offset: const Offset(0.0, 0.0),
-                          child: RangeSlider(
-                            values: RangeValues(scaledMin, scaledMax),
-                            min: scaledRangeMin,
-                            max: scaledRangeMax,
-                            divisions: divisions > 0 ? divisions : null,
-                            activeColor: sliderColor,
-                            inactiveColor: getInactiveTrackColor(),
-                            labels: RangeLabels(
-                              formatLabel(scaledMin),
-                              formatLabel(scaledMax),
-                            ),
-                            onChanged: (values) {
-                              final newScaledMin = _snapToStepInRange(
-                                values.start,
-                                scaledRangeMin,
-                                scaledRangeMax,
-                                step,
-                              );
-                              final newScaledMax = _snapToStepInRange(
-                                values.end,
-                                scaledRangeMin,
-                                scaledRangeMax,
-                                step,
-                              );
-                              final newUsdMin = emitFromScaled(newScaledMin);
-                              final newUsdMax = emitFromScaled(newScaledMax);
-                              if ((newScaledMin / step).round() !=
-                                      (scaledMin / step).round() ||
-                                  (newScaledMax / step).round() !=
-                                      (scaledMax / step).round()) {
-                                UiFeedbackUtils.tap();
-                              }
-                              setState(() {
-                                _minPrice = newUsdMin;
-                                _maxPrice = newUsdMax;
-                                _maybeExpandVisibleMaxFor(newUsdMax);
-                              });
-                              widget.onPriceRangeChanged(newUsdMin, newUsdMax);
-                            },
-                          ),
-                        ),
+                  child: Slider(
+                    value: scaledMin,
+                    min: scaledRangeMin,
+                    max: scaledRangeMax,
+                    divisions: divisions > 0 ? divisions : null,
+                    activeColor: sliderColor,
+                    inactiveColor: getInactiveTrackColor(),
+                    label: formatLabel(scaledMin),
+                    onChanged: (value) {
+                      final newScaled = _snapToStepInRange(
+                        value,
+                        scaledRangeMin,
+                        scaledRangeMax,
+                        step,
+                      );
+                      final newUsd = emitFromScaled(newScaled);
+                      if ((newScaled / step).round() !=
+                          (scaledMin / step).round()) {
+                        UiFeedbackUtils.tap();
+                      }
+                      setState(() {
+                        _minPrice = newUsd;
+                        _maxPrice = newUsd;
+                        _maybeExpandVisibleMaxFor(newUsd);
+                      });
+                      widget.onPriceRangeChanged(newUsd, newUsd);
+                    },
+                  ),
                 ),
               ),
               Container(
@@ -401,9 +339,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        formatLabel(
-                          widget.useSinglePrice ? scaledMin : scaledMax,
-                        ),
+                        formatLabel(scaledMin),
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: textColor),
                       ),
@@ -413,6 +349,148 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   ),
                 ),
               ),
+            ],
+          );
+        }
+
+        // Range mode: two independent single-thumb sliders side by side
+        // (Мин/Макс), each filling from the track start to its own value —
+        // mirrors the mini app's `.price-row` layout (see
+        // `assets/telegram-create.js`/`.css` in uydoshtech.github.io) rather
+        // than a single connected two-thumb track.
+        Widget buildMinMaxSliderColumn({
+          required String label,
+          required double value,
+          required ValueChanged<double> onChanged,
+        }) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 4, bottom: 2),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: textColor.withValues(alpha: 0.75),
+                  ),
+                ),
+              ),
+              SliderTheme(
+                data: UydoshSliderChrome.priceRangeTrack(
+                  context,
+                  sliderColor: sliderColor,
+                  inactiveTrackColor: getInactiveTrackColor(),
+                ),
+                child: Slider(
+                  value: value,
+                  min: scaledRangeMin,
+                  max: scaledRangeMax,
+                  divisions: divisions > 0 ? divisions : null,
+                  activeColor: sliderColor,
+                  inactiveColor: getInactiveTrackColor(),
+                  label: formatLabel(value),
+                  onChanged: onChanged,
+                ),
+              ),
+            ],
+          );
+        }
+
+        void handleMinChanged(double value) {
+          final newScaledMin = _snapToStepInRange(
+            value,
+            scaledRangeMin,
+            scaledRangeMax,
+            step,
+          );
+          // Crossing the other handle pushes it along, same as the mini
+          // app's `data-price-min`/`data-price-max` input listeners.
+          final newScaledMax = math.max(newScaledMin, scaledMax);
+          final newUsdMin = emitFromScaled(newScaledMin);
+          final newUsdMax = emitFromScaled(newScaledMax);
+          if ((newScaledMin / step).round() != (scaledMin / step).round()) {
+            UiFeedbackUtils.tap();
+          }
+          setState(() {
+            _minPrice = newUsdMin;
+            _maxPrice = newUsdMax;
+            _maybeExpandVisibleMaxFor(newUsdMax);
+          });
+          widget.onPriceRangeChanged(newUsdMin, newUsdMax);
+        }
+
+        void handleMaxChanged(double value) {
+          final newScaledMax = _snapToStepInRange(
+            value,
+            scaledRangeMin,
+            scaledRangeMax,
+            step,
+          );
+          final newScaledMin = math.min(scaledMin, newScaledMax);
+          final newUsdMin = emitFromScaled(newScaledMin);
+          final newUsdMax = emitFromScaled(newScaledMax);
+          if ((newScaledMax / step).round() != (scaledMax / step).round()) {
+            UiFeedbackUtils.tap();
+          }
+          setState(() {
+            _minPrice = newUsdMin;
+            _maxPrice = newUsdMax;
+            _maybeExpandVisibleMaxFor(newUsdMax);
+          });
+          widget.onPriceRangeChanged(newUsdMin, newUsdMax);
+        }
+
+        Widget buildMinMaxSlidersRow() {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: buildMinMaxSliderColumn(
+                  label: L10n.get("price_picker_min_label"),
+                  value: scaledMin,
+                  onChanged: handleMinChanged,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: buildMinMaxSliderColumn(
+                  label: L10n.get("price_picker_max_label"),
+                  value: scaledMax,
+                  onChanged: handleMaxChanged,
+                ),
+              ),
+            ],
+          );
+        }
+
+        final content = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!widget.useSinglePrice) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _unitIcon(themeState.priceBadgeActiveColor),
+                    const SizedBox(width: 6),
+                    Text(
+                      "${formatLabel(scaledMin)} – ${formatLabel(scaledMax)}",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: themeState.priceBadgeActiveColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                buildMinMaxSlidersRow(),
+              ] else
+                buildSingleSliderRow(),
             ],
           ),
         );
@@ -434,13 +512,15 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: themeState.isLightTheme
-                        ? Colors.black
-                        : theme.colorScheme.onSurface,
-                  ),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ) ??
+                      TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ),
               child,
