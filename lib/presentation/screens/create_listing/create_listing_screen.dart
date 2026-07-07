@@ -77,6 +77,7 @@ import "package:uy_dosh/presentation/widgets/common/yandex_address_suggest_field
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
+import "package:yandex_mapkit/yandex_mapkit.dart" show Point;
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({
@@ -1051,6 +1052,21 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     });
   }
 
+  /// Dashed walking-path lines drawn on [AddressPinMapPreview] from the
+  /// address pin to every currently tapped/selected nearby-station chip.
+  List<MapPathTarget> get _selectedStationPathTargets => [
+        for (final station in _selectedSearchStations)
+          if (station.latitude != null && station.longitude != null)
+            MapPathTarget(
+              id: "${station.id}",
+              point: Point(
+                latitude: station.latitude!,
+                longitude: station.longitude!,
+              ),
+              color: AppColors.getMetroLineColor(station.line),
+            ),
+      ];
+
   /// Fired once the author releases the address-map pin after dragging it —
   /// updates coordinates and nearby stations immediately, then reverse
   /// geocodes in the background to keep the address text in sync (mirrors
@@ -1835,6 +1851,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             longitude: _addressLongitude!,
             onPinDragEnd: _handleAddressPinDragEnd,
             pinColor: _getBorderColor(),
+            pathTargets: _selectedStationPathTargets,
           ),
           const SizedBox(height: 6),
           Row(

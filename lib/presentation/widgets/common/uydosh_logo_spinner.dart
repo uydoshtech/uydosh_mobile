@@ -26,6 +26,14 @@ class UydoshLogoSpinner extends StatefulWidget {
 
 class _UydoshLogoSpinnerState extends State<UydoshLogoSpinner>
     with SingleTickerProviderStateMixin {
+  // Renders the brand mark twice as large as [UydoshLogoSpinner.size] so it
+  // reads clearly at the small dimensions most call sites request, while
+  // `Transform.scale` keeps the widget's own layout footprint at `size` —
+  // it just paints larger over/around whatever tight row or button already
+  // budgeted space for the old CircularProgressIndicator, no call sites
+  // need to change their sizing.
+  static const double _visualScale = 2;
+
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: widget.duration,
@@ -39,12 +47,19 @@ class _UydoshLogoSpinnerState extends State<UydoshLogoSpinner>
 
   @override
   Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: _controller,
-      child: SvgPicture.asset(
-        "assets/icon/components/brand_logo_transparent.svg",
-        width: widget.size,
-        height: widget.size,
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: Transform.scale(
+        scale: _visualScale,
+        child: RotationTransition(
+          turns: _controller,
+          child: SvgPicture.asset(
+            "assets/icon/components/brand_logo_transparent.svg",
+            width: widget.size,
+            height: widget.size,
+          ),
+        ),
       ),
     );
   }

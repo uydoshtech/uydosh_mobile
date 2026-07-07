@@ -7,6 +7,21 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
+/// A metro (or other point-of-interest) target the preview should draw a
+/// dashed walking-path line to, from the current address pin.
+class MapPathTarget {
+  const MapPathTarget({
+    required this.id,
+    required this.point,
+    required this.color,
+  });
+
+  /// Stable identity (e.g. the station id) used for map-object diffing.
+  final String id;
+  final Point point;
+  final Color color;
+}
+
 /// Small draggable single-pin map used while picking an address in the
 /// roommate-needed create-listing wizard — mirrors the Telegram Mini App's
 /// `renderSinglePinMap` (a single draggable Yandex placemark the author can
@@ -19,6 +34,7 @@ class AddressPinMapPreview extends StatefulWidget {
     super.key,
     this.height = 200,
     this.pinColor = AppColors.error,
+    this.pathTargets = const [],
   });
 
   final double latitude;
@@ -28,6 +44,10 @@ class AddressPinMapPreview extends StatefulWidget {
   final void Function(double latitude, double longitude) onPinDragEnd;
   final double height;
   final Color pinColor;
+
+  /// Stations (or other points) to draw a dashed path to from the address
+  /// pin — e.g. the metro chip the author just tapped below the map.
+  final List<MapPathTarget> pathTargets;
 
   @override
   State<AddressPinMapPreview> createState() => _AddressPinMapPreviewState();
@@ -53,14 +73,36 @@ class _AddressPinMapPreviewState extends State<AddressPinMapPreview> {
   @override
   void didUpdateWidget(covariant AddressPinMapPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final pathTargetsChanged = !_pathTargetIdsEqual(
+      oldWidget.pathTargets,
+      widget.pathTargets,
+    );
     if (oldWidget.latitude != widget.latitude ||
         oldWidget.longitude != widget.longitude) {
       _pendingDragPoint = null;
-      _moveCameraToCurrentPoint();
+      if (widget.pathTargets.isEmpty) {
+        _moveCameraToCurrentPoint();
+      } else {
+        _fitCameraToPathTargets();
+      }
+    } else if (pathTargetsChanged) {
+      if (widget.pathTargets.isEmpty) {
+        _moveCameraToCurrentPoint();
+      } else {
+        _fitCameraToPathTargets();
+      }
     }
     if (oldWidget.pinColor != widget.pinColor) {
       _loadIcon();
     }
+  }
+
+  bool _pathTargetIdsEqual(List<MapPathTarget> a, List<MapPathTarget> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) return false;
+    }
+    return true;
   }
 
   Future<void> _loadIcon() async {
@@ -83,15 +125,70 @@ class _AddressPinMapPreviewState extends State<AddressPinMapPreview> {
     );
   }
 
-  void _handleMapCreated(YandexMapController controller) {
-    _controller = controller;
-    unawaited(
-      controller.moveCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: _currentPoint, zoom: _defaultZoom),
+  /// Zooms/pans just enough to fit the address pin and every path target
+  /// (e.g. the tapped metro station) on screen together, so the dashed
+  /// path connecting them is fully visible rather than running off-frame.
+  Future<void> _fitCameraToPathTargets() async {
+    final controller = _controller;
+    if (controller == null) return;
+    final points = [_pendingDragPoint ?? _currentPoint, ...widget.pathTargets.map((t) => t.point)];
+
+    var minLat = points.first.latitude;
+    var maxLat = points.first.latitude;
+    var minLon = points.first.longitude;
+    var maxLon = points.first.longitude;
+    for (final point in points.skip(1)) {
+      minLat = point.latitude < minLat ? point.latitude : minLat;
+      maxLat = point.latitude > maxLat ? point.latitude : maxLat;
+      minLon = point.longitude < minLon ? point.longitude : minLon;
+      maxLon = point.longitude > maxLon ? point.longitude : maxLon;
+    }
+    final latPadding = ((maxLat - minLat).abs() * 0.25).clamp(0.006, 0.08);
+    final lonPadding = ((maxLon - minLon).abs() * 0.25).clamp(0.006, 0.08);
+
+    await controller.moveCamera(
+      CameraUpdate.newGeometry(
+        Geometry.fromBoundingBox(
+          BoundingBox(
+            northEast: Point(
+              latitude: maxLat + latPadding,
+              longitude: maxLon + lonPadding,
+            ),
+            southWest: Point(
+              latitude: minLat - latPadding,
+              longitude: minLon - lonPadding,
+            ),
+          ),
         ),
       ),
+      animation: const MapAnimation(
+        type: MapAnimationType.smooth,
+        duration: 0.3,
+      ),
     );
+  }
+
+  void _handleMapCreated(YandexMapController controller) {
+    _controller = controller;
+    // Yandex MapKit's platform view isn't fully laid out yet at the moment
+    // `onMapCreated` fires — moving the camera synchronously here gets
+    // silently dropped and the map is left at its default world-zoom
+    // position. Deferring to the next frame (same fix as the main
+    // `YandexMapWidget`) ensures the move actually lands.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _controller != controller) return;
+      if (widget.pathTargets.isEmpty) {
+        unawaited(
+          controller.moveCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: _currentPoint, zoom: _defaultZoom),
+            ),
+          ),
+        );
+      } else {
+        unawaited(_fitCameraToPathTargets());
+      }
+    });
   }
 
   @override
@@ -109,6 +206,33 @@ class _AddressPinMapPreviewState extends State<AddressPinMapPreview> {
               mapObjects: iconBytes == null
                   ? const []
                   : [
+                      for (final target in widget.pathTargets) ...[
+                        PolylineMapObject(
+                          mapId: MapObjectId("address_pin_path_${target.id}"),
+                          polyline: Polyline(
+                            points: [
+                              _pendingDragPoint ?? _currentPoint,
+                              target.point,
+                            ],
+                          ),
+                          strokeColor: target.color,
+                          strokeWidth: 3,
+                          dashLength: 10,
+                          gapLength: 6,
+                        ),
+                        CircleMapObject(
+                          mapId: MapObjectId(
+                            "address_pin_path_target_${target.id}",
+                          ),
+                          circle: Circle(
+                            center: target.point,
+                            radius: 18,
+                          ),
+                          strokeColor: Colors.white,
+                          strokeWidth: 2,
+                          fillColor: target.color,
+                        ),
+                      ],
                       PlacemarkMapObject(
                         mapId: _placemarkId,
                         point: _pendingDragPoint ?? _currentPoint,
