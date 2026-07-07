@@ -78,6 +78,12 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
   /// without producing a wall of zeroes — labels render as `K`/`M` further down.
   static const double _stepUzs = 10000.0;
 
+  /// Smallest allowed gap between the Мин/Макс handles (USD-index scale) in
+  /// range mode — keeps the two independent sliders from landing on the same
+  /// value (a degenerate "$180 – $180" range) when one is dragged past the
+  /// other.
+  static const double _minGapUsd = 5.0;
+
   static double _clampDouble(double value, double min, double max) {
     return value.clamp(min, max).toDouble();
   }
@@ -398,16 +404,31 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
           );
         }
 
+        // Minimum Мин/Макс gap, converted into whichever scale the sliders
+        // are currently operating in (see `scale` above).
+        final minGapScaled = _minGapUsd * scale;
+
         void handleMinChanged(double value) {
-          final newScaledMin = _snapToStepInRange(
+          final rawMin = _snapToStepInRange(
             value,
             scaledRangeMin,
             scaledRangeMax,
             step,
           );
-          // Crossing the other handle pushes it along, same as the mini
-          // app's `data-price-min`/`data-price-max` input listeners.
-          final newScaledMax = math.max(newScaledMin, scaledMax);
+          // Leave enough room below the top of the track for Макс to still
+          // sit at least `minGapScaled` above, instead of letting Мин crowd
+          // all the way up to (or past) it.
+          final newScaledMin = math.min(
+            rawMin,
+            math.max(scaledRangeMin, scaledRangeMax - minGapScaled),
+          );
+          // Crossing (or approaching) the other handle pushes it along by at
+          // least the minimum gap, same idea as the mini app's
+          // `data-price-min`/`data-price-max` input listeners.
+          final newScaledMax = math.min(
+            scaledRangeMax,
+            math.max(scaledMax, newScaledMin + minGapScaled),
+          );
           final newUsdMin = emitFromScaled(newScaledMin);
           final newUsdMax = emitFromScaled(newScaledMax);
           if ((newScaledMin / step).round() != (scaledMin / step).round()) {
@@ -422,13 +443,20 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         }
 
         void handleMaxChanged(double value) {
-          final newScaledMax = _snapToStepInRange(
+          final rawMax = _snapToStepInRange(
             value,
             scaledRangeMin,
             scaledRangeMax,
             step,
           );
-          final newScaledMin = math.min(scaledMin, newScaledMax);
+          final newScaledMax = math.max(
+            rawMax,
+            math.min(scaledRangeMax, scaledRangeMin + minGapScaled),
+          );
+          final newScaledMin = math.max(
+            scaledRangeMin,
+            math.min(scaledMin, newScaledMax - minGapScaled),
+          );
           final newUsdMin = emitFromScaled(newScaledMin);
           final newUsdMax = emitFromScaled(newScaledMax);
           if ((newScaledMax / step).round() != (scaledMax / step).round()) {
