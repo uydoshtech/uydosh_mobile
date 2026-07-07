@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/models/location.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_plate.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Location picker - uses persistent scroll controller (from parent or own)
 /// so the wheel scrolls smoothly with sound. Same pattern as GenderPicker.
@@ -143,8 +144,8 @@ class _LocationPickerState extends State<LocationPicker> {
     final iconColor = theme.colorScheme.onSurfaceVariant;
 
     if (widget.isLoading) {
-      final loadingChild = Center(
-        child: CircularProgressIndicator(color: theme.colorScheme.primary),
+      final loadingChild = const Center(
+        child: UydoshLogoSpinner(),
       );
       if (widget.useGlassPlate && ThemeState().usesLiquidGlassChrome) {
         return LiquidGlassPlate(

@@ -8,6 +8,7 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/yandex_geosuggest_service.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 
 /// Plate-style address field with Yandex Geosuggest autocomplete.
@@ -428,11 +429,7 @@ class _SuggestionsPanel extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: loading && suggestions.isEmpty
             ? const Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: UydoshLogoSpinner(size: 22),
               )
             : ListView.separated(
                 padding: EdgeInsets.zero,

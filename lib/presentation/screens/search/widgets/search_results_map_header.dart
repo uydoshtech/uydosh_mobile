@@ -20,8 +20,6 @@ class _MapHeaderTitle extends StatelessWidget {
           fontWeight: FontWeight.bold,
           color: AppColors.textLight,
         );
-    final spinnerColor = Theme.of(context).appBarTheme.foregroundColor ??
-        Theme.of(context).colorScheme.onSurface;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -32,17 +30,10 @@ class _MapHeaderTitle extends StatelessWidget {
           switchInCurve: Curves.easeOut,
           switchOutCurve: Curves.easeIn,
           child: loading
-              ? Padding(
-                  key: const ValueKey("map-header-loading"),
-                  padding: const EdgeInsetsDirectional.only(start: 8),
-                  child: SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: spinnerColor,
-                    ),
-                  ),
+              ? const Padding(
+                  key: ValueKey("map-header-loading"),
+                  padding: EdgeInsetsDirectional.only(start: 8),
+                  child: UydoshLogoSpinner(size: 14),
                 )
               : const SizedBox.shrink(key: ValueKey("map-header-idle")),
         ),

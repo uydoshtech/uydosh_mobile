@@ -12,6 +12,7 @@ import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/liquid_glass_rendering.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Listing-style photo gallery tile: elevated shell, 16:9 carousel with blur fill,
 /// fullscreen affordance, counter, pager dots — shared by [ListingDetailPhotoSection],
@@ -188,7 +189,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
       placeholder: (context, url) => Container(
         color: Colors.grey[200],
         child: const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: UydoshLogoSpinner(),
         ),
       ),
       errorWidget: (context, url, error) => Container(

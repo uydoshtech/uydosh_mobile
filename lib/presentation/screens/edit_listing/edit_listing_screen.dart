@@ -57,6 +57,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_plate_text_form_field.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_picker.dart";
@@ -2636,20 +2637,10 @@ class _EditListingScreenState extends State<EditListingScreen>
   /// spinner while a save is in progress). When the form is clean, no
   /// trailing action is shown (the parent gates this widget on dirty/submitting).
   Widget _buildAppBarTrailingAction(ThemeData theme) {
-    final foregroundColor =
-        theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary;
-
     if (_isSubmitting) {
       return IconButton(
         onPressed: null,
-        icon: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
-          ),
-        ),
+        icon: const UydoshLogoSpinner(size: 20),
         tooltip: L10n.get("save_changes"),
       );
     }

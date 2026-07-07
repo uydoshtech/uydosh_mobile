@@ -21,6 +21,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
 /// Admin screen: chronological device-location history for a single Telegram
@@ -138,11 +139,7 @@ class _AdminTelegramUserLocationHistoryScreenState
                   child: _isDeleting
                       ? const Padding(
                           padding: EdgeInsets.all(14),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                          child: UydoshLogoSpinner(size: 20),
                         )
                       : ThreeDAppBarIconButton(
                           iconData: Icons.delete_outline,
@@ -437,14 +434,7 @@ class _DedupPrecisionButton extends StatelessWidget {
               ),
             ),
             if (loading)
-              SizedBox(
-                width: 12,
-                height: 12,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              )
+              const UydoshLogoSpinner(size: 12)
             else
               Icon(
                 Icons.arrow_drop_down,

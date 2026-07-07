@@ -12,6 +12,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.da
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class AdminTelegramListingGroupsScreen extends StatefulWidget {
   const AdminTelegramListingGroupsScreen({super.key});
@@ -283,7 +284,7 @@ class _AdminTelegramListingGroupsScreenState
       hasMore: _isLoadingMore,
       loadMoreIndicator: const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: UydoshLogoSpinner()),
       ),
     );
   }

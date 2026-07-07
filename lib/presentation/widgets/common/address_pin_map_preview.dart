@@ -4,6 +4,7 @@ import "dart:ui" as ui;
 
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
 /// Small draggable single-pin map used while picking an address in the
@@ -131,11 +132,7 @@ class _AddressPinMapPreviewState extends State<AddressPinMapPreview> {
             ),
             if (iconBytes == null)
               const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: UydoshLogoSpinner(size: 24),
               ),
           ],
         ),

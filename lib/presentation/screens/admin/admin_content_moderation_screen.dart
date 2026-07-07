@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 const _kSettingsCategoryExpandDuration = Duration(milliseconds: 200);
 
@@ -864,11 +865,7 @@ class _AdminContentModerationScreenState
 
   Widget _savingLeading(IconData icon, bool isSaving) {
     return isSaving
-        ? const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
+        ? const UydoshLogoSpinner(size: 24)
         : ThemeIcon(icon);
   }
 

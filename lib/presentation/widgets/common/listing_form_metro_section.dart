@@ -8,6 +8,7 @@ import "package:uy_dosh/base/utils/send_sound_utils.dart";
 import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/index.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/m_letter_icon.dart";
 
 /// Metro line and station selection for create/edit listing forms.
@@ -226,14 +227,7 @@ class _ListingFormMetroSectionState extends State<ListingFormMetroSection> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+            const UydoshLogoSpinner(size: 16),
             const SizedBox(width: 8),
             Text(
               L10n.get("loading"),

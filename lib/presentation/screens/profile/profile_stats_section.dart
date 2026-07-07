@@ -9,6 +9,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/telegram_sign_in_branded_button.dart";
 import "package:uy_dosh/presentation/widgets/profile/linked_telegram_account_tile.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class ProfileStatsSection extends StatelessWidget {
   const ProfileStatsSection({
@@ -222,16 +223,7 @@ class ProfileStatsSection extends StatelessWidget {
                                         Theme.of(context).colorScheme.error,
                                   ),
                                   child: isUnlinkingTelegram
-                                      ? SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .error,
-                                          ),
-                                        )
+                                      ? const UydoshLogoSpinner(size: 20)
                                       : Text(L10n.get("unlink_telegram")),
                                 ),
                               ),

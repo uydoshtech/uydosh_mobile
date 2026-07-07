@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 // Data class for BlocSelector to reduce unnecessary rebuilds
@@ -741,11 +742,7 @@ class _ListingOwnerProfileScreenState extends State<ListingOwnerProfileScreen> {
   }) {
     if (isLoading) {
       return const Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
+        child: UydoshLogoSpinner(size: 24),
       );
     }
 

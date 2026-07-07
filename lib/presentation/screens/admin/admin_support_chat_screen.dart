@@ -25,6 +25,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class AdminSupportChatScreen extends StatefulWidget {
   const AdminSupportChatScreen({super.key});
@@ -364,7 +365,7 @@ class _AdminSupportChatScreenState extends State<AdminSupportChatScreen> {
       hasMore: _isLoadingMore,
       loadMoreIndicator: const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: UydoshLogoSpinner()),
       ),
     );
   }
@@ -557,7 +558,7 @@ class _AdminSupportChatThreadScreenState
             children: [
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: UydoshLogoSpinner())
                     : _messages.isEmpty
                         ? Center(
                             child: Text(
@@ -717,16 +718,7 @@ class _AdminSupportChatThreadScreenState
                   height: 28,
                   child: Center(
                     child: _isSending
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                themeState.sendButtonColor,
-                              ),
-                            ),
-                          )
+                        ? const UydoshLogoSpinner(size: 20)
                         : ThemeIcon(Icons.send,
                             color: themeState.sendButtonColor),
                   ),

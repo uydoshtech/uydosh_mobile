@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -703,7 +704,7 @@ class _GigOffersModerationTabState extends State<_GigOffersModerationTab> {
                   child: _isLoadingMore
                       ? const Padding(
                           padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(),
+                          child: UydoshLogoSpinner(),
                         )
                       : GhostButtonFactory.text(
                           onPressed: _loadMore,
@@ -1064,7 +1065,7 @@ class _GigRequestsModerationTabState extends State<_GigRequestsModerationTab> {
                   child: _isLoadingMore
                       ? const Padding(
                           padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(),
+                          child: UydoshLogoSpinner(),
                         )
                       : GhostButtonFactory.text(
                           onPressed: _loadMore,

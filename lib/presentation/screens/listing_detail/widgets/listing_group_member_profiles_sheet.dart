@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dar
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_glass_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 const _sheetScreenMargin = 24.0;
@@ -1715,11 +1716,7 @@ class _PendingJoinRequestCard extends StatelessWidget {
                 ),
               ),
               if (isBusy)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                const UydoshLogoSpinner(size: 20)
               else
                 ThemeIcon(
                   Icons.chevron_right,

@@ -13,6 +13,7 @@ import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class ListingViewsStatsScreen extends StatefulWidget {
   const ListingViewsStatsScreen({
@@ -116,7 +117,7 @@ class _ListingViewsStatsScreenState extends State<ListingViewsStatsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: _getIconColor()),
+                  const UydoshLogoSpinner(),
                   const SizedBox(height: 16),
                   Text(
                     L10n.get("loading_listing_details"),

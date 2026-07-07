@@ -26,6 +26,7 @@ import "package:uy_dosh/presentation/widgets/chat/chat_participant_avatar_stack.
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_avatar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
@@ -1967,14 +1968,7 @@ class _ListingDetailCompatibilitySectionState
     if (widget.isLoadingCompatibility) {
       return Row(
         children: [
-          SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: _getIconColor(),
-            ),
-          ),
+          const UydoshLogoSpinner(size: 16),
           const SizedBox(width: 10),
           Text(
             L10n.get("compatibility_calculating"),
@@ -2390,14 +2384,7 @@ class _ListingDetailCompatibilitySectionState
                     if (isAuthenticated && !widget.isGroupCompatibility) ...[
                       const SizedBox(width: 8),
                       widget.isLoadingCompatibility
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: _getIconColor(),
-                              ),
-                            )
+                          ? const UydoshLogoSpinner(size: 16)
                           : Text(
                               headerPercentText,
                               style: TextStyle(

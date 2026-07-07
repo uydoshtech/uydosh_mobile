@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/date_utils.dart";
@@ -15,6 +14,7 @@ import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 class AdminTelegramListingGroupDetailScreen extends StatefulWidget {
@@ -166,7 +166,7 @@ class _AdminTelegramListingGroupDetailScreenState
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: UydoshLogoSpinner(),
             )
           : _hasError
               ? _buildErrorState(context)
@@ -238,7 +238,7 @@ class _AdminTelegramListingGroupDetailScreenState
       hasMore: _isLoadingMore,
       loadMoreIndicator: const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: UydoshLogoSpinner()),
       ),
     );
   }

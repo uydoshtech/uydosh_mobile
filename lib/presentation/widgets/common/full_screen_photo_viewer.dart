@@ -4,6 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class FullScreenPhotoViewer extends StatefulWidget {
 
@@ -151,10 +152,7 @@ class _FullScreenPhotoViewerState extends State<FullScreenPhotoViewer>
                                         (context, url) => Container(
                                           color: Colors.grey[900],
                                           child: const Center(
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 3,
-                                            ),
+                                            child: UydoshLogoSpinner(),
                                           ),
                                         ),
                                     errorWidget:

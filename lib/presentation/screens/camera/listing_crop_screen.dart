@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/glass_bottom_sheet_surface.d
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// UyDosh-styled photo crop screen.
 ///
@@ -468,7 +469,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
                   child: ColoredBox(
                     color: Color(0x66000000),
                     child: Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: UydoshLogoSpinner(),
                     ),
                   ),
                 ),
@@ -496,7 +497,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
     final bytes = _imageBytes;
     if (bytes == null) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: UydoshLogoSpinner(),
       );
     }
     final topInset = MediaQuery.paddingOf(context).top;
@@ -541,9 +542,7 @@ class _ListingCropScreenState extends State<ListingCropScreen> {
         interactive: false,
         cornerDotBuilder: (size, edge) =>
             _CornerMarker(size: size, edge: edge),
-        progressIndicator: const CircularProgressIndicator(
-          color: Colors.white,
-        ),
+        progressIndicator: const UydoshLogoSpinner(),
         overlayBuilder: (context, rect) {
           // Anchor the brand mark to the bottom-right of the visible crop
           // rect with the same proportional size + margin that

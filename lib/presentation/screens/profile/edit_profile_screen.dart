@@ -60,6 +60,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/unsaved_changes_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/profile/linked_telegram_account_tile.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
@@ -1572,17 +1573,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                 padding: const EdgeInsets.only(right: 16.0),
                 child: IconButton(
                   onPressed: null,
-                  icon: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        theme.appBarTheme.foregroundColor ??
-                            theme.colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
+                  icon: const UydoshLogoSpinner(size: 20),
                   tooltip: L10n.get("save_changes"),
                 ),
               );
@@ -1677,16 +1668,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               ),
             ),
             const SizedBox(width: 12),
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  theme.colorScheme.primary,
-                ),
-              ),
-            ),
+            const UydoshLogoSpinner(size: 20),
           ],
         ),
       ),
@@ -1717,14 +1699,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   foregroundColor: theme.colorScheme.error,
                 ),
                 child: _isUnlinkingTelegram
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: theme.colorScheme.error,
-                        ),
-                      )
+                    ? const UydoshLogoSpinner(size: 20)
                     : Text(L10n.get("unlink_telegram")),
               ),
             ),

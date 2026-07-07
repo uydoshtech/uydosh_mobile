@@ -15,6 +15,7 @@ import "package:uy_dosh/base/utils/safe_state.dart";
 import "package:uy_dosh/presentation/screens/camera/photo_review_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Payload for the background-isolate crop job in [_cropJpegToAspect].
 @immutable
@@ -491,7 +492,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen>
   Widget _buildPreviewLayer() {
     if (_initializing) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: UydoshLogoSpinner(),
       );
     }
     if (_initError != null) {
@@ -823,14 +824,7 @@ class _ShutterButtonState extends State<_ShutterButton> {
             opacity: enabled ? 1 : 0.55,
             child: Center(
               child: widget.busy
-                  ? const SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: Colors.white,
-                      ),
-                    )
+                  ? const UydoshLogoSpinner(size: 28)
                   : const Icon(
                       Icons.photo_camera,
                       color: Colors.white,

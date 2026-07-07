@@ -21,6 +21,7 @@ import "package:uy_dosh/domain/models/subway_station.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
@@ -749,7 +750,6 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
     if (kDebugMode) {
       logger.d("⏳ Building map loading state...");
     }
-    final loaderColor = widget.nightModeEnabled ? Colors.white : Colors.black;
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -766,14 +766,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Loading indicator
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation<Color>(loaderColor),
-                    ),
-                  ),
+                  const UydoshLogoSpinner(size: 32),
                   const SizedBox(height: 16),
                   // Location pin
                   const ThemeIcon(

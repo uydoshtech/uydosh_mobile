@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
@@ -191,16 +192,10 @@ class _ViewHistoryScreenState extends State<ViewHistoryScreen> {
       showLoadMoreIndicator: _hasMoreData,
       hasMore: _hasMoreData,
       loadMoreIndicator: _isLoadingMore
-          ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    ThemeState().isBlueTheme
-                        ? BlueThemeColors.buttonPrimary
-                        : Colors.black,
-                  ),
-                ),
+                child: UydoshLogoSpinner(),
               ),
             )
           : Padding(

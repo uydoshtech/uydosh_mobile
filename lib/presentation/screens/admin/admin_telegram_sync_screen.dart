@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_dropdown.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class AdminTelegramSyncScreen extends StatefulWidget {
   const AdminTelegramSyncScreen({super.key});
@@ -1012,13 +1013,9 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                     if (_loadingAdmins)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Row(
+                        child:                         Row(
                           children: [
-                            const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
+                            const UydoshLogoSpinner(size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(

@@ -47,6 +47,7 @@ import "package:uy_dosh/presentation/widgets/listing_type_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 import "package:uy_dosh/presentation/widgets/room_3d_icon_badge.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class ListingTile extends StatefulWidget {
   const ListingTile({
@@ -1359,14 +1360,7 @@ class _ListingTileState extends State<ListingTile> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: vc.loading
-                ? const SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
-                      color: Colors.white,
-                    ),
-                  )
+                ? const UydoshLogoSpinner(size: 12)
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

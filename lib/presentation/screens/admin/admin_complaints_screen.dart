@@ -27,6 +27,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_action_sheet_item.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 class AdminComplaintsScreen extends StatefulWidget {
@@ -391,7 +392,7 @@ class _AdminComplaintsScreenState extends State<AdminComplaintsScreen> {
       hasMore: _isLoadingMore,
       loadMoreIndicator: const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: UydoshLogoSpinner()),
       ),
     );
   }

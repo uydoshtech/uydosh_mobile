@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Shared visuals and keyed feedback for listing / gig **description assistant**
 /// affordances: AI enhance, dictate, template toolbar, etc.
@@ -12,6 +13,10 @@ abstract final class ListingDescriptionAssistant {
   }
 
   /// Shown beside labels while dictate transcribes or AI enhance runs.
+  ///
+  /// [strokeWidth] is retained for source compatibility with existing call
+  /// sites but has no effect — [UydoshLogoSpinner] always renders the brand
+  /// mark rather than a strokeable ring.
   static Widget inlineProgress(
     BuildContext context, {
     double size = 18,
@@ -20,14 +25,7 @@ abstract final class ListingDescriptionAssistant {
   }) {
     return Padding(
       padding: padding,
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: CircularProgressIndicator(
-          strokeWidth: strokeWidth,
-          color: accentColor(context),
-        ),
-      ),
+      child: UydoshLogoSpinner(size: size),
     );
   }
 

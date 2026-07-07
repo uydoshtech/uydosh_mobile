@@ -4,6 +4,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/gemini_service.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Profile discovery card for AI monthly quotas and premium upsell.
 class AiAllowanceUpsellBanner extends StatelessWidget {
@@ -63,14 +64,7 @@ class AiAllowanceUpsellBanner extends StatelessWidget {
         child: SizedBox(
           height: 56,
           child: Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: scheme.primary,
-              ),
-            ),
+            child: const UydoshLogoSpinner(size: 24),
           ),
         ),
       );

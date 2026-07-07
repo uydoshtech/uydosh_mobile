@@ -17,6 +17,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_deta
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_text_selection_context_menu.dart";
 
 enum _TranslationTarget { original, en, ru, uz }
@@ -416,10 +417,6 @@ class _ListingDescriptionTranslationState
     final borderColor =
         selected ? selectedBorderColor : baseBorder.withValues(alpha: 0.45);
 
-    // Blue theme primary matches the card background — spinner would disappear.
-    final progressColor =
-        isBlueTheme ? ListingDetailThemeHelper.iconColor : scheme.primary;
-
     final baseFill = ListingDetailThemeHelper.amenityChipBackgroundColor;
     final fillColor = selected
         ? (isBlueTheme
@@ -447,14 +444,7 @@ class _ListingDescriptionTranslationState
               color: fillColor,
             ),
             child: isLoading
-                ? SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: progressColor,
-                    ),
-                  )
+                ? const UydoshLogoSpinner(size: 14)
                 : Text(flagEmoji, style: const TextStyle(fontSize: 16)),
           ),
         ),

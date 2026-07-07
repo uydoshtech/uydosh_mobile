@@ -10,6 +10,7 @@ import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Owner-only "Renew" / "Delete" actions for a row on the "My Listings"
 /// screen. Deliberately kept out of [ListingTile] (used unmodified on
@@ -122,14 +123,7 @@ class _UserListingOwnerActionsRowState
         ThreeDPillButton(
           onPressed: renewEnabled ? _handleRenew : null,
           child: _isRenewing
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: scheme.onSurface,
-                  ),
-                )
+              ? const UydoshLogoSpinner(size: 16)
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -158,14 +152,7 @@ class _UserListingOwnerActionsRowState
         ThreeDPillButton(
           onPressed: _isDeleting ? null : _handleDelete,
           child: _isDeleting
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.error,
-                  ),
-                )
+              ? const UydoshLogoSpinner(size: 16)
               : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

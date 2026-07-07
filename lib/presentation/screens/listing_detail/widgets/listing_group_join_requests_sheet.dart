@@ -18,6 +18,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_elevated_surface.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 Future<void> showListingGroupJoinRequestsSheet({
   required BuildContext context,
@@ -186,7 +187,7 @@ class _ListingGroupJoinRequestsSheetState
           if (_loading)
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 8, 24, 32),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: UydoshLogoSpinner()),
             )
           else if (_requests.isEmpty)
             _EmptyRequestsState(scheme: scheme)

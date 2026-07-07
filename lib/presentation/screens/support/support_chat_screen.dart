@@ -28,6 +28,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_text_field.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 
 class SupportChatScreen extends StatefulWidget {
@@ -540,7 +541,7 @@ class _UserSupportChatThreadScreenState
             children: [
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: UydoshLogoSpinner())
                     : _messages.isEmpty
                         ? Center(
                             child: Text(
@@ -697,16 +698,7 @@ class _UserSupportChatThreadScreenState
                   height: 28,
                   child: Center(
                     child: _isSending
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                themeState.sendButtonColor,
-                              ),
-                            ),
-                          )
+                        ? const UydoshLogoSpinner(size: 20)
                         : ThemeIcon(
                             Icons.send,
                             color: themeState.sendButtonColor,

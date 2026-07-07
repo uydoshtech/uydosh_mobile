@@ -16,6 +16,7 @@ import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 enum UserFollowListType { followers, following }
@@ -218,11 +219,7 @@ class _UserFollowListScreenState extends State<UserFollowListScreen> {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    child: UydoshLogoSpinner(size: 24),
                   ),
                 );
               }

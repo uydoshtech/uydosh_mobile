@@ -20,6 +20,7 @@ import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 // TEMP (for testing): render the 3D scan welcome UI even on web/Chrome.
@@ -313,7 +314,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                 leading: ThreeDAppBarIconButton.backLeading(context),
                 title: Text(L10n.get("room_scan_title")),
               ),
-              body: const Center(child: CircularProgressIndicator()),
+              body: const Center(child: UydoshLogoSpinner()),
             );
           }
           if (_roomPlanSupported == false) {
@@ -360,7 +361,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                 if (_uploading)
                   Column(
                     children: [
-                      const CircularProgressIndicator(),
+                      const UydoshLogoSpinner(),
                       const SizedBox(height: 16),
                       Text(L10n.get("room_scan_uploading")),
                     ],

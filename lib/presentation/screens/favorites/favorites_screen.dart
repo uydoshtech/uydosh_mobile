@@ -32,6 +32,7 @@ import "package:uy_dosh/presentation/widgets/common/roll_up_fade_out.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/gig/gig_offer_tile.dart";
@@ -718,14 +719,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           showLoadMoreIndicator: _hasMoreData,
           hasMore: _hasMoreData,
           loadMoreIndicator: _isLoadingMore
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getLoadingIndicatorColor(),
-                      ),
-                    ),
+                    child: UydoshLogoSpinner(),
                   ),
                 )
               : Padding(
@@ -782,14 +779,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           showLoadMoreIndicator: _offersHasMore,
           hasMore: _offersHasMore,
           loadMoreIndicator: _isLoadingMoreOffers
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getLoadingIndicatorColor(),
-                      ),
-                    ),
+                    child: UydoshLogoSpinner(),
                   ),
                 )
               : Padding(
@@ -846,14 +839,10 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           showLoadMoreIndicator: _requestsHasMore,
           hasMore: _requestsHasMore,
           loadMoreIndicator: _isLoadingMoreRequests
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getLoadingIndicatorColor(),
-                      ),
-                    ),
+                    child: UydoshLogoSpinner(),
                   ),
                 )
               : Padding(
@@ -1014,17 +1003,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         onLogin: () => context.pushReplaceAuthWizard(),
       ),
     );
-  }
-
-  // Theme-dependent color method for loading indicators
-  Color _getLoadingIndicatorColor() {
-    if (ThemeState().isBlueTheme) {
-      return BlueThemeColors.buttonPrimary; // Blue for blue theme
-    } else if (ThemeState().isLightTheme) {
-      return Colors.black; // Black for light theme
-    } else {
-      return Colors.black; // Default to light theme indicator color
-    }
   }
 
   // Theme-dependent color method for empty state icon

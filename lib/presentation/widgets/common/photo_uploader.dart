@@ -29,6 +29,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_pill_button.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 /// Photo section used by the edit-listing screen.
 ///
@@ -658,7 +659,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                   fadeInCurve: Curves.easeOut,
                   placeholder:
                       (context, url) => const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: UydoshLogoSpinner(),
                       ),
                   errorWidget:
                       (context, url, error) => ThemeIcon(
@@ -721,16 +722,7 @@ class _PhotoUploaderState extends State<PhotoUploader>
                     ? null
                     : () => widget.onDeleteExistingPhoto(index),
                 child: isDeleting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
+                    ? const UydoshLogoSpinner(size: 16)
                     : const ThemeIcon(
                         Icons.close,
                         color: Colors.white,

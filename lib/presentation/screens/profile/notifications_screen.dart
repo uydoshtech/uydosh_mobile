@@ -47,6 +47,7 @@ import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_info_callout_card.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_refresh_indicator.dart";
 import "package:uy_dosh/presentation/widgets/listing_type_badge.dart";
@@ -231,14 +232,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     ),
                     const SizedBox(width: 10),
                     if (_pushStatusLoading)
-                      const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(fg),
-                        ),
-                      )
+                      const UydoshLogoSpinner(size: 18)
                     else
                       AnimatedRotation(
                         turns: _pushEnableExpanded ? 0.5 : 0,
@@ -1654,11 +1648,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         if (_bulkWorking)
           const Padding(
             padding: EdgeInsets.only(right: 12),
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: UydoshLogoSpinner(size: 18),
           ),
       ],
     );

@@ -5,6 +5,7 @@ import "package:uy_dosh/base/state/group_shortlist_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 
 class GroupShortlistSaveButton extends StatefulWidget {
   const GroupShortlistSaveButton({
@@ -81,11 +82,7 @@ class _GroupShortlistSaveButtonState extends State<GroupShortlistSaveButton> {
       return const SizedBox(
         height: 44,
         child: Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          child: UydoshLogoSpinner(size: 20),
         ),
       );
     }
