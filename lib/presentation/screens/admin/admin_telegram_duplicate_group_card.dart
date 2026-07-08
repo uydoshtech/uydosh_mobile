@@ -8,6 +8,7 @@ import "package:uy_dosh/domain/models/listing_duplicate_hint.dart";
 import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.dart";
 import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dart";
 import "package:uy_dosh/presentation/widgets/admin/admin_listing_swipe_to_delete_wrapper.dart";
+import "package:uy_dosh/presentation/widgets/admin/admin_open_telegram_post_button.dart";
 import "package:uy_dosh/presentation/widgets/common/text_button_themed.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -136,9 +137,22 @@ class DuplicateGroupCard extends StatelessWidget {
           child: ListingTile(
             key: ValueKey(listing.id),
             listing: listing,
-            trailingAction: _buildIdBadge(context, listing.id),
+            trailingAction: _buildTrailingActions(context, listing.id),
           ),
         ),
+      ],
+    );
+  }
+
+  /// Combines the "#id" badge with the "open original Telegram post" button
+  /// in the tile's trailing slot.
+  Widget _buildTrailingActions(BuildContext context, int id) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AdminOpenTelegramPostButton(listingId: id),
+        const SizedBox(width: 6),
+        _buildIdBadge(context, id),
       ],
     );
   }
@@ -212,7 +226,8 @@ class DuplicateGroupCard extends StatelessWidget {
                     ListingTile(
                       key: ValueKey("pick-${member.id}"),
                       listing: member,
-                      trailingAction: _buildIdBadge(context, member.id),
+                      trailingAction:
+                          _buildTrailingActions(context, member.id),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(

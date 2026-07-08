@@ -9,6 +9,7 @@ import "package:uy_dosh/domain/services/admin_telegram_listing_groups_service.da
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_duplicate_clustering.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_telegram_duplicate_group_card.dart";
 import "package:uy_dosh/presentation/widgets/admin/admin_listing_swipe_to_delete_wrapper.dart";
+import "package:uy_dosh/presentation/widgets/admin/admin_open_telegram_post_button.dart";
 import "package:uy_dosh/presentation/widgets/chat/date_header_widget.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
@@ -220,7 +221,12 @@ class _AdminTelegramListingGroupDetailScreenState
             key: ValueKey("swipe-${listing.id}"),
             listingId: listing.id,
             onDeleted: () => _removeListing(listing.id),
-            child: ListingTile(key: ValueKey(listing.id), listing: listing),
+            child: ListingTile(
+              key: ValueKey(listing.id),
+              listing: listing,
+              trailingAction:
+                  AdminOpenTelegramPostButton(listingId: listing.id),
+            ),
           );
         }
         final day = entry.day!;

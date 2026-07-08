@@ -1552,6 +1552,10 @@ class AppStrings {
       "admin_telegram_listing_groups_merge_partial":
           "Only {deleted} of {total} duplicate(s) could be deleted",
       "admin_telegram_listing_groups_merge_error": "Failed to merge duplicates",
+      "admin_telegram_listing_groups_open_post_tooltip":
+          "Open original Telegram post",
+      "admin_telegram_listing_groups_open_post_missing":
+          "No Telegram source found for this listing",
       "admin_telegram_sync_title": "Data import",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Custom chat (@handle or id)",
@@ -3821,6 +3825,10 @@ class AppStrings {
           "Удалено только {deleted} из {total} дубликат(ов)",
       "admin_telegram_listing_groups_merge_error":
           "Не удалось объединить дубликаты",
+      "admin_telegram_listing_groups_open_post_tooltip":
+          "Открыть оригинальный пост в Telegram",
+      "admin_telegram_listing_groups_open_post_missing":
+          "Источник в Telegram для этого объявления не найден",
       "admin_telegram_sync_title": "Импорт данных",
       "admin_telegram_sync_chat_label": "Чат",
       "admin_telegram_sync_chat_custom_label": "Другой чат (@handle или id)",
@@ -6106,6 +6114,10 @@ class AppStrings {
           "{total} tadan faqat {deleted} tasi o'chirildi",
       "admin_telegram_listing_groups_merge_error":
           "Dublikatlarni birlashtirishda xatolik",
+      "admin_telegram_listing_groups_open_post_tooltip":
+          "Telegramdagi asl postni ochish",
+      "admin_telegram_listing_groups_open_post_missing":
+          "Bu e'lon uchun Telegram manbasi topilmadi",
       "admin_telegram_sync_title": "Maʼlumot importi",
       "admin_telegram_sync_chat_label": "Chat",
       "admin_telegram_sync_chat_custom_label": "Boshqa chat (@handle yoki id)",
