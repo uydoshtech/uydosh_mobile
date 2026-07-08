@@ -4,6 +4,7 @@ import "package:uy_dosh/base/cache/amenities_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/amenity_icon_helper.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -23,6 +24,7 @@ import "package:uy_dosh/presentation/screens/admin/listing_duplicate_hint_ui.dar
 import "package:uy_dosh/presentation/screens/edit_listing/edit_listing_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_screen.dart";
+import "package:uy_dosh/presentation/widgets/admin/admin_open_telegram_post_button.dart";
 import "package:uy_dosh/presentation/widgets/common/ghost_button.dart";
 import "package:uy_dosh/presentation/widgets/common/house_loading_indicator.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -78,6 +80,11 @@ class _AdminListingParserReviewScreenState
   ParserReviewBundle? _bundle;
   bool _busy = false;
   bool _rawExpanded = true;
+
+  /// Cached so rebuilds (e.g. toggling [_rawExpanded]) don't re-invoke
+  /// [SessionManager.getUserRole] every time; gates [AdminOpenTelegramPostButton]
+  /// to the strict "admin" role (moderators/managers can reach this screen too).
+  late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
 
   /// Editable listing contact Telegram handle (no `@`).
   final TextEditingController _contactTelegramController = TextEditingController();
@@ -610,6 +617,21 @@ class _AdminListingParserReviewScreenState
                           ),
                         ),
                       ),
+                      if (!isManualListing)
+                        FutureBuilder<String?>(
+                          future: _userRoleFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.data != "admin") {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AdminOpenTelegramPostButton(
+                                listingId: widget.listingId,
+                              ),
+                            );
+                          },
+                        ),
                       AnimatedRotation(
                         turns: _rawExpanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 250),
