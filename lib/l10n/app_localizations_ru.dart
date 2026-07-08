@@ -1785,6 +1785,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Шаг скана после создания, кнопка в редакторе, загрузка.';
 
   @override
+  String get admin_client_config_room_scan_glb_conversion =>
+      'Включить конвертацию в GLB';
+
+  @override
+  String get admin_client_config_room_scan_glb_conversion_description =>
+      'Конвертирует загруженные сканы комнат в GLB, чтобы веб/Telegram Mini App могли показать 3D-модель. Выкл — USDZ всё равно сохраняется, но GLB не создаётся.';
+
+  @override
   String get admin_client_config_disable_custom_camera =>
       'Использовать кастомную камеру';
 

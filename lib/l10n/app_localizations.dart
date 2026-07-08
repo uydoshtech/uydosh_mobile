@@ -3364,6 +3364,18 @@ abstract class AppLocalizations {
   /// **'Post-create scan step, edit-screen control, and uploads.'**
   String get admin_client_config_disable_lidar_room_scan_description;
 
+  /// No description provided for @admin_client_config_room_scan_glb_conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable GLB conversion'**
+  String get admin_client_config_room_scan_glb_conversion;
+
+  /// No description provided for @admin_client_config_room_scan_glb_conversion_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Converts uploaded room scans to GLB so web/Telegram Mini App can show the 3D model. Off: USDZ still saves, but no GLB is produced.'**
+  String get admin_client_config_room_scan_glb_conversion_description;
+
   /// No description provided for @admin_client_config_disable_custom_camera.
   ///
   /// In en, this message translates to:

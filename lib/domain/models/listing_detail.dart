@@ -46,6 +46,7 @@ class ListingDetail with _$ListingDetail {
     @JsonKey(name: "private_room") bool? privateRoom,
     @JsonKey(name: "host_resident") bool? hostResident,
     @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
+    @JsonKey(name: "room_scan_glb_url") String? roomScanGlbUrl,
     @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
     @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,

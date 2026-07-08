@@ -760,6 +760,8 @@
   "admin_client_config_hide_gemini_listing_ui_description": "Listing language buttons and AI improve when creating or editing.",
   "admin_client_config_disable_lidar_room_scan": "Turn off LiDAR room scan",
   "admin_client_config_disable_lidar_room_scan_description": "Post-create scan step, edit-screen control, and uploads.",
+  "admin_client_config_room_scan_glb_conversion": "Enable GLB conversion",
+  "admin_client_config_room_scan_glb_conversion_description": "Converts uploaded room scans to GLB so web/Telegram Mini App can show the 3D model. Off: USDZ still saves, but no GLB is produced.",
   "admin_client_config_disable_custom_camera": "Use in-app custom camera",
   "admin_client_config_disable_custom_camera_description": "On: in-app camera with watermark. Off: device camera.",
   "admin_client_config_show_listing_dictation_meter": "Dictation level meter & timer",

@@ -1487,6 +1487,10 @@ class AppStrings {
       "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
           "Post-create scan step, edit-screen control, and uploads.",
+      "admin_client_config_room_scan_glb_conversion":
+          "Enable GLB conversion",
+      "admin_client_config_room_scan_glb_conversion_description":
+          "Converts uploaded room scans to GLB so web/Telegram Mini App can show the 3D model. Off: USDZ still saves, but no GLB is produced.",
       "admin_content_moderation_blur_enabled":
           "Detect and blur offensive photos",
       "admin_content_moderation_loading": "Loading moderation settings...",
@@ -3747,6 +3751,10 @@ class AppStrings {
           "Включить сканирование LiDAR",
       "admin_client_config_disable_lidar_room_scan_description":
           "Шаг скана после создания, кнопка в редакторе, загрузка.",
+      "admin_client_config_room_scan_glb_conversion":
+          "Включить конвертацию в GLB",
+      "admin_client_config_room_scan_glb_conversion_description":
+          "Конвертирует загруженные сканы комнат в GLB, чтобы веб/Telegram Mini App могли показать 3D-модель. Выкл — USDZ всё равно сохраняется, но GLB не создаётся.",
       "admin_content_moderation_blur_enabled":
           "Проверять и размывать нежелательные фото",
       "admin_content_moderation_loading": "Загрузка настроек модерации...",
@@ -6039,6 +6047,10 @@ class AppStrings {
           "LiDAR xona skanini yoqish",
       "admin_client_config_disable_lidar_room_scan_description":
           "Yaratgach skan qadamı, tahrirda tugma, yuklash.",
+      "admin_client_config_room_scan_glb_conversion":
+          "GLB konvertatsiyasini yoqish",
+      "admin_client_config_room_scan_glb_conversion_description":
+          "Yuklangan xona skanlarini GLB formatiga o‘giradi, shunda veb/Telegram Mini App 3D modelni ko‘rsata oladi. O‘chiq — USDZ baribir saqlanadi, lekin GLB yaratilmaydi.",
       "admin_content_moderation_blur_enabled":
           "Nojo'ya fotolarni aniqla va xira qil",
       "admin_content_moderation_loading":

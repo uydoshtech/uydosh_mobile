@@ -1803,6 +1803,14 @@ class AppLocalizationsUz extends AppLocalizations {
       'Yaratgach skan qadamı, tahrirda tugma, yuklash.';
 
   @override
+  String get admin_client_config_room_scan_glb_conversion =>
+      'GLB konvertatsiyasini yoqish';
+
+  @override
+  String get admin_client_config_room_scan_glb_conversion_description =>
+      'Yuklangan xona skanlarini GLB formatiga o‘giradi, shunda veb/Telegram Mini App 3D modelni ko‘rsata oladi. O‘chiq — USDZ baribir saqlanadi, lekin GLB yaratilmaydi.';
+
+  @override
   String get admin_client_config_disable_custom_camera =>
       'Maxsus kameradan foydalanish';
 

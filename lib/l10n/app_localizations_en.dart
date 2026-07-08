@@ -1779,6 +1779,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Post-create scan step, edit-screen control, and uploads.';
 
   @override
+  String get admin_client_config_room_scan_glb_conversion =>
+      'Enable GLB conversion';
+
+  @override
+  String get admin_client_config_room_scan_glb_conversion_description =>
+      'Converts uploaded room scans to GLB so web/Telegram Mini App can show the 3D model. Off: USDZ still saves, but no GLB is produced.';
+
+  @override
   String get admin_client_config_disable_custom_camera =>
       'Use in-app custom camera';
 

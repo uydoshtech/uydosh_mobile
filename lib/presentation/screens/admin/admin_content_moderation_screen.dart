@@ -71,6 +71,8 @@ class _AdminContentModerationScreenState
   bool _isSavingAdminListingConversations = false;
   bool _telegramMessageBridgeEnabled = true;
   bool _isSavingTelegramMessageBridge = false;
+  bool _roomScanGlbConversionEnabled = true;
+  bool _isSavingRoomScanGlbConversion = false;
   int _groupFormingMaxActiveMemberships = 2;
   bool _isSavingGroupFormingLimit = false;
   int _telegramMiniAppDailyListingLimit = 0;
@@ -171,6 +173,16 @@ class _AdminContentModerationScreenState
           "Telegram message bridge setting skipped (is the API updated?): $e",
         );
       }
+      var roomScanGlbConversionEnabled = true;
+      try {
+        final roomScanGlbRes =
+            await _settingsService.getRoomScanGlbConversionEnabledSetting();
+        roomScanGlbConversionEnabled = roomScanGlbRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Room scan GLB conversion setting skipped (is the API updated?): $e",
+        );
+      }
       var groupFormingMaxActiveMemberships = 2;
       try {
         final groupLimitRes =
@@ -207,6 +219,7 @@ class _AdminContentModerationScreenState
         _mapDefaultShowUniversities = mapDefaultShowUniversities;
         _adminListingConversationsEnabled = adminListingConversationsEnabled;
         _telegramMessageBridgeEnabled = telegramMessageBridgeEnabled;
+        _roomScanGlbConversionEnabled = roomScanGlbConversionEnabled;
         _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
         _telegramMiniAppDailyListingLimit = telegramMiniAppDailyListingLimit;
         _isLoading = false;
@@ -258,6 +271,26 @@ class _AdminContentModerationScreenState
       ClientLidarRoomScanConfig.applyDisabled(disabled: res.disabled);
     } catch (e) {
       setStateIfMounted(() => _isSavingLidar = false);
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    }
+  }
+
+  Future<void> _onRoomScanGlbConversionEnabledChanged(bool value) async {
+    if (_isSavingRoomScanGlbConversion) return;
+    setState(() => _isSavingRoomScanGlbConversion = true);
+    try {
+      final res = await _settingsService.setRoomScanGlbConversionEnabled(
+        enabled: value,
+      );
+      setStateIfMounted(() {
+        _roomScanGlbConversionEnabled = res.enabled;
+        _isSavingRoomScanGlbConversion = false;
+      });
+    } catch (e) {
+      setStateIfMounted(() => _isSavingRoomScanGlbConversion = false);
       ToastTheme.showErrorSimple(
         context,
         message: "${L10n.get("admin_content_moderation_save_error")}: $e",
@@ -739,6 +772,7 @@ class _AdminContentModerationScreenState
             _telegramMiniAppDailyListingLimitTile(context),
             _geminiTile(context),
             _lidarTile(context),
+            _roomScanGlbConversionTile(context),
             _customCameraTile(context),
             _dictationMeterTile(context),
           ],
@@ -1091,6 +1125,27 @@ class _AdminContentModerationScreenState
         value: _lidarRoomScanEnabled,
         enabled: !_isSavingLidar,
         onChanged: _onLidarEnabledChanged,
+      ),
+    );
+  }
+
+  Widget _roomScanGlbConversionTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.view_in_ar_outlined,
+        _isSavingRoomScanGlbConversion,
+      ),
+      title: Text(L10n.get("admin_client_config_room_scan_glb_conversion")),
+      subtitle: Text(
+        L10n.get(
+          "admin_client_config_room_scan_glb_conversion_description",
+        ),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _roomScanGlbConversionEnabled,
+        enabled: !_isSavingRoomScanGlbConversion,
+        onChanged: _onRoomScanGlbConversionEnabledChanged,
       ),
     );
   }

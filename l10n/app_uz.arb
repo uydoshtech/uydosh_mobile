@@ -760,6 +760,8 @@
   "admin_client_config_hide_gemini_listing_ui_description": "E’lon tafsifida til tugmalari; yaratish/tahrirlashda AI yaxshilash.",
   "admin_client_config_disable_lidar_room_scan": "LiDAR xona skanini o'chirish",
   "admin_client_config_disable_lidar_room_scan_description": "Yaratgach skan qadamı, tahrirda tugma, yuklash.",
+  "admin_client_config_room_scan_glb_conversion": "GLB konvertatsiyasini yoqish",
+  "admin_client_config_room_scan_glb_conversion_description": "Yuklangan xona skanlarini GLB formatiga o‘giradi, shunda veb/Telegram Mini App 3D modelni ko‘rsata oladi. O‘chiq — USDZ baribir saqlanadi, lekin GLB yaratilmaydi.",
   "admin_client_config_disable_custom_camera": "Maxsus kameradan foydalanish",
   "admin_client_config_disable_custom_camera_description": "Yoniq — suv belgili ilova kamerasi; o‘chiq — qurilma kamerasi.",
   "admin_client_config_show_listing_dictation_meter": "Diktat darajasi va taymer",

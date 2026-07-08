@@ -326,6 +326,29 @@ class _PatchTelegramMessageBridgeEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class RoomScanGlbConversionEnabledResponse {
+  RoomScanGlbConversionEnabledResponse({required this.enabled});
+
+  factory RoomScanGlbConversionEnabledResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return RoomScanGlbConversionEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: true),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchRoomScanGlbConversionEnabledRequest implements IJsonEncodable {
+  _PatchRoomScanGlbConversionEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
 class GroupFormingMaxActiveMembershipsResponse {
   GroupFormingMaxActiveMembershipsResponse({required this.limit});
 
@@ -453,6 +476,12 @@ abstract class IAdminContentModerationSettingsService {
 
   Future<TelegramMessageBridgeEnabledResponse> setTelegramMessageBridgeEnabled(
       {required bool enabled});
+
+  Future<RoomScanGlbConversionEnabledResponse>
+      getRoomScanGlbConversionEnabledSetting();
+
+  Future<RoomScanGlbConversionEnabledResponse>
+      setRoomScanGlbConversionEnabled({required bool enabled});
 
   Future<GroupFormingMaxActiveMembershipsResponse>
       getGroupFormingMaxActiveMembershipsSetting();
@@ -1000,6 +1029,49 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating Telegram message bridge setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<RoomScanGlbConversionEnabledResponse>
+      getRoomScanGlbConversionEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/room-scan-glb-conversion-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return RoomScanGlbConversionEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from room scan GLB conversion setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading room scan GLB conversion enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<RoomScanGlbConversionEnabledResponse>
+      setRoomScanGlbConversionEnabled({required bool enabled}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/room-scan-glb-conversion-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchRoomScanGlbConversionEnabledRequest(enabled: enabled),
+      );
+      return RoomScanGlbConversionEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from room scan GLB conversion setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating room scan GLB conversion enabled setting: $e");
       rethrow;
     }
   }

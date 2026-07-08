@@ -751,6 +751,8 @@
   "admin_client_config_hide_gemini_listing_ui_description": "Кнопки языка в описании и «Улучшить ИИ» при создании/редактировании.",
   "admin_client_config_disable_lidar_room_scan": "Отключить сканирование LiDAR",
   "admin_client_config_disable_lidar_room_scan_description": "Шаг скана после создания, кнопка в редакторе, загрузка.",
+  "admin_client_config_room_scan_glb_conversion": "Включить конвертацию в GLB",
+  "admin_client_config_room_scan_glb_conversion_description": "Конвертирует загруженные сканы комнат в GLB, чтобы веб/Telegram Mini App могли показать 3D-модель. Выкл — USDZ всё равно сохраняется, но GLB не создаётся.",
   "admin_client_config_disable_custom_camera": "Использовать кастомную камеру",
   "admin_client_config_disable_custom_camera_description": "Вкл — камера приложения с водяным знаком; выкл — системная.",
   "admin_client_config_show_listing_dictation_meter": "Индикатор уровня и таймер диктовки",
