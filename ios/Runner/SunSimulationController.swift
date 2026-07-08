@@ -48,6 +48,37 @@ final class SunSimulationController {
   /// Pale base tint for the cosmetic moon disc.
   private static let moonBaseColor = UIColor(red: 0.86, green: 0.89, blue: 0.96, alpha: 1)
 
+  /// Stashes each vertex's object-space height (before the dome's position offset is applied) so
+  /// the fragment stage can tell how far above/below the room's floor plane it sits — the star
+  /// dome is a full sphere, so without this its lower half would render stars underneath the
+  /// floor whenever the floor mesh doesn't fully occlude it (e.g. orbiting below the room).
+  private static let starDomeGeometryModifier = """
+  #pragma declarations
+  varying float uydoshStarLocalY;
+
+  #pragma body
+  uydoshStarLocalY = _geometry.position.y;
+  """
+
+  /// Fades the starfield out below the floor's height (in the dome's local space) instead of a
+  /// hard cutoff, so the sky reads as fading into a dark horizon rather than clipping abruptly.
+  private static let starDomeFragmentModifier = """
+  #pragma arguments
+  float uydoshStarHorizonY;
+  float uydoshStarFadeHalfRange;
+
+  #pragma declarations
+  varying float uydoshStarLocalY;
+
+  #pragma body
+  float uydoshStarHorizonFade = smoothstep(
+    uydoshStarHorizonY - uydoshStarFadeHalfRange,
+    uydoshStarHorizonY + uydoshStarFadeHalfRange,
+    uydoshStarLocalY
+  );
+  _output.color.rgb *= uydoshStarHorizonFade;
+  """
+
   /// Generated once: a black canvas scattered with faint blue-white dots, used as the sky dome's
   /// emission texture. With additive blending the black contributes nothing, so only the dots show.
   private static let starFieldImage: UIImage = makeStarFieldImage()
@@ -190,8 +221,10 @@ final class SunSimulationController {
 
     // Cosmetic starfield: a large inverted sky dome around the room. Renders first, ignores depth,
     // and uses additive blending so its black body is invisible and only the star texture's dots
-    // brighten the sky (room geometry, drawn after, occludes it). `emission.intensity` ramps the
-    // stars from invisible by day to visible at night (see updateDirectionalLight).
+    // brighten the sky (room geometry, drawn after, occludes it — plus the shader modifiers below
+    // fade stars out below the floor so they never show through when nothing occludes the dome,
+    // e.g. orbiting under the room). `emission.intensity` ramps the stars from invisible by day to
+    // visible at night (see updateDirectionalLight).
     let dome = SCNNode()
     dome.name = Self.starDomeNodeName
     let domeSphere = SCNSphere(radius: CGFloat(sunRadius) * 1.3)
@@ -205,6 +238,16 @@ final class SunSimulationController {
     domeMat.writesToDepthBuffer = false
     domeMat.readsFromDepthBuffer = false
     domeMat.blendMode = .add
+    domeMat.shaderModifiers = [
+      .geometry: Self.starDomeGeometryModifier,
+      .fragment: Self.starDomeFragmentModifier,
+    ]
+    // Floor height, expressed in the dome's local space (it's centered on roomCenter), so the
+    // fragment shader can fade stars out at/below the room's actual floor instead of the sphere's
+    // equator — keeps them looking like sky even in rooms whose floor sits well below roomCenter.
+    let floorLocalY = Float(sceneBounds.min.y - roomCenter.y)
+    domeMat.setValue(NSNumber(value: floorLocalY), forKey: "uydoshStarHorizonY")
+    domeMat.setValue(NSNumber(value: max(0.4, sunRadius * 0.05)), forKey: "uydoshStarFadeHalfRange")
     domeSphere.materials = [domeMat]
     dome.geometry = domeSphere
     dome.castsShadow = false
