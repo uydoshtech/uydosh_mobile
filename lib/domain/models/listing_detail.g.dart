@@ -35,6 +35,7 @@ _$ListingDetailImpl _$$ListingDetailImplFromJson(Map<String, dynamic> json) =>
       privateRoom: json['private_room'] as bool?,
       hostResident: json['host_resident'] as bool?,
       pointCloudUrl: json['point_cloud_url'] as String?,
+      roomScanGlbUrl: json['room_scan_glb_url'] as String?,
       roomScanFloorLongM: (json['room_scan_floor_long_m'] as num?)?.toDouble(),
       roomScanFloorShortM:
           (json['room_scan_floor_short_m'] as num?)?.toDouble(),
@@ -108,6 +109,7 @@ Map<String, dynamic> _$$ListingDetailImplToJson(_$ListingDetailImpl instance) =>
       'private_room': instance.privateRoom,
       'host_resident': instance.hostResident,
       'point_cloud_url': instance.pointCloudUrl,
+      'room_scan_glb_url': instance.roomScanGlbUrl,
       'room_scan_floor_long_m': instance.roomScanFloorLongM,
       'room_scan_floor_short_m': instance.roomScanFloorShortM,
       'room_scan_height_m': instance.roomScanHeightM,

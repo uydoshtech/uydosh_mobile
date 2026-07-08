@@ -45,6 +45,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/moderation_staff_utils.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/auth_flow.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
@@ -95,6 +96,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_group
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_utils.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_pending_action.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/room_glb_viewer_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_and_price_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
@@ -1852,8 +1854,35 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     );
   }
 
+  /// Android has no native USDZ renderer, so it uses the server-side
+  /// GLB conversion (`room_scan_glb_url`) via [RoomGlbViewerScreen] instead
+  /// of [RoomUsdzViewerService]'s SceneKit route below.
+  Future<void> _openRoom3dViewerAndroid(ListingDetail listingDetail) async {
+    final glbRaw = listingDetail.roomScanGlbUrl;
+    if (glbRaw == null || glbRaw.isEmpty) return;
+    setState(() => _isOpeningRoom3d = true);
+    HapticFeedbackUtils.impact();
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => RoomGlbViewerScreen(glbUrl: glbRaw),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningRoom3d = false);
+      } else {
+        _isOpeningRoom3d = false;
+      }
+    }
+  }
+
   Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
     if (_isOpeningRoom3d) return;
+    if (isAndroidDevice) {
+      await _openRoom3dViewerAndroid(listingDetail);
+      return;
+    }
     final raw = listingDetail.pointCloudUrl;
     if (raw == null || raw.isEmpty) return;
     setState(() => _isOpeningRoom3d = true);
@@ -3192,9 +3221,16 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         final isOwner = _isListingOwner(listingDetail.user.id);
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
-        final show3d =
+        // iOS/web view the raw USDZ scan via a native/browser-driven flow;
+        // Android has no USDZ renderer, so it instead needs the server-side
+        // GLB conversion (see [RoomGlbViewerScreen]).
+        final hasUsdzScan =
             (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
+        final hasAndroidGlbScan =
+            isAndroidDevice &&
+            (listingDetail.roomScanGlbUrl?.isNotEmpty ?? false);
+        final show3d = hasUsdzScan || hasAndroidGlbScan;
         final groupFormingBottomPad = _groupFormingFloatingActionsBottomPad(
           listingDetail,
         );

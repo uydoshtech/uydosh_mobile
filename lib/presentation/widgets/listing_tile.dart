@@ -23,6 +23,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/peer_interaction_eligibility.dart";
+import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/domain/models/amenity.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -466,10 +467,14 @@ class _ListingTileState extends State<ListingTile> {
                             _groupMembersProgressBadge!,
                           // Price is shown in the footer (right side),
                           // not as a header badge.
-                          // 3D room scan (available on iOS; show indicator on web too)
-                          if ((kIsWeb || isIPhoneFormFactor(context)) &&
-                              (widget.listing.pointCloudUrl?.isNotEmpty ??
-                                  false))
+                          // 3D room scan: iOS/web view the USDZ scan directly;
+                          // Android needs the server-side GLB conversion instead.
+                          if (((kIsWeb || isIPhoneFormFactor(context)) &&
+                                  (widget.listing.pointCloudUrl?.isNotEmpty ??
+                                      false)) ||
+                              (isAndroidDevice &&
+                                  (widget.listing.roomScanGlbUrl?.isNotEmpty ??
+                                      false)))
                             const Room3dIconBadge(
                               size: 16,
                               padding: EdgeInsets.symmetric(

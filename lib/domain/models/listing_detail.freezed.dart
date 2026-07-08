@@ -67,6 +67,8 @@ mixin _$ListingDetail {
   bool? get hostResident => throw _privateConstructorUsedError;
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: "room_scan_glb_url")
+  String? get roomScanGlbUrl => throw _privateConstructorUsedError;
   @JsonKey(name: "room_scan_floor_long_m")
   double? get roomScanFloorLongM => throw _privateConstructorUsedError;
   @JsonKey(name: "room_scan_floor_short_m")
@@ -84,9 +86,9 @@ mixin _$ListingDetail {
   String? get contactPhone => throw _privateConstructorUsedError;
   @JsonKey(name: "contact_telegram")
   String? get contactTelegram => throw _privateConstructorUsedError;
-  @JsonKey(name: "address_latitude")
+  @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
   double? get addressLatitude => throw _privateConstructorUsedError;
-  @JsonKey(name: "address_longitude")
+  @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
   double? get addressLongitude => throw _privateConstructorUsedError;
   @JsonKey(name: "subway_station")
   SubwayStationDetail? get subwayStation => throw _privateConstructorUsedError;
@@ -156,6 +158,7 @@ abstract class $ListingDetailCopyWith<$Res> {
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "host_resident") bool? hostResident,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
+      @JsonKey(name: "room_scan_glb_url") String? roomScanGlbUrl,
       @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
@@ -166,8 +169,10 @@ abstract class $ListingDetailCopyWith<$Res> {
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
-      @JsonKey(name: "address_latitude") double? addressLatitude,
-      @JsonKey(name: "address_longitude") double? addressLongitude,
+      @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
+      double? addressLatitude,
+      @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
+      double? addressLongitude,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       List<SubwayStationDetail>? searchSubwayStations,
@@ -232,6 +237,7 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
     Object? privateRoom = freezed,
     Object? hostResident = freezed,
     Object? pointCloudUrl = freezed,
+    Object? roomScanGlbUrl = freezed,
     Object? roomScanFloorLongM = freezed,
     Object? roomScanFloorShortM = freezed,
     Object? roomScanHeightM = freezed,
@@ -359,6 +365,10 @@ class _$ListingDetailCopyWithImpl<$Res, $Val extends ListingDetail>
       pointCloudUrl: freezed == pointCloudUrl
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      roomScanGlbUrl: freezed == roomScanGlbUrl
+          ? _value.roomScanGlbUrl
+          : roomScanGlbUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       roomScanFloorLongM: freezed == roomScanFloorLongM
           ? _value.roomScanFloorLongM
@@ -549,6 +559,7 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       @JsonKey(name: "private_room") bool? privateRoom,
       @JsonKey(name: "host_resident") bool? hostResident,
       @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
+      @JsonKey(name: "room_scan_glb_url") String? roomScanGlbUrl,
       @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
@@ -559,8 +570,10 @@ abstract class _$$ListingDetailImplCopyWith<$Res>
       double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") String? contactPhone,
       @JsonKey(name: "contact_telegram") String? contactTelegram,
-      @JsonKey(name: "address_latitude") double? addressLatitude,
-      @JsonKey(name: "address_longitude") double? addressLongitude,
+      @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
+      double? addressLatitude,
+      @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
+      double? addressLongitude,
       @JsonKey(name: "subway_station") SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       List<SubwayStationDetail>? searchSubwayStations,
@@ -628,6 +641,7 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
     Object? privateRoom = freezed,
     Object? hostResident = freezed,
     Object? pointCloudUrl = freezed,
+    Object? roomScanGlbUrl = freezed,
     Object? roomScanFloorLongM = freezed,
     Object? roomScanFloorShortM = freezed,
     Object? roomScanHeightM = freezed,
@@ -756,6 +770,10 @@ class __$$ListingDetailImplCopyWithImpl<$Res>
           ? _value.pointCloudUrl
           : pointCloudUrl // ignore: cast_nullable_to_non_nullable
               as String?,
+      roomScanGlbUrl: freezed == roomScanGlbUrl
+          ? _value.roomScanGlbUrl
+          : roomScanGlbUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
       roomScanFloorLongM: freezed == roomScanFloorLongM
           ? _value.roomScanFloorLongM
           : roomScanFloorLongM // ignore: cast_nullable_to_non_nullable
@@ -878,6 +896,7 @@ class _$ListingDetailImpl implements _ListingDetail {
       @JsonKey(name: "private_room") this.privateRoom,
       @JsonKey(name: "host_resident") this.hostResident,
       @JsonKey(name: "point_cloud_url") this.pointCloudUrl,
+      @JsonKey(name: "room_scan_glb_url") this.roomScanGlbUrl,
       @JsonKey(name: "room_scan_floor_long_m") this.roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m") this.roomScanFloorShortM,
       @JsonKey(name: "room_scan_height_m") this.roomScanHeightM,
@@ -888,8 +907,10 @@ class _$ListingDetailImpl implements _ListingDetail {
       this.roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") this.contactPhone,
       @JsonKey(name: "contact_telegram") this.contactTelegram,
-      @JsonKey(name: "address_latitude") this.addressLatitude,
-      @JsonKey(name: "address_longitude") this.addressLongitude,
+      @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
+      this.addressLatitude,
+      @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
+      this.addressLongitude,
       @JsonKey(name: "subway_station") this.subwayStation,
       @JsonKey(name: "search_subway_stations")
       final List<SubwayStationDetail>? searchSubwayStations,
@@ -989,6 +1010,9 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: "point_cloud_url")
   final String? pointCloudUrl;
   @override
+  @JsonKey(name: "room_scan_glb_url")
+  final String? roomScanGlbUrl;
+  @override
   @JsonKey(name: "room_scan_floor_long_m")
   final double? roomScanFloorLongM;
   @override
@@ -1013,10 +1037,10 @@ class _$ListingDetailImpl implements _ListingDetail {
   @JsonKey(name: "contact_telegram")
   final String? contactTelegram;
   @override
-  @JsonKey(name: "address_latitude")
+  @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
   final double? addressLatitude;
   @override
-  @JsonKey(name: "address_longitude")
+  @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
   final double? addressLongitude;
   @override
   @JsonKey(name: "subway_station")
@@ -1095,7 +1119,7 @@ class _$ListingDetailImpl implements _ListingDetail {
 
   @override
   String toString() {
-    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, addressLatitude: $addressLatitude, addressLongitude: $addressLongitude, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, nearbyStores: $nearbyStores, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
+    return 'ListingDetail(id: $id, userId: $userId, title: $title, listingTypeId: $listingTypeId, price: $price, minPrice: $minPrice, maxPrice: $maxPrice, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt, user: $user, listingType: $listingType, description: $description, cityId: $cityId, descriptionRu: $descriptionRu, descriptionEn: $descriptionEn, descriptionUz: $descriptionUz, subwayStationId: $subwayStationId, subwayLineId: $subwayLineId, locationId: $locationId, gender: $gender, featuredAt: $featuredAt, moveInDate: $moveInDate, privateRoom: $privateRoom, hostResident: $hostResident, pointCloudUrl: $pointCloudUrl, roomScanGlbUrl: $roomScanGlbUrl, roomScanFloorLongM: $roomScanFloorLongM, roomScanFloorShortM: $roomScanFloorShortM, roomScanHeightM: $roomScanHeightM, roomScanFloorAreaM2: $roomScanFloorAreaM2, roomScanWorldPlusXBearingDeg: $roomScanWorldPlusXBearingDeg, roomScanNorthCorrectionDeg: $roomScanNorthCorrectionDeg, contactPhone: $contactPhone, contactTelegram: $contactTelegram, addressLatitude: $addressLatitude, addressLongitude: $addressLongitude, subwayStation: $subwayStation, searchSubwayStations: $searchSubwayStations, location: $location, searchLocations: $searchLocations, amenities: $amenities, photos: $photos, areaPriceStats: $areaPriceStats, nearbyStores: $nearbyStores, groupSizeTarget: $groupSizeTarget, groupFormingStatus: $groupFormingStatus, groupCompatibilityReport: $groupCompatibilityReport, groupContext: $groupContext)';
   }
 
   @override
@@ -1148,6 +1172,8 @@ class _$ListingDetailImpl implements _ListingDetail {
                 other.hostResident == hostResident) &&
             (identical(other.pointCloudUrl, pointCloudUrl) ||
                 other.pointCloudUrl == pointCloudUrl) &&
+            (identical(other.roomScanGlbUrl, roomScanGlbUrl) ||
+                other.roomScanGlbUrl == roomScanGlbUrl) &&
             (identical(other.roomScanFloorLongM, roomScanFloorLongM) ||
                 other.roomScanFloorLongM == roomScanFloorLongM) &&
             (identical(other.roomScanFloorShortM, roomScanFloorShortM) ||
@@ -1187,8 +1213,7 @@ class _$ListingDetailImpl implements _ListingDetail {
                 .equals(other._nearbyStores, _nearbyStores) &&
             (identical(other.groupSizeTarget, groupSizeTarget) ||
                 other.groupSizeTarget == groupSizeTarget) &&
-            (identical(other.groupFormingStatus, groupFormingStatus) ||
-                other.groupFormingStatus == groupFormingStatus) &&
+            (identical(other.groupFormingStatus, groupFormingStatus) || other.groupFormingStatus == groupFormingStatus) &&
             (identical(other.groupCompatibilityReport, groupCompatibilityReport) || other.groupCompatibilityReport == groupCompatibilityReport) &&
             (identical(other.groupContext, groupContext) || other.groupContext == groupContext));
   }
@@ -1223,6 +1248,7 @@ class _$ListingDetailImpl implements _ListingDetail {
         privateRoom,
         hostResident,
         pointCloudUrl,
+        roomScanGlbUrl,
         roomScanFloorLongM,
         roomScanFloorShortM,
         roomScanHeightM,
@@ -1292,6 +1318,7 @@ abstract class _ListingDetail implements ListingDetail {
       @JsonKey(name: "private_room") final bool? privateRoom,
       @JsonKey(name: "host_resident") final bool? hostResident,
       @JsonKey(name: "point_cloud_url") final String? pointCloudUrl,
+      @JsonKey(name: "room_scan_glb_url") final String? roomScanGlbUrl,
       @JsonKey(name: "room_scan_floor_long_m") final double? roomScanFloorLongM,
       @JsonKey(name: "room_scan_floor_short_m")
       final double? roomScanFloorShortM,
@@ -1304,8 +1331,10 @@ abstract class _ListingDetail implements ListingDetail {
       final double? roomScanNorthCorrectionDeg,
       @JsonKey(name: "contact_phone") final String? contactPhone,
       @JsonKey(name: "contact_telegram") final String? contactTelegram,
-      @JsonKey(name: "address_latitude") final double? addressLatitude,
-      @JsonKey(name: "address_longitude") final double? addressLongitude,
+      @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
+      final double? addressLatitude,
+      @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
+      final double? addressLongitude,
       @JsonKey(name: "subway_station") final SubwayStationDetail? subwayStation,
       @JsonKey(name: "search_subway_stations")
       final List<SubwayStationDetail>? searchSubwayStations,
@@ -1401,6 +1430,9 @@ abstract class _ListingDetail implements ListingDetail {
   @JsonKey(name: "point_cloud_url")
   String? get pointCloudUrl;
   @override
+  @JsonKey(name: "room_scan_glb_url")
+  String? get roomScanGlbUrl;
+  @override
   @JsonKey(name: "room_scan_floor_long_m")
   double? get roomScanFloorLongM;
   @override
@@ -1425,10 +1457,10 @@ abstract class _ListingDetail implements ListingDetail {
   @JsonKey(name: "contact_telegram")
   String? get contactTelegram;
   @override
-  @JsonKey(name: "address_latitude")
+  @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)
   double? get addressLatitude;
   @override
-  @JsonKey(name: "address_longitude")
+  @JsonKey(name: "address_longitude", fromJson: numericStringToDouble)
   double? get addressLongitude;
   @override
   @JsonKey(name: "subway_station")

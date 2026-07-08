@@ -53,14 +53,6 @@ class $AssetsImagesGen {
   AssetGenImage get uydoshNoPhotoPlaceholder =>
       const AssetGenImage('assets/images/uydosh_no_photo_placeholder.png');
 
-  /// File path: assets/images/uydosh_no_photo_roommate_needed_female.jpg
-  AssetGenImage get uydoshNoPhotoRoommateNeededFemale =>
-      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_female.jpg');
-
-  /// File path: assets/images/uydosh_no_photo_roommate_needed_male.jpg
-  AssetGenImage get uydoshNoPhotoRoommateNeededMale =>
-      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_male.jpg');
-
   /// File path: assets/images/uydosh_no_photo_room_needed_female.jpg
   AssetGenImage get uydoshNoPhotoRoomNeededFemale =>
       const AssetGenImage('assets/images/uydosh_no_photo_room_needed_female.jpg');
@@ -68,6 +60,14 @@ class $AssetsImagesGen {
   /// File path: assets/images/uydosh_no_photo_room_needed_male.jpg
   AssetGenImage get uydoshNoPhotoRoomNeededMale =>
       const AssetGenImage('assets/images/uydosh_no_photo_room_needed_male.jpg');
+
+  /// File path: assets/images/uydosh_no_photo_roommate_needed_female.jpg
+  AssetGenImage get uydoshNoPhotoRoommateNeededFemale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_female.jpg');
+
+  /// File path: assets/images/uydosh_no_photo_roommate_needed_male.jpg
+  AssetGenImage get uydoshNoPhotoRoommateNeededMale =>
+      const AssetGenImage('assets/images/uydosh_no_photo_roommate_needed_male.jpg');
 
   /// File path: assets/images/vector_orig.svg
   String get vectorOrig => 'assets/images/vector_orig.svg';
@@ -80,10 +80,10 @@ class $AssetsImagesGen {
         telegramLogoWhite,
         uydoshLightNoPhotoPlaceholder,
         uydoshNoPhotoPlaceholder,
-        uydoshNoPhotoRoommateNeededFemale,
-        uydoshNoPhotoRoommateNeededMale,
         uydoshNoPhotoRoomNeededFemale,
         uydoshNoPhotoRoomNeededMale,
+        uydoshNoPhotoRoommateNeededFemale,
+        uydoshNoPhotoRoommateNeededMale,
         vectorOrig
       ];
 }
@@ -136,6 +136,13 @@ class $AssetsIconComponentsGen {
   /// File path: assets/icon/components/brand_mark.png
   AssetGenImage get brandMark => const AssetGenImage('assets/icon/components/brand_mark.png');
 
+  /// File path: assets/icon/components/brand_mark_light.png
+  AssetGenImage get brandMarkLightPng =>
+      const AssetGenImage('assets/icon/components/brand_mark_light.png');
+
+  /// File path: assets/icon/components/brand_mark_light.svg
+  String get brandMarkLightSvg => 'assets/icon/components/brand_mark_light.svg';
+
   /// File path: assets/icon/components/chimney.svg
   String get chimney => 'assets/icon/components/chimney.svg';
 
@@ -154,6 +161,8 @@ class $AssetsIconComponentsGen {
         brandLogoTransparentPng,
         brandLogoTransparentSvg,
         brandMark,
+        brandMarkLightPng,
+        brandMarkLightSvg,
         chimney,
         redRoof,
         square,
