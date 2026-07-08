@@ -810,11 +810,13 @@ class MainNavigationState extends State<MainNavigation>
     );
   }
 
-  Future<bool> openHomeMapView() async {
+  Future<bool> openHomeMapView({int? focusListingId}) async {
     navigateToIndex(0);
     await Future<void>.delayed(Duration.zero);
     return _homeScreenKey.currentState
-            ?.openCurrentMapViewFromExternalRequest() ??
+            ?.openCurrentMapViewFromExternalRequest(
+              focusListingId: focusListingId,
+            ) ??
         false;
   }
 

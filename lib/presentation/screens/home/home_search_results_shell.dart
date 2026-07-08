@@ -24,6 +24,7 @@ class _SearchResultsShell extends StatefulWidget {
     required this.onOpenInlineSearch,
     required this.onOpenMapSearch,
     required this.onOpenFeedFromMap,
+    this.focusListingId,
     this.onDismissMapFilterRibbon,
   });
 
@@ -40,6 +41,11 @@ class _SearchResultsShell extends StatefulWidget {
   final List<Listing> initialMapListings;
   final int? initialMapTotal;
   final int feedListingsRevision;
+
+  /// When set (opened via [MainNavigation.openHomeMapView] with a target
+  /// listing, e.g. from a listing-detail screen), the embedded map selects
+  /// and camera-focuses this listing's pin once loaded.
+  final int? focusListingId;
   final double alertFabBottom;
   final SearchFiltersState searchFiltersState;
   final GlobalKey<TutorialTargetWrapperState> searchButtonTutorialKey;
@@ -145,6 +151,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       initialListings: widget.initialMapListings,
       initialTotal: widget.initialMapTotal,
       feedListingsRevision: widget.feedListingsRevision,
+      initialFocusListingId: widget.focusListingId,
       embeddedMapBottomInset: widget.mapBottomInset,
       embeddedSearchButtonBottom: widget.alertFabBottom,
       embeddedViewToggleBottom: _SearchResultsFabStack.viewToggleBottomFor(

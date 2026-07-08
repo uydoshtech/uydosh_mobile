@@ -2522,7 +2522,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
   Future<void> _openHomeMapView() async {
     final navigationState = mainNavigationKey.currentState;
     if (navigationState != null) {
-      await navigationState.openHomeMapView();
+      await navigationState.openHomeMapView(focusListingId: widget.listingId);
     }
     if (!mounted) return;
     Navigator.of(context).popUntil((route) => route.isFirst);

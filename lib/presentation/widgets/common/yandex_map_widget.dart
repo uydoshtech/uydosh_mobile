@@ -235,6 +235,9 @@ class YandexMapWidget extends StatefulWidget {
     this.userLocationFocusToken = 0,
     this.userLocationLatitude,
     this.userLocationLongitude,
+    this.focusListingToken = 0,
+    this.focusListingLatitude,
+    this.focusListingLongitude,
     this.selectedMetroStationId,
     this.onSelectedMetroStationChanged,
     this.onVisibleListingPinsChanged,
@@ -274,6 +277,14 @@ class YandexMapWidget extends StatefulWidget {
   final int userLocationFocusToken;
   final double? userLocationLatitude;
   final double? userLocationLongitude;
+
+  /// Bumped by the caller to request a one-shot camera move centered on
+  /// [focusListingLatitude]/[focusListingLongitude] (e.g. opening the map
+  /// from a listing-detail screen and wanting that listing's pin centered,
+  /// independent of the generic multi-pin fit-bounds/target logic).
+  final int focusListingToken;
+  final double? focusListingLatitude;
+  final double? focusListingLongitude;
   final ValueChanged<SubwayStation?>? onSelectedMetroStationChanged;
 
   /// Called whenever the set of [pins] currently inside the visible map
@@ -439,6 +450,12 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_isMapReady || _mapController == null) return;
         unawaited(_moveCameraToUserLocation());
+      });
+    }
+    if (oldWidget.focusListingToken != widget.focusListingToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_isMapReady || _mapController == null) return;
+        unawaited(_moveCameraToFocusListing());
       });
     }
     if (oldWidget.layerOptions.showMetroStationsLayer &&
@@ -972,7 +989,13 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        unawaited(_moveCameraToCurrentTarget());
+        if (widget.focusListingToken != 0 &&
+            widget.focusListingLatitude != null &&
+            widget.focusListingLongitude != null) {
+          unawaited(_moveCameraToFocusListing());
+        } else {
+          unawaited(_moveCameraToCurrentTarget());
+        }
         _scheduleMapObjectsReady(controller);
       }
     });
@@ -1249,6 +1272,33 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
         ),
       ),
     );
+  }
+
+  static const double _focusListingZoom = 16.0;
+
+  Future<void> _moveCameraToFocusListing() async {
+    final latitude = widget.focusListingLatitude;
+    final longitude = widget.focusListingLongitude;
+    if (latitude == null || longitude == null) return;
+
+    final controller = _mapController;
+    if (controller == null || !_isMapReady) return;
+    final generation = _mapOperationGeneration;
+
+    final moved = await _moveCameraAutomatically(
+      controller,
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: Point(latitude: latitude, longitude: longitude),
+          zoom: _focusListingZoom,
+          azimuth: 0.0,
+          tilt: 0.0,
+        ),
+      ),
+    );
+    if (moved && _isCurrentMapOperation(controller, generation)) {
+      _setCurrentZoom(_focusListingZoom);
+    }
   }
 
   Point? _selectedZoomFocusPoint() {

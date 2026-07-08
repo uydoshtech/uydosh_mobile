@@ -235,6 +235,9 @@ class _SearchMapCanvas extends StatelessWidget {
             userLocationFocusToken: canvas.userLocationFocusToken,
             userLocationLatitude: canvas.userLocationLatitude,
             userLocationLongitude: canvas.userLocationLongitude,
+            focusListingToken: canvas.focusListingToken,
+            focusListingLatitude: canvas.focusListingLatitude,
+            focusListingLongitude: canvas.focusListingLongitude,
             showLoadingPlaceholderContent: false,
             zoomControlsOptions: YandexMapZoomControlsOptions(
               right: canvas.placeViewToggleAtBottom

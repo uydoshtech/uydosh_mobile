@@ -90,6 +90,9 @@ class _SearchMapCanvasProps {
     required this.userLocationFocusToken,
     required this.userLocationLatitude,
     required this.userLocationLongitude,
+    required this.focusListingToken,
+    required this.focusListingLatitude,
+    required this.focusListingLongitude,
     required this.placeViewToggleAtBottom,
     required this.mapBottomInset,
     required this.viewToggleBottom,
@@ -119,6 +122,9 @@ class _SearchMapCanvasProps {
   final int userLocationFocusToken;
   final double? userLocationLatitude;
   final double? userLocationLongitude;
+  final int focusListingToken;
+  final double? focusListingLatitude;
+  final double? focusListingLongitude;
   final bool placeViewToggleAtBottom;
   final double mapBottomInset;
   final double viewToggleBottom;
@@ -153,6 +159,9 @@ class _SearchMapCanvasProps {
             userLocationFocusToken == other.userLocationFocusToken &&
             userLocationLatitude == other.userLocationLatitude &&
             userLocationLongitude == other.userLocationLongitude &&
+            focusListingToken == other.focusListingToken &&
+            focusListingLatitude == other.focusListingLatitude &&
+            focusListingLongitude == other.focusListingLongitude &&
             placeViewToggleAtBottom == other.placeViewToggleAtBottom &&
             mapBottomInset == other.mapBottomInset &&
             viewToggleBottom == other.viewToggleBottom &&
@@ -184,6 +193,9 @@ class _SearchMapCanvasProps {
         userLocationFocusToken,
         userLocationLatitude,
         userLocationLongitude,
+        focusListingToken,
+        focusListingLatitude,
+        focusListingLongitude,
         placeViewToggleAtBottom,
         mapBottomInset,
         viewToggleBottom,

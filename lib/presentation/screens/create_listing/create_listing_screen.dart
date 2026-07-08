@@ -110,6 +110,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// Roommate-needed only: "stations near you" chips computed from the
   /// address coordinates, mirroring the Telegram Mini App wizard.
   static const List<int> _nearbyStationRadiusOptions = [10, 20, 30];
+
+  /// Stations within this walk time are auto-checked as soon as they're
+  /// found, so authors don't have to tap every close-by chip by hand —
+  /// independent of [_nearbyStationsRadiusMinutes], which only controls
+  /// what's *shown*.
+  static const int _autoSelectStationWalkMinutes = 15;
   List<NearbyStationEstimate> _nearbyStations = [];
   int _nearbyStationsRadiusMinutes = _nearbyStationRadiusOptions.first;
   bool _isResolvingAddressLocation = false;
@@ -1012,7 +1018,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   }
 
   /// Recomputes the "stations near you" chips from the current address
-  /// coordinates and the selected walk-time radius.
+  /// coordinates and the selected walk-time radius, then auto-checks
+  /// whichever of them are within [_autoSelectStationWalkMinutes] so authors
+  /// see sensible defaults instead of an all-unchecked chip row.
   void _recomputeNearbyStations() {
     final latitude = _addressLatitude;
     final longitude = _addressLongitude;
@@ -1026,7 +1034,34 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         longitude,
         maxMinutes: _nearbyStationsRadiusMinutes,
       );
+      _preselectNearbyStations(latitude, longitude);
     });
+  }
+
+  /// Auto-checks every station within [_autoSelectStationWalkMinutes] of
+  /// [latitude]/[longitude] that isn't already selected. Queried separately
+  /// from [_nearbyStations] so the default selection doesn't depend on
+  /// whichever display radius chip (10/20/30 min) happens to be active.
+  ///
+  /// [NearbyMetroStations.find] falls back to the single closest station
+  /// when nothing is within range, even if it's far away — filter that back
+  /// out here so we never force-select a station that isn't actually within
+  /// the auto-select walk time.
+  void _preselectNearbyStations(double latitude, double longitude) {
+    final withinDefaultWalk = NearbyMetroStations.find(
+      latitude,
+      longitude,
+      maxMinutes: _autoSelectStationWalkMinutes,
+    ).where(
+      (estimate) => estimate.walkMinutes <= _autoSelectStationWalkMinutes,
+    );
+    for (final estimate in withinDefaultWalk) {
+      final alreadySelected = _selectedSearchStations
+          .any((station) => station.id == estimate.station.id);
+      if (!alreadySelected) {
+        _selectedSearchStations.add(estimate.station);
+      }
+    }
   }
 
   void _onNearbyRadiusSelected(int minutes) {

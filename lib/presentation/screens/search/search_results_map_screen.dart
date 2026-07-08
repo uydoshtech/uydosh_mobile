@@ -133,6 +133,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     this.onOpenEmbeddedSearch,
     this.onDismissFilterRibbon,
     this.feedListingsRevision = -1,
+    this.initialFocusListingId,
   });
 
   final int listingTypeId;
@@ -167,6 +168,12 @@ class SearchResultsMapScreen extends StatefulWidget {
   /// this changes without filter changes, map results are refreshed so pin
   /// counts stay aligned with the AppBar total.
   final int feedListingsRevision;
+
+  /// When set (e.g. opened from a listing-detail screen's "Open map"
+  /// button), the map selects and camera-focuses this listing's pin as soon
+  /// as it appears among the loaded results, instead of the generic
+  /// multi-pin fit-bounds/city view.
+  final int? initialFocusListingId;
 
   @override
   State<SearchResultsMapScreen> createState() => _SearchResultsMapScreenState();
@@ -217,6 +224,10 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   int _userLocationLoadGeneration = 0;
   double? _userLocationLatitude;
   double? _userLocationLongitude;
+  int _focusListingToken = 0;
+  double? _focusListingLatitude;
+  double? _focusListingLongitude;
+  bool _initialFocusApplied = false;
   double _listingTooltipHeight = 0;
 
   late int _listingTypeId;
@@ -279,6 +290,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       );
       _result = initialResult;
       _selectedPin = _autoSelectedPin(initialResult);
+      _maybeFocusInitialListing(initialResult);
       _listingTooltipHeight = 0;
       hasOptimisticPins = initialResult.pins.isNotEmpty;
     } else {
@@ -371,6 +383,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       userLocationFocusToken: _userLocationFocusToken,
       userLocationLatitude: _userLocationLatitude,
       userLocationLongitude: _userLocationLongitude,
+      focusListingToken: _focusListingToken,
+      focusListingLatitude: _focusListingLatitude,
+      focusListingLongitude: _focusListingLongitude,
       placeViewToggleAtBottom: widget.embedded,
       mapBottomInset: widget.embedded ? widget.embeddedMapBottomInset : 0,
       viewToggleBottom: widget.embeddedViewToggleBottom,
@@ -757,6 +772,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _selectedMetroStation = null;
         _listingTooltipHeight = 0;
       }
+      _maybeFocusInitialListing(result);
       _pruneSelectionForCurrentResult();
       _syncAllMapProps();
       if (mountingMapBody) setState(() {});
@@ -947,6 +963,27 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   ListingMapPin? _autoSelectedPin(_SearchMapResult result) {
     return result.pins.length == 1 ? result.pins.first : null;
+  }
+
+  /// Selects and requests a one-shot camera focus on [widget.initialFocusListingId]
+  /// the first time its pin appears in [result]. No-ops once applied (or once
+  /// there's nothing to apply), so later reloads/selections aren't overridden.
+  void _maybeFocusInitialListing(_SearchMapResult result) {
+    if (_initialFocusApplied) return;
+    final focusListingId = widget.initialFocusListingId;
+    if (focusListingId == null) {
+      _initialFocusApplied = true;
+      return;
+    }
+    for (final pin in result.pins) {
+      if (pin.listingId != focusListingId) continue;
+      _initialFocusApplied = true;
+      _selectedPin = pin;
+      _focusListingLatitude = pin.latitude;
+      _focusListingLongitude = pin.longitude;
+      _focusListingToken++;
+      return;
+    }
   }
 
   Future<void> _openFilters() async {

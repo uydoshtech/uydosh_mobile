@@ -392,21 +392,30 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
-  void _openMapViewWithSnapshot(SearchBottomSheetResult result) {
+  void _openMapViewWithSnapshot(
+    SearchBottomSheetResult result, {
+    int? focusListingId,
+  }) {
     final snapshot = _currentListingsSnapshot();
     _mapViewState.openMap(
       result,
       initialMapListings: snapshot.listings,
       initialMapTotal: snapshot.total,
+      focusListingId: focusListingId,
     );
     HomeInlineSearchState().setMapViewActive(true);
   }
 
-  Future<bool> openCurrentMapViewFromExternalRequest() async {
+  Future<bool> openCurrentMapViewFromExternalRequest({
+    int? focusListingId,
+  }) async {
     _searchFiltersState.clearPersistedFiltersDismissed();
     unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
     setState(() {
-      _openMapViewWithSnapshot(_currentSearchResultForViewToggle());
+      _openMapViewWithSnapshot(
+        _currentSearchResultForViewToggle(),
+        focusListingId: focusListingId,
+      );
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
       _inlineSearchSpacerExpanded = true;
@@ -1152,6 +1161,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       initialMapListings: initialMapListings,
       initialMapTotal: initialMapTotal,
       feedListingsRevision: feedListingsRevision,
+      focusListingId: _mapViewState.focusListingId,
       alertFabBottom: _searchAlertFabStackBottom(context),
       searchFiltersState: _searchFiltersState,
       searchButtonTutorialKey: _searchButtonTutorialKey,
