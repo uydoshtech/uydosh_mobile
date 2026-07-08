@@ -87,6 +87,64 @@ final class SunSimulationController {
       }
     }
   }
+
+  /// Builds an open sky "dome" — a spherical cap from the top pole down to `cutoffPolarAngle`
+  /// (measured from the top pole; > π/2 reaches past the equator) — instead of a full SCNSphere.
+  /// Kept centered on the room like the old full sphere (so the camera stays near its middle,
+  /// away from any pole, avoiding the texture stretching a full sphere shows near its poles);
+  /// the cap is simply cut off before it reaches the floor, so there's no geometry left below it
+  /// for stars to render on, without needing shaders or repositioning the whole sphere.
+  private static func makeStarDomeGeometry(
+    radius: Float,
+    cutoffPolarAngle: Float,
+    segments: Int = 64,
+    rings: Int = 32
+  ) -> SCNGeometry {
+    var vertices: [SCNVector3] = []
+    var normals: [SCNVector3] = []
+    var texCoords: [CGPoint] = []
+
+    let ringCount = max(2, rings)
+    let segmentCount = max(3, segments)
+    let vertsPerRing = segmentCount + 1
+
+    for ring in 0...ringCount {
+      let theta = cutoffPolarAngle * Float(ring) / Float(ringCount)
+      let y = radius * cos(theta)
+      let ringRadius = radius * sin(theta)
+      let v = Float(ring) / Float(ringCount)
+      for seg in 0...segmentCount {
+        let phi = 2 * Float.pi * Float(seg) / Float(segmentCount)
+        let x = ringRadius * cos(phi)
+        let z = ringRadius * sin(phi)
+        vertices.append(SCNVector3(x, y, z))
+        normals.append(SCNVector3(x / radius, y / radius, z / radius))
+        texCoords.append(CGPoint(x: CGFloat(Float(seg) / Float(segmentCount)), y: CGFloat(v)))
+      }
+    }
+
+    var indices: [Int32] = []
+    for ring in 0..<ringCount {
+      for seg in 0..<segmentCount {
+        let a = Int32(ring * vertsPerRing + seg)
+        let b = Int32(ring * vertsPerRing + seg + 1)
+        let c = Int32((ring + 1) * vertsPerRing + seg)
+        let d = Int32((ring + 1) * vertsPerRing + seg + 1)
+        indices.append(contentsOf: [a, c, b, b, c, d])
+      }
+    }
+
+    let element = SCNGeometryElement(indices: indices, primitiveType: .triangles)
+    return SCNGeometry(
+      sources: [
+        SCNGeometrySource(vertices: vertices),
+        SCNGeometrySource(normals: normals),
+        SCNGeometrySource(textureCoordinates: texCoords),
+      ],
+      elements: [element]
+    )
+  }
+
   static let fillLightNodeName = "UydoshSunFill"
 
   private(set) var isEnabled = false
@@ -188,21 +246,23 @@ final class SunSimulationController {
     rig.addChildNode(moon)
     moonNode = moon
 
-    // Cosmetic starfield: a large inverted sky dome. Renders first, ignores depth, and uses
-    // additive blending so its black body is invisible and only the star texture's dots brighten
-    // the sky (room geometry, drawn after, occludes it from most angles). It's a full sphere, but
-    // rather than centering it on roomCenter (which would put half of it below the floor — visible
-    // as stars "underground" whenever the camera looks past the room's edges, e.g. orbiting from
-    // above), it's floated straight up so its lowest point sits right at floor level: since its
-    // radius dwarfs the room, that shift is imperceptible in the star pattern itself, but it means
-    // there's simply no dome geometry left below the floor to ever show through.
-    // `emission.intensity` ramps the stars from invisible by day to visible at night (see
-    // updateDirectionalLight).
+    // Cosmetic starfield: a large inverted sky dome centered on the room, same as the sun/moon
+    // rig. Renders first, ignores depth, and uses additive blending so its black body is
+    // invisible and only the star texture's dots brighten the sky (room geometry, drawn after,
+    // occludes it from most angles). Rather than a full sphere — half of which would sit below
+    // the floor, showing stars "underground" whenever the camera looks past the room's edges — the
+    // dome geometry itself is cut off right at floor height, so there's simply nothing left below
+    // it to ever render. `emission.intensity` ramps the stars from invisible by day to visible at
+    // night (see updateDirectionalLight).
     let dome = SCNNode()
     dome.name = Self.starDomeNodeName
-    let domeRadius = CGFloat(sunRadius) * 1.3
-    let domeSphere = SCNSphere(radius: domeRadius)
-    domeSphere.segmentCount = 96
+    let domeRadius = sunRadius * 1.3
+    // Floor height in the dome's local space (it's centered on roomCenter), nudged up a touch so
+    // the cutoff sits comfortably above the true floor rather than exactly on it.
+    let floorMargin = max(0.3, domeRadius * 0.01)
+    let floorLocalY = min(domeRadius * 0.98, sceneBounds.min.y - roomCenter.y + floorMargin)
+    let domeCutoffPolarAngle = acos(max(-1, min(1, floorLocalY / domeRadius)))
+    let domeGeometry = Self.makeStarDomeGeometry(radius: domeRadius, cutoffPolarAngle: domeCutoffPolarAngle)
     let domeMat = SCNMaterial()
     domeMat.lightingModel = .constant
     domeMat.diffuse.contents = UIColor.black
@@ -212,16 +272,11 @@ final class SunSimulationController {
     domeMat.writesToDepthBuffer = false
     domeMat.readsFromDepthBuffer = false
     domeMat.blendMode = .add
-    domeSphere.materials = [domeMat]
-    dome.geometry = domeSphere
+    domeGeometry.materials = [domeMat]
+    dome.geometry = domeGeometry
     dome.castsShadow = false
     dome.renderingOrder = -100
-    let floorMargin: Float = max(0.5, sunRadius * 0.05)
-    dome.position = SCNVector3(
-      roomCenter.x,
-      sceneBounds.min.y + Float(domeRadius) + floorMargin,
-      roomCenter.z
-    )
+    dome.position = roomCenter
     rig.addChildNode(dome)
     starDomeNode = dome
 
