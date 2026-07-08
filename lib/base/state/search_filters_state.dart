@@ -35,6 +35,7 @@ class SearchFiltersState extends ChangeNotifier {
   double _maxPrice = 500.0; // Default visible max price
   bool _privateRoom = false; // Default to false (show all)
   bool _withPhoto = false;
+  bool _has3dTour = false;
   bool _isInitialized = false;
   bool _profileDefaultsApplied = false;
   // Tracks whether the user had any persisted filters (local prefs or a server
@@ -285,6 +286,7 @@ class SearchFiltersState extends ChangeNotifier {
     }
     _privateRoom = readBool("private_room", false);
     _withPhoto = readBool("with_photo", false);
+    _has3dTour = readBool("has_3d_tour", false);
 
     notifyListeners();
 
@@ -308,6 +310,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setDouble("search_max_price", _maxPrice);
       await prefs.setBool("search_private_room", _privateRoom);
       await prefs.setBool("search_with_photo", _withPhoto);
+      await prefs.setBool("search_has_3d_tour", _has3dTour);
     });
   }
 
@@ -344,6 +347,7 @@ class SearchFiltersState extends ChangeNotifier {
         "max_price": _maxPrice,
         "private_room": _privateRoom,
         "with_photo": _withPhoto,
+        "has_3d_tour": _has3dTour,
       };
       await getIt<IUserSearchFiltersService>().saveMe(payload);
     } catch (e) {
@@ -399,6 +403,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setDouble("search_max_price", _maxPrice);
       await prefs.setBool("search_private_room", _privateRoom);
       await prefs.setBool("search_with_photo", _withPhoto);
+      await prefs.setBool("search_has_3d_tour", _has3dTour);
     });
     _hadSavedListingTypeId = true;
     _hadSavedGender = true;
@@ -417,6 +422,7 @@ class SearchFiltersState extends ChangeNotifier {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
   }) {
     if (listingTypeId != null) {
       _selectedListingTypeId = listingTypeId;
@@ -459,6 +465,10 @@ class SearchFiltersState extends ChangeNotifier {
 
     if (withPhoto != null) {
       _withPhoto = withPhoto;
+    }
+
+    if (has3dTour != null) {
+      _has3dTour = has3dTour;
     }
 
     if (subwayLineId != null &&
@@ -543,6 +553,7 @@ class SearchFiltersState extends ChangeNotifier {
   double get maxPrice => _maxPrice;
   bool get privateRoom => _privateRoom;
   bool get withPhoto => _withPhoto;
+  bool get has3dTour => _has3dTour;
   bool get isInitialized => _isInitialized;
 
   /// True when the user has never saved listing type or gender prefs yet.
@@ -642,6 +653,8 @@ class SearchFiltersState extends ChangeNotifier {
 
       _withPhoto = prefs.getBool("search_with_photo") ?? false;
 
+      _has3dTour = prefs.getBool("search_has_3d_tour") ?? false;
+
       _searchListingTypeIds = _loadSearchListingTypeIdsFromPrefs(
         prefs,
         uiListingTypeId: _selectedListingTypeId,
@@ -664,11 +677,12 @@ class SearchFiltersState extends ChangeNotifier {
           prefs.containsKey("search_max_price") ||
           prefs.containsKey("search_private_room") ||
           prefs.containsKey("search_with_photo") ||
+          prefs.containsKey("search_has_3d_tour") ||
           prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey) ||
           prefs.containsKey("search_landlord_demand_bundle");
 
       logger.d(
-        "Loaded saved search filters: listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto",
+        "Loaded saved search filters: listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto, has3dTour=$_has3dTour",
       );
     } catch (e) {
       logger.d("Error loading saved search filters: $e");
@@ -1140,6 +1154,22 @@ class SearchFiltersState extends ChangeNotifier {
     if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
+  // Update 3D tour ("3D View") preference
+  Future<void> setHas3dTour(bool has3dTour) async {
+    _has3dTour = has3dTour;
+
+    try {
+      await _enqueuePrefsWrite((prefs) async {
+        await prefs.setBool("search_has_3d_tour", has3dTour);
+      });
+    } catch (e) {
+      logger.d("Error saving 3D tour preference: $e");
+    }
+
+    notifyListeners();
+    if (!_remotePersistGated) _scheduleRemotePersist();
+  }
+
   /// Clears local filter prefs and the backend snapshot when the user dismisses
   /// the home filter ribbon (X). Profile-derived defaults are rebuilt only after
   /// the user commits a new search.
@@ -1176,6 +1206,7 @@ class SearchFiltersState extends ChangeNotifier {
     _maxPrice = 500.0;
     _privateRoom = false;
     _withPhoto = false;
+    _has3dTour = false;
     notifyListeners();
   }
 
@@ -1201,6 +1232,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.remove("search_max_price");
       await prefs.remove("search_private_room");
       await prefs.remove("search_with_photo");
+      await prefs.remove("search_has_3d_tour");
     } catch (e) {
       logger.d("Error clearing search filters: $e");
     }
@@ -1231,6 +1263,7 @@ class SearchFiltersState extends ChangeNotifier {
     _maxPrice = snapshot.maxPrice;
     _privateRoom = snapshot.privateRoom;
     _withPhoto = snapshot.withPhoto;
+    _has3dTour = snapshot.has3dTour;
 
     notifyListeners();
 
@@ -1262,6 +1295,7 @@ class SearchFiltersState extends ChangeNotifier {
         await prefs.setDouble("search_max_price", snapshot.maxPrice);
         await prefs.setBool("search_private_room", snapshot.privateRoom);
         await prefs.setBool("search_with_photo", snapshot.withPhoto);
+        await prefs.setBool("search_has_3d_tour", snapshot.has3dTour);
       });
     } catch (e) {
       logger.d("Error restoring search filters snapshot: $e");
@@ -1286,6 +1320,7 @@ class SearchFiltersSnapshot {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    required this.has3dTour,
   });
 
   factory SearchFiltersSnapshot.capture(SearchFiltersState s) {
@@ -1302,6 +1337,7 @@ class SearchFiltersSnapshot {
       maxPrice: s.maxPrice,
       privateRoom: s.privateRoom,
       withPhoto: s.withPhoto,
+      has3dTour: s.has3dTour,
     );
   }
 
@@ -1317,6 +1353,7 @@ class SearchFiltersSnapshot {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final bool has3dTour;
 }
 
 class _EmptyRequest implements IJsonEncodable {

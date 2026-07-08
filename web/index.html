@@ -20,11 +20,23 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="UyDosh">
 
+  <!-- Locks pinch/double-tap zoom so the Telegram in-app WebView doesn't
+       zoom in when a control loses focus (e.g. tapping outside a text field). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="UyDosh">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <style>
+    /* Belt-and-suspenders: some WebViews ignore user-scalable=no and still
+       honor double-tap/pinch zoom via CSS touch-action. */
+    html, body {
+      touch-action: manipulation;
+    }
+  </style>
 
   <!-- Google Sign-In Configuration -->
   <meta name="google-signin-client_id" content="626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com">
@@ -42,6 +54,13 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    // Extra guard for WebKit-based WebViews (incl. Telegram's) that still
+    // fire pinch-zoom via gesture events despite the viewport/touch-action hints above.
+    document.addEventListener('gesturestart', function (event) {
+      event.preventDefault();
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

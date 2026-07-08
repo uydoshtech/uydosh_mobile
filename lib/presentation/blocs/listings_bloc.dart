@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:bloc/bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -25,6 +27,10 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
 
   final IListingService _listingService;
   static const Duration _requestTimeout = Duration(seconds: 20);
+  // Mirrors LISTING_LIMIT_MAX in the backend's listingController.ts — used to
+  // clamp the expanded refetch below so we never request more than the
+  // server will honor.
+  static const int _serverMaxLimit = 100;
   int _currentPage = 1;
   bool _hasMore = true;
   List<Listing> _currentListings = [];
@@ -43,6 +49,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   double? _lastMaxPrice;
   bool? _lastPrivateRoom;
   bool? _lastWithPhoto;
+  bool? _lastHas3dTour;
   List<int>? _lastExcludeUserIds;
 
   /// Monotonic id for in-flight feed searches. Responses from older requests
@@ -78,6 +85,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastMaxPrice != null ||
       _lastPrivateRoom != null ||
       _lastWithPhoto == true ||
+      _lastHas3dTour == true ||
       (_lastExcludeUserIds != null && _lastExcludeUserIds!.isNotEmpty);
 
   /// Prefer the exact total captured on page 1; page 2+ responses only carry a
@@ -245,6 +253,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
               maxPrice: _lastMaxPrice,
               privateRoom: _lastPrivateRoom,
               withPhoto: _lastWithPhoto,
+              has3dTour: _lastHas3dTour,
               excludeUserIds: _lastExcludeUserIds,
             )
             .timeout(_requestTimeout);
@@ -418,6 +427,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     _lastMaxPrice = searchParams["maxPrice"] as double?;
     _lastPrivateRoom = searchParams["privateRoom"] as bool?;
     _lastWithPhoto = searchParams["withPhoto"] as bool?;
+    _lastHas3dTour = searchParams["has3dTour"] as bool?;
     _lastExcludeUserIds = searchParams["excludeUserIds"] as List<int>?;
   }
 
@@ -469,6 +479,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         "maxPrice": e.maxPrice,
         "privateRoom": e.privateRoom,
         "withPhoto": e.withPhoto,
+        "has3dTour": e.has3dTour,
         "excludeUserIds": e.excludeUserIds,
       },
       fetchUserListings: (e) => null,
@@ -500,6 +511,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           "maxPrice": e.maxPrice,
           "privateRoom": e.privateRoom,
           "withPhoto": e.withPhoto,
+          "has3dTour": e.has3dTour,
           "excludeUserIds": e.excludeUserIds,
         },
         fetchUserListings: (e) => null,
@@ -521,6 +533,21 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         fetchUserListings: (e) => e.limit,
       );
 
+      // When silently refreshing in the background (e.g. after returning from
+      // a listing's detail screen) while the user has already scrolled past
+      // page 1, request enough items to cover everything already loaded.
+      // Otherwise this refresh would collapse the feed back down to a single
+      // page and yank the scroll position even though [keepStaleWhileRefreshing]
+      // already avoids the loading-skeleton flash.
+      final preserveLoadedWindow =
+          isRefresh && keepStaleWhileRefreshing && _currentListings.isNotEmpty;
+      final requestLimit = preserveLoadedWindow
+          ? math.min(
+              _serverMaxLimit,
+              math.max(limit, _currentListings.length),
+            )
+          : limit;
+
       // Use the new comprehensive search method
       final subwayStationId = searchParams?["subwayStationId"] as int?;
       final subwayStationIds = searchParams?["subwayStationIds"] as List<int>?;
@@ -533,6 +560,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final maxPrice = searchParams?["maxPrice"] as double?;
       final privateRoom = searchParams?["privateRoom"] as bool?;
       final withPhoto = searchParams?["withPhoto"] as bool?;
+      final has3dTour = searchParams?["has3dTour"] as bool?;
       final excludeUserIds = searchParams?["excludeUserIds"] as List<int>?;
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
@@ -552,7 +580,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final response = await _listingService
           .searchListings(
             page: page,
-            limit: limit,
+            limit: requestLimit,
             isActive: true,
             listingTypeId: listingTypeIds != null ? null : listingTypeId,
             listingTypeIds: listingTypeIds,
@@ -565,6 +593,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             maxPrice: maxPrice,
             privateRoom: privateRoom,
             withPhoto: withPhoto,
+            has3dTour: has3dTour,
             excludeUserIds: excludeUserIds,
           )
           .timeout(_requestTimeout);
@@ -605,7 +634,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _hasMore = _computeHasMore(
         loadedCount: _currentListings.length,
         newPageItemCount: listings.length,
-        limit: limit,
+        limit: requestLimit,
         currentPage: page,
         responseTotalPages: response.totalPages,
         exactTotal: _totalResults,
@@ -620,7 +649,13 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         ),
       );
 
-      _currentPage++;
+      // We may have just fetched several "standard" pages worth of items in
+      // one expanded request (see [preserveLoadedWindow] above) — advance
+      // [_currentPage] past all of them so the next [loadMore] resumes at the
+      // correct offset instead of re-requesting items we already have.
+      _currentPage = preserveLoadedWindow && limit > 0
+          ? (listings.length / limit).ceil() + 1
+          : _currentPage + 1;
     } catch (error) {
       if (requestGeneration != _searchRequestGeneration) {
         return;

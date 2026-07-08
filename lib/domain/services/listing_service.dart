@@ -105,6 +105,7 @@ abstract class IListingService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   });
@@ -125,6 +126,7 @@ abstract class IListingService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   });
@@ -375,6 +377,7 @@ class ListingService implements IListingService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   }) =>
@@ -394,6 +397,7 @@ class ListingService implements IListingService {
         maxPrice: maxPrice,
         privateRoom: privateRoom,
         withPhoto: withPhoto,
+        has3dTour: has3dTour,
         createdWithinDays: createdWithinDays,
         excludeUserIds: excludeUserIds,
       );
@@ -415,6 +419,7 @@ class ListingService implements IListingService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   }) =>
@@ -434,6 +439,7 @@ class ListingService implements IListingService {
         maxPrice: maxPrice,
         privateRoom: privateRoom,
         withPhoto: withPhoto,
+        has3dTour: has3dTour,
         createdWithinDays: createdWithinDays,
         excludeUserIds: excludeUserIds,
       );

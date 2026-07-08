@@ -20,6 +20,7 @@ class ResolvedListingSearchParams {
     this.maxPrice,
     this.privateRoom,
     this.withPhoto,
+    this.has3dTour,
     this.createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
@@ -34,6 +35,7 @@ class ResolvedListingSearchParams {
   final double? maxPrice;
   final bool? privateRoom;
   final bool? withPhoto;
+  final bool? has3dTour;
   final int createdWithinDays;
 
   /// Build the same filter set the home feed uses from [SearchFiltersState].
@@ -50,6 +52,7 @@ class ResolvedListingSearchParams {
     double? explicitMaxPrice,
     bool? explicitPrivateRoom,
     bool? explicitWithPhoto,
+    bool? explicitHas3dTour,
     bool useExplicitFiltersOnly = false,
     bool includeSafeFallbacks = false,
     bool explicitNullFallsBackToState = false,
@@ -109,6 +112,11 @@ class ResolvedListingSearchParams {
             ? (explicitWithPhoto ?? false)
             : explicitWithPhoto)
         : state.withPhoto;
+    final has3dTour = fromExplicit
+        ? (includeSafeFallbacks
+            ? (explicitHas3dTour ?? false)
+            : explicitHas3dTour)
+        : state.has3dTour;
 
     return ResolvedListingSearchParams(
       listingTypeId: listingTypeIds != null ? null : listingTypeId,
@@ -122,6 +130,7 @@ class ResolvedListingSearchParams {
       maxPrice: maxPrice,
       privateRoom: privateRoom,
       withPhoto: withPhoto,
+      has3dTour: has3dTour,
     );
   }
 
@@ -138,6 +147,7 @@ class ResolvedListingSearchParams {
     required double maxPrice,
     required bool privateRoom,
     required bool withPhoto,
+    bool has3dTour = false,
   }) {
     final normalizedStationIds =
         subwayStationIds.isNotEmpty ? List<int>.from(subwayStationIds) : null;
@@ -157,6 +167,7 @@ class ResolvedListingSearchParams {
       maxPrice: maxPrice,
       privateRoom: privateRoom,
       withPhoto: withPhoto,
+      has3dTour: has3dTour,
     );
   }
 
@@ -181,6 +192,7 @@ class ResolvedListingSearchParams {
       maxPrice: maxPrice,
       privateRoom: privateRoom,
       withPhoto: withPhoto,
+      has3dTour: has3dTour,
       createdWithinDays: createdWithinDays,
     );
   }

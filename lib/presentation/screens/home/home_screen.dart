@@ -136,6 +136,7 @@ class HomeScreen extends StatefulWidget {
     this.maxPrice,
     this.privateRoom,
     this.withPhoto,
+    this.has3dTour,
     this.isSearchMode = false,
     this.useExplicitFiltersOnly = false,
     this.isHomeTabActive = true,
@@ -151,6 +152,7 @@ class HomeScreen extends StatefulWidget {
   final double? maxPrice;
   final bool? privateRoom;
   final bool? withPhoto;
+  final bool? has3dTour;
   final bool isSearchMode;
   final bool useExplicitFiltersOnly;
   final bool showMapInitially;
@@ -495,7 +497,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _searchFiltersState.minPrice != 0.0 ||
         _searchFiltersState.maxPrice != 1000.0 ||
         _searchFiltersState.privateRoom ||
-        _searchFiltersState.withPhoto;
+        _searchFiltersState.withPhoto ||
+        _searchFiltersState.has3dTour;
   }
 
   /// Returns true when the persisted prefs flag was set and we activated the
@@ -793,6 +796,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     if (widget.withPhoto != null) {
       await _searchFiltersState.setWithPhoto(widget.withPhoto!);
     }
+    if (widget.has3dTour != null) {
+      await _searchFiltersState.setHas3dTour(widget.has3dTour!);
+    }
   }
 
   @override
@@ -878,10 +884,14 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  /// Refresh listings when returning to home screen
+  /// Refresh listings when returning to home screen. Uses
+  /// [keepStaleWhileRefreshing] so the feed stays on the `loaded` state (no
+  /// skeleton swap) during the refresh — the skeleton list doesn't attach
+  /// [_scrollController], so swapping to it and back would reset the feed's
+  /// scroll position to the top.
   void _refreshListings() {
     try {
-      _dispatchFeedRefresh();
+      _dispatchFeedRefresh(keepStaleWhileRefreshing: true);
     } catch (e) {
       debugPrint("Error refreshing listings: $e");
     }
@@ -980,6 +990,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       explicitPrivateRoom:
           widget.useExplicitFiltersOnly ? widget.privateRoom : null,
       explicitWithPhoto: widget.useExplicitFiltersOnly ? widget.withPhoto : null,
+      explicitHas3dTour:
+          widget.useExplicitFiltersOnly ? widget.has3dTour : null,
       useExplicitFiltersOnly: widget.useExplicitFiltersOnly,
       includeSafeFallbacks: includeSafeFallbacks,
       explicitNullFallsBackToState: explicitNullFallsBackToState,
@@ -1217,6 +1229,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
           maxPrice: filters.maxPrice,
           privateRoom: filters.privateRoom,
           withPhoto: filters.withPhoto,
+          has3dTour: filters.has3dTour,
           total: null,
           showLabel: true,
           alignRight: false,
@@ -1260,6 +1273,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       maxPrice: filters.maxPrice ?? _searchFiltersState.maxPrice,
       privateRoom: filters.privateRoom ?? _searchFiltersState.privateRoom,
       withPhoto: filters.withPhoto ?? _searchFiltersState.withPhoto,
+      has3dTour: filters.has3dTour ?? _searchFiltersState.has3dTour,
       action: SearchBottomSheetAction.map,
     );
   }
@@ -1575,6 +1589,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       maxPrice: _searchFiltersState.maxPrice,
       privateRoom: _searchFiltersState.privateRoom,
       withPhoto: _searchFiltersState.withPhoto,
+      has3dTour: _searchFiltersState.has3dTour,
       total: null,
       showLabel: false,
       alignRight: false,
@@ -1855,6 +1870,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       currentMaxPrice: _searchFiltersState.maxPrice,
       currentPrivateRoom: _searchFiltersState.privateRoom,
       currentWithPhoto: _searchFiltersState.withPhoto,
+      currentHas3dTour: _searchFiltersState.has3dTour,
       onApply: (result) {
         // Persist filter writes deterministically (important for web reloads).
         _applyInlineSearchResult(result);
@@ -1876,6 +1892,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       currentMaxPrice: _searchFiltersState.maxPrice,
       currentPrivateRoom: _searchFiltersState.privateRoom,
       currentWithPhoto: _searchFiltersState.withPhoto,
+      currentHas3dTour: _searchFiltersState.has3dTour,
       primaryAction: SearchBottomSheetAction.map,
       onApply: (result) async {
         if (widget.isSearchMode) {
@@ -2059,6 +2076,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
             maxPrice: _searchFiltersState.maxPrice,
             privateRoom: _searchFiltersState.privateRoom,
             withPhoto: _searchFiltersState.withPhoto,
+            has3dTour: _searchFiltersState.has3dTour,
             isSearchMode: true,
             isHomeTabActive: false,
           ),
@@ -2184,6 +2202,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       currentMaxPrice: _searchFiltersState.maxPrice,
       currentPrivateRoom: _searchFiltersState.privateRoom,
       currentWithPhoto: _searchFiltersState.withPhoto,
+      currentHas3dTour: _searchFiltersState.has3dTour,
       onApply: (result) async {
         await _applySearchModeResult(result);
       },
@@ -2214,6 +2233,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     await _searchFiltersState.setPriceRange(result.minPrice, result.maxPrice);
     await _searchFiltersState.setPrivateRoom(result.privateRoom);
     await _searchFiltersState.setWithPhoto(result.withPhoto);
+    await _searchFiltersState.setHas3dTour(result.has3dTour);
 
     // Metro line is just a "whole line" marker now; it coexists with both the
     // multi-station selection and a chosen location (filters are combined).
@@ -2350,6 +2370,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         maxPrice: filters.maxPrice,
         privateRoom: filters.privateRoom,
         withPhoto: filters.withPhoto,
+        has3dTour: filters.has3dTour,
         isRefresh: isRefresh,
         keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
       ),
@@ -2372,7 +2393,8 @@ bool _searchFiltersSnapshotEquals(
       a.minPrice == b.minPrice &&
       a.maxPrice == b.maxPrice &&
       a.privateRoom == b.privateRoom &&
-      a.withPhoto == b.withPhoto;
+      a.withPhoto == b.withPhoto &&
+      a.has3dTour == b.has3dTour;
 }
 
 bool _listEquals(List<int> a, List<int> b) {

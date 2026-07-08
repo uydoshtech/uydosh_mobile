@@ -38,6 +38,7 @@ mixin _$ListingsEvent {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -69,6 +70,7 @@ mixin _$ListingsEvent {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -99,6 +101,7 @@ mixin _$ListingsEvent {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -309,6 +312,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -343,6 +347,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -376,6 +381,7 @@ class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -557,6 +563,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -591,6 +598,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -624,6 +632,7 @@ class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -841,6 +850,7 @@ class _$$FetchListingsByLocationImplImpl
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -876,6 +886,7 @@ class _$$FetchListingsByLocationImplImpl
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -910,6 +921,7 @@ class _$$FetchListingsByLocationImplImpl
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1015,6 +1027,7 @@ abstract class _$$$SearchListingsImplImplCopyWith<$Res>
       double? maxPrice,
       bool? privateRoom,
       bool? withPhoto,
+      bool? has3dTour,
       List<int>? excludeUserIds,
       int page,
       int limit,
@@ -1047,6 +1060,7 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
     Object? maxPrice = freezed,
     Object? privateRoom = freezed,
     Object? withPhoto = freezed,
+    Object? has3dTour = freezed,
     Object? excludeUserIds = freezed,
     Object? page = null,
     Object? limit = null,
@@ -1099,6 +1113,10 @@ class __$$$SearchListingsImplImplCopyWithImpl<$Res>
           ? _value.withPhoto
           : withPhoto // ignore: cast_nullable_to_non_nullable
               as bool?,
+      has3dTour: freezed == has3dTour
+          ? _value.has3dTour
+          : has3dTour // ignore: cast_nullable_to_non_nullable
+              as bool?,
       excludeUserIds: freezed == excludeUserIds
           ? _value._excludeUserIds
           : excludeUserIds // ignore: cast_nullable_to_non_nullable
@@ -1142,6 +1160,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       this.maxPrice,
       this.privateRoom,
       this.withPhoto,
+      this.has3dTour,
       final List<int>? excludeUserIds,
       this.page = 1,
       this.limit = 10,
@@ -1191,6 +1210,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
   final bool? privateRoom;
   @override
   final bool? withPhoto;
+  @override
+  final bool? has3dTour;
   final List<int>? _excludeUserIds;
   @override
   List<int>? get excludeUserIds {
@@ -1222,7 +1243,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
 
   @override
   String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
+    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, has3dTour: $has3dTour, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
   }
 
   @override
@@ -1251,6 +1272,8 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
                 other.privateRoom == privateRoom) &&
             (identical(other.withPhoto, withPhoto) ||
                 other.withPhoto == withPhoto) &&
+            (identical(other.has3dTour, has3dTour) ||
+                other.has3dTour == has3dTour) &&
             const DeepCollectionEquality()
                 .equals(other._excludeUserIds, _excludeUserIds) &&
             (identical(other.page, page) || other.page == page) &&
@@ -1278,6 +1301,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
       maxPrice,
       privateRoom,
       withPhoto,
+      has3dTour,
       const DeepCollectionEquality().hash(_excludeUserIds),
       page,
       limit,
@@ -1316,6 +1340,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1338,6 +1363,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         maxPrice,
         privateRoom,
         withPhoto,
+        has3dTour,
         excludeUserIds,
         page,
         limit,
@@ -1367,6 +1393,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1388,6 +1415,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
         maxPrice,
         privateRoom,
         withPhoto,
+        has3dTour,
         excludeUserIds,
         page,
         limit,
@@ -1417,6 +1445,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1440,6 +1469,7 @@ class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
           maxPrice,
           privateRoom,
           withPhoto,
+          has3dTour,
           excludeUserIds,
           page,
           limit,
@@ -1507,6 +1537,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
       final double? maxPrice,
       final bool? privateRoom,
       final bool? withPhoto,
+      final bool? has3dTour,
       final List<int>? excludeUserIds,
       final int page,
       final int limit,
@@ -1525,6 +1556,7 @@ abstract class _$SearchListingsImpl implements ListingsEvent {
   double? get maxPrice;
   bool? get privateRoom;
   bool? get withPhoto;
+  bool? get has3dTour;
   List<int>? get excludeUserIds;
   int get page;
   @override
@@ -1657,6 +1689,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1691,6 +1724,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,
@@ -1724,6 +1758,7 @@ class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
             double? maxPrice,
             bool? privateRoom,
             bool? withPhoto,
+            bool? has3dTour,
             List<int>? excludeUserIds,
             int page,
             int limit,

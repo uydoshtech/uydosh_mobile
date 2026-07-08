@@ -73,6 +73,7 @@ class _SearchResultsMapBody extends StatelessWidget {
                 maxPrice: overlay.maxPrice,
                 privateRoom: overlay.privateRoom,
                 withPhoto: overlay.withPhoto,
+                has3dTour: overlay.has3dTour,
                 total: null,
               );
             }
@@ -91,6 +92,7 @@ class _SearchResultsMapBody extends StatelessWidget {
               maxPrice: overlay.maxPrice,
               privateRoom: overlay.privateRoom,
               withPhoto: overlay.withPhoto,
+              has3dTour: overlay.has3dTour,
               total: null,
             );
           },

@@ -52,6 +52,7 @@ class SearchBottomSheetResult {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.has3dTour = false,
     this.action = SearchBottomSheetAction.feed,
     this.subwayStationIds = const [],
     this.listingTypeIds,
@@ -71,6 +72,7 @@ class SearchBottomSheetResult {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final bool has3dTour;
   final SearchBottomSheetAction action;
 }
 
@@ -99,6 +101,7 @@ class SearchBottomSheetWidget {
     double? currentMaxPrice,
     bool? currentPrivateRoom,
     bool? currentWithPhoto,
+    bool? currentHas3dTour,
     void Function(SearchBottomSheetResult result)? onApply,
     String primaryLabelKey = "search",
     IconData primaryIcon = Icons.search,
@@ -142,6 +145,7 @@ class SearchBottomSheetWidget {
             currentMaxPrice: currentMaxPrice,
             currentPrivateRoom: currentPrivateRoom,
             currentWithPhoto: currentWithPhoto,
+            currentHas3dTour: currentHas3dTour,
             onApply: onApply,
             onCommit: markCommitted,
             primaryLabelKey: primaryLabelKey,
@@ -181,6 +185,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
     this.currentMaxPrice,
     this.currentPrivateRoom,
     this.currentWithPhoto,
+    this.currentHas3dTour,
     this.onApply,
     this.onCommit,
     this.primaryLabelKey = "search",
@@ -200,6 +205,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final double? currentMaxPrice;
   final bool? currentPrivateRoom;
   final bool? currentWithPhoto;
+  final bool? currentHas3dTour;
   final void Function(SearchBottomSheetResult result)? onApply;
 
   /// Called by [_performSearch] BEFORE popping the sheet so the show()

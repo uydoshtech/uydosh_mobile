@@ -37,6 +37,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       maxPrice: widget.currentMaxPrice,
       privateRoom: widget.currentPrivateRoom,
       withPhoto: widget.currentWithPhoto,
+      has3dTour: widget.currentHas3dTour,
     );
 
     if (_searchFiltersState.selectedSubwayLine > 0) {
@@ -332,6 +333,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     _resetMetroPicker();
     unawaited(_searchFiltersState.setPrivateRoom(false));
     unawaited(_searchFiltersState.setWithPhoto(false));
+    unawaited(_searchFiltersState.setHas3dTour(false));
 
     final locationCtrl = _locationScrollController;
     if (locationCtrl != null &&
@@ -721,6 +723,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         _searchFiltersState.setWithPhoto(value);
                         setState(() {});
                       },
+                      onHas3dTourChanged: (value) {
+                        _searchFiltersState.setHas3dTour(value);
+                        setState(() {});
+                      },
                       onPrimaryPressed: () => _performSearch(
                         action: widget.primaryAction,
                       ),
@@ -789,6 +795,8 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
         isGroupFormingOnlySearch ? false : _searchFiltersState.privateRoom;
     final withPhoto =
         isGroupFormingOnlySearch ? false : _searchFiltersState.withPhoto;
+    final has3dTour =
+        isGroupFormingOnlySearch ? false : _searchFiltersState.has3dTour;
 
     // Debug logging to see what values are being passed
     logger.d(
@@ -818,6 +826,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
           maxPrice: maxPrice,
           privateRoom: privateRoom,
           withPhoto: withPhoto,
+          has3dTour: has3dTour,
           action: action,
         ),
       );

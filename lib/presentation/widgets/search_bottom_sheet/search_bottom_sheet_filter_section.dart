@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
@@ -64,6 +65,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
     required this.onPriceRangeChanged,
     required this.onPrivateRoomChanged,
     required this.onWithPhotoChanged,
+    required this.onHas3dTourChanged,
     required this.onPrimaryPressed,
     required this.primaryLabelKey,
     required this.primaryIcon,
@@ -75,6 +77,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   final void Function(double minPrice, double maxPrice) onPriceRangeChanged;
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
+  final void Function(bool value) onHas3dTourChanged;
   final VoidCallback onPrimaryPressed;
   final String primaryLabelKey;
   final IconData primaryIcon;
@@ -128,6 +131,38 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: ClientLidarRoomScanConfig.lidarRoomScanDisabled,
+            builder: (context, lidarDisabled, _) {
+              if (lidarDisabled) {
+                // Feature was disabled server-side after the user had already
+                // turned this filter on — clear it so it doesn't silently
+                // keep narrowing results with no visible toggle to undo it.
+                if (searchFiltersState.has3dTour) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    onHas3dTourChanged(false);
+                  });
+                }
+                return const SizedBox.shrink();
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  _SearchSheetFilterToggle(
+                    icon: Icons.view_in_ar,
+                    label: L10n.get("search_filter_3d_view"),
+                    value: searchFiltersState.has3dTour,
+                    emphasized: searchFiltersState.has3dTour,
+                    onChanged: (value) {
+                      UiFeedbackUtils.tap();
+                      onHas3dTourChanged(value);
+                    },
+                  ),
+                ],
+              );
+            },
           ),
         ],
         const SizedBox(height: 20),

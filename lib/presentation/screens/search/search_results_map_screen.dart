@@ -116,6 +116,7 @@ class SearchResultsMapScreen extends StatefulWidget {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.has3dTour = false,
     super.key,
     this.listingTypeIds,
     this.locationId,
@@ -147,6 +148,7 @@ class SearchResultsMapScreen extends StatefulWidget {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final bool has3dTour;
   final void Function(
     BuildContext context,
     SearchBottomSheetResult result, {
@@ -241,6 +243,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
   late double _maxPrice;
   late bool _privateRoom;
   late bool _withPhoto;
+  late bool _has3dTour;
 
   late final ArgumentCallback<Point> _onMapBackgroundTap = _handleMapBackgroundTap;
   late final ValueChanged<ListingMapPin> _onSelectPin = _handleSelectPin;
@@ -415,6 +418,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       maxPrice: _maxPrice,
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
+      has3dTour: _has3dTour,
       selectedPin: _selectedPin,
       visiblePins: _carouselPinsFor(result),
       selectedUniversityMarker: _selectedUniversityMarker,
@@ -526,6 +530,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     _maxPrice = widget.maxPrice;
     _privateRoom = widget.privateRoom;
     _withPhoto = widget.withPhoto;
+    _has3dTour = widget.has3dTour;
   }
 
   bool _widgetFiltersChanged(SearchResultsMapScreen oldWidget) {
@@ -542,7 +547,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         oldWidget.minPrice != widget.minPrice ||
         oldWidget.maxPrice != widget.maxPrice ||
         oldWidget.privateRoom != widget.privateRoom ||
-        oldWidget.withPhoto != widget.withPhoto;
+        oldWidget.withPhoto != widget.withPhoto ||
+        oldWidget.has3dTour != widget.has3dTour;
   }
 
   bool _matchesCurrentFilters(SearchBottomSheetResult result) {
@@ -559,7 +565,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _minPrice == result.minPrice &&
         _maxPrice == result.maxPrice &&
         _privateRoom == result.privateRoom &&
-        _withPhoto == result.withPhoto;
+        _withPhoto == result.withPhoto &&
+        _has3dTour == result.has3dTour;
   }
 
   bool get _filterRibbonEnabled =>
@@ -599,7 +606,8 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _subwayLineId != null ||
         _hasCustomMapPriceRange(_minPrice, _maxPrice) ||
         _privateRoom ||
-        _withPhoto;
+        _withPhoto ||
+        _has3dTour;
   }
 
   bool _hasCustomMapPriceRange(double minPrice, double maxPrice) {
@@ -802,6 +810,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         maxPrice: _maxPrice,
         privateRoom: _privateRoom,
         withPhoto: _withPhoto,
+        has3dTour: _has3dTour,
       );
 
   Future<_SearchMapResult> _fetchResults() async {
@@ -1000,6 +1009,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       currentMaxPrice: _maxPrice,
       currentPrivateRoom: _privateRoom,
       currentWithPhoto: _withPhoto,
+      currentHas3dTour: _has3dTour,
       primaryLabelKey: "apply",
       primaryIcon: Icons.check,
       primaryAction: SearchBottomSheetAction.map,
@@ -1031,6 +1041,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
         _maxPrice = result.maxPrice;
         _privateRoom = result.privateRoom;
         _withPhoto = result.withPhoto;
+        _has3dTour = result.has3dTour;
         _selectedPin = null;
         _selectedUniversityMarker = null;
         _selectedMetroStation = null;
@@ -1081,6 +1092,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       maxPrice: _maxPrice,
       privateRoom: _privateRoom,
       withPhoto: _withPhoto,
+      has3dTour: _has3dTour,
       action: SearchBottomSheetAction.feed,
     );
   }

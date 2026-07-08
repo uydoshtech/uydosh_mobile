@@ -146,6 +146,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       maxPrice: widget.mapResult.maxPrice,
       privateRoom: widget.mapResult.privateRoom,
       withPhoto: widget.mapResult.withPhoto,
+      has3dTour: widget.mapResult.has3dTour,
       onOpenFeed: widget.onOpenFeedFromMap,
       embedded: true,
       initialListings: widget.initialMapListings,

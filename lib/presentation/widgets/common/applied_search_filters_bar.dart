@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:uy_dosh/base/cache/location_cache.dart";
+import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -25,6 +26,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
     this.maxPrice,
     this.privateRoom,
     this.withPhoto,
+    this.has3dTour,
     this.total,
     this.showLabel = true,
     this.alignRight = false,
@@ -50,6 +52,7 @@ class AppliedSearchFiltersBar extends StatelessWidget {
   final double? maxPrice;
   final bool? privateRoom;
   final bool? withPhoto;
+  final bool? has3dTour;
   final int? total;
   final bool showLabel;
   final bool alignRight;
@@ -528,6 +531,17 @@ class AppliedSearchFiltersBar extends StatelessWidget {
         roundChip(
           tooltip: L10n.get("search_filter_private_room"),
           child: Icon(Icons.lock_outline, size: 19, color: onSurface),
+        ),
+      );
+      out.add(gap);
+    }
+
+    if (has3dTour == true &&
+        !ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) {
+      out.add(
+        roundChip(
+          tooltip: L10n.get("search_filter_3d_view"),
+          child: Icon(Icons.view_in_ar, size: 19, color: onSurface),
         ),
       );
       out.add(gap);

@@ -240,6 +240,7 @@ class _SearchMapOverlayProps {
     required this.viewToggleBottom,
     required this.hasEmbeddedSearch,
     required this.listingTooltipLift,
+    this.has3dTour = false,
   });
 
   final bool isLoading;
@@ -255,6 +256,7 @@ class _SearchMapOverlayProps {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final bool has3dTour;
   final ListingMapPin? selectedPin;
 
   /// All pins currently visible on screen (map viewport), in stable result
@@ -296,6 +298,7 @@ class _SearchMapOverlayProps {
             maxPrice == other.maxPrice &&
             privateRoom == other.privateRoom &&
             withPhoto == other.withPhoto &&
+            has3dTour == other.has3dTour &&
             selectedPin == other.selectedPin &&
             _pinListsEqual(visiblePins, other.visiblePins) &&
             selectedUniversityMarker == other.selectedUniversityMarker &&
@@ -332,6 +335,7 @@ class _SearchMapOverlayProps {
         maxPrice,
         privateRoom,
         withPhoto,
+        has3dTour,
         selectedPin,
         Object.hashAll(visiblePins.map((pin) => pin.listingId)),
         selectedUniversityMarker,

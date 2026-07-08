@@ -8,6 +8,7 @@ class _MapFilterRibbon extends StatelessWidget {
     required this.maxPrice,
     required this.privateRoom,
     required this.withPhoto,
+    this.has3dTour = false,
     this.total,
     this.onClose,
     this.emptyLabel,
@@ -33,6 +34,7 @@ class _MapFilterRibbon extends StatelessWidget {
   final double maxPrice;
   final bool privateRoom;
   final bool withPhoto;
+  final bool has3dTour;
   final int? total;
 
   @override
@@ -75,6 +77,7 @@ class _MapFilterRibbon extends StatelessWidget {
             maxPrice: maxPrice,
             privateRoom: privateRoom,
             withPhoto: withPhoto,
+            has3dTour: has3dTour,
             total: total,
             showLabel: false,
             alignRight: false,

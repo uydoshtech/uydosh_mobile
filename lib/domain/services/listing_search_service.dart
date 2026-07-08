@@ -64,6 +64,7 @@ abstract class IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   });
@@ -84,6 +85,7 @@ abstract class IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   });
@@ -177,6 +179,7 @@ class ListingSearchService implements IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     List<int>? excludeUserIds,
   }) {
     final queryParams = <String, dynamic>{
@@ -221,6 +224,7 @@ class ListingSearchService implements IListingSearchService {
     if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
     if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
     if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
+    if (has3dTour != null) queryParams["has3dTour"] = has3dTour;
     if (excludeUserIds != null && excludeUserIds.isNotEmpty) {
       queryParams["excludeUserIds"] = excludeUserIds.join(",");
     }
@@ -362,6 +366,7 @@ class ListingSearchService implements IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   }) async {
@@ -414,6 +419,7 @@ class ListingSearchService implements IListingSearchService {
       if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
       if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
       if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
+      if (has3dTour != null) queryParams["has3dTour"] = has3dTour;
       if (excludeUserIds != null && excludeUserIds.isNotEmpty) {
         queryParams["excludeUserIds"] = excludeUserIds.join(",");
       }
@@ -460,6 +466,7 @@ class ListingSearchService implements IListingSearchService {
     double? maxPrice,
     bool? privateRoom,
     bool? withPhoto,
+    bool? has3dTour,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   }) async {
@@ -483,6 +490,7 @@ class ListingSearchService implements IListingSearchService {
         maxPrice: maxPrice,
         privateRoom: privateRoom,
         withPhoto: withPhoto,
+        has3dTour: has3dTour,
         excludeUserIds: excludeUserIds,
       );
 
