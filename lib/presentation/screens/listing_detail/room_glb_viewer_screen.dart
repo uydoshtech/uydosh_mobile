@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:flutter/foundation.dart" show kDebugMode;
 import "package:flutter/material.dart";
 import "package:model_viewer_plus/model_viewer_plus.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -43,6 +44,12 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
   int _reloadToken = 0;
   WebViewController? _webViewController;
   _RoomScanDisplayMode _displayMode = _RoomScanDisplayMode.fullRoom;
+  // Diagnostic only (not shown to end users) — surfaces *why* the WebView
+  // reported an error (bad URL, a network/HTTP failure, or model-viewer
+  // itself rejecting the file) since the bridge previously collapsed every
+  // failure into an opaque "error" with no detail, making reports of
+  // "can't load on Android" impossible to act on.
+  String? _lastErrorDetail;
 
   @override
   void initState() {
@@ -68,10 +75,15 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
   void _onBridgeMessage(String message) {
     if (!mounted) return;
     _loadTimeoutTimer?.cancel();
+    final isLoaded = message == "loaded";
+    if (!isLoaded) {
+      // message is "error" (no detail) or "error:<detail>" from the
+      // window.onerror / model-viewer 'error' listeners below.
+      _lastErrorDetail = message == "error" ? null : message;
+      debugPrint("RoomGlbViewerScreen: load failed — $message (url=$_resolvedUrl)");
+    }
     setState(() {
-      _status = message == "loaded"
-          ? _GlbLoadStatus.loaded
-          : _GlbLoadStatus.error;
+      _status = isLoaded ? _GlbLoadStatus.loaded : _GlbLoadStatus.error;
     });
   }
 
@@ -79,6 +91,7 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
     setState(() {
       _status = _GlbLoadStatus.loading;
       _reloadToken++;
+      _lastErrorDetail = null;
       // The ModelViewer below is rebuilt from scratch on reload (new
       // ValueKey), so its underlying page reloads too — reset to match.
       _displayMode = _RoomScanDisplayMode.fullRoom;
@@ -164,8 +177,17 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
                         mv.addEventListener('load', function() {
                           GlbViewerBridge.postMessage('loaded');
                         });
-                        mv.addEventListener('error', function() {
-                          GlbViewerBridge.postMessage('error');
+                        mv.addEventListener('error', function(event) {
+                          var detail = event && event.detail;
+                          var reason = (detail && (detail.sourceError ? String(detail.sourceError.message || detail.sourceError) : detail.type)) || 'model-viewer error event';
+                          GlbViewerBridge.postMessage('error:' + reason);
+                        });
+                        // Catches failures model-viewer's own 'error' event misses entirely
+                        // (e.g. model-viewer.min.js itself failing to load/parse), which
+                        // otherwise left Android reports of "can't load 3D model" with zero
+                        // diagnostic detail — this is the only signal we get in that case.
+                        window.addEventListener('error', function(event) {
+                          GlbViewerBridge.postMessage('error:window:' + (event && event.message || 'unknown script error'));
                         });
                       }
 
@@ -332,6 +354,14 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[400], fontSize: 16),
           ),
+          if (kDebugMode && _lastErrorDetail != null) ...[
+            const SizedBox(height: 8),
+            SelectableText(
+              _lastErrorDetail!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 20),
           OutlinedButton(
             onPressed: _retry,
