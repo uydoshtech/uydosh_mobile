@@ -206,7 +206,29 @@ class _PinCarouselPageMeasurerRenderObject extends RenderProxyBox {
   @override
   void performLayout() {
     super.performLayout();
-    final newSize = child?.size ?? Size.zero;
+    final child = this.child;
+    if (child == null) {
+      _report(Size.zero);
+      return;
+    }
+    // A RenderFlex that doesn't fit in the height it's given (e.g. a pin
+    // with badges + a long title + two wrapped geo-label lines) still
+    // reports its size clamped to that height rather than the size it
+    // actually wanted, painting the debug "overflowed by N pixels" hazard
+    // stripes instead. Relying on `child.size` here would therefore get
+    // stuck forever reporting a too-small height, since the clamp hides the
+    // real content size from the measurement feeding the container's
+    // height. Cross-checking against the intrinsic height (computed
+    // independently of the layout pass's constraints) catches that case so
+    // the carousel container grows to fit.
+    final intrinsicHeight = child.getMaxIntrinsicHeight(constraints.maxWidth);
+    final height = child.size.height > intrinsicHeight
+        ? child.size.height
+        : intrinsicHeight;
+    _report(Size(child.size.width, height));
+  }
+
+  void _report(Size newSize) {
     if (_oldSize == newSize) return;
     _oldSize = newSize;
     WidgetsBinding.instance.addPostFrameCallback((_) {

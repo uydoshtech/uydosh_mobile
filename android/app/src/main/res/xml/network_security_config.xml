@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
+    <!-- model_viewer_plus (Android 3D room-scan viewer) serves the
+         <model-viewer> page and proxies the .glb file from an in-app
+         loopback HTTP server; allow cleartext only to localhost so that
+         still doesn't weaken the base policy for real network domains. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
 </network-security-config>
