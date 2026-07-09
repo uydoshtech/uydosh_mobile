@@ -104,7 +104,7 @@ struct RoomViewerStrings {
       zoomInA11yLabel: dict["zoomIn"] ?? "Zoom in",
       zoomOutA11yLabel: dict["zoomOut"] ?? "Zoom out",
       viewModeA11yLabel: dict["viewModeLabel"] ?? "3D view mode",
-      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room, walls only, and floor with furniture.",
+      viewModeA11yHint: dict["viewModeHint"] ?? "Switch between full room, floor with furniture, and floor only.",
       materialsStyleA11yLabel: dict["materialsStyleLabel"] ?? "Materials style",
       materialsStyleA11yHint: dict["materialsStyleHint"] ?? "Toggle between real materials and stylized colors.",
       materialsStyleValueStylized: dict["materialsStylizedValue"] ?? "Stylized",
@@ -146,7 +146,7 @@ struct RoomViewerStrings {
     zoomInA11yLabel: "Zoom in",
     zoomOutA11yLabel: "Zoom out",
     viewModeA11yLabel: "3D view mode",
-    viewModeA11yHint: "Switch between full room, walls only, and floor with furniture.",
+    viewModeA11yHint: "Switch between full room, floor with furniture, and floor only.",
     materialsStyleA11yLabel: "Materials style",
     materialsStyleA11yHint: "Toggle between real materials and stylized colors.",
     materialsStyleValueStylized: "Stylized",
@@ -243,15 +243,15 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   private var loadedScene: SCNScene?
   private enum DisplayMode: Int {
     case fullRoom = 0
-    /// Furniture removed, keep walls/structure.
-    case wallsOnly = 1
-    /// Walls/structure removed, keep floor + furniture (top-down).
-    case furnitureOnly = 2
+    /// Walls/structure removed, keep floor + furniture.
+    case floorAndFurniture = 1
+    /// Furniture removed too — floor only.
+    case floorOnly = 2
   }
 
   private var displayMode: DisplayMode = .fullRoom
   /// Single cycling button (was a 3-segment control): tap advances
-  /// full room → walls only → floor + furniture → full room, swapping its icon.
+  /// full room → floor + furniture → floor only → full room, swapping its icon.
   private let modeButton = UIButton(type: .system)
   private let useStylizedMaterials = true
   /// Bottom-centered “glassy” bar: view mode picker (matches zoom panel styling).
@@ -1235,21 +1235,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     switch mode {
     case .fullRoom:
       return UIImage(systemName: "house.fill", withConfiguration: cfg)
-    case .wallsOnly:
-      return UIImage(systemName: "rectangle.split.3x1.fill", withConfiguration: cfg)
-        ?? UIImage(systemName: "square.split.2x2.fill", withConfiguration: cfg)
-    case .furnitureOnly:
+    case .floorAndFurniture:
       return UIImage(systemName: "bed.double.fill", withConfiguration: cfg)
         ?? UIImage(systemName: "shippingbox.fill", withConfiguration: cfg)
         ?? UIImage(systemName: "cube.box.fill", withConfiguration: cfg)
+    case .floorOnly:
+      return UIImage(systemName: "rectangle.fill", withConfiguration: cfg)
+        ?? UIImage(systemName: "square.fill", withConfiguration: cfg)
     }
   }
 
   private func nextDisplayMode(after mode: DisplayMode) -> DisplayMode {
     switch mode {
-    case .fullRoom: return .wallsOnly
-    case .wallsOnly: return .furnitureOnly
-    case .furnitureOnly: return .fullRoom
+    case .fullRoom: return .floorAndFurniture
+    case .floorAndFurniture: return .floorOnly
+    case .floorOnly: return .fullRoom
     }
   }
 
@@ -1259,10 +1259,10 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     switch displayMode {
     case .fullRoom:
       modeButton.accessibilityValue = "Full room"
-    case .wallsOnly:
-      modeButton.accessibilityValue = "Walls only"
-    case .furnitureOnly:
+    case .floorAndFurniture:
       modeButton.accessibilityValue = "Floor and furniture"
+    case .floorOnly:
+      modeButton.accessibilityValue = "Floor only"
     }
   }
 
@@ -1757,19 +1757,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
         switch mode {
         case .fullRoom:
           node.isHidden = false
-        case .wallsOnly:
-          if node.name == "UydoshFramingCamera" {
-            node.isHidden = false
-          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
-            node.isHidden = true
-          } else {
-            node.isHidden = false
-          }
-        case .furnitureOnly:
+        case .floorAndFurniture:
           if node.name == "UydoshFramingCamera" {
             node.isHidden = false
           } else {
             node.isHidden = shouldHideWallLikeSurface(node)
+          }
+        case .floorOnly:
+          if node.name == "UydoshFramingCamera" {
+            node.isHidden = false
+          } else if shouldHideWallLikeSurface(node) {
+            node.isHidden = true
+          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
+            node.isHidden = true
+          } else {
+            node.isHidden = false
           }
         }
       }
@@ -1781,19 +1783,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     visit(root)
     SCNTransaction.commit()
 
-    if mode == .furnitureOnly {
-      // If we cannot find any wall-like meshes by name, don’t pretend mode worked.
-      var anyHidden = false
-      func checkHidden(_ node: SCNNode) {
-        if node.geometry != nil, node.isHidden {
-          anyHidden = true
+    if mode == .floorAndFurniture || mode == .floorOnly {
+      // Both modes hinge on being able to find wall-like meshes by name — if we can't,
+      // don't pretend the mode worked (floorOnly could still "work" by only hiding
+      // furniture, which isn't what its icon/label promise).
+      var anyWallHidden = false
+      func checkWallHidden(_ node: SCNNode) {
+        if node.geometry != nil, shouldHideWallLikeSurface(node), node.isHidden {
+          anyWallHidden = true
           return
         }
-        guard !anyHidden else { return }
-        for c in node.childNodes { checkHidden(c) }
+        guard !anyWallHidden else { return }
+        for c in node.childNodes { checkWallHidden(c) }
       }
-      checkHidden(root)
-      if !anyHidden {
+      checkWallHidden(root)
+      if !anyWallHidden {
         // Revert and explain.
         displayMode = .fullRoom
         updateModeButtonAppearance()
@@ -2128,7 +2132,7 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     if isOrthographicPlanView {
       restorePerspectiveCamera(animated: true)
     }
-    guard displayMode == .furnitureOnly else { return }
+    guard displayMode == .floorAndFurniture || displayMode == .floorOnly else { return }
     removeAutoRotateAnimation()
     isAutoRotating = false
     if isSunPanelExpanded {

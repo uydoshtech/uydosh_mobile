@@ -7,8 +7,15 @@ import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:webview_flutter/webview_flutter.dart";
 
 enum _GlbLoadStatus { loading, loaded, error }
+
+/// Mirrors the web viewer's `ROOM_SCAN_MODE_SEQUENCE` (see listing-detail.js)
+/// and the native iOS viewer's `DisplayMode` (see
+/// RoomUsdzViewerViewController.swift): tapping the layers button advances
+/// full room → floor + furniture → floor only → full room.
+enum _RoomScanDisplayMode { fullRoom, floorAndFurniture, floorOnly }
 
 /// Android room-scan 3D viewer: renders the server-side USDZ→GLB conversion
 /// (`room_scan_glb_url`) via Google's `<model-viewer>` web component inside a
@@ -34,6 +41,8 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
   _GlbLoadStatus _status = _GlbLoadStatus.loading;
   Timer? _loadTimeoutTimer;
   int _reloadToken = 0;
+  WebViewController? _webViewController;
+  _RoomScanDisplayMode _displayMode = _RoomScanDisplayMode.fullRoom;
 
   @override
   void initState() {
@@ -70,11 +79,55 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
     setState(() {
       _status = _GlbLoadStatus.loading;
       _reloadToken++;
+      // The ModelViewer below is rebuilt from scratch on reload (new
+      // ValueKey), so its underlying page reloads too — reset to match.
+      _displayMode = _RoomScanDisplayMode.fullRoom;
+      _webViewController = null;
     });
     _armLoadTimeout();
   }
 
   String get _resolvedUrl => EnvironmentUtil.hostedImageUrl(widget.glbUrl);
+
+  static const List<_RoomScanDisplayMode> _modeSequence = [
+    _RoomScanDisplayMode.fullRoom,
+    _RoomScanDisplayMode.floorAndFurniture,
+    _RoomScanDisplayMode.floorOnly,
+  ];
+
+  void _cycleDisplayMode() {
+    final nextIndex =
+        (_modeSequence.indexOf(_displayMode) + 1) % _modeSequence.length;
+    setState(() => _displayMode = _modeSequence[nextIndex]);
+    unawaited(
+      _webViewController?.runJavaScript(
+        "window.uydoshApplyRoomScanMode && "
+        "window.uydoshApplyRoomScanMode('${_displayMode.name}');",
+      ),
+    );
+  }
+
+  IconData _modeIcon(_RoomScanDisplayMode mode) {
+    switch (mode) {
+      case _RoomScanDisplayMode.fullRoom:
+        return Icons.house_rounded;
+      case _RoomScanDisplayMode.floorAndFurniture:
+        return Icons.bed_rounded;
+      case _RoomScanDisplayMode.floorOnly:
+        return Icons.crop_square_rounded;
+    }
+  }
+
+  String _modeLabel(_RoomScanDisplayMode mode) {
+    switch (mode) {
+      case _RoomScanDisplayMode.fullRoom:
+        return L10n.get("room_3d_mode_full_room");
+      case _RoomScanDisplayMode.floorAndFurniture:
+        return L10n.get("room_3d_mode_floor_and_furniture");
+      case _RoomScanDisplayMode.floorOnly:
+        return L10n.get("room_3d_mode_floor_only");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,17 +153,73 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
                         _onBridgeMessage(message.message),
                   ),
                 },
+                onWebViewCreated: (controller) =>
+                    _webViewController = controller,
                 relatedJs:
                     """
                     (function() {
                       var mv = document.getElementById('$_elementId');
-                      if (!mv || !window.GlbViewerBridge) { return; }
-                      mv.addEventListener('load', function() {
-                        GlbViewerBridge.postMessage('loaded');
-                      });
-                      mv.addEventListener('error', function() {
-                        GlbViewerBridge.postMessage('error');
-                      });
+                      if (!mv) { return; }
+                      if (window.GlbViewerBridge) {
+                        mv.addEventListener('load', function() {
+                          GlbViewerBridge.postMessage('loaded');
+                        });
+                        mv.addEventListener('error', function() {
+                          GlbViewerBridge.postMessage('error');
+                        });
+                      }
+
+                      // Mirrors the web viewer (listing-detail.js) and the native iOS
+                      // viewer (RoomUsdzViewerViewController.swift): classifies each
+                      // material by the backend's naming convention (Wall0_color,
+                      // Floor0_color, Chair0_color, ... — see uydosh_backend's
+                      // applyRoomScanStylizedMaterials.ts) and hides "wall"/"furniture"
+                      // materials by driving their base color alpha to 0 via
+                      // model-viewer's Scene Graph API, since it has no per-node
+                      // visibility toggle. Invoked on demand from Flutter via
+                      // WebViewController.runJavaScript.
+                      function classifyMaterialName(name) {
+                        var n = (name || '').toLowerCase();
+                        if (!n) return 'other';
+                        if (n.indexOf('wall') === 0 || n.indexOf('ceiling') !== -1 ||
+                            n.indexOf('door') !== -1 || n.indexOf('window') !== -1 ||
+                            n.indexOf('opening') !== -1) {
+                          return 'wall';
+                        }
+                        if (n.indexOf('floor') === 0 || n.indexOf('ground') !== -1) return 'floor';
+                        return 'furniture';
+                      }
+
+                      function setMaterialHidden(material, hidden) {
+                        try {
+                          var pbr = material.pbrMetallicRoughness;
+                          if (!pbr) return;
+                          if (hidden) {
+                            if (!material.__uydoshOriginalColor) {
+                              material.__uydoshOriginalColor = pbr.baseColorFactor.slice();
+                              material.__uydoshOriginalAlphaMode = material.getAlphaMode();
+                            }
+                            var base = material.__uydoshOriginalColor;
+                            material.setAlphaMode('BLEND');
+                            pbr.setBaseColorFactor([base[0], base[1], base[2], 0]);
+                          } else if (material.__uydoshOriginalColor) {
+                            pbr.setBaseColorFactor(material.__uydoshOriginalColor);
+                            material.setAlphaMode(material.__uydoshOriginalAlphaMode || 'OPAQUE');
+                          }
+                        } catch (err) {}
+                      }
+
+                      window.uydoshApplyRoomScanMode = function(mode) {
+                        var model = mv.model;
+                        if (!model || !model.materials) return;
+                        model.materials.forEach(function(material) {
+                          var kind = classifyMaterialName(material.name);
+                          var hidden = false;
+                          if (mode === 'floorAndFurniture') hidden = kind === 'wall';
+                          else if (mode === 'floorOnly') hidden = kind === 'wall' || kind === 'furniture';
+                          setMaterialHidden(material, hidden);
+                        });
+                      };
                     })();
                     """,
               ),
@@ -127,6 +236,12 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
               right: 0,
               child: _topBar(context),
             ),
+            if (_status == _GlbLoadStatus.loaded)
+              Positioned(
+                right: 16,
+                bottom: 24,
+                child: _modeButton(context),
+              ),
           ],
         ),
       ),
@@ -169,6 +284,31 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _modeButton(BuildContext context) {
+    return Semantics(
+      label: L10n.get("room_3d_view_mode_label"),
+      hint: L10n.get("room_3d_view_mode_hint"),
+      value: _modeLabel(_displayMode),
+      button: true,
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.5),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: _cycleDisplayMode,
+          child: Padding(
+            padding: const EdgeInsets.all(9),
+            child: Icon(
+              _modeIcon(_displayMode),
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -623,7 +623,10 @@ class AppStrings {
       "room_3d_zoom_out": "Zoom out",
       "room_3d_view_mode_label": "3D view mode",
       "room_3d_view_mode_hint":
-          "Switch between full room, walls only, and floor with furniture.",
+          "Switch between full room, floor with furniture, and floor only.",
+      "room_3d_mode_full_room": "Full room",
+      "room_3d_mode_floor_and_furniture": "Floor and furniture",
+      "room_3d_mode_floor_only": "Floor only",
       "room_3d_materials_style_label": "Materials style",
       "room_3d_materials_style_hint":
           "Toggle between real materials and stylized colors.",
@@ -2868,7 +2871,10 @@ class AppStrings {
       "room_3d_zoom_out": "Отдалить",
       "room_3d_view_mode_label": "Режим 3D-просмотра",
       "room_3d_view_mode_hint":
-          "Переключайте: вся комната, только стены или пол с мебелью.",
+          "Переключайте: вся комната, пол с мебелью или только пол.",
+      "room_3d_mode_full_room": "Вся комната",
+      "room_3d_mode_floor_and_furniture": "Пол и мебель",
+      "room_3d_mode_floor_only": "Только пол",
       "room_3d_materials_style_label": "Стиль материалов",
       "room_3d_materials_style_hint":
           "Переключайте между реальными материалами и стилизованными цветами.",
@@ -5167,7 +5173,10 @@ class AppStrings {
       "room_3d_zoom_out": "Uzoqlashtirish",
       "room_3d_view_mode_label": "3D ko'rish rejimi",
       "room_3d_view_mode_hint":
-          "Butun xona, faqat devorlar yoki pol va mebel rejimiga o'ting.",
+          "Butun xona, pol va mebel yoki faqat pol rejimiga o'ting.",
+      "room_3d_mode_full_room": "Butun xona",
+      "room_3d_mode_floor_and_furniture": "Pol va mebel",
+      "room_3d_mode_floor_only": "Faqat pol",
       "room_3d_materials_style_label": "Materiallar uslubi",
       "room_3d_materials_style_hint":
           "Haqiqiy materiallar va uslubiy ranglar orasida almashtiring.",
