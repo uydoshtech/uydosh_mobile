@@ -22,6 +22,17 @@ void _applyListingTypeQueryParams(
   }
 }
 
+/// `priceSortOrder` is `'asc'`/`'desc'`; the backend also needs `sortBy`
+/// (only `'price'` is supported today — see `listingController.ts`).
+void _applyPriceSortQueryParams(
+  Map<String, dynamic> queryParams, {
+  String? priceSortOrder,
+}) {
+  if (priceSortOrder != "asc" && priceSortOrder != "desc") return;
+  queryParams["sortBy"] = "price";
+  queryParams["sortOrder"] = priceSortOrder;
+}
+
 abstract class IListingSearchService {
   Future<PageableResponse<Listing>> getListings({
     int page = 1,
@@ -65,6 +76,7 @@ abstract class IListingSearchService {
     bool? privateRoom,
     bool? withPhoto,
     bool? has3dTour,
+    String? priceSortOrder,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   });
@@ -367,6 +379,7 @@ class ListingSearchService implements IListingSearchService {
     bool? privateRoom,
     bool? withPhoto,
     bool? has3dTour,
+    String? priceSortOrder,
     int createdWithinDays = listingBrowseCreatedWithinDays,
     List<int>? excludeUserIds,
   }) async {
@@ -420,6 +433,7 @@ class ListingSearchService implements IListingSearchService {
       if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
       if (withPhoto != null) queryParams["withPhoto"] = withPhoto;
       if (has3dTour != null) queryParams["has3dTour"] = has3dTour;
+      _applyPriceSortQueryParams(queryParams, priceSortOrder: priceSortOrder);
       if (excludeUserIds != null && excludeUserIds.isNotEmpty) {
         queryParams["excludeUserIds"] = excludeUserIds.join(",");
       }

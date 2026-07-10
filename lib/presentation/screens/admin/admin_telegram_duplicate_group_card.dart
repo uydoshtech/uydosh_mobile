@@ -228,25 +228,10 @@ class DuplicateGroupCard extends StatelessWidget {
                       listing: member,
                       trailingAction:
                           _buildTrailingActions(context, member.id),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButtonThemed(
-                        style: TextButton.styleFrom(
-                          backgroundColor: scheme.primaryContainer,
-                        ),
-                        onPressed: () {
-                          Navigator.of(sheetContext).pop();
-                          _confirmAndMerge(context, keepListingId: member.id);
-                        },
-                        child: Text(
-                          L10n.getWithParams(
-                            "admin_telegram_listing_groups_merge_keep_button",
-                            params: {"id": "${member.id}"},
-                          ),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                      footerContent: _buildLeaveButton(
+                        context,
+                        sheetContext: sheetContext,
+                        keepListingId: member.id,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -257,6 +242,32 @@ class DuplicateGroupCard extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  /// Compact "Leave #id" action shown in the merge picker tile's footer, next
+  /// to the price badge, so picking which listing survives doesn't need a
+  /// separate full-width button below each tile.
+  Widget _buildLeaveButton(
+    BuildContext context, {
+    required BuildContext sheetContext,
+    required int keepListingId,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return TextButtonThemed(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      style: TextButton.styleFrom(backgroundColor: scheme.primaryContainer),
+      onPressed: () {
+        Navigator.of(sheetContext).pop();
+        _confirmAndMerge(context, keepListingId: keepListingId);
+      },
+      child: Text(
+        L10n.getWithParams(
+          "admin_telegram_listing_groups_merge_keep_button",
+          params: {"id": "$keepListingId"},
+        ),
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+      ),
     );
   }
 

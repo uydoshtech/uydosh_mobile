@@ -2376,6 +2376,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         privateRoom: filters.privateRoom,
         withPhoto: filters.withPhoto,
         has3dTour: filters.has3dTour,
+        priceSortOrder: filters.priceSortOrder,
         isRefresh: isRefresh,
         keepStaleWhileRefreshing: keepStaleWhileRibbonAnimates,
       ),
@@ -2399,7 +2400,8 @@ bool _searchFiltersSnapshotEquals(
       a.maxPrice == b.maxPrice &&
       a.privateRoom == b.privateRoom &&
       a.withPhoto == b.withPhoto &&
-      a.has3dTour == b.has3dTour;
+      a.has3dTour == b.has3dTour &&
+      a.priceSortOrder == b.priceSortOrder;
 }
 
 bool _listEquals(List<int> a, List<int> b) {

@@ -50,6 +50,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   bool? _lastPrivateRoom;
   bool? _lastWithPhoto;
   bool? _lastHas3dTour;
+  String? _lastPriceSortOrder;
   List<int>? _lastExcludeUserIds;
 
   /// Monotonic id for in-flight feed searches. Responses from older requests
@@ -86,6 +87,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastPrivateRoom != null ||
       _lastWithPhoto == true ||
       _lastHas3dTour == true ||
+      _lastPriceSortOrder != null ||
       (_lastExcludeUserIds != null && _lastExcludeUserIds!.isNotEmpty);
 
   /// Prefer the exact total captured on page 1; page 2+ responses only carry a
@@ -254,6 +256,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
               privateRoom: _lastPrivateRoom,
               withPhoto: _lastWithPhoto,
               has3dTour: _lastHas3dTour,
+              priceSortOrder: _lastPriceSortOrder,
               excludeUserIds: _lastExcludeUserIds,
             )
             .timeout(_requestTimeout);
@@ -428,6 +431,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     _lastPrivateRoom = searchParams["privateRoom"] as bool?;
     _lastWithPhoto = searchParams["withPhoto"] as bool?;
     _lastHas3dTour = searchParams["has3dTour"] as bool?;
+    _lastPriceSortOrder = searchParams["priceSortOrder"] as String?;
     _lastExcludeUserIds = searchParams["excludeUserIds"] as List<int>?;
   }
 
@@ -480,6 +484,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         "privateRoom": e.privateRoom,
         "withPhoto": e.withPhoto,
         "has3dTour": e.has3dTour,
+        "priceSortOrder": e.priceSortOrder,
         "excludeUserIds": e.excludeUserIds,
       },
       fetchUserListings: (e) => null,
@@ -512,6 +517,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           "privateRoom": e.privateRoom,
           "withPhoto": e.withPhoto,
           "has3dTour": e.has3dTour,
+          "priceSortOrder": e.priceSortOrder,
           "excludeUserIds": e.excludeUserIds,
         },
         fetchUserListings: (e) => null,
@@ -561,6 +567,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final privateRoom = searchParams?["privateRoom"] as bool?;
       final withPhoto = searchParams?["withPhoto"] as bool?;
       final has3dTour = searchParams?["has3dTour"] as bool?;
+      final priceSortOrder = searchParams?["priceSortOrder"] as String?;
       final excludeUserIds = searchParams?["excludeUserIds"] as List<int>?;
 
       logger.d("=== COMPREHENSIVE SEARCH BLOC DEBUG ===");
@@ -594,6 +601,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             privateRoom: privateRoom,
             withPhoto: withPhoto,
             has3dTour: has3dTour,
+            priceSortOrder: priceSortOrder,
             excludeUserIds: excludeUserIds,
           )
           .timeout(_requestTimeout);

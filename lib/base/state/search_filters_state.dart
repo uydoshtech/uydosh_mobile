@@ -39,6 +39,10 @@ class SearchFiltersState extends ChangeNotifier {
   bool _privateRoom = false; // Default to false (show all)
   bool _withPhoto = false;
   bool _has3dTour = false;
+  // null = default (recency) order, otherwise 'asc'/'desc' — mirrors the
+  // mini app's price-sort cycling chip (see PRICE_SORT_ORDER_VALUES in
+  // `telegram-feed.js`). List-view search only; never applied to the map.
+  String? _priceSortOrder;
   bool _isInitialized = false;
   Future<void> _prefsWriteChain = Future<void>.value();
   bool _suppressRemotePersist = false;
@@ -279,6 +283,7 @@ class SearchFiltersState extends ChangeNotifier {
     _privateRoom = readBool("private_room", false);
     _withPhoto = readBool("with_photo", false);
     _has3dTour = readBool("has_3d_tour", false);
+    _priceSortOrder = _normalizePriceSortOrder(m["price_sort_order"]);
 
     notifyListeners();
 
@@ -303,6 +308,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setBool("search_private_room", _privateRoom);
       await prefs.setBool("search_with_photo", _withPhoto);
       await prefs.setBool("search_has_3d_tour", _has3dTour);
+      await _writePriceSortOrderPref(prefs, _priceSortOrder);
     });
   }
 
@@ -340,6 +346,7 @@ class SearchFiltersState extends ChangeNotifier {
         "private_room": _privateRoom,
         "with_photo": _withPhoto,
         "has_3d_tour": _has3dTour,
+        "price_sort_order": _priceSortOrder,
       };
       await getIt<IUserSearchFiltersService>().saveMe(payload);
     } catch (e) {
@@ -396,6 +403,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setBool("search_private_room", _privateRoom);
       await prefs.setBool("search_with_photo", _withPhoto);
       await prefs.setBool("search_has_3d_tour", _has3dTour);
+      await _writePriceSortOrderPref(prefs, _priceSortOrder);
     });
   }
 
@@ -538,12 +546,37 @@ class SearchFiltersState extends ChangeNotifier {
   static String _stationIdsToPrefsString(List<int> ids) =>
       _sanitizeStationIds(ids).join(",");
 
+  static const String _priceSortOrderPrefsKey = "search_price_sort_order";
+
+  /// Collapses anything unexpected (including the empty string) to `null` —
+  /// the "no sort" default — same tolerance the server-filters hydrate path
+  /// uses for other enum-like fields.
+  static String? _normalizePriceSortOrder(dynamic raw) {
+    if (raw == "asc" || raw == "desc") return raw as String;
+    return null;
+  }
+
+  static Future<void> _writePriceSortOrderPref(
+    SharedPreferences prefs,
+    String? order,
+  ) async {
+    if (order == null) {
+      await prefs.remove(_priceSortOrderPrefsKey);
+    } else {
+      await prefs.setString(_priceSortOrderPrefsKey, order);
+    }
+  }
+
   int get selectedGender => _selectedGender;
   double get minPrice => _minPrice;
   double get maxPrice => _maxPrice;
   bool get privateRoom => _privateRoom;
   bool get withPhoto => _withPhoto;
   bool get has3dTour => _has3dTour;
+
+  /// `null` (default order), `'asc'` (cheapest first), or `'desc'`
+  /// (priciest first). List-view search only — never applied to the map.
+  String? get priceSortOrder => _priceSortOrder;
   bool get isInitialized => _isInitialized;
 
   // Initialize and load saved search filters from storage
@@ -635,6 +668,9 @@ class SearchFiltersState extends ChangeNotifier {
       _withPhoto = prefs.getBool("search_with_photo") ?? false;
 
       _has3dTour = prefs.getBool("search_has_3d_tour") ?? false;
+
+      _priceSortOrder =
+          _normalizePriceSortOrder(prefs.getString(_priceSortOrderPrefsKey));
 
       _searchListingTypeIds = _loadSearchListingTypeIdsFromPrefs(
         prefs,
@@ -905,6 +941,23 @@ class SearchFiltersState extends ChangeNotifier {
     if (!_remotePersistGated) _scheduleRemotePersist();
   }
 
+  /// Sets the "sort by price" order (`null`, `'asc'`, or `'desc'`). Any other
+  /// value is treated as `null`. List-view search only.
+  Future<void> setPriceSortOrder(String? order) async {
+    _priceSortOrder = _normalizePriceSortOrder(order);
+
+    try {
+      await _enqueuePrefsWrite((prefs) async {
+        await _writePriceSortOrderPref(prefs, _priceSortOrder);
+      });
+    } catch (e) {
+      logger.d("Error saving price sort order: $e");
+    }
+
+    notifyListeners();
+    if (!_remotePersistGated) _scheduleRemotePersist();
+  }
+
   /// Clears local filter prefs and the backend snapshot when the user dismisses
   /// the home filter ribbon (X). Profile-derived defaults are rebuilt only after
   /// the user commits a new search.
@@ -940,6 +993,7 @@ class SearchFiltersState extends ChangeNotifier {
     _privateRoom = false;
     _withPhoto = false;
     _has3dTour = false;
+    _priceSortOrder = null;
     notifyListeners();
   }
 
@@ -966,6 +1020,7 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.remove("search_private_room");
       await prefs.remove("search_with_photo");
       await prefs.remove("search_has_3d_tour");
+      await prefs.remove(_priceSortOrderPrefsKey);
     } catch (e) {
       logger.d("Error clearing search filters: $e");
     }
@@ -997,6 +1052,7 @@ class SearchFiltersState extends ChangeNotifier {
     _privateRoom = snapshot.privateRoom;
     _withPhoto = snapshot.withPhoto;
     _has3dTour = snapshot.has3dTour;
+    _priceSortOrder = snapshot.priceSortOrder;
 
     notifyListeners();
 
@@ -1029,6 +1085,7 @@ class SearchFiltersState extends ChangeNotifier {
         await prefs.setBool("search_private_room", snapshot.privateRoom);
         await prefs.setBool("search_with_photo", snapshot.withPhoto);
         await prefs.setBool("search_has_3d_tour", snapshot.has3dTour);
+        await _writePriceSortOrderPref(prefs, snapshot.priceSortOrder);
       });
     } catch (e) {
       logger.d("Error restoring search filters snapshot: $e");
@@ -1054,6 +1111,7 @@ class SearchFiltersSnapshot {
     required this.privateRoom,
     required this.withPhoto,
     required this.has3dTour,
+    this.priceSortOrder,
   });
 
   factory SearchFiltersSnapshot.capture(SearchFiltersState s) {
@@ -1071,6 +1129,7 @@ class SearchFiltersSnapshot {
       privateRoom: s.privateRoom,
       withPhoto: s.withPhoto,
       has3dTour: s.has3dTour,
+      priceSortOrder: s.priceSortOrder,
     );
   }
 
@@ -1087,4 +1146,5 @@ class SearchFiltersSnapshot {
   final bool privateRoom;
   final bool withPhoto;
   final bool has3dTour;
+  final String? priceSortOrder;
 }

@@ -106,6 +106,10 @@ abstract class IListingService {
     bool? privateRoom,
     bool? withPhoto,
     bool? has3dTour,
+
+    /// `'asc'` (cheapest first) or `'desc'` (priciest first); `null` keeps
+    /// the default featured-then-recent order. List-view search only.
+    String? priceSortOrder,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   });
@@ -378,6 +382,7 @@ class ListingService implements IListingService {
     bool? privateRoom,
     bool? withPhoto,
     bool? has3dTour,
+    String? priceSortOrder,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
   }) =>
@@ -398,6 +403,7 @@ class ListingService implements IListingService {
         privateRoom: privateRoom,
         withPhoto: withPhoto,
         has3dTour: has3dTour,
+        priceSortOrder: priceSortOrder,
         createdWithinDays: createdWithinDays,
         excludeUserIds: excludeUserIds,
       );

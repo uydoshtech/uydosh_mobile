@@ -715,6 +715,10 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
                         );
                         setState(() {});
                       },
+                      onPriceSortOrderChanged: (order) {
+                        _searchFiltersState.setPriceSortOrder(order);
+                        setState(() {});
+                      },
                       onPrivateRoomChanged: (value) {
                         _searchFiltersState.setPrivateRoom(value);
                         setState(() {});

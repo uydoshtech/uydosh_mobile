@@ -37,6 +37,7 @@ class ListingsEvent with _$ListingsEvent {
     bool? privateRoom,
     bool? withPhoto,
     bool? has3dTour,
+    String? priceSortOrder,
     List<int>? excludeUserIds,
     @Default(1) int page,
     @Default(10) int limit,

@@ -51,6 +51,9 @@ class AppStrings {
       "price_picker_range_title": "Monthly budget range",
       "price_picker_min_label": "Min",
       "price_picker_max_label": "Max",
+      "price_sort_toggle_aria_none": "Sort by price",
+      "price_sort_toggle_aria_asc": "Sorted: cheapest first",
+      "price_sort_toggle_aria_desc": "Sorted: priciest first",
       "group_budget_per_person_amount_line":
           "Each member pays {range} per month",
       "group_budget_total_apartment_line":
@@ -1559,8 +1562,7 @@ class AppStrings {
           "Choose which listing to keep",
       "admin_telegram_listing_groups_merge_picker_message":
           "The other {count} listing(s) will be permanently deleted.",
-      "admin_telegram_listing_groups_merge_keep_button":
-          "Keep #{id}, delete the rest",
+      "admin_telegram_listing_groups_merge_keep_button": "Leave #{id}",
       "admin_telegram_listing_groups_merge_confirm_title": "Merge duplicates?",
       "admin_telegram_listing_groups_merge_confirm_message":
           "Listing #{id} will be kept. The other {count} listing(s) in this group will be permanently deleted.",
@@ -2297,6 +2299,9 @@ class AppStrings {
       "price_picker_range_title": "Диапазон бюджета в месяц",
       "price_picker_min_label": "Мин",
       "price_picker_max_label": "Макс",
+      "price_sort_toggle_aria_none": "Сортировать по цене",
+      "price_sort_toggle_aria_asc": "Сначала дешевле",
+      "price_sort_toggle_aria_desc": "Сначала дороже",
       "group_budget_per_person_amount_line":
           "С каждого участника: {range} в месяц",
       "group_budget_total_apartment_line":
@@ -3846,8 +3851,7 @@ class AppStrings {
           "Выберите объявление, которое нужно оставить",
       "admin_telegram_listing_groups_merge_picker_message":
           "Остальные {count} объявление(й) будут удалены безвозвратно.",
-      "admin_telegram_listing_groups_merge_keep_button":
-          "Оставить #{id}, удалить остальные",
+      "admin_telegram_listing_groups_merge_keep_button": "Оставить #{id}",
       "admin_telegram_listing_groups_merge_confirm_title":
           "Объединить дубликаты?",
       "admin_telegram_listing_groups_merge_confirm_message":
@@ -4598,6 +4602,9 @@ class AppStrings {
       "price_picker_range_title": "Oylik byudjet diapazoni",
       "price_picker_min_label": "Min",
       "price_picker_max_label": "Maks",
+      "price_sort_toggle_aria_none": "Narx bo'yicha saralash",
+      "price_sort_toggle_aria_asc": "Avval arzon",
+      "price_sort_toggle_aria_desc": "Avval qimmat",
       "group_budget_per_person_amount_line":
           "Har bir a'zo oyiga {range} to'laydi",
       "group_budget_total_apartment_line":
@@ -6150,8 +6157,7 @@ class AppStrings {
           "Qaysi e'lon qoldirilishini tanlang",
       "admin_telegram_listing_groups_merge_picker_message":
           "Qolgan {count} ta e'lon butunlay o'chiriladi.",
-      "admin_telegram_listing_groups_merge_keep_button":
-          "#{id} qoldirilsin, qolganlari o'chirilsin",
+      "admin_telegram_listing_groups_merge_keep_button": "#{id} qoldirilsin",
       "admin_telegram_listing_groups_merge_confirm_title":
           "Dublikatlarni birlashtirasizmi?",
       "admin_telegram_listing_groups_merge_confirm_message":

@@ -172,6 +172,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       },
                     ),
                     _AdminMenuRow(
+                      icon: Icons.groups_outlined,
+                      titleKey: "admin_panel_section_telegram_listing_groups",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminTelegramListingGroupsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
                       icon: Icons.support_agent,
                       titleKey: "admin_panel_section_support_chat",
                       iconColor: iconColor,
@@ -351,19 +364,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         );
                         if (!mounted) return;
                         unawaited(PendingListingModerationState().refresh());
-                      },
-                    ),
-                    _AdminMenuRow(
-                      icon: Icons.groups_outlined,
-                      titleKey: "admin_panel_section_telegram_listing_groups",
-                      iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminTelegramListingGroupsScreen(),
-                          ),
-                        );
                       },
                     ),
                     _AdminMenuRow(

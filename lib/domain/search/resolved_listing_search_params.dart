@@ -21,6 +21,7 @@ class ResolvedListingSearchParams {
     this.privateRoom,
     this.withPhoto,
     this.has3dTour,
+    this.priceSortOrder,
     this.createdWithinDays = listingBrowseCreatedWithinDays,
   });
 
@@ -36,6 +37,10 @@ class ResolvedListingSearchParams {
   final bool? privateRoom;
   final bool? withPhoto;
   final bool? has3dTour;
+
+  /// `null` (default order), `'asc'`, or `'desc'` — list-view search only,
+  /// never applied to the map (see [fromMapToggle], which never sets this).
+  final String? priceSortOrder;
   final int createdWithinDays;
 
   /// `0` is the app-wide "no filter" sentinel for gender / listing type
@@ -124,6 +129,12 @@ class ResolvedListingSearchParams {
             : explicitHas3dTour)
         : state.has3dTour;
 
+    // Sort has no "explicit" caller today (only the main search sheet/feed
+    // use it). Deliberately `null` under `useExplicitFiltersOnly` (search
+    // alerts, group housing, etc.) so a leftover global sort setting can't
+    // leak into an unrelated explicit search.
+    final priceSortOrder = fromExplicit ? null : state.priceSortOrder;
+
     return ResolvedListingSearchParams(
       listingTypeId:
           listingTypeIds != null ? null : _normalizeId(listingTypeId),
@@ -138,6 +149,7 @@ class ResolvedListingSearchParams {
       privateRoom: privateRoom,
       withPhoto: withPhoto,
       has3dTour: has3dTour,
+      priceSortOrder: priceSortOrder,
     );
   }
 
@@ -200,6 +212,7 @@ class ResolvedListingSearchParams {
       privateRoom: privateRoom,
       withPhoto: withPhoto,
       has3dTour: has3dTour,
+      priceSortOrder: priceSortOrder,
       createdWithinDays: createdWithinDays,
     );
   }

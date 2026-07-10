@@ -67,6 +67,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
   const SearchBottomSheetSecondaryFilters({
     required this.searchFiltersState,
     required this.onPriceRangeChanged,
+    required this.onPriceSortOrderChanged,
     required this.onPrivateRoomChanged,
     required this.onWithPhotoChanged,
     required this.onHas3dTourChanged,
@@ -79,6 +80,7 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
 
   final SearchFiltersState searchFiltersState;
   final void Function(double minPrice, double maxPrice) onPriceRangeChanged;
+  final void Function(String? order) onPriceSortOrderChanged;
   final void Function(bool value) onPrivateRoomChanged;
   final void Function(bool value) onWithPhotoChanged;
   final void Function(bool value) onHas3dTourChanged;
@@ -102,6 +104,8 @@ class SearchBottomSheetSecondaryFilters extends StatelessWidget {
           initialMinPrice: searchFiltersState.minPrice,
           initialMaxPrice: searchFiltersState.maxPrice,
           onPriceRangeChanged: onPriceRangeChanged,
+          priceSortOrder: searchFiltersState.priceSortOrder,
+          onPriceSortOrderChanged: onPriceSortOrderChanged,
           useGlassPlate: true,
         ),
         if (showPrivateRoomAndPhoto) ...[

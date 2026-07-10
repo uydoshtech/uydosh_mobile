@@ -13,6 +13,100 @@ import "package:uy_dosh/presentation/widgets/common/three_d_surface_style.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_slider.dart";
 import "package:uy_dosh/presentation/widgets/price_range_badge.dart";
 
+/// Cycles `null` (default order) -> `'asc'` (cheapest first) -> `'desc'`
+/// (priciest first) -> back to `null` — mirrors the mini app's price-sort
+/// chip (`PRICE_SORT_ORDER_VALUES` in `telegram-feed.js`).
+String? nextPriceSortOrder(String? current) {
+  switch (current) {
+    case null:
+      return "asc";
+    case "asc":
+      return "desc";
+    default:
+      return null;
+  }
+}
+
+/// "Sort by price" toggle button placed between the Мин/Макс columns —
+/// same up/down-arrow-plus-$ glyph as the mini app's price-sort chip (see
+/// `filterPriceSortIcon` in `uydosh-icons.js`), reimplemented with Material
+/// icons since Flutter widgets can't reuse the web app's inline SVG paths.
+class _PriceSortToggleButton extends StatelessWidget {
+  const _PriceSortToggleButton({
+    required this.order,
+    required this.color,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  final String? order;
+  final Color color;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  bool get _isActive => order == "asc" || order == "desc";
+
+  IconData get _icon {
+    if (order == "asc") return Icons.arrow_upward;
+    if (order == "desc") return Icons.arrow_downward;
+    return Icons.unfold_more;
+  }
+
+  String get _semanticsLabel {
+    if (order == "asc") return L10n.get("price_sort_toggle_aria_asc");
+    if (order == "desc") return L10n.get("price_sort_toggle_aria_desc");
+    return L10n.get("price_sort_toggle_aria_none");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = _isActive ? accentColor : color.withValues(alpha: 0.75);
+    return Semantics(
+      button: true,
+      label: _semanticsLabel,
+      child: Tooltip(
+        message: _semanticsLabel,
+        child: Material(
+          color: _isActive
+              ? accentColor.withValues(alpha: 0.14)
+              : color.withValues(alpha: 0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(
+              color: _isActive
+                  ? accentColor.withValues(alpha: 0.55)
+                  : color.withValues(alpha: 0.18),
+            ),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(_icon, size: 15, color: fg),
+                  const SizedBox(height: 1),
+                  Text(
+                    "\$",
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                      color: fg,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class PriceRangePicker extends StatefulWidget {
   const PriceRangePicker({
     required this.onPriceRangeChanged,
@@ -29,6 +123,8 @@ class PriceRangePicker extends StatefulWidget {
     this.showErrorBorder = false,
     this.useGlassPlate = false,
     this.title,
+    this.priceSortOrder,
+    this.onPriceSortOrderChanged,
   });
 
   final Function(double minPrice, double maxPrice) onPriceRangeChanged;
@@ -60,6 +156,13 @@ class PriceRangePicker extends StatefulWidget {
   final bool showErrorBorder;
   final bool useGlassPlate;
   final String? title;
+
+  /// `null` (default order), `'asc'` (cheapest first), or `'desc'`
+  /// (priciest first). The sort toggle button (mirrors the mini app's
+  /// price-sort chip — see `filterPriceSortIcon` in `uydosh-icons.js`) is
+  /// only rendered in range mode when [onPriceSortOrderChanged] is set.
+  final String? priceSortOrder;
+  final ValueChanged<String?>? onPriceSortOrderChanged;
 
   @override
   State<PriceRangePicker> createState() => _PriceRangePickerState();
@@ -485,6 +588,7 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
         }
 
         Widget buildMinMaxSlidersRow() {
+          final onSortOrderChanged = widget.onPriceSortOrderChanged;
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -495,7 +599,23 @@ class _PriceRangePickerState extends State<PriceRangePicker> {
                   onChanged: handleMinChanged,
                 ),
               ),
-              const SizedBox(width: 12),
+              if (onSortOrderChanged != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: _PriceSortToggleButton(
+                    order: widget.priceSortOrder,
+                    color: textColor,
+                    accentColor: sliderColor,
+                    onTap: () {
+                      UiFeedbackUtils.tap();
+                      onSortOrderChanged(
+                        nextPriceSortOrder(widget.priceSortOrder),
+                      );
+                    },
+                  ),
+                )
+              else
+                const SizedBox(width: 12),
               Expanded(
                 child: buildMinMaxSliderColumn(
                   label: L10n.get("price_picker_max_label"),
