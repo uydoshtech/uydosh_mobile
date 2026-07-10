@@ -17,7 +17,7 @@ void _applyListingTypeQueryParams(
 }) {
   if (listingTypeIds != null && listingTypeIds.isNotEmpty) {
     queryParams["listingTypeIds"] = listingTypeIds.join(",");
-  } else if (listingTypeId != null) {
+  } else if (listingTypeId != null && listingTypeId > 0) {
     queryParams["listingTypeId"] = listingTypeId;
   }
 }
@@ -219,7 +219,7 @@ class ListingSearchService implements IListingSearchService {
     if (subwayLineId != null && subwayLineId > 0) {
       queryParams["subwayLineId"] = subwayLineId;
     }
-    if (gender != null) queryParams["gender"] = gender;
+    if (gender != null && gender > 0) queryParams["gender"] = gender;
     if (minPrice != null) queryParams["minPrice"] = minPrice;
     if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
     if (privateRoom != null) queryParams["privateRoom"] = privateRoom;
@@ -292,7 +292,7 @@ class ListingSearchService implements IListingSearchService {
       if (subwayLineId != null && subwayLineId > 0) {
         queryParams["subwayLineId"] = subwayLineId;
       }
-      if (gender != null) queryParams["gender"] = gender;
+      if (gender != null && gender > 0) queryParams["gender"] = gender;
       if (minPrice != null) queryParams["minPrice"] = minPrice;
       if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
 
@@ -414,7 +414,7 @@ class ListingSearchService implements IListingSearchService {
       if (subwayLineId != null && subwayLineId > 0) {
         queryParams["subwayLineId"] = subwayLineId;
       }
-      if (gender != null) queryParams["gender"] = gender;
+      if (gender != null && gender > 0) queryParams["gender"] = gender;
       if (minPrice != null) queryParams["minPrice"] = minPrice;
       if (maxPrice != null) queryParams["maxPrice"] = maxPrice;
       if (privateRoom != null) queryParams["privateRoom"] = privateRoom;

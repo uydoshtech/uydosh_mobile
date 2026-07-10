@@ -575,28 +575,35 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
 
   bool get _hasMapSearchFilters {
     // User dismissed the ribbon — browse the unfiltered feed on the map, not a
-    // narrowed API search (profile defaults still look like "filters").
+    // narrowed API search.
     if (_filterRibbonDismissedByUser) {
       return false;
     }
     // An explicit filter-sheet submission always counts, even if the chosen
-    // values don't otherwise match the type+gender "profile default" shape
-    // below (e.g. a listing-type change with no gender set).
+    // values don't otherwise match the "has gender" shape below (e.g. a
+    // listing-type change with no gender set).
     if (_filterRibbonAppliedByUser) {
       return true;
     }
     if (!_filterRibbonEnabled) {
       return _hasExplicitUserMapFilters;
     }
-    return _hasProfileDefaultMapFilters || _hasExplicitUserMapFilters;
+    return _hasExplicitGenderFilter ||
+        _hasExplicitListingTypeFilter ||
+        _hasExplicitUserMapFilters;
   }
 
-  /// Listing type + profile gender — the same defaults applied on the home feed.
-  bool get _hasProfileDefaultMapFilters {
-    return _listingTypeId >= 1 &&
-        _gender != null &&
-        _gender! >= 1 &&
-        _gender! <= 2;
+  /// True once the user has explicitly picked a gender (never auto-derived
+  /// from their own profile — gender defaults to "all" / no filter).
+  bool get _hasExplicitGenderFilter {
+    return _gender != null && _gender! >= 1 && _gender! <= 2;
+  }
+
+  /// True once the user has explicitly picked a listing type (never
+  /// auto-derived from role/profile — listing type defaults to "all").
+  bool get _hasExplicitListingTypeFilter {
+    return (_listingTypeIds != null && _listingTypeIds!.isNotEmpty) ||
+        _listingTypeId > 0;
   }
 
   bool get _hasExplicitUserMapFilters {

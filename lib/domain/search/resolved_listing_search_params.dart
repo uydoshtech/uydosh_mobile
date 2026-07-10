@@ -38,6 +38,12 @@ class ResolvedListingSearchParams {
   final bool? has3dTour;
   final int createdWithinDays;
 
+  /// `0` is the app-wide "no filter" sentinel for gender / listing type
+  /// (see [SearchFiltersState]). Normalize it to `null` here so it is never
+  /// sent to the backend as a literal filter value.
+  static int? _normalizeId(int? value) =>
+      (value != null && value > 0) ? value : null;
+
   /// Build the same filter set the home feed uses from [SearchFiltersState].
   static ResolvedListingSearchParams fromSearchFiltersState(
     SearchFiltersState state, {
@@ -119,13 +125,14 @@ class ResolvedListingSearchParams {
         : state.has3dTour;
 
     return ResolvedListingSearchParams(
-      listingTypeId: listingTypeIds != null ? null : listingTypeId,
+      listingTypeId:
+          listingTypeIds != null ? null : _normalizeId(listingTypeId),
       listingTypeIds: listingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
       subwayStationIds: subwayStationIds,
       subwayLineId: subwayLineId,
-      gender: gender,
+      gender: _normalizeId(gender),
       minPrice: minPrice,
       maxPrice: maxPrice,
       privateRoom: privateRoom,
@@ -156,13 +163,13 @@ class ResolvedListingSearchParams {
 
     return ResolvedListingSearchParams(
       listingTypeId:
-          listingTypeIds != null ? null : listingTypeId,
+          listingTypeIds != null ? null : _normalizeId(listingTypeId),
       listingTypeIds: listingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
       subwayStationIds: normalizedStationIds,
       subwayLineId: hasStationFilter ? subwayLineId : null,
-      gender: gender,
+      gender: _normalizeId(gender),
       minPrice: minPrice,
       maxPrice: maxPrice,
       privateRoom: privateRoom,

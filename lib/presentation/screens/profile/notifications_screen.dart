@@ -957,7 +957,6 @@ class _NotificationsScreenState extends State<NotificationsScreen>
 
     await SearchBottomSheetWidget.show(
       context,
-      applyProfileDefaults: false,
       commitFiltersOnApply: false,
       currentListingTypeId:
           a.listingTypeId ?? searchState.selectedListingTypeId,

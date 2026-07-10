@@ -2,8 +2,6 @@ import "dart:async" show Timer, unawaited;
 
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
-import "package:uy_dosh/base/api/client/json_encodable.dart";
-import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -11,7 +9,6 @@ import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/search/search_filter_defaults.dart";
-import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
 
 // Global search filters state with ChangeNotifier for reactivity
@@ -20,8 +17,11 @@ class SearchFiltersState extends ChangeNotifier {
   SearchFiltersState._internal();
   static final SearchFiltersState _instance = SearchFiltersState._internal();
 
-  int _selectedListingTypeId = 2; // Default to roommate needed
-  List<int> _searchListingTypeIds = const [ListingTypeIds.roommateNeeded];
+  // 0 = no listing-type filter (show all types), otherwise a real
+  // ListingTypeIds value. Same "start empty until explicitly chosen"
+  // treatment as gender — never auto-derived from the user's role/profile.
+  int _selectedListingTypeId = 0;
+  List<int> _searchListingTypeIds = const [];
   int _selectedLocationIndex = 0;
   int _selectedSubwayLine = 0;
   int _selectedStationIndex = 0;
@@ -30,21 +30,16 @@ class SearchFiltersState extends ChangeNotifier {
   // Canonical multi-station selection. Empty means "no station filter".
   // The single fields above are derived from this for legacy persistence.
   List<int> _selectedStationIds = const [];
-  int _selectedGender = 1; // 1 = male, 2 = female
+  // 0 = no gender filter (show all), 1 = male, 2 = female. Never
+  // auto-derived from the user's own profile — search filters start empty
+  // until the user explicitly picks one, same as location/metro/price.
+  int _selectedGender = 0;
   double _minPrice = 10.0; // Default min price
   double _maxPrice = 500.0; // Default visible max price
   bool _privateRoom = false; // Default to false (show all)
   bool _withPhoto = false;
   bool _has3dTour = false;
   bool _isInitialized = false;
-  bool _profileDefaultsApplied = false;
-  // Tracks whether the user had any persisted filters (local prefs or a server
-  // snapshot) when this session loaded. Used by
-  // [ensureDefaultFiltersBuiltAndSaved] to decide between building fresh
-  // profile defaults vs. keeping the user's saved filters untouched.
-  bool _hadSavedFilters = false;
-  bool _hadSavedListingTypeId = false;
-  bool _hadSavedGender = false;
   Future<void> _prefsWriteChain = Future<void>.value();
   bool _suppressRemotePersist = false;
   Timer? _remoteSaveDebounce;
@@ -75,7 +70,6 @@ class SearchFiltersState extends ChangeNotifier {
       }
     }
     await initialize();
-    await applyProfileValuesForSearchSheet();
     if (!authenticated) return;
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
     await hydrateFromBackendForCurrentUser();
@@ -222,8 +216,6 @@ class SearchFiltersState extends ChangeNotifier {
       if (raw is Map) {
         await _applyServerFiltersToStateAndPrefs(
             Map<String, dynamic>.from(raw));
-        _profileDefaultsApplied = true;
-        _hadSavedFilters = true;
       } else {
         // No server snapshot yet (or explicitly null). Keep filters from
         // [initialize] / device prefs — do not wipe them. Clearing here
@@ -263,7 +255,7 @@ class SearchFiltersState extends ChangeNotifier {
       return fallback;
     }
 
-    _selectedListingTypeId = readInt("listing_type_id", 2, min: 1, max: 99);
+    _selectedListingTypeId = readInt("listing_type_id", 0, min: 0, max: 99);
     _searchListingTypeIds = SearchFilterListingTypeIdsCodec.fromServerJson(
       m,
       fallbackUiTypeId: _selectedListingTypeId,
@@ -276,7 +268,7 @@ class SearchFiltersState extends ChangeNotifier {
     if (_selectedStationIds.isEmpty && _selectedStationId > 0) {
       _selectedStationIds = [_selectedStationId];
     }
-    _selectedGender = readInt("gender", 1, min: 1, max: 2);
+    _selectedGender = readInt("gender", 0, min: 0, max: 2);
     _minPrice = readDouble("min_price", 10.0);
     _maxPrice = readDouble("max_price", 500.0);
     if (_minPrice > _maxPrice) {
@@ -405,8 +397,6 @@ class SearchFiltersState extends ChangeNotifier {
       await prefs.setBool("search_with_photo", _withPhoto);
       await prefs.setBool("search_has_3d_tour", _has3dTour);
     });
-    _hadSavedListingTypeId = true;
-    _hadSavedGender = true;
   }
 
   /// Seeds in-memory filter fields when opening the search sheet. Skips disk
@@ -556,10 +546,6 @@ class SearchFiltersState extends ChangeNotifier {
   bool get has3dTour => _has3dTour;
   bool get isInitialized => _isInitialized;
 
-  /// True when the user has never saved listing type or gender prefs yet.
-  bool get isFirstSearchSheetOpen =>
-      !_hadSavedListingTypeId && !_hadSavedGender;
-
   // Initialize and load saved search filters from storage
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -587,9 +573,6 @@ class SearchFiltersState extends ChangeNotifier {
     await RestoreFiltersState().initialize();
     if (!RestoreFiltersState().shouldRestore) {
       await clearAllFilters(persistRemote: false);
-      // Filters were intentionally wiped for this launch, so the user has no
-      // saved filters to honor; profile defaults may be rebuilt.
-      _hadSavedFilters = false;
       _isInitialized = true;
       notifyListeners();
       return;
@@ -597,7 +580,6 @@ class SearchFiltersState extends ChangeNotifier {
 
     if (await _shouldSkipPersistedFilterRestore()) {
       await clearAllFilters(persistRemote: false);
-      _hadSavedFilters = false;
       _isInitialized = true;
       notifyListeners();
       return;
@@ -606,10 +588,10 @@ class SearchFiltersState extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Load listing type ID - use profile default when no saved preference
+      // Load listing type ID - no filter (0 = all types) when nothing was
+      // saved yet, never derived from the user's role/profile.
       final savedListingTypeId = prefs.getInt("search_listing_type_id");
-      _hadSavedListingTypeId = savedListingTypeId != null;
-      _selectedListingTypeId = savedListingTypeId ?? 2;
+      _selectedListingTypeId = savedListingTypeId ?? 0;
 
       // Load location index
       _selectedLocationIndex = prefs.getInt("search_location_index") ?? 0;
@@ -639,10 +621,9 @@ class SearchFiltersState extends ChangeNotifier {
         _selectedStationIds = [_selectedStationId];
       }
 
-      // Load gender - use profile default when no saved preference
+      // Load gender - no filter (0 = all) when nothing was saved yet.
       final savedGender = prefs.getInt("search_gender");
-      _hadSavedGender = savedGender != null;
-      _selectedGender = savedGender ?? 1;
+      _selectedGender = savedGender ?? 0;
 
       // Load price range
       _minPrice = prefs.getDouble("search_min_price") ?? 10.0;
@@ -660,27 +641,6 @@ class SearchFiltersState extends ChangeNotifier {
         uiListingTypeId: _selectedListingTypeId,
       );
 
-      // Mark whether we need to apply profile defaults (when no saved values)
-      _profileDefaultsApplied =
-          savedListingTypeId != null && savedGender != null;
-
-      // Record whether the user already had any persisted filter so the home
-      // load can decide between building fresh defaults and keeping saved ones.
-      _hadSavedFilters = prefs.containsKey("search_listing_type_id") ||
-          prefs.containsKey("search_location_index") ||
-          prefs.containsKey("search_subway_line") ||
-          prefs.containsKey("search_station_index") ||
-          prefs.containsKey("search_station_id") ||
-          prefs.containsKey(_stationIdsPrefsKey) ||
-          prefs.containsKey("search_gender") ||
-          prefs.containsKey("search_min_price") ||
-          prefs.containsKey("search_max_price") ||
-          prefs.containsKey("search_private_room") ||
-          prefs.containsKey("search_with_photo") ||
-          prefs.containsKey("search_has_3d_tour") ||
-          prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey) ||
-          prefs.containsKey("search_landlord_demand_bundle");
-
       logger.d(
         "Loaded saved search filters: listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, location=$_selectedLocationIndex, line=$_selectedSubwayLine, stationIndex=$_selectedStationIndex, stationId=$_selectedStationId, gender=$_selectedGender, priceRange=$_minPrice-$_maxPrice, privateRoom=$_privateRoom, withPhoto=$_withPhoto, has3dTour=$_has3dTour",
       );
@@ -691,127 +651,6 @@ class SearchFiltersState extends ChangeNotifier {
 
     _isInitialized = true;
     notifyListeners();
-  }
-
-  /// Applies profile-based defaults for listing type and gender when no saved
-  /// preferences exist. Call after dependency injection is configured (e.g. from
-  /// HomeScreen). Only applies for logged-in users.
-  Future<void> ensureProfileDefaultsApplied() async {
-    if (_profileDefaultsApplied) return;
-    if (!await SessionManager.isAuthenticated()) return;
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedListingTypeId = prefs.getInt("search_listing_type_id");
-      final savedGender = prefs.getInt("search_gender");
-
-      var updated = false;
-
-      // Apply listing type from profile role when no saved preference
-      if (savedListingTypeId == null) {
-        final role = await _getUserRole();
-        final defaults = SearchFilterDefaultsPolicy.forRole(role);
-        _applySearchFilterDefaults(defaults);
-        await _enqueuePrefsWrite(_persistListingTypePrefs);
-        updated = true;
-        logger.d(
-          "SearchFiltersState: Applied profile listing type default: ${defaults.uiListingTypeId} (role: $role, searchListingTypeIds: ${defaults.searchListingTypeIds})",
-        );
-      }
-
-      // Apply gender from profile when no saved preference
-      if (savedGender == null) {
-        final gender = await _getProfileGender();
-        if (gender != null && (gender == 1 || gender == 2)) {
-          _selectedGender = gender;
-          await prefs.setInt("search_gender", gender);
-          updated = true;
-          logger.d(
-            "SearchFiltersState: Applied profile gender default: $gender",
-          );
-        }
-      }
-
-      if (updated) {
-        _profileDefaultsApplied = true;
-        notifyListeners();
-      }
-    } catch (e) {
-      logger.d("Error applying profile defaults to search filters: $e");
-    }
-  }
-
-  /// Home-load entry point. Decides between building fresh profile-derived
-  /// defaults and keeping the user's existing saved filters:
-  ///
-  /// - When the user already has saved filters (local prefs or a hydrated
-  ///   server snapshot), this is a no-op and returns `false` so the caller
-  ///   applies the saved filters as-is (do NOT overwrite).
-  /// - When no saved filters exist, it builds defaults from the profile
-  ///   (gender), role (listing type) and the full price range, persists them
-  ///   locally and to the backend, and returns `true`.
-  ///
-  /// Only runs for authenticated users (role/profile are required to build the
-  /// defaults and to persist them remotely).
-  Future<bool> ensureDefaultFiltersBuiltAndSaved() async {
-    if (await _shouldSkipPersistedFilterRestore()) return false;
-    if (_hadSavedFilters) {
-      await _upgradeLegacyLandlordListingTypeIdsIfNeeded();
-      return false;
-    }
-    if (!await SessionManager.isAuthenticated()) return false;
-
-    try {
-      final role = await _getUserRole();
-      final gender = await _getProfileGender();
-      final defaults = SearchFilterDefaultsPolicy.forRole(
-        role,
-        profileGender: gender,
-      );
-      _applySearchFilterDefaults(defaults);
-
-      await _enqueuePrefsWrite((prefs) async {
-        await prefs.setInt("search_listing_type_id", _selectedListingTypeId);
-        await prefs.setString(
-          SearchFilterListingTypeIdsCodec.prefsKey,
-          SearchFilterListingTypeIdsCodec.toPrefsString(_searchListingTypeIds),
-        );
-        await prefs.remove("search_landlord_demand_bundle");
-        await prefs.setInt("search_gender", _selectedGender);
-        await prefs.setDouble("search_min_price", _minPrice);
-        await prefs.setDouble("search_max_price", _maxPrice);
-      });
-
-      _profileDefaultsApplied = true;
-      _hadSavedFilters = true;
-      notifyListeners();
-
-      // Persist immediately so the freshly built defaults become the user's
-      // saved filters (subsequent launches take the "do not overwrite" branch).
-      if (!_remotePersistGated) {
-        _remoteSaveDebounce?.cancel();
-        _remoteSaveDebounce = null;
-        await _flushRemotePersist();
-      }
-
-      logger.d(
-        "SearchFiltersState: built default filters (listingType=$_selectedListingTypeId, searchListingTypeIds=$_searchListingTypeIds, gender=$_selectedGender, price=$_minPrice-$_maxPrice)",
-      );
-      return true;
-    } catch (e) {
-      logger.d("Error building default filters: $e");
-      return false;
-    }
-  }
-
-  void _applySearchFilterDefaults(SearchFilterDefaults defaults) {
-    _selectedListingTypeId = defaults.uiListingTypeId;
-    _searchListingTypeIds = List<int>.from(defaults.searchListingTypeIds);
-    _minPrice = defaults.minPrice;
-    _maxPrice = defaults.maxPrice;
-    if (defaults.gender != null && (defaults.gender == 1 || defaults.gender == 2)) {
-      _selectedGender = defaults.gender!;
-    }
   }
 
   List<int> _loadSearchListingTypeIdsFromPrefs(
@@ -827,7 +666,7 @@ class SearchFiltersState extends ChangeNotifier {
     if (prefs.getBool("search_landlord_demand_bundle") == true) {
       return SearchFilterDefaultsPolicy.landlordDemandListingTypeIds();
     }
-    return [uiListingTypeId];
+    return uiListingTypeId > 0 ? [uiListingTypeId] : [];
   }
 
   Future<void> _persistListingTypePrefs(SharedPreferences prefs) async {
@@ -848,117 +687,14 @@ class SearchFiltersState extends ChangeNotifier {
     return {SearchFilterListingTypeIdsCodec.serverKey: ids};
   }
 
-  /// Existing landlords who saved room_needed-only filters before multi-type
-  /// ids shipped still get groups in their feed.
-  Future<void> _upgradeLegacyLandlordListingTypeIdsIfNeeded() async {
-    if (_searchListingTypeIds.length > 1) return;
-    if (!await SessionManager.isAuthenticated()) return;
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final hadExplicitListingTypeIds =
-          prefs.containsKey(SearchFilterListingTypeIdsCodec.prefsKey) ||
-          prefs.containsKey("search_landlord_demand_bundle");
-
-      final role = await _getUserRole();
-      if (!SearchFilterDefaultsPolicy.shouldUpgradeLegacyLandlordSearch(
-        role: role,
-        uiListingTypeId: _selectedListingTypeId,
-        searchListingTypeIds: _searchListingTypeIds,
-        hadExplicitListingTypeIds: hadExplicitListingTypeIds,
-      )) {
-        return;
-      }
-
-      _searchListingTypeIds =
-          SearchFilterDefaultsPolicy.landlordDemandListingTypeIds();
-      await _enqueuePrefsWrite(_persistListingTypePrefs);
-      notifyListeners();
-      if (!_remotePersistGated) _scheduleRemotePersist();
-      logger.d(
-        "SearchFiltersState: upgraded landlord saved filters to multi-type ids",
-      );
-    } catch (e) {
-      logger.d("SearchFiltersState: landlord listing-type upgrade failed: $e");
-    }
-  }
-
-  /// Fills in listing type and gender from profile only when the user has no
-  /// saved search preference yet. Call before opening the search sheet so first-
-  /// time users see sensible defaults; do not overwrite an explicit choice from
-  /// a previous search (that caused the picker to snap back to profile gender
-  /// and could reset listing type so searches returned no rows).
-  Future<void> applyProfileValuesForSearchSheet() async {
-    if (!await SessionManager.isAuthenticated()) return;
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedListingTypeId = prefs.getInt("search_listing_type_id");
-      final savedGender = prefs.getInt("search_gender");
-
-      if (savedListingTypeId == null) {
-        final role = await _getUserRole();
-        final defaults = SearchFilterDefaultsPolicy.forRole(role);
-        await setListingTypeId(
-          defaults.uiListingTypeId,
-          searchListingTypeIds: defaults.searchListingTypeIds,
-        );
-      }
-
-      if (savedGender == null) {
-        final gender = await _getProfileGender();
-        if (gender != null && (gender == 1 || gender == 2)) {
-          await setGender(gender);
-        }
-      }
-    } catch (e) {
-      logger.d("Error applying profile values for search sheet: $e");
-    }
-  }
-
-  Future<String?> _getUserRole() async {
-    var role = await SessionManager.getUserRole();
-    if (role != null) return role;
-    try {
-      final response = await getIt<IOAuthApiClient>()
-          .post<Map<String, dynamic>, _EmptyRequest>(
-        "/users/verify-session",
-        (json) => json as Map<String, dynamic>,
-        data: _EmptyRequest(),
-      );
-      final user = response["user"];
-      role = user is Map<String, dynamic> ? user["role"] as String? : null;
-      if (role != null) await SessionManager.storeUserRole(role);
-      return role;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<int?> _getProfileGender() async {
-    var profile = await SessionManager.getCachedUserProfile();
-    if (profile?.gender != null &&
-        (profile!.gender == 1 || profile.gender == 2)) {
-      return profile.gender;
-    }
-    try {
-      profile = await getIt<IUserProfileService>().getCurrentUserProfile();
-      if (profile.gender != null &&
-          (profile.gender == 1 || profile.gender == 2)) {
-        return profile.gender;
-      }
-    } catch (_) {}
-    return null;
-  }
-
   // Update listing type ID
   Future<void> setListingTypeId(
     int listingTypeId, {
     List<int>? searchListingTypeIds,
   }) async {
     _selectedListingTypeId = listingTypeId;
-    _searchListingTypeIds = searchListingTypeIds ?? [listingTypeId];
-    _hadSavedListingTypeId = true;
+    _searchListingTypeIds =
+        searchListingTypeIds ?? (listingTypeId > 0 ? [listingTypeId] : []);
 
     try {
       await _enqueuePrefsWrite(_persistListingTypePrefs);
@@ -1091,7 +827,6 @@ class SearchFiltersState extends ChangeNotifier {
   // Update gender
   Future<void> setGender(int gender) async {
     _selectedGender = gender;
-    _hadSavedGender = true;
 
     try {
       await _enqueuePrefsWrite((prefs) async {
@@ -1192,16 +927,14 @@ class SearchFiltersState extends ChangeNotifier {
   /// Resets in-memory filter fields immediately. Used when dismissing the home
   /// map ribbon so embedded map props update in the same frame.
   void clearAllFiltersInMemory() {
-    _selectedListingTypeId = 2;
-    _searchListingTypeIds = const [ListingTypeIds.roommateNeeded];
+    _selectedListingTypeId = 0;
+    _searchListingTypeIds = const [];
     _selectedLocationIndex = 0;
     _selectedSubwayLine = 0;
     _selectedStationIndex = 0;
     _selectedStationId = 0;
     _selectedStationIds = const [];
-    _selectedGender = 1;
-    _profileDefaultsApplied = false; // Allow profile defaults to re-apply
-    _hadSavedFilters = false; // Allow defaults to rebuild on next home load
+    _selectedGender = 0;
     _minPrice = 10.0;
     _maxPrice = 500.0;
     _privateRoom = false;
@@ -1354,11 +1087,4 @@ class SearchFiltersSnapshot {
   final bool privateRoom;
   final bool withPhoto;
   final bool has3dTour;
-}
-
-class _EmptyRequest implements IJsonEncodable {
-  _EmptyRequest();
-
-  @override
-  Map<String, dynamic> toJson() => {};
 }

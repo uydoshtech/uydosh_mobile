@@ -487,15 +487,20 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  /// True when filters carry user intent beyond the listing-type / gender
-  /// defaults (which are auto-derived from profile and don't represent an
-  /// active "search").
+  /// True when filters carry real user intent — an explicit gender, an
+  /// explicit listing type, a location/metro pick, a price range narrower
+  /// than the static default, or one of the supply-side toggles. Every
+  /// field defaults to "all" / unset (never auto-derived from the user's
+  /// profile or role) so a fresh/untouched session always falls through to
+  /// the unfiltered browse feed instead of looking "already searched".
   bool _hasUserAppliedSearchCriteria() {
-    return _searchFiltersState.selectedLocationIndex > 0 ||
+    return _searchFiltersState.selectedGender > 0 ||
+        _searchFiltersState.searchListingTypeIdsList.isNotEmpty ||
+        _searchFiltersState.selectedLocationIndex > 0 ||
         _searchFiltersState.selectedStationId > 0 ||
         _searchFiltersState.selectedStationIdsList.isNotEmpty ||
-        _searchFiltersState.minPrice != 0.0 ||
-        _searchFiltersState.maxPrice != 1000.0 ||
+        _searchFiltersState.minPrice != 10.0 ||
+        _searchFiltersState.maxPrice != 500.0 ||
         _searchFiltersState.privateRoom ||
         _searchFiltersState.withPhoto ||
         _searchFiltersState.has3dTour;

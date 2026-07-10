@@ -113,13 +113,14 @@ abstract final class SearchFilterListingTypeIdsCodec {
   }
 
   static List<int> fromPrefsString(String? raw, {required int fallbackUiTypeId}) {
+    final fallback = fallbackUiTypeId > 0 ? [fallbackUiTypeId] : <int>[];
     if (raw == null || raw.trim().isEmpty) {
-      return [fallbackUiTypeId];
+      return fallback;
     }
     final parsed = sanitizeIds(
       raw.split(",").map((part) => int.tryParse(part.trim())).whereType<int>(),
     );
-    return parsed.isEmpty ? [fallbackUiTypeId] : parsed;
+    return parsed.isEmpty ? fallback : parsed;
   }
 
   static String toPrefsString(List<int> ids) => sanitizeIds(ids).join(",");
@@ -142,11 +143,11 @@ abstract final class SearchFilterListingTypeIdsCodec {
     }
 
     final single = json["listing_type_id"];
-    if (single is num) {
+    if (single is num && single.toInt() > 0) {
       return [single.toInt()];
     }
 
-    return [fallbackUiTypeId];
+    return fallbackUiTypeId > 0 ? [fallbackUiTypeId] : [];
   }
 
   static List<int>? toServerJson(List<int> ids, {required int uiListingTypeId}) {

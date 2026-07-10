@@ -89,7 +89,6 @@ class SearchBottomSheetWidget {
     BuildContext context, {
     bool replaceCurrentRoute = false,
     bool openedFromHomeScreen = false,
-    bool applyProfileDefaults = true,
     bool commitFiltersOnApply = true,
     int? currentListingTypeId,
     int? currentLocationId,
@@ -113,14 +112,6 @@ class SearchBottomSheetWidget {
     final preSheetSnapshot = SearchFiltersSnapshot.capture(searchFiltersState);
     var didCommit = false;
 
-    final isFirstOpen = searchFiltersState.isFirstSearchSheetOpen;
-    final resolvedListingTypeId = applyProfileDefaults && isFirstOpen
-        ? searchFiltersState.selectedListingTypeId
-        : currentListingTypeId;
-    final resolvedGender = applyProfileDefaults && isFirstOpen
-        ? searchFiltersState.selectedGender
-        : currentGender;
-
     void markCommitted() {
       didCommit = true;
     }
@@ -135,12 +126,12 @@ class SearchBottomSheetWidget {
             replaceCurrentRoute: replaceCurrentRoute,
             openedFromHomeScreen: openedFromHomeScreen,
             commitFiltersOnApply: commitFiltersOnApply,
-            currentListingTypeId: resolvedListingTypeId,
+            currentListingTypeId: currentListingTypeId,
             currentLocationId: currentLocationId,
             currentSubwayStationId: currentSubwayStationId,
             currentSubwayStationIds: currentSubwayStationIds,
             currentSubwayLineId: currentSubwayLineId,
-            currentGender: resolvedGender,
+            currentGender: currentGender,
             currentMinPrice: currentMinPrice,
             currentMaxPrice: currentMaxPrice,
             currentPrivateRoom: currentPrivateRoom,
