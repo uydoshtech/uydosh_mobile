@@ -54,7 +54,7 @@ dependencies:
   pretty_dio_logger: ^1.4.0
   curved_navigation_bar: ^1.0.6
   flutter_svg: ^2.1.0
-  smooth_page_indicator: ^1.1.0
+  smooth_page_indicator: ^2.0.1
   shared_preferences: ^2.5.3
   encrypt_shared_preferences: ^0.9.10
   url_launcher: ^6.3.1
