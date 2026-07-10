@@ -221,6 +221,30 @@ class _PatchPropertyNavEnabledRequest implements IJsonEncodable {
   dynamic toJson() => {"enabled": enabled};
 }
 
+class WebAppMultipleInstanceCheckEnabledResponse {
+  WebAppMultipleInstanceCheckEnabledResponse({required this.enabled});
+
+  factory WebAppMultipleInstanceCheckEnabledResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return WebAppMultipleInstanceCheckEnabledResponse(
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: false),
+    );
+  }
+
+  final bool enabled;
+}
+
+class _PatchWebAppMultipleInstanceCheckEnabledRequest
+    implements IJsonEncodable {
+  _PatchWebAppMultipleInstanceCheckEnabledRequest({required this.enabled});
+
+  final bool enabled;
+
+  @override
+  dynamic toJson() => {"enabled": enabled};
+}
+
 class HomeStartViewResponse {
   HomeStartViewResponse({required this.view});
 
@@ -452,6 +476,12 @@ abstract class IAdminContentModerationSettingsService {
   Future<PropertyNavEnabledResponse> setPropertyNavEnabled({
     required bool enabled,
   });
+
+  Future<WebAppMultipleInstanceCheckEnabledResponse>
+      getWebAppMultipleInstanceCheckEnabledSetting();
+
+  Future<WebAppMultipleInstanceCheckEnabledResponse>
+      setWebAppMultipleInstanceCheckEnabled({required bool enabled});
 
   Future<HomeStartViewResponse> getHomeStartViewSetting();
 
@@ -852,6 +882,51 @@ class AdminContentModerationSettingsService
       );
     } catch (e) {
       logger.d("Error updating property nav enabled setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<WebAppMultipleInstanceCheckEnabledResponse>
+      getWebAppMultipleInstanceCheckEnabledSetting() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/web-app-multiple-instance-check-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return WebAppMultipleInstanceCheckEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from web app multiple instance check setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error loading web app multiple instance check setting: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<WebAppMultipleInstanceCheckEnabledResponse>
+      setWebAppMultipleInstanceCheckEnabled({required bool enabled}) async {
+    try {
+      final response = await _oauthApiClient.patch<dynamic, IJsonEncodable>(
+        "/admin/settings/web-app-multiple-instance-check-enabled",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+        data: _PatchWebAppMultipleInstanceCheckEnabledRequest(
+          enabled: enabled,
+        ),
+      );
+      return WebAppMultipleInstanceCheckEnabledResponse.fromJson(
+        _requireJsonMap(
+          response,
+          "Unexpected response from web app multiple instance check setting",
+        ),
+      );
+    } catch (e) {
+      logger.d("Error updating web app multiple instance check setting: $e");
       rethrow;
     }
   }

@@ -28,6 +28,7 @@ class PublicAppSettingsSnapshot {
     required this.mapDefaultShowDistricts,
     required this.mapDefaultShowMetro,
     required this.mapDefaultShowUniversities,
+    required this.webAppMultipleInstanceCheckEnabled,
   });
 
   factory PublicAppSettingsSnapshot.fromJson(Map<String, dynamic> json) {
@@ -67,6 +68,9 @@ class PublicAppSettingsSnapshot {
           defaultValue: true),
       mapDefaultShowUniversities:
           _readPublicSettingBool(json["mapDefaultShowUniversities"]),
+      webAppMultipleInstanceCheckEnabled: _readPublicSettingBool(
+        json["webAppMultipleInstanceCheckEnabled"],
+      ),
     );
   }
 
@@ -84,6 +88,10 @@ class PublicAppSettingsSnapshot {
   final bool mapDefaultShowDistricts;
   final bool mapDefaultShowMetro;
   final bool mapDefaultShowUniversities;
+
+  /// When true, the web client locks every browser tab except the most
+  /// recently opened one for this origin. Default false.
+  final bool webAppMultipleInstanceCheckEnabled;
 }
 
 String _readHomeStartView(Object? value) {
@@ -118,6 +126,8 @@ abstract class IPublicAppSettingsService {
   Future<String> getHomeStartView();
 
   Future<MapLayerDefaultsSnapshot> getMapLayerDefaults();
+
+  Future<bool> getWebAppMultipleInstanceCheckEnabled();
 }
 
 class MapLayerDefaultsSnapshot {
@@ -174,6 +184,7 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
         mapDefaultShowDistricts: true,
         mapDefaultShowMetro: true,
         mapDefaultShowUniversities: false,
+        webAppMultipleInstanceCheckEnabled: false,
       );
     } catch (e) {
       logger.d("PublicAppSettingsService._fetchAll: $e");
@@ -259,5 +270,11 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
       metro: cached?.mapDefaultShowMetro ?? true,
       universities: cached?.mapDefaultShowUniversities ?? false,
     );
+  }
+
+  @override
+  Future<bool> getWebAppMultipleInstanceCheckEnabled() async {
+    await _ensureLoaded();
+    return _cached?.webAppMultipleInstanceCheckEnabled ?? false;
   }
 }

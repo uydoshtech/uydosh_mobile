@@ -12,6 +12,15 @@ import "package:webview_flutter/webview_flutter.dart";
 
 enum _GlbLoadStatus { loading, loaded, error }
 
+/// Light-blue sky backdrop for the 3D scene, matching the web app's
+/// `.roomscan-viewer-wrap` / `.roomscan-backdrop` gradient (see
+/// `assets/listing-detail.css` in the uydoshtech.github.io repo) so the
+/// Android viewer looks consistent with web and the native iOS sky gradient.
+const List<Color> _roomScanSkyGradient = [
+  Color(0xFFBCDCF7),
+  Color(0xFF6FA3E0),
+];
+
 /// Mirrors the web viewer's `ROOM_SCAN_MODE_SEQUENCE` (see listing-detail.js)
 /// and the native iOS viewer's `DisplayMode` (see
 /// RoomUsdzViewerViewController.swift): tapping the layers button advances
@@ -80,7 +89,8 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
       // message is "error" (no detail) or "error:<detail>" from the
       // window.onerror / model-viewer 'error' listeners below.
       _lastErrorDetail = message == "error" ? null : message;
-      debugPrint("RoomGlbViewerScreen: load failed — $message (url=$_resolvedUrl)");
+      debugPrint(
+          "RoomGlbViewerScreen: load failed — $message (url=$_resolvedUrl)");
     }
     setState(() {
       _status = isLoaded ? _GlbLoadStatus.loaded : _GlbLoadStatus.error;
@@ -145,31 +155,41 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ModelViewer(
-                key: ValueKey(_reloadToken),
-                id: _elementId,
-                src: _resolvedUrl,
-                alt: L10n.get("room_3d_viewer_title"),
-                backgroundColor: Colors.black,
-                autoRotate: true,
-                cameraControls: true,
-                debugLogging: false,
-                javascriptChannels: <JavascriptChannel>{
-                  JavascriptChannel(
-                    "GlbViewerBridge",
-                    onMessageReceived: (message) =>
-                        _onBridgeMessage(message.message),
-                  ),
-                },
-                onWebViewCreated: (controller) =>
-                    _webViewController = controller,
-                relatedJs:
-                    """
+      backgroundColor: _roomScanSkyGradient.last,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: _roomScanSkyGradient,
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: ModelViewer(
+                  key: ValueKey(_reloadToken),
+                  id: _elementId,
+                  src: _resolvedUrl,
+                  alt: L10n.get("room_3d_viewer_title"),
+                  // Transparent so the gradient behind (set above) shows
+                  // through the WebView, mirroring the web viewer's approach
+                  // of a transparent `<model-viewer>` over a CSS gradient.
+                  backgroundColor: Colors.transparent,
+                  autoRotate: true,
+                  cameraControls: true,
+                  debugLogging: false,
+                  javascriptChannels: <JavascriptChannel>{
+                    JavascriptChannel(
+                      "GlbViewerBridge",
+                      onMessageReceived: (message) =>
+                          _onBridgeMessage(message.message),
+                    ),
+                  },
+                  onWebViewCreated: (controller) =>
+                      _webViewController = controller,
+                  relatedJs: """
                     (function() {
                       var mv = document.getElementById('$_elementId');
                       if (!mv) { return; }
@@ -244,27 +264,28 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
                       };
                     })();
                     """,
+                ),
               ),
-            ),
-            if (_status == _GlbLoadStatus.loading)
-              const Positioned.fill(
-                child: Center(child: UydoshLogoSpinner(size: 40)),
-              ),
-            if (_status == _GlbLoadStatus.error)
-              Positioned.fill(child: _errorState()),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _topBar(context),
-            ),
-            if (_status == _GlbLoadStatus.loaded)
+              if (_status == _GlbLoadStatus.loading)
+                const Positioned.fill(
+                  child: Center(child: UydoshLogoSpinner(size: 40)),
+                ),
+              if (_status == _GlbLoadStatus.error)
+                Positioned.fill(child: _errorState()),
               Positioned(
-                right: 16,
-                bottom: 24,
-                child: _modeButton(context),
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _topBar(context),
               ),
-          ],
+              if (_status == _GlbLoadStatus.loaded)
+                Positioned(
+                  right: 16,
+                  bottom: 24,
+                  child: _modeButton(context),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -288,7 +309,8 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
           ThreeDAppBarIconButton(
             iconData: Icons.close,
             onPressed: () => Navigator.of(context).pop(),
-            semanticsLabel: MaterialLocalizations.of(context).closeButtonTooltip,
+            semanticsLabel:
+                MaterialLocalizations.of(context).closeButtonTooltip,
             borderRadius: const BorderRadius.all(Radius.circular(999)),
             iconSize: 20,
             contentSlotSize: 24,
@@ -337,7 +359,13 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
 
   Widget _errorState() {
     return Container(
-      color: Colors.black,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: _roomScanSkyGradient,
+        ),
+      ),
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -345,21 +373,21 @@ class _RoomGlbViewerScreenState extends State<RoomGlbViewerScreen> {
         children: [
           ThemeIcon(
             Icons.view_in_ar_outlined,
-            color: Colors.grey[600],
+            color: Colors.white,
             size: 56,
           ),
           const SizedBox(height: 16),
           Text(
             L10n.get("room_3d_load_error_title"),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[400], fontSize: 16),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
           if (kDebugMode && _lastErrorDetail != null) ...[
             const SizedBox(height: 8),
             SelectableText(
               _lastErrorDetail!,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
           const SizedBox(height: 20),

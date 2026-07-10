@@ -14,14 +14,23 @@ class TelegramPostLink {
 /// `telegramMessageId` on `ParserRawSource`). Mirrors the link formats from
 /// https://core.telegram.org/api/links#message-links.
 ///
-/// - Public channels: `chatKey` is an `@handle` (with or without the `@`) ->
-///   `tg://resolve?domain=<handle>&post=<id>` / `https://t.me/<handle>/<id>`.
-/// - Private channels/supergroups: `chatKey` is the bot-API chat id in
-///   `-100xxxxxxxxxx` form -> `tg://privatepost?channel=<id>&post=<id>` /
-///   `https://t.me/c/<id>/<id>`.
+/// - Channels/supergroups: the ingest worker stores `chatKey` as GramJS's
+///   `<type>:<id>` pair (see `serializePeer` in `serializeMessage.ts`), e.g.
+///   `"channel:2183690589"` — NOT the Bot API's `-100`-prefixed chat id.
+///   `<id>` is already the raw internal id needed by the private-post link
+///   formats -> `tg://privatepost?channel=<id>&post=<id>` /
+///   `https://t.me/c/<id>/<id>`. GramJS's `channel` peer type covers both
+///   broadcast channels and supergroups/megagroups, which is exactly the set
+///   `t.me/c/...` message links support.
+/// - Bot-API-style `-100xxxxxxxxxx` ids and bare `@handle`s are also
+///   accepted as a fallback, in case `chatKey` is ever populated from
+///   elsewhere (e.g. manual entry) in that form.
 ///
 /// Returns `null` when either piece of metadata is missing (e.g. the listing
-/// wasn't scraped from Telegram, or the raw source was never captured).
+/// wasn't scraped from Telegram, or the raw source was never captured), or
+/// when `chatKey` identifies a basic group (`"chat:<id>"`) or private 1:1
+/// chat (`"user:<id>"`) — Telegram has no public message-link format for
+/// either (`t.me/c/...` only resolves for channels/supergroups).
 TelegramPostLink? buildTelegramPostLink({
   required String? chatKey,
   required String? telegramMessageId,
@@ -32,7 +41,9 @@ TelegramPostLink? buildTelegramPostLink({
     return null;
   }
 
-  final privateMatch = RegExp(r"^-100(\d+)$").firstMatch(key);
+  final typedChannelMatch = RegExp(r"^channel:(\d+)$").firstMatch(key);
+  final privateMatch =
+      typedChannelMatch ?? RegExp(r"^-100(\d+)$").firstMatch(key);
   if (privateMatch != null) {
     final internalId = privateMatch.group(1)!;
     return TelegramPostLink(
@@ -42,6 +53,10 @@ TelegramPostLink? buildTelegramPostLink({
       webUri: Uri.parse("https://t.me/c/$internalId/$messageId"),
     );
   }
+
+  // `chat:<id>` (basic group) and `user:<id>` (private 1:1 chat) have no
+  // shareable post link.
+  if (RegExp(r"^(?:chat|user):\d+$").hasMatch(key)) return null;
 
   final handle = key.replaceFirst(RegExp(r"^@+"), "");
   if (handle.isEmpty) return null;
