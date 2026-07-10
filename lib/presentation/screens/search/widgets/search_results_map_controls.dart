@@ -23,9 +23,9 @@ class _CenteredMapStatus extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (loading)
-              HouseLoadingIndicator(
+              UydoshUSpinner(
                 size: 40,
-                color: loaderColor,
+                color: loaderColor ?? Colors.black,
               )
             else
               ThemeIcon(icon, size: 48, color: theme.colorScheme.primary),

@@ -396,7 +396,7 @@ class _SearchMapOverlays extends StatelessWidget {
                     ? Center(
                         child: Transform.translate(
                           offset: const Offset(0, -50),
-                          child: HouseLoadingIndicator(
+                          child: UydoshUSpinner(
                             size: 44,
                             color: mapLoaderColor,
                           ),
@@ -412,7 +412,7 @@ class _SearchMapOverlays extends StatelessWidget {
                             key: const ValueKey("map-results-loading"),
                             child: Transform.translate(
                               offset: const Offset(0, -50),
-                              child: HouseLoadingIndicator(
+                              child: UydoshUSpinner(
                                 size: 44,
                                 color: mapLoaderColor,
                               ),
