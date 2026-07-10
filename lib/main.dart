@@ -22,6 +22,9 @@ import "package:uy_dosh/base/config/client_telegram_sign_in_config.dart";
 import "package:uy_dosh/base/config/client_property_feature_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
+import "package:uy_dosh/base/config/client_web_app_multiple_instance_config.dart";
+import "package:uy_dosh/base/state/web_multi_instance_guard_state.dart";
+import "package:uy_dosh/presentation/widgets/common/web_multi_instance_lock_screen.dart";
 import "package:uy_dosh/base/state/chat_composer_draft_state.dart";
 import "package:uy_dosh/base/constants/app_colors.dart"
     show AppColors, BlueThemeColors, LightThemeColors;
@@ -368,6 +371,15 @@ void main() async {
             );
           });
         }
+        // Web-only, off the cold-start critical path entirely: fetches the
+        // admin kill switch and, if on, starts the cross-tab
+        // `BroadcastChannel` negotiation. Irrelevant to first paint, so it
+        // waits until after the splash/first screen is already painting.
+        unawaited(
+          ClientWebAppMultipleInstanceConfig.load().then(
+            (_) => WebMultiInstanceGuardState().startIfEnabled(),
+          ),
+        );
       }
       // Warm up UI sound effects so the first refresh/like has no latency.
       unawaited(SoundService().preload());
@@ -600,7 +612,23 @@ class _MyAppState extends State<MyApp> {
               // `inactive`/`hidden` states (notification shade, Control
               // Center, incoming call UI, brief app-switch peeks) — Flutter's
               // own scheduler only auto-pauses frames in `paused`/`detached`.
-              return LifecycleTickerMode(child: subtree);
+              subtree = LifecycleTickerMode(child: subtree);
+
+              if (!kIsWeb) {
+                return subtree;
+              }
+              // On web, lock this tab out entirely once another, more
+              // recently opened tab of the app has claimed activity (see
+              // `WebMultiInstanceGuardState`); gated server-side by
+              // `ClientWebAppMultipleInstanceConfig`.
+              return ListenableBuilder(
+                listenable: WebMultiInstanceGuardState(),
+                builder: (context, _) {
+                  return WebMultiInstanceGuardState().isRevoked
+                      ? const WebMultiInstanceLockScreen()
+                      : subtree;
+                },
+              );
             },
           );
         },

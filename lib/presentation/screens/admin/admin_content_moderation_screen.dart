@@ -9,6 +9,7 @@ import "package:uy_dosh/base/config/client_listing_contacts_config.dart";
 import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/config/client_map_layer_defaults_config.dart";
 import "package:uy_dosh/base/config/client_property_feature_config.dart";
+import "package:uy_dosh/base/config/client_web_app_multiple_instance_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -61,6 +62,8 @@ class _AdminContentModerationScreenState
   bool _isSavingModerationQueue = false;
   bool _propertyNavEnabled = true;
   bool _isSavingPropertyNav = false;
+  bool _webAppMultipleInstanceCheckEnabled = false;
+  bool _isSavingWebAppMultipleInstanceCheck = false;
   bool _homeStartsWithMap = true;
   bool _isSavingHomeStartView = false;
   bool _mapDefaultShowDistricts = true;
@@ -126,6 +129,17 @@ class _AdminContentModerationScreenState
       } catch (e) {
         logger.d(
           "Property nav enabled setting skipped (is the API updated?): $e",
+        );
+      }
+      var webAppMultipleInstanceCheckEnabled = false;
+      try {
+        final webAppMultipleInstanceCheckRes = await _settingsService
+            .getWebAppMultipleInstanceCheckEnabledSetting();
+        webAppMultipleInstanceCheckEnabled =
+            webAppMultipleInstanceCheckRes.enabled;
+      } catch (e) {
+        logger.d(
+          "Web app multiple instance check setting skipped (is the API updated?): $e",
         );
       }
       var homeStartsWithMap = true;
@@ -213,6 +227,8 @@ class _AdminContentModerationScreenState
         _listingContactsVisible = contactsRes.visible;
         _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
         _propertyNavEnabled = propertyNavEnabled;
+        _webAppMultipleInstanceCheckEnabled =
+            webAppMultipleInstanceCheckEnabled;
         _homeStartsWithMap = homeStartsWithMap;
         _mapDefaultShowDistricts = mapDefaultShowDistricts;
         _mapDefaultShowMetro = mapDefaultShowMetro;
@@ -234,6 +250,9 @@ class _AdminContentModerationScreenState
         visible: _listingContactsVisible,
       );
       ClientPropertyFeatureConfig.applyEnabled(enabled: propertyNavEnabled);
+      ClientWebAppMultipleInstanceConfig.applyEnabled(
+        value: webAppMultipleInstanceCheckEnabled,
+      );
       ClientHomeStartViewConfig.applyView(
         homeStartsWithMap
             ? ClientHomeStartViewConfig.mapView
@@ -444,6 +463,28 @@ class _AdminContentModerationScreenState
       );
     } finally {
       setStateIfMounted(() => _isSavingPropertyNav = false);
+    }
+  }
+
+  Future<void> _onWebAppMultipleInstanceCheckChanged(bool value) async {
+    if (_isSavingWebAppMultipleInstanceCheck) return;
+    setState(() => _isSavingWebAppMultipleInstanceCheck = true);
+    try {
+      HapticFeedbackUtils.impact();
+      final res = await _settingsService.setWebAppMultipleInstanceCheckEnabled(
+        enabled: value,
+      );
+      setStateIfMounted(() {
+        _webAppMultipleInstanceCheckEnabled = res.enabled;
+      });
+      ClientWebAppMultipleInstanceConfig.applyEnabled(value: res.enabled);
+    } catch (e) {
+      ToastTheme.showErrorSimple(
+        context,
+        message: "${L10n.get("admin_content_moderation_save_error")}: $e",
+      );
+    } finally {
+      setStateIfMounted(() => _isSavingWebAppMultipleInstanceCheck = false);
     }
   }
 
@@ -727,6 +768,7 @@ class _AdminContentModerationScreenState
             ),
             _homeStartViewTile(context),
             _propertyNavTile(context),
+            _webAppMultipleInstanceCheckTile(context),
           ],
         ),
         const SizedBox(height: 16),
@@ -1005,6 +1047,29 @@ class _AdminContentModerationScreenState
         value: _propertyNavEnabled,
         enabled: !_isSavingPropertyNav,
         onChanged: _onPropertyNavEnabledChanged,
+      ),
+    );
+  }
+
+  /// Web-only kill switch: locks every browser tab except the most recently
+  /// opened one. Has no effect on the native iOS/Android apps.
+  Widget _webAppMultipleInstanceCheckTile(BuildContext context) {
+    return ListTile(
+      leading: _savingLeading(
+        Icons.tab_unselected_rounded,
+        _isSavingWebAppMultipleInstanceCheck,
+      ),
+      title: Text(
+        L10n.get("admin_app_setting_web_multi_instance_check_title"),
+      ),
+      subtitle: Text(
+        L10n.get("admin_app_setting_web_multi_instance_check_subtitle"),
+        style: _subtitleStyle(context),
+      ),
+      trailing: NeumorphicThemeAwareToggle(
+        value: _webAppMultipleInstanceCheckEnabled,
+        enabled: !_isSavingWebAppMultipleInstanceCheck,
+        onChanged: _onWebAppMultipleInstanceCheckChanged,
       ),
     );
   }

@@ -7,6 +7,11 @@ import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 /// (`webAppMultipleInstanceCheckEnabled`). When true, [WebMultiInstanceGuardState]
 /// locks every browser tab except the most recently opened one. Default false
 /// (off) so the check only runs where an admin explicitly opts in.
+///
+/// Web-only by design: this flag (and the detection it gates) is intended for
+/// the Flutter web build only. It is inert on the native iOS/Android apps —
+/// see the `kIsWeb` guard in [WebMultiInstanceGuardState.startIfEnabled] — and
+/// unrelated to the separate Telegram Mini App site's own session handling.
 abstract final class ClientWebAppMultipleInstanceConfig {
   static final ValueNotifier<bool> enabled = ValueNotifier(false);
 
