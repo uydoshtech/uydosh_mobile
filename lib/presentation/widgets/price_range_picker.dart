@@ -70,8 +70,7 @@ class _PriceSortToggleButton extends StatelessWidget {
           color: _isActive
               ? accentColor.withValues(alpha: 0.14)
               : color.withValues(alpha: 0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+          shape: StadiumBorder(
             side: BorderSide(
               color: _isActive
                   ? accentColor.withValues(alpha: 0.55)
@@ -79,19 +78,19 @@ class _PriceSortToggleButton extends StatelessWidget {
             ),
           ),
           child: InkWell(
-            borderRadius: BorderRadius.circular(10),
+            customBorder: const StadiumBorder(),
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              child: Column(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(_icon, size: 15, color: fg),
-                  const SizedBox(height: 1),
+                  Icon(_icon, size: 14, color: fg),
+                  const SizedBox(width: 5),
                   Text(
                     "\$",
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                       height: 1,
                       color: fg,
