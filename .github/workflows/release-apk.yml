@@ -149,7 +149,7 @@ jobs:
         run: flutter build appbundle --release --build-name "$BUILD_NAME" --build-number "$BUILD_NUMBER"
 
       - name: Upload AAB as workflow artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
