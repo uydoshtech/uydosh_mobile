@@ -25,6 +25,7 @@ import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/navigation_extensions.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
+import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/constants/listing_type_ids.dart";
 import "package:uy_dosh/domain/models/listing.dart";
@@ -792,6 +793,9 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
       _syncAllMapProps();
       if (mountingMapBody) setState(() {});
       _publishMapListingCount(result);
+      if (showLoading && _hasMapSearchFilters && result.total == 0) {
+        ToastReporting.warningKey(context, "no_results_change_filters");
+      }
     } catch (error) {
       if (!mounted || loadGeneration != _loadGeneration) return;
       _loadError = error;

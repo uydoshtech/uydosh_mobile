@@ -1,5 +1,4 @@
 class AdminUser {
-
   AdminUser({
     required this.id,
     this.email,
@@ -11,6 +10,10 @@ class AdminUser {
     this.blockedAt,
     this.blockedUntil,
     this.blockedReason,
+    this.isOnline = false,
+    this.telegramUsername,
+    this.isTelegramMiniAppOnly = false,
+    this.signupSource,
   });
 
   factory AdminUser.fromJson(Map<String, dynamic> json) {
@@ -25,6 +28,17 @@ class AdminUser {
       blockedAt: _parseDate(json["blocked_at"]),
       blockedUntil: _parseDate(json["blocked_until"]),
       blockedReason: json["blocked_reason"] as String?,
+      // Active in the Telegram Mini App within the last ~30s. See
+      // TelegramMiniAppSessionService.heartbeat (uydosh_backend) for the source signal.
+      isOnline: json["isOnline"] as bool? ?? false,
+      telegramUsername: json["telegramUsername"] as String?,
+      // Has a Telegram id but none of the native-app-only signals (firebase/email/phone/FCM
+      // token) — see IS_TELEGRAM_MINI_APP_ONLY_SQL in uydosh_backend's userService.ts.
+      isTelegramMiniAppOnly: json["isTelegramMiniAppOnly"] as bool? ?? false,
+      // Immutable "how this account was first created" tag, e.g. 'telegram_mini_app',
+      // 'telegram_bot', 'telegram_oidc', 'firebase', 'email_password'. Null for accounts
+      // created before this column existed. See UserModel.signup_source (uydosh_backend).
+      signupSource: json["signup_source"] as String?,
     );
   }
   final int id;
@@ -37,6 +51,10 @@ class AdminUser {
   final DateTime? blockedAt;
   final DateTime? blockedUntil;
   final String? blockedReason;
+  final bool isOnline;
+  final String? telegramUsername;
+  final bool isTelegramMiniAppOnly;
+  final String? signupSource;
 
   bool get isCurrentlyBlocked {
     if (!isBlocked) return false;

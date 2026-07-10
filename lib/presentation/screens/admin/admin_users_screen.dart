@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:intl/intl.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/utils/safe_state.dart";
@@ -258,184 +259,244 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         final theme = Theme.of(context);
         const tileRadius = BorderRadius.all(Radius.circular(16));
 
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: tileRadius,
-            gradient: ThreeDSurfaceStyle.surfaceGradient(
-              context,
-              theme.colorScheme.surface,
-            ),
-            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            elevation: 0,
-            shadowColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            shape: const RoundedRectangleBorder(borderRadius: tileRadius),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              borderRadius: tileRadius,
-              onTap: () {
-                Navigator.of(context)
-                    .push(
-                  MaterialPageRoute(
-                    builder: (context) => AdminUserDetailScreen(user: user),
-                  ),
-                )
-                    .then((result) {
-                  if (!mounted) return;
-                  if (result is Map) {
-                    final resultUser = result["user"] as AdminUser?;
-                    if (resultUser != null && resultUser.id == user.id) {
-                      setState(() {
-                        _users[index] = resultUser;
-                      });
-                    } else {
-                      final resultUserId = result["userId"];
-                      final resultRole = result["role"];
-                      if (resultUserId == user.id && resultRole is String) {
-                        setState(() {
-                          _users[index] = AdminUser(
-                            id: user.id,
-                            email: user.email,
-                            role: resultRole,
-                            firebaseUid: user.firebaseUid,
-                            telegramId: user.telegramId,
-                            createdAt: user.createdAt,
-                            isBlocked: user.isBlocked,
-                            blockedAt: user.blockedAt,
-                            blockedUntil: user.blockedUntil,
-                            blockedReason: user.blockedReason,
-                          );
-                        });
-                      }
-                    }
-                  }
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _AdminUserAvatar(
-                          avatarUrl: avatarUrl,
-                          initials: _buildUserInitials(
-                            name: userName,
-                            email: user.email,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Text(
-                                "ID: ${user.id}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                "•",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  user.email ?? L10n.get("not_specified"),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ThemeIcon(
-                          Icons.arrow_forward_ios,
-                          size: 16,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (userName != null && userName.trim().isNotEmpty)
-                      _buildMetaRow(
-                        context,
-                        labelKey: "name",
-                        value: userName,
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: tileRadius,
+                gradient: ThreeDSurfaceStyle.surfaceGradient(
+                  context,
+                  theme.colorScheme.surface,
+                ),
+                boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                shape: const RoundedRectangleBorder(borderRadius: tileRadius),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  borderRadius: tileRadius,
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(
+                      MaterialPageRoute(
+                        builder: (context) => AdminUserDetailScreen(user: user),
                       ),
-                    _buildMetaRow(
-                      context,
-                      labelKey: "admin_users_role",
-                      value: _getRoleLabel(user.role, context),
-                    ),
-                    _buildMetaRow(
-                      context,
-                      labelKey: "admin_users_created_at",
-                      value: _formatDate(user.createdAt, context),
-                    ),
-                    _buildMetaRow(
-                      context,
-                      labelKey: "admin_users_listings_count",
-                      value: listingCount == null
-                          ? L10n.get("admin_users_listings_count_loading")
-                          : listingCount >= 0
-                              ? listingCount.toString()
-                              : L10n.get("admin_users_listings_count_error"),
-                    ),
-                    _buildMetaRow(
-                      context,
-                      labelKey: "admin_user_complaints_group_count",
-                      value: complaintCount == null
-                          ? L10n.get("admin_users_listings_count_loading")
-                          : complaintCount >= 0
-                              ? complaintCount.toString()
-                              : L10n.get("admin_users_listings_count_error"),
-                      labelColor: complaintCount != null && complaintCount > 0
-                          ? theme.colorScheme.error
-                          : null,
-                      valueColor: complaintCount != null && complaintCount > 0
-                          ? theme.colorScheme.error
-                          : null,
-                    ),
-                    if (user.isCurrentlyBlocked)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
+                    )
+                        .then((result) {
+                      if (!mounted) return;
+                      if (result is Map) {
+                        final resultUser = result["user"] as AdminUser?;
+                        if (resultUser != null && resultUser.id == user.id) {
+                          setState(() {
+                            _users[index] = resultUser;
+                          });
+                        } else {
+                          final resultUserId = result["userId"];
+                          final resultRole = result["role"];
+                          if (resultUserId == user.id && resultRole is String) {
+                            setState(() {
+                              _users[index] = AdminUser(
+                                id: user.id,
+                                email: user.email,
+                                role: resultRole,
+                                firebaseUid: user.firebaseUid,
+                                telegramId: user.telegramId,
+                                createdAt: user.createdAt,
+                                isBlocked: user.isBlocked,
+                                blockedAt: user.blockedAt,
+                                blockedUntil: user.blockedUntil,
+                                blockedReason: user.blockedReason,
+                                isOnline: user.isOnline,
+                                telegramUsername: user.telegramUsername,
+                                isTelegramMiniAppOnly:
+                                    user.isTelegramMiniAppOnly,
+                                signupSource: user.signupSource,
+                              );
+                            });
+                          }
+                        }
+                      }
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ThemeIcon(
-                              Icons.block,
-                              color: theme.colorScheme.error,
-                              size: 16,
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (user.isTelegramMiniAppOnly) ...[
+                                  Tooltip(
+                                    message: L10n.get(
+                                      "admin_users_mini_app_only_tooltip",
+                                    ),
+                                    child: const _TelegramMiniAppBadge(),
+                                  ),
+                                  const SizedBox(height: 4),
+                                ],
+                                _AdminUserAvatar(
+                                  avatarUrl: avatarUrl,
+                                  initials: _buildUserInitials(
+                                    name: userName,
+                                    email: user.email,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              L10n.get("admin_user_detail_blocked"),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.error,
-                                fontWeight: FontWeight.w500,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "ID: ${user.id}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "•",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      user.email ?? L10n.get("not_specified"),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+                            ThemeIcon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ],
                         ),
-                      ),
-                  ],
+                        const SizedBox(height: 8),
+                        if (userName != null && userName.trim().isNotEmpty)
+                          _buildMetaRow(
+                            context,
+                            labelKey: "name",
+                            value: userName,
+                          ),
+                        if (user.isTelegramMiniAppOnly &&
+                            (user.telegramUsername?.trim().isNotEmpty ?? false))
+                          _buildMetaRow(
+                            context,
+                            labelKey: "admin_users_telegram_username",
+                            value: "@${user.telegramUsername!.trim()}",
+                          ),
+                        _buildMetaRow(
+                          context,
+                          labelKey: "admin_users_role",
+                          value: _getRoleLabel(user.role, context),
+                        ),
+                        _buildMetaRow(
+                          context,
+                          labelKey: "admin_users_created_at",
+                          value: _formatDate(user.createdAt, context),
+                        ),
+                        _buildMetaRow(
+                          context,
+                          labelKey: "admin_users_listings_count",
+                          value: listingCount == null
+                              ? L10n.get("admin_users_listings_count_loading")
+                              : listingCount >= 0
+                                  ? listingCount.toString()
+                                  : L10n.get(
+                                      "admin_users_listings_count_error"),
+                        ),
+                        _buildMetaRow(
+                          context,
+                          labelKey: "admin_user_complaints_group_count",
+                          value: complaintCount == null
+                              ? L10n.get("admin_users_listings_count_loading")
+                              : complaintCount >= 0
+                                  ? complaintCount.toString()
+                                  : L10n.get(
+                                      "admin_users_listings_count_error"),
+                          labelColor:
+                              complaintCount != null && complaintCount > 0
+                                  ? theme.colorScheme.error
+                                  : null,
+                          valueColor:
+                              complaintCount != null && complaintCount > 0
+                                  ? theme.colorScheme.error
+                                  : null,
+                        ),
+                        if (user.isCurrentlyBlocked)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                ThemeIcon(
+                                  Icons.block,
+                                  color: theme.colorScheme.error,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  L10n.get("admin_user_detail_blocked"),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.colorScheme.error,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            if (user.isOnline)
+              Positioned(
+                top: -8,
+                right: -8,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.green,
+                    border: Border.all(
+                      color: theme.colorScheme.surface,
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         );
       },
       showRefreshIndicator: true,
@@ -548,6 +609,29 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
     final res = (parts[0][0] + parts[1][0]).toUpperCase();
     return res.trim().isEmpty ? null : res;
+  }
+}
+
+/// Small brand-colored Telegram badge shown above the avatar for users who
+/// only ever used the Telegram Mini App (see `AdminUser.isTelegramMiniAppOnly`).
+class _TelegramMiniAppBadge extends StatelessWidget {
+  const _TelegramMiniAppBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.telegramBrandBlue,
+      ),
+      child: const Icon(
+        Icons.telegram,
+        size: 13,
+        color: Colors.white,
+      ),
+    );
   }
 }
 

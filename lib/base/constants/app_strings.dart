@@ -714,6 +714,7 @@ class AppStrings {
       "no_universities_available": "No universities available",
       "no_results": "No results",
       "no_search_results": "No results...",
+      "no_results_change_filters": "Nothing found — change filters",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Subway line",
@@ -892,9 +893,11 @@ class AppStrings {
           "Enter an address or use your location to see the nearest metro stations",
       "nearby_stations_label": "Stations near you",
       "nearby_stations_fallback": "Closest station",
-      "nearby_stations_empty": "No metro stations within a {minutes}-minute walk",
+      "nearby_stations_empty":
+          "No metro stations within a {minutes}-minute walk",
       "nearby_radius_minutes_label": "{minutes} min",
-      "nearby_radius_minutes_selected_label": "{minutes}-minute walk to the metro",
+      "nearby_radius_minutes_selected_label":
+          "{minutes}-minute walk to the metro",
       "nearby_walk_minutes_label": "{minutes} min walk",
       "nearby_station_add_label": "Add",
       "listing_title_hint": "Enter listing title",
@@ -1494,8 +1497,7 @@ class AppStrings {
       "admin_client_config_disable_lidar_room_scan": "Enable LiDAR room scan",
       "admin_client_config_disable_lidar_room_scan_description":
           "Post-create scan step, edit-screen control, and uploads.",
-      "admin_client_config_room_scan_glb_conversion":
-          "Enable GLB conversion",
+      "admin_client_config_room_scan_glb_conversion": "Enable GLB conversion",
       "admin_client_config_room_scan_glb_conversion_description":
           "Converts uploaded room scans to GLB so web/Telegram Mini App can show the 3D model. Off: USDZ still saves, but no GLB is produced.",
       "admin_content_moderation_blur_enabled":
@@ -1844,6 +1846,8 @@ class AppStrings {
       "admin_users_listings_count": "Listings",
       "admin_users_listings_count_loading": "Loading...",
       "admin_users_listings_count_error": "Unavailable",
+      "admin_users_telegram_username": "Telegram",
+      "admin_users_mini_app_only_tooltip": "Uses Telegram Mini App only",
       "admin_user_detail_title": "User details",
       "admin_user_detail_role_title": "Role management",
       "admin_user_detail_role_save": "Save role",
@@ -2972,6 +2976,7 @@ class AppStrings {
       "no_universities_available": "Университеты недоступны",
       "no_results": "Нет результатов",
       "no_search_results": "Нет результатов...",
+      "no_results_change_filters": "Ничего не найдено — измените фильтры",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Линия метро",
@@ -3157,7 +3162,8 @@ class AppStrings {
           "Введите адрес или используйте свою локацию, чтобы увидеть ближайшие станции метро",
       "nearby_stations_label": "Станции рядом с вами",
       "nearby_stations_fallback": "Ближайшая станция",
-      "nearby_stations_empty": "В радиусе {minutes} минут пешком станций метро нет",
+      "nearby_stations_empty":
+          "В радиусе {minutes} минут пешком станций метро нет",
       "nearby_radius_minutes_label": "{minutes} мин",
       "nearby_radius_minutes_selected_label": "{minutes} минут пешком до метро",
       "nearby_walk_minutes_label": "{minutes} мин пешком",
@@ -4114,8 +4120,7 @@ class AppStrings {
       "admin_telegram_location_dedup_title": "Объединять точки в радиусе",
       "admin_telegram_location_delete_tooltip":
           "Удалить локации этого пользователя",
-      "admin_telegram_location_delete_confirm_title":
-          "Удалить все локации?",
+      "admin_telegram_location_delete_confirm_title": "Удалить все локации?",
       "admin_telegram_location_delete_confirm_body":
           "Будут безвозвратно удалены все записанные локации этого пользователя. Отменить нельзя.",
       "admin_telegram_location_delete_done": "Удалено: {locations_str}.",
@@ -4144,6 +4149,9 @@ class AppStrings {
       "admin_users_listings_count": "Объявления",
       "admin_users_listings_count_loading": "Загрузка...",
       "admin_users_listings_count_error": "Недоступно",
+      "admin_users_telegram_username": "Telegram",
+      "admin_users_mini_app_only_tooltip":
+          "Использует только Telegram Mini App",
       "admin_user_detail_title": "Пользователь",
       "admin_user_detail_role_title": "Управление ролью",
       "admin_user_detail_role_save": "Сохранить роль",
@@ -4541,7 +4549,8 @@ class AppStrings {
       "delete_listing_error": "Ошибка удаления объявления",
       "renew_listing": "Обновить",
       "renew_listing_success": "Объявление обновлено",
-      "renew_listing_error": "Не удалось обновить объявление. Попробуйте ещё раз.",
+      "renew_listing_error":
+          "Не удалось обновить объявление. Попробуйте ещё раз.",
       "renew_in_days": "Через {days} дн.",
       "unknown": "Неизвестно",
 
@@ -4919,7 +4928,8 @@ class AppStrings {
       "error_internet_connection": "Internet aloqangizni tekshiring",
       "error_resource_conflict":
           "Siz bu e'lon haqida allaqachon shikoyat qilgansiz.",
-      "error_self_complaint": "O'zingizning e'loningiz haqida shikoyat qila olmaysiz.",
+      "error_self_complaint":
+          "O'zingizning e'loningiz haqida shikoyat qila olmaysiz.",
 
       // ===== MESSAGING =====
       "conversations": "Xabarlar",
@@ -5286,6 +5296,8 @@ class AppStrings {
       "no_universities_available": "Universitetlar mavjud emas",
       "no_results": "Natija topilmadi",
       "no_search_results": "Natija topilmadi...",
+      "no_results_change_filters":
+          "Hech narsa topilmadi — filtrlarni o'zgartiring",
 
       // ===== SELECTION & PROMPTS =====
       "select_metro_line": "Liniyani tanlang",
@@ -5464,9 +5476,11 @@ class AppStrings {
           "Eng yaqin metro bekatlarini ko‘rish uchun manzilni kiriting yoki joylashuvingizdan foydalaning",
       "nearby_stations_label": "Sizga yaqin bekatlar",
       "nearby_stations_fallback": "Eng yaqin bekat",
-      "nearby_stations_empty": "{minutes} daqiqalik piyoda masofada metro bekati topilmadi",
+      "nearby_stations_empty":
+          "{minutes} daqiqalik piyoda masofada metro bekati topilmadi",
       "nearby_radius_minutes_label": "{minutes} daq",
-      "nearby_radius_minutes_selected_label": "{minutes} daqiqa piyoda metrogacha",
+      "nearby_radius_minutes_selected_label":
+          "{minutes} daqiqa piyoda metrogacha",
       "nearby_walk_minutes_label": "{minutes} daq. piyoda",
       "nearby_station_add_label": "Qo‘shish",
       "listing_title_hint": "E'lon sarlavhasini kiriting",
@@ -6449,6 +6463,9 @@ class AppStrings {
       "admin_users_listings_count": "E'lonlar",
       "admin_users_listings_count_loading": "Yuklanmoqda...",
       "admin_users_listings_count_error": "Mavjud emas",
+      "admin_users_telegram_username": "Telegram",
+      "admin_users_mini_app_only_tooltip":
+          "Faqat Telegram Mini App'dan foydalanadi",
       "admin_user_detail_title": "Foydalanuvchi",
       "admin_user_detail_role_title": "Rolni boshqarish",
       "admin_user_detail_role_save": "Rolni saqlash",

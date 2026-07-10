@@ -48,10 +48,10 @@ class AdminUserService implements IAdminUserService {
       final usersData =
           response is List ? response : <dynamic>[];
 
+      // Server already orders online users first, then by id — preserve that.
       return usersData
           .map((item) => AdminUser.fromJson(item as Map<String, dynamic>))
-          .toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
+          .toList();
     } catch (e) {
       logger.d("Error fetching admin users: $e");
       rethrow;
