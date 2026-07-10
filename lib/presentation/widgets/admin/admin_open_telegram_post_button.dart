@@ -1,7 +1,9 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/telegram_post_link.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
 import "package:uy_dosh/domain/services/listing_parser_review_admin_service.dart";
@@ -68,6 +70,14 @@ class _AdminOpenTelegramPostButtonState
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // Blue theme's `colorScheme.primary` is a very dark navy (#1E3A5F) —
+    // nearly identical to the tile background — so plain `scheme.primary`
+    // renders an all-but-invisible icon there. Use the light text color
+    // instead on that theme, matching other blue-theme row accents (e.g.
+    // [Room3dIconBadge]).
+    final isBlueTheme = ThemeState().isBlueTheme;
+    final accentColor =
+        isBlueTheme ? BlueThemeColors.textPrimary : scheme.primary;
     return Tooltip(
       message: L10n.get("admin_telegram_listing_groups_open_post_tooltip"),
       child: InkWell(
@@ -76,7 +86,7 @@ class _AdminOpenTelegramPostButtonState
         child: Container(
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: scheme.primary.withValues(alpha: 0.12),
+            color: accentColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: _loading
@@ -88,7 +98,7 @@ class _AdminOpenTelegramPostButtonState
               : ThemeIcon(
                   Icons.telegram,
                   size: 16,
-                  color: scheme.primary,
+                  color: accentColor,
                   useThemeColor: false,
                 ),
         ),
