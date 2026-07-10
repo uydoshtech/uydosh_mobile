@@ -111,6 +111,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Install CocoaPods deps (verbose)
         run: |
           set -euo pipefail
@@ -253,7 +263,7 @@ jobs:
           name: app-release-ipa
           path: build/ios/ipa/*.ipa
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload to TestFlight
         env:

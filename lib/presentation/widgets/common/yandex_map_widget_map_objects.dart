@@ -27,6 +27,18 @@ String _mapCoordinateKey(double latitude, double longitude) {
   return "${latitude.toStringAsFixed(6)}_${longitude.toStringAsFixed(6)}";
 }
 
+/// Yandex MapKit's Android bridge decodes `fromBytes` icon PNGs with
+/// `BitmapFactory.decodeByteArray` (no density metadata), while iOS uses
+/// `UIImage(data:)` at scale 1.0 and renders it in points as-is. With the
+/// same pixel-sized source bytes and the same `PlacemarkIconStyle.scale`,
+/// this makes pins render visibly larger on Android than on iOS. Scale
+/// Android pins down by this factor so both platforms look consistent.
+const double _androidPlacemarkScaleFactor = 0.7;
+
+double _platformPlacemarkScale(double scale) {
+  return isAndroidDevice ? scale * _androidPlacemarkScaleFactor : scale;
+}
+
 extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   List<MapObject> _createMapObjects() {
     final key = _mapObjectsCacheKey();
@@ -239,7 +251,10 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         longitude: coordinates["longitude"]!,
       ),
       icon: PlacemarkIcon.single(
-        PlacemarkIconStyle(image: iconDescriptor, scale: 1.0),
+        PlacemarkIconStyle(
+          image: iconDescriptor,
+          scale: _platformPlacemarkScale(1.0),
+        ),
       ),
     );
 
@@ -327,7 +342,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           PlacemarkIconStyle(
             image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
-            scale: 1.0,
+            scale: _platformPlacemarkScale(1.0),
           ),
         ),
       ),
@@ -926,7 +941,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
               PlacemarkIconStyle(
                 image: _bitmapDescriptorFromBytes(iconBytes),
                 anchor: const Offset(0.5, 0.5),
-                scale: 0.58,
+                scale: _platformPlacemarkScale(0.58),
               ),
             ),
           ),
@@ -1073,7 +1088,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           PlacemarkIconStyle(
             image: _bitmapDescriptorFromBytes(iconBytes),
             anchor: const Offset(0.5, 0.5),
-            scale: 1.0,
+            scale: _platformPlacemarkScale(1.0),
           ),
         ),
       ),
@@ -1139,7 +1154,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
                     : iconBytes,
           ),
           anchor: const Offset(0.5, 0.5),
-          scale: selected ? 1.0 : 0.9,
+          scale: _platformPlacemarkScale(selected ? 1.0 : 0.9),
         ),
       ),
       onTap: (_, point) => _handleUniversityMarkerTap(marker, point),
@@ -1206,7 +1221,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
           ),
           anchor: const Offset(0.5, 0.5),
           zIndex: zIndex,
-          scale: selected ? 1.0 : 1.17,
+          scale: _platformPlacemarkScale(selected ? 1.0 : 1.17),
         ),
       ),
       onTap: (_, __) {

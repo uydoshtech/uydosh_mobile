@@ -154,7 +154,7 @@ jobs:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload AAB to Google Play (testing track)
         env:
