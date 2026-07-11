@@ -28,7 +28,7 @@ String? nextPriceSortOrder(String? current) {
 }
 
 /// "Sort by price" toggle button placed between the Мин/Макс columns —
-/// same $-plus-up/down-arrow glyph as the mini app's price-sort chip (see
+/// same up/down-chevron glyph as the mini app's price-sort chip (see
 /// `filterPriceSortIcon` in `uydosh-icons.js`), reimplemented with Material
 /// icons since Flutter widgets can't reuse the web app's inline SVG paths.
 class _PriceSortToggleButton extends StatelessWidget {
@@ -82,22 +82,7 @@ class _PriceSortToggleButton extends StatelessWidget {
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "\$",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                      color: fg,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Icon(_icon, size: 14, color: fg),
-                ],
-              ),
+              child: Icon(_icon, size: 14, color: fg),
             ),
           ),
         ),

@@ -2076,6 +2076,7 @@ class AppStrings {
 
       "search": "Search",
       "filters_bar_label": "Filters",
+      "choose_filters": "Select a filter please",
       "search_alert_notify_me": "Notify when available",
       "search_alert_cta_title": "Get alerts for this search?",
       "search_alert_cta_create": "Create alert",
@@ -4379,6 +4380,7 @@ class AppStrings {
 
       "search": "Поиск",
       "filters_bar_label": "Фильтры",
+      "choose_filters": "Пожалуйста, выберите фильтр",
       "search_alert_notify_me": "Уведомлять о появлении",
       "search_alert_cta_title": "Уведомлять по этому поиску?",
       "search_alert_cta_create": "Создать уведомление",
@@ -6697,6 +6699,7 @@ class AppStrings {
 
       "search": "Qidirish",
       "filters_bar_label": "Filtrlar",
+      "choose_filters": "Iltimos, filtr tanlang",
       "search_alert_notify_me": "Paydo bo‘lsa xabar berish",
       "search_alert_cta_title": "Ushbu qidiruv bo‘yicha xabarlar?",
       "search_alert_cta_create": "Bildirishnoma yaratish",

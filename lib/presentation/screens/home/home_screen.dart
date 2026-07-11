@@ -1479,6 +1479,16 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         onTap: _openInlineSearchFromFab,
         child: Row(
           children: [
+            IgnorePointer(
+              child: DecoratedBox(
+                decoration: orbDecoration,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.search, size: 16, color: orbIconColor),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -1492,16 +1502,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                     fontWeight: FontWeight.w800,
                     height: 1.0,
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            IgnorePointer(
-              child: DecoratedBox(
-                decoration: orbDecoration,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(Icons.search, size: 16, color: orbIconColor),
                 ),
               ),
             ),

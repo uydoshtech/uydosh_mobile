@@ -92,6 +92,20 @@ class _MapFilterRibbon extends StatelessWidget {
               height: _ribbonHeight,
               child: Row(
                 children: [
+                  IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: orbDecoration,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.search,
+                          size: 16,
+                          color: orbIconColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -104,20 +118,6 @@ class _MapFilterRibbon extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                           height: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: orbDecoration,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.search,
-                          size: 16,
-                          color: orbIconColor,
                         ),
                       ),
                     ),
