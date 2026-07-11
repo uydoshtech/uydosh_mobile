@@ -1347,8 +1347,24 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   double _feedRibbonSpacerHeight() {
     if (widget.isSearchMode) return 0;
-    return _inlineSearchSpacerExpanded ? _inlineSearchRibbonHeight : 0;
+    if (_inlineSearchSpacerExpanded) return _inlineSearchRibbonHeight;
+    // Signed-in users keep seeing a filters ribbon even outside an active
+    // inline search session (mirrors the map view's always-on ribbon) — but
+    // not while the previous ribbon is still animating out.
+    if (!_inlineSearchActive &&
+        !_inlineSearchClosing &&
+        _defaultFeedFilterRibbonEnabled) {
+      return _inlineSearchRibbonHeight;
+    }
+    return 0;
   }
+
+  /// Mirrors the map screen's `_filterRibbonEnabled`: signed-in users always
+  /// see a filters ribbon on the feed too — showing a "choose a filter"
+  /// prompt when no filters are applied, or a generic "Filters" label
+  /// otherwise — not only while an inline search session is active.
+  bool get _defaultFeedFilterRibbonEnabled =>
+      AuthenticationState().isAuthenticated;
 
   double _feedTopSpacerVisualHeight({required double trailingSpacing}) {
     return math.max(
@@ -1409,11 +1425,89 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                       key: ValueKey("inline_filters_ribbon_placeholder"),
                       height: _inlineSearchRibbonHeight,
                     )
-                  : const SizedBox.shrink(
-                      key: ValueKey("inline_filters_ribbon_empty"),
-                    ),
+                  : _defaultFeedFilterRibbonEnabled
+                      ? KeyedSubtree(
+                          key: const ValueKey("default_filters_ribbon"),
+                          child: _buildDefaultFiltersRibbon(),
+                        )
+                      : const SizedBox.shrink(
+                          key: ValueKey("inline_filters_ribbon_empty"),
+                        ),
         );
       },
+    );
+  }
+
+  /// Default (non-search) ribbon shown to signed-in users browsing the feed
+  /// — mirrors the map view's always-on filter prompt. Tapping opens the same
+  /// inline search sheet as the search FAB. Shows the generic "Filters"
+  /// label once any filter is applied, otherwise prompts to choose one.
+  Widget _buildDefaultFiltersRibbon() {
+    final isBlue = ThemeState().isBlueTheme;
+    final scheme = Theme.of(context).colorScheme;
+    final orbDecoration = isBlue
+        ? BoxDecoration(
+            color: BlueThemeColors.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.22),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          )
+        : BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: ThreeDSurfaceStyle.surfaceGradient(
+              context,
+              scheme.surface,
+            ),
+            boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
+          );
+    final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
+    final label = _searchFiltersState.hasAnyExplicitFilter
+        ? L10n.get("filters_bar_label")
+        : L10n.get("choose_filters");
+
+    return LiquidGlassPlate(
+      height: _inlineSearchRibbonHeight,
+      borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.only(left: 12, right: 6),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _openInlineSearchFromFab,
+        child: Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: scheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            IgnorePointer(
+              child: DecoratedBox(
+                decoration: orbDecoration,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(Icons.search, size: 16, color: orbIconColor),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

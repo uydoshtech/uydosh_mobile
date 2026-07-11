@@ -1540,8 +1540,8 @@ class AppStrings {
           "When on, listing publishers can receive and reply to UyDosh chat messages through the bot. Off keeps classic in-app chat only.",
 
       "admin_panel_section_telegram_sync": "Data import",
-      "admin_panel_section_telegram_listing_groups": "Telegram listing groups",
-      "admin_telegram_listing_groups_title": "Telegram listing groups",
+      "admin_panel_section_telegram_listing_groups": "Listing groups",
+      "admin_telegram_listing_groups_title": "Listing groups",
       "admin_telegram_listing_groups_loading": "Loading groups…",
       "admin_telegram_listing_groups_empty": "No scraped listings found",
       "admin_telegram_listing_groups_detail_empty": "No listings in this group",
@@ -3827,9 +3827,8 @@ class AppStrings {
           "Когда включено, авторы объявлений получают сообщения из чата UyDosh в боте и могут отвечать через него. Выкл — только классический чат в приложении.",
 
       "admin_panel_section_telegram_sync": "Импорт данных",
-      "admin_panel_section_telegram_listing_groups":
-          "Группы объявлений Telegram",
-      "admin_telegram_listing_groups_title": "Группы объявлений Telegram",
+      "admin_panel_section_telegram_listing_groups": "Группы объявлений",
+      "admin_telegram_listing_groups_title": "Группы объявлений",
       "admin_telegram_listing_groups_loading": "Загрузка групп…",
       "admin_telegram_listing_groups_empty":
           "Импортированные объявления не найдены",
@@ -4105,7 +4104,7 @@ class AppStrings {
       "admin_district_heatmap_unavailable": "Недоступно",
       "admin_district_heatmap_no_data": "Нет данных по районам",
 
-      "admin_telegram_locations_title": "Локации пользователей Telegram",
+      "admin_telegram_locations_title": "Локации пользователей",
       "admin_telegram_locations_search_hint":
           "Поиск по имени пользователя или Telegram id",
       "admin_telegram_locations_error":
@@ -6146,8 +6145,8 @@ class AppStrings {
           "Yoqilganda eʼlon egalari UyDosh chat xabarlarini botda olib, bot orqali javob bera oladi. O‘chiq bo‘lsa, faqat klassik ilova chati ishlaydi.",
 
       "admin_panel_section_telegram_sync": "Maʼlumot importi",
-      "admin_panel_section_telegram_listing_groups": "Telegram e'lon guruhlari",
-      "admin_telegram_listing_groups_title": "Telegram e'lon guruhlari",
+      "admin_panel_section_telegram_listing_groups": "E'lon guruhlari",
+      "admin_telegram_listing_groups_title": "E'lon guruhlari",
       "admin_telegram_listing_groups_loading": "Guruhlar yuklanmoqda…",
       "admin_telegram_listing_groups_empty":
           "Import qilingan e'lonlar topilmadi",

@@ -331,18 +331,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
+                            Stack(
+                              clipBehavior: Clip.none,
                               children: [
-                                if (user.isTelegramMiniAppOnly) ...[
-                                  Tooltip(
-                                    message: L10n.get(
-                                      "admin_users_mini_app_only_tooltip",
-                                    ),
-                                    child: const _TelegramMiniAppBadge(),
-                                  ),
-                                  const SizedBox(height: 4),
-                                ],
                                 _AdminUserAvatar(
                                   avatarUrl: avatarUrl,
                                   initials: _buildUserInitials(
@@ -350,6 +341,17 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                     email: user.email,
                                   ),
                                 ),
+                                if (user.isTelegramMiniAppOnly)
+                                  Positioned(
+                                    bottom: -4,
+                                    right: -4,
+                                    child: Tooltip(
+                                      message: L10n.get(
+                                        "admin_users_mini_app_only_tooltip",
+                                      ),
+                                      child: const _TelegramMiniAppBadge(),
+                                    ),
+                                  ),
                               ],
                             ),
                             const SizedBox(width: 12),
@@ -612,8 +614,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 }
 
-/// Small brand-colored Telegram badge shown above the avatar for users who
-/// only ever used the Telegram Mini App (see `AdminUser.isTelegramMiniAppOnly`).
+/// Small brand-colored Telegram badge overlapping the bottom-right of the
+/// avatar for users who only ever used the Telegram Mini App (see
+/// `AdminUser.isTelegramMiniAppOnly`).
 class _TelegramMiniAppBadge extends StatelessWidget {
   const _TelegramMiniAppBadge();
 
@@ -622,13 +625,17 @@ class _TelegramMiniAppBadge extends StatelessWidget {
     return Container(
       width: 18,
       height: 18,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.telegramBrandBlue,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surface,
+          width: 2,
+        ),
       ),
       child: const Icon(
         Icons.telegram,
-        size: 13,
+        size: 11,
         color: Colors.white,
       ),
     );

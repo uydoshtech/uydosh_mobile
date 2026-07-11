@@ -102,6 +102,45 @@ class _AdminContentModerationScreenState
       _errorMessage = null;
     });
     try {
+      final bulk = await _settingsService.getAdminSettingsBulk();
+      _applyLoadedSettings(
+        blurEnabled: bulk.contentModerationBlurEnabled,
+        geminiHidden: bulk.geminiListingUiHidden,
+        lidarDisabled: bulk.lidarRoomScanDisabled,
+        cameraDisabled: bulk.customCameraDisabled,
+        dictationMeterDisabled: bulk.listingDescriptionDictationMeterDisabled,
+        contactsVisible: bulk.listingContactsVisible,
+        listingGigModQueueEnabled: bulk.listingGigModerationQueueEnabled,
+        propertyNavEnabled: bulk.propertyNavEnabled,
+        webAppMultipleInstanceCheckEnabled:
+            bulk.webAppMultipleInstanceCheckEnabled,
+        homeStartsWithMap:
+            bulk.homeStartView == ClientHomeStartViewConfig.mapView,
+        mapDefaultShowDistricts: bulk.mapDefaultShowDistricts,
+        mapDefaultShowMetro: bulk.mapDefaultShowMetro,
+        mapDefaultShowUniversities: bulk.mapDefaultShowUniversities,
+        adminListingConversationsEnabled:
+            bulk.adminListingConversationsEnabled,
+        telegramMessageBridgeEnabled: bulk.telegramMessageBridgeEnabled,
+        roomScanGlbConversionEnabled: bulk.roomScanGlbConversionEnabled,
+        groupFormingMaxActiveMemberships:
+            bulk.groupFormingMaxActiveMemberships,
+        telegramMiniAppDailyListingLimit:
+            bulk.telegramMiniAppDailyListingLimit,
+      );
+      return;
+    } catch (e) {
+      logger.d(
+        "Bulk admin settings load failed, falling back to per-setting requests: $e",
+      );
+    }
+    await _loadIndividually();
+  }
+
+  /// Fallback for a client build newer than the deployed backend (no
+  /// `/admin/settings/bulk` route yet): fetches each setting one at a time.
+  Future<void> _loadIndividually() async {
+    try {
       final blurRes = await _settingsService.getContentModerationBlurSetting();
       final geminiRes =
           await _settingsService.getGeminiListingUiHiddenSetting();
@@ -217,54 +256,25 @@ class _AdminContentModerationScreenState
           "Telegram Mini App daily listing limit setting skipped (is the API updated?): $e",
         );
       }
-      setStateIfMounted(() {
-        _blurEnabled = blurRes.enabled;
-        // UI is positive: ON means enabled/shown.
-        _geminiListingUiEnabled = !geminiRes.hidden;
-        _lidarRoomScanEnabled = !lidarRes.disabled;
-        _customCameraEnabled = !cameraRes.disabled;
-        _dictationMeterEnabled = !dictationMeterRes.disabled;
-        _listingContactsVisible = contactsRes.visible;
-        _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
-        _propertyNavEnabled = propertyNavEnabled;
-        _webAppMultipleInstanceCheckEnabled =
-            webAppMultipleInstanceCheckEnabled;
-        _homeStartsWithMap = homeStartsWithMap;
-        _mapDefaultShowDistricts = mapDefaultShowDistricts;
-        _mapDefaultShowMetro = mapDefaultShowMetro;
-        _mapDefaultShowUniversities = mapDefaultShowUniversities;
-        _adminListingConversationsEnabled = adminListingConversationsEnabled;
-        _telegramMessageBridgeEnabled = telegramMessageBridgeEnabled;
-        _roomScanGlbConversionEnabled = roomScanGlbConversionEnabled;
-        _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
-        _telegramMiniAppDailyListingLimit = telegramMiniAppDailyListingLimit;
-        _isLoading = false;
-      });
-      ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
-      ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
-      ClientCustomCameraConfig.applyDisabled(disabled: !_customCameraEnabled);
-      ClientListingDictationMeterConfig.applyDisabled(
-        disabled: !_dictationMeterEnabled,
-      );
-      ClientListingContactsConfig.applyVisible(
-        visible: _listingContactsVisible,
-      );
-      ClientPropertyFeatureConfig.applyEnabled(enabled: propertyNavEnabled);
-      ClientWebAppMultipleInstanceConfig.applyEnabled(
-        value: webAppMultipleInstanceCheckEnabled,
-      );
-      ClientHomeStartViewConfig.applyView(
-        homeStartsWithMap
-            ? ClientHomeStartViewConfig.mapView
-            : ClientHomeStartViewConfig.feedView,
-      );
-      ClientMapLayerDefaultsConfig.apply(
-        districts: mapDefaultShowDistricts,
-        metro: mapDefaultShowMetro,
-        universities: mapDefaultShowUniversities,
-      );
-      ClientAdminListingConversationsConfig.applyEnabled(
-        value: adminListingConversationsEnabled,
+      _applyLoadedSettings(
+        blurEnabled: blurRes.enabled,
+        geminiHidden: geminiRes.hidden,
+        lidarDisabled: lidarRes.disabled,
+        cameraDisabled: cameraRes.disabled,
+        dictationMeterDisabled: dictationMeterRes.disabled,
+        contactsVisible: contactsRes.visible,
+        listingGigModQueueEnabled: listingGigModQueueEnabled,
+        propertyNavEnabled: propertyNavEnabled,
+        webAppMultipleInstanceCheckEnabled: webAppMultipleInstanceCheckEnabled,
+        homeStartsWithMap: homeStartsWithMap,
+        mapDefaultShowDistricts: mapDefaultShowDistricts,
+        mapDefaultShowMetro: mapDefaultShowMetro,
+        mapDefaultShowUniversities: mapDefaultShowUniversities,
+        adminListingConversationsEnabled: adminListingConversationsEnabled,
+        telegramMessageBridgeEnabled: telegramMessageBridgeEnabled,
+        roomScanGlbConversionEnabled: roomScanGlbConversionEnabled,
+        groupFormingMaxActiveMemberships: groupFormingMaxActiveMemberships,
+        telegramMiniAppDailyListingLimit: telegramMiniAppDailyListingLimit,
       );
     } catch (e) {
       setStateIfMounted(() {
@@ -273,6 +283,76 @@ class _AdminContentModerationScreenState
         _isLoading = false;
       });
     }
+  }
+
+  void _applyLoadedSettings({
+    required bool blurEnabled,
+    required bool geminiHidden,
+    required bool lidarDisabled,
+    required bool cameraDisabled,
+    required bool dictationMeterDisabled,
+    required bool contactsVisible,
+    required bool listingGigModQueueEnabled,
+    required bool propertyNavEnabled,
+    required bool webAppMultipleInstanceCheckEnabled,
+    required bool homeStartsWithMap,
+    required bool mapDefaultShowDistricts,
+    required bool mapDefaultShowMetro,
+    required bool mapDefaultShowUniversities,
+    required bool adminListingConversationsEnabled,
+    required bool telegramMessageBridgeEnabled,
+    required bool roomScanGlbConversionEnabled,
+    required int groupFormingMaxActiveMemberships,
+    required int telegramMiniAppDailyListingLimit,
+  }) {
+    setStateIfMounted(() {
+      _blurEnabled = blurEnabled;
+      // UI is positive: ON means enabled/shown.
+      _geminiListingUiEnabled = !geminiHidden;
+      _lidarRoomScanEnabled = !lidarDisabled;
+      _customCameraEnabled = !cameraDisabled;
+      _dictationMeterEnabled = !dictationMeterDisabled;
+      _listingContactsVisible = contactsVisible;
+      _listingGigModerationQueueEnabled = listingGigModQueueEnabled;
+      _propertyNavEnabled = propertyNavEnabled;
+      _webAppMultipleInstanceCheckEnabled = webAppMultipleInstanceCheckEnabled;
+      _homeStartsWithMap = homeStartsWithMap;
+      _mapDefaultShowDistricts = mapDefaultShowDistricts;
+      _mapDefaultShowMetro = mapDefaultShowMetro;
+      _mapDefaultShowUniversities = mapDefaultShowUniversities;
+      _adminListingConversationsEnabled = adminListingConversationsEnabled;
+      _telegramMessageBridgeEnabled = telegramMessageBridgeEnabled;
+      _roomScanGlbConversionEnabled = roomScanGlbConversionEnabled;
+      _groupFormingMaxActiveMemberships = groupFormingMaxActiveMemberships;
+      _telegramMiniAppDailyListingLimit = telegramMiniAppDailyListingLimit;
+      _isLoading = false;
+    });
+    ClientGeminiListingUiConfig.applyHidden(hidden: !_geminiListingUiEnabled);
+    ClientLidarRoomScanConfig.applyDisabled(disabled: !_lidarRoomScanEnabled);
+    ClientCustomCameraConfig.applyDisabled(disabled: !_customCameraEnabled);
+    ClientListingDictationMeterConfig.applyDisabled(
+      disabled: !_dictationMeterEnabled,
+    );
+    ClientListingContactsConfig.applyVisible(
+      visible: _listingContactsVisible,
+    );
+    ClientPropertyFeatureConfig.applyEnabled(enabled: propertyNavEnabled);
+    ClientWebAppMultipleInstanceConfig.applyEnabled(
+      value: webAppMultipleInstanceCheckEnabled,
+    );
+    ClientHomeStartViewConfig.applyView(
+      homeStartsWithMap
+          ? ClientHomeStartViewConfig.mapView
+          : ClientHomeStartViewConfig.feedView,
+    );
+    ClientMapLayerDefaultsConfig.apply(
+      districts: mapDefaultShowDistricts,
+      metro: mapDefaultShowMetro,
+      universities: mapDefaultShowUniversities,
+    );
+    ClientAdminListingConversationsConfig.applyEnabled(
+      value: adminListingConversationsEnabled,
+    );
   }
 
   Future<void> _onLidarEnabledChanged(bool value) async {

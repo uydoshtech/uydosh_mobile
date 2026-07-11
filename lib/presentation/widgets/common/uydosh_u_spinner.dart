@@ -1,13 +1,17 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
 
-/// Rotating UyDosh "U" glyph used for map-loading states, where the loader
-/// must match the map's own light/dark tint (black "U" over the light map
-/// style, white "U" over the night map style) rather than the app theme.
+/// Rotating UyDosh brand-mark loader used for map-loading states, where the
+/// "U" + chimney glyph must match the map's own light/dark tint (black over
+/// the light map style, white over the night map style) rather than the app
+/// theme, while the roof stays the fixed brand red.
 ///
 /// Unlike [UydoshLogoSpinner] (which always renders the fixed dark brand
-/// mark), this widget tints the bare `u_letter.svg` glyph with [color] so it
-/// stays legible against either map style.
+/// mark), this widget tints the `u_letter.svg` + `chimney.svg` glyphs with
+/// [color] so they stay legible against either map style, layering the
+/// always-red `red_roof.svg` on top — matching `brand_logo_transparent.svg`
+/// / `brand_mark_light.svg`, just with a swappable glyph color instead of a
+/// fixed one.
 class UydoshUSpinner extends StatefulWidget {
   const UydoshUSpinner({
     required this.color,
@@ -49,11 +53,30 @@ class _UydoshUSpinnerState extends State<UydoshUSpinner>
       height: widget.size,
       child: RotationTransition(
         turns: _controller,
-        child: SvgPicture.asset(
-          "assets/icon/components/u_letter.svg",
-          width: widget.size,
-          height: widget.size,
-          colorFilter: ColorFilter.mode(widget.color, BlendMode.srcIn),
+        child: Stack(
+          alignment: Alignment.center,
+          // All three glyphs share the same viewBox as
+          // `brand_logo_transparent.svg`, so stacking them at the same size
+          // reproduces that combined mark without needing a dedicated asset.
+          children: [
+            SvgPicture.asset(
+              "assets/icon/components/red_roof.svg",
+              width: widget.size,
+              height: widget.size,
+            ),
+            SvgPicture.asset(
+              "assets/icon/components/chimney.svg",
+              width: widget.size,
+              height: widget.size,
+              colorFilter: ColorFilter.mode(widget.color, BlendMode.srcIn),
+            ),
+            SvgPicture.asset(
+              "assets/icon/components/u_letter.svg",
+              width: widget.size,
+              height: widget.size,
+              colorFilter: ColorFilter.mode(widget.color, BlendMode.srcIn),
+            ),
+          ],
         ),
       ),
     );

@@ -3,10 +3,17 @@ part of "../search_results_map_screen.dart";
 class _SearchMapLayoutMetrics {
   const _SearchMapLayoutMetrics._();
 
-  static const double listingTooltipGap = 8.0;
+  static const double listingTooltipGap = 16.0;
   static const double listingTooltipBottomMargin = 10.0;
   static const double listingTooltipHorizontalInset = 12.0;
-  static const double singlePinTooltipFallbackHeight = 124.0;
+  // Sized for the tallest realistic single-pin card (badges/price row,
+  // title, two wrapped geo-label lines, publication date) so the FAB lift
+  // and the carousel's initial render height (which shares this constant,
+  // see `_PinSummaryCarouselState._estimatedInitialHeight`) never start out
+  // under-sized while the real height is still being measured — an
+  // under-estimate here is what let the search/feed FABs render on top of
+  // the tooltip for a moment right after selecting a new pin.
+  static const double singlePinTooltipFallbackHeight = 150.0;
   static const double embeddedSearchAboveShellInset = 55.0;
   static const double standaloneLocationBottomMargin = 8.0;
   static const Duration chromeShiftDuration = Duration(milliseconds: 220);

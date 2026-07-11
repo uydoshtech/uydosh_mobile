@@ -355,6 +355,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   ) {
     final controller = _mapController;
     if (controller == null) return;
+    HapticFeedbackUtils.lightImpact();
     _clearSelectedUniversityMarker();
     _setSelectedMetroStation(null, notify: true);
     controller.moveCamera(
@@ -1101,6 +1102,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
   ) {
     final controller = _mapController;
     if (controller == null) return;
+    HapticFeedbackUtils.lightImpact();
     _clearSelectedUniversityMarker();
     _setSelectedMetroStation(null, notify: true);
     controller.moveCamera(
@@ -1225,6 +1227,7 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
         ),
       ),
       onTap: (_, __) {
+        HapticFeedbackUtils.lightImpact();
         _clearSelectedUniversityMarker();
         _setSelectedMetroStation(null, notify: true);
         widget.onPinTap?.call(pin);

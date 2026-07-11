@@ -426,7 +426,120 @@ class _PatchTelegramMiniAppDailyListingLimitRequest implements IJsonEncodable {
   dynamic toJson() => {"limit": limit};
 }
 
+/// All settings shown on the "Настройки клиента" admin screen, fetched in a
+/// single request (`GET /admin/settings/bulk`) instead of ~16 sequential ones.
+class AdminSettingsBulkResponse {
+  AdminSettingsBulkResponse({
+    required this.contentModerationBlurEnabled,
+    required this.geminiListingUiHidden,
+    required this.lidarRoomScanDisabled,
+    required this.customCameraDisabled,
+    required this.listingDescriptionDictationMeterDisabled,
+    required this.listingContactsVisible,
+    required this.listingGigModerationQueueEnabled,
+    required this.propertyNavEnabled,
+    required this.webAppMultipleInstanceCheckEnabled,
+    required this.homeStartView,
+    required this.mapDefaultShowDistricts,
+    required this.mapDefaultShowMetro,
+    required this.mapDefaultShowUniversities,
+    required this.adminListingConversationsEnabled,
+    required this.telegramMessageBridgeEnabled,
+    required this.roomScanGlbConversionEnabled,
+    required this.groupFormingMaxActiveMemberships,
+    required this.telegramMiniAppDailyListingLimit,
+  });
+
+  factory AdminSettingsBulkResponse.fromJson(Map<String, dynamic> json) {
+    final rawView =
+        json["homeStartView"]?.toString().trim().toLowerCase();
+    final rawGroupLimit = json["groupFormingMaxActiveMemberships"];
+    final parsedGroupLimit = rawGroupLimit is num
+        ? rawGroupLimit.toInt()
+        : int.tryParse(rawGroupLimit?.toString() ?? "");
+    final rawDailyLimit = json["telegramMiniAppDailyListingLimit"];
+    final parsedDailyLimit = rawDailyLimit is num
+        ? rawDailyLimit.toInt()
+        : int.tryParse(rawDailyLimit?.toString() ?? "");
+    return AdminSettingsBulkResponse(
+      contentModerationBlurEnabled:
+          json["contentModerationBlurEnabled"] as bool? ?? true,
+      geminiListingUiHidden: json["geminiListingUiHidden"] as bool? ?? false,
+      lidarRoomScanDisabled: json["lidarRoomScanDisabled"] as bool? ?? false,
+      customCameraDisabled: json["customCameraDisabled"] as bool? ?? false,
+      listingDescriptionDictationMeterDisabled:
+          json["listingDescriptionDictationMeterDisabled"] as bool? ?? false,
+      listingContactsVisible: json["listingContactsVisible"] as bool? ?? false,
+      listingGigModerationQueueEnabled: _parseBoolLoose(
+        json["listingGigModerationQueueEnabled"],
+        defaultValue: true,
+      ),
+      propertyNavEnabled: _parseBoolLoose(
+        json["propertyNavEnabled"],
+        defaultValue: true,
+      ),
+      webAppMultipleInstanceCheckEnabled: _parseBoolLoose(
+        json["webAppMultipleInstanceCheckEnabled"],
+        defaultValue: false,
+      ),
+      homeStartView: rawView == "feed" ? "feed" : "map",
+      mapDefaultShowDistricts: _parseBoolLoose(
+        json["mapDefaultShowDistricts"],
+        defaultValue: true,
+      ),
+      mapDefaultShowMetro: _parseBoolLoose(
+        json["mapDefaultShowMetro"],
+        defaultValue: true,
+      ),
+      mapDefaultShowUniversities: _parseBoolLoose(
+        json["mapDefaultShowUniversities"],
+        defaultValue: false,
+      ),
+      adminListingConversationsEnabled: _parseBoolLoose(
+        json["adminListingConversationsEnabled"],
+        defaultValue: false,
+      ),
+      telegramMessageBridgeEnabled: _parseBoolLoose(
+        json["telegramMessageBridgeEnabled"],
+        defaultValue: true,
+      ),
+      roomScanGlbConversionEnabled: _parseBoolLoose(
+        json["roomScanGlbConversionEnabled"],
+        defaultValue: true,
+      ),
+      groupFormingMaxActiveMemberships:
+          parsedGroupLimit == null || parsedGroupLimit < 1
+              ? 2
+              : parsedGroupLimit,
+      telegramMiniAppDailyListingLimit:
+          parsedDailyLimit == null || parsedDailyLimit < 0 ? 0 : parsedDailyLimit,
+    );
+  }
+
+  final bool contentModerationBlurEnabled;
+  final bool geminiListingUiHidden;
+  final bool lidarRoomScanDisabled;
+  final bool customCameraDisabled;
+  final bool listingDescriptionDictationMeterDisabled;
+  final bool listingContactsVisible;
+  final bool listingGigModerationQueueEnabled;
+  final bool propertyNavEnabled;
+  final bool webAppMultipleInstanceCheckEnabled;
+  final String homeStartView;
+  final bool mapDefaultShowDistricts;
+  final bool mapDefaultShowMetro;
+  final bool mapDefaultShowUniversities;
+  final bool adminListingConversationsEnabled;
+  final bool telegramMessageBridgeEnabled;
+  final bool roomScanGlbConversionEnabled;
+  final int groupFormingMaxActiveMemberships;
+  final int telegramMiniAppDailyListingLimit;
+}
+
 abstract class IAdminContentModerationSettingsService {
+  /// Fetches every setting on the admin screen in a single request.
+  Future<AdminSettingsBulkResponse> getAdminSettingsBulk();
+
   Future<ContentModerationBlurResponse> getContentModerationBlurSetting();
 
   Future<ContentModerationBlurResponse> setContentModerationBlurEnabled({
@@ -531,6 +644,23 @@ class AdminContentModerationSettingsService
   AdminContentModerationSettingsService(this._oauthApiClient);
 
   final IOAuthApiClient _oauthApiClient;
+
+  @override
+  Future<AdminSettingsBulkResponse> getAdminSettingsBulk() async {
+    try {
+      final response = await _oauthApiClient.get<dynamic>(
+        "/admin/settings/bulk",
+        (data) => data,
+        basePath: EnvironmentUtil.basePath,
+      );
+      return AdminSettingsBulkResponse.fromJson(
+        _requireJsonMap(response, "Unexpected response from bulk settings"),
+      );
+    } catch (e) {
+      logger.d("Error loading bulk admin settings: $e");
+      rethrow;
+    }
+  }
 
   @override
   Future<ContentModerationBlurResponse>

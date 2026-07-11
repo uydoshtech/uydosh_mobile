@@ -574,6 +574,26 @@ class SearchFiltersState extends ChangeNotifier {
   bool get withPhoto => _withPhoto;
   bool get has3dTour => _has3dTour;
 
+  /// True once the user has explicitly picked any search filter (gender,
+  /// listing type, location, subway, price range, or a toggle). Never
+  /// auto-derived from the user's profile. Mirrors the map screen's
+  /// equivalent check — used to switch a filters ribbon between the
+  /// "choose a filter" prompt and a generic "Filters" label.
+  bool get hasAnyExplicitFilter {
+    final hasCustomPriceRange = _minPrice != 10.0 || _maxPrice != 500.0;
+    return _selectedGender > 0 ||
+        _selectedListingTypeId > 0 ||
+        _searchListingTypeIds.isNotEmpty ||
+        _selectedLocationIndex > 0 ||
+        _selectedStationId > 0 ||
+        _selectedStationIds.isNotEmpty ||
+        _selectedSubwayLine > 0 ||
+        hasCustomPriceRange ||
+        _privateRoom ||
+        _withPhoto ||
+        _has3dTour;
+  }
+
   /// `null` (default order), `'asc'` (cheapest first), or `'desc'`
   /// (priciest first). List-view search only — never applied to the map.
   String? get priceSortOrder => _priceSortOrder;

@@ -185,6 +185,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       },
                     ),
                     _AdminMenuRow(
+                      icon: Icons.person_pin_circle_outlined,
+                      titleKey: "admin_panel_section_telegram_locations",
+                      iconColor: iconColor,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const AdminTelegramUserLocationsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _AdminMenuRow(
                       icon: Icons.support_agent,
                       titleKey: "admin_panel_section_support_chat",
                       iconColor: iconColor,
@@ -287,19 +300,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           MaterialPageRoute(
                             builder: (context) =>
                                 const AdminSubwayLineHeatmapScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _AdminMenuRow(
-                      icon: Icons.person_pin_circle_outlined,
-                      titleKey: "admin_panel_section_telegram_locations",
-                      iconColor: iconColor,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const AdminTelegramUserLocationsScreen(),
                           ),
                         );
                       },

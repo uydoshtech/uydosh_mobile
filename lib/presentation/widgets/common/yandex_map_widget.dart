@@ -14,6 +14,7 @@ import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/map_settings_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/platform_device.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
 import "package:uy_dosh/domain/models/listing_detail.dart";
@@ -1060,6 +1061,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   void _handleMetroStationTap(SubwayStation station, Point point) {
+    HapticFeedbackUtils.lightImpact();
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
     }
@@ -1087,6 +1089,7 @@ class _YandexMapWidgetState extends State<YandexMapWidget> {
   }
 
   void _handleUniversityMarkerTap(UniversityMapMarker marker, Point point) {
+    HapticFeedbackUtils.lightImpact();
     if (_showListingDetailTooltip) {
       _showListingDetailTooltip = false;
     }
