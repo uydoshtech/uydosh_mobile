@@ -2872,7 +2872,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String search_alert_station_already_covered_by_line(
-      String station, String line) {
+    String station,
+    String line,
+  ) {
     return 'Station $station is already covered by your $line line alert.';
   }
 

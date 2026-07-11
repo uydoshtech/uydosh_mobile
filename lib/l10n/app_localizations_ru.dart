@@ -2889,7 +2889,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String search_alert_station_already_covered_by_line(
-      String station, String line) {
+    String station,
+    String line,
+  ) {
     return 'Станция $station уже входит в ваше оповещение по линии $line.';
   }
 

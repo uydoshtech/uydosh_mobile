@@ -2921,7 +2921,9 @@ class AppLocalizationsUz extends AppLocalizations {
 
   @override
   String search_alert_station_already_covered_by_line(
-      String station, String line) {
+    String station,
+    String line,
+  ) {
     return '$station bekati allaqachon $line liniyasi bo‘yicha bildirishnomangizga kiradi.';
   }
 
