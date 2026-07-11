@@ -329,11 +329,39 @@ extension _YandexMapWidgetMapObjects on _YandexMapWidgetState {
     );
   }
 
+  static final RegExp _listingPlacemarkIdPattern =
+      RegExp(r"^listing_(\d+)_placemark$");
+
+  /// Extracts the listing id encoded in a [PlacemarkMapObject.mapId] created
+  /// by [_createListingPlacemark], or `null` if it doesn't match that format
+  /// (e.g. a placemark from a different layer).
+  int? _listingIdFromPlacemark(PlacemarkMapObject placemark) {
+    final match = _listingPlacemarkIdPattern.firstMatch(placemark.mapId.value);
+    if (match == null) return null;
+    return int.tryParse(match.group(1)!);
+  }
+
+  /// A cluster is considered "visited" only once every listing pin grouped
+  /// into it has already been checked (swiped past in the carousel or
+  /// opened), mirroring the per-pin grey-out so the bubble doesn't claim
+  /// "nothing new here" while still hiding unseen listings.
+  bool _isListingClusterVisited(Cluster cluster) {
+    if (cluster.placemarks.isEmpty) return false;
+    final visitedListingIds = widget.visitedListingIds;
+    return cluster.placemarks.every((placemark) {
+      final listingId = _listingIdFromPlacemark(placemark);
+      return listingId != null && visitedListingIds.contains(listingId);
+    });
+  }
+
   Future<Cluster?> _handleListingClusterAdded(
     ClusterizedPlacemarkCollection self,
     Cluster cluster,
   ) async {
-    final iconBytes = await _listingClusterIconBytes(cluster.size);
+    final iconBytes = await _listingClusterIconBytes(
+      cluster.size,
+      visited: _isListingClusterVisited(cluster),
+    );
     return cluster.copyWith(
       appearance: cluster.appearance.copyWith(
         zIndex: _YandexMapWidgetState._selectedListingPinZIndex,

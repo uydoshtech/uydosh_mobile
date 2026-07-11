@@ -827,16 +827,21 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     return _createPngBytesFromPicture(pictureRecorder, width, height);
   }
 
-  Future<Uint8List> _listingClusterIconBytes(int count) {
+  Future<Uint8List> _listingClusterIconBytes(
+    int count, {
+    bool visited = false,
+  }) {
     final cappedCount = count > 99 ? 99 : count;
-    final key =
+    final countLabel =
         cappedCount == 99 && count > 99 ? "99+" : cappedCount.toString();
+    final key = visited ? "${countLabel}_visited" : countLabel;
     final cached = _sharedListingClusterIconBytes[key];
     if (cached != null) return Future.value(cached);
 
     return _pendingSharedListingClusterIconBytes.putIfAbsent(
       key,
-      () => _createListingClusterIconBytes(key).then((bytes) {
+      () => _createListingClusterIconBytes(countLabel, visited: visited)
+          .then((bytes) {
         _sharedListingClusterIconBytes[key] = bytes;
         _pendingSharedListingClusterIconBytes.remove(key);
         return bytes;
@@ -847,8 +852,14 @@ extension _YandexMapWidgetIconGeneration on _YandexMapWidgetState {
     );
   }
 
-  Future<Uint8List> _createListingClusterIconBytes(String label) async {
-    return _createClusterIconBytes(label, backgroundColor: Colors.black);
+  Future<Uint8List> _createListingClusterIconBytes(
+    String label, {
+    bool visited = false,
+  }) async {
+    return _createClusterIconBytes(
+      label,
+      backgroundColor: visited ? _visitedPinBackground : Colors.black,
+    );
   }
 
   Future<Uint8List> _universityClusterIconBytes(
