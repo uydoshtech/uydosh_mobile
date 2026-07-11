@@ -6,60 +6,54 @@ part of 'complaint.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ComplaintComplainantProfileImpl _$$ComplaintComplainantProfileImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ComplaintComplainantProfileImpl(
-      name: json['name'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
-    );
+_ComplaintComplainantProfile _$ComplaintComplainantProfileFromJson(
+  Map<String, dynamic> json,
+) => _ComplaintComplainantProfile(
+  name: json['name'] as String?,
+  avatarUrl: json['avatar_url'] as String?,
+);
 
-Map<String, dynamic> _$$ComplaintComplainantProfileImplToJson(
-        _$ComplaintComplainantProfileImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'avatar_url': instance.avatarUrl,
-    };
+Map<String, dynamic> _$ComplaintComplainantProfileToJson(
+  _ComplaintComplainantProfile instance,
+) => <String, dynamic>{'name': instance.name, 'avatar_url': instance.avatarUrl};
 
-_$ComplaintComplainantImpl _$$ComplaintComplainantImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ComplaintComplainantImpl(
-      id: (json['id'] as num?)?.toInt(),
-      profile: json['profile'] == null
-          ? null
-          : ComplaintComplainantProfile.fromJson(
-              json['profile'] as Map<String, dynamic>),
-    );
+_ComplaintComplainant _$ComplaintComplainantFromJson(
+  Map<String, dynamic> json,
+) => _ComplaintComplainant(
+  id: (json['id'] as num?)?.toInt(),
+  profile: json['profile'] == null
+      ? null
+      : ComplaintComplainantProfile.fromJson(
+          json['profile'] as Map<String, dynamic>,
+        ),
+);
 
-Map<String, dynamic> _$$ComplaintComplainantImplToJson(
-        _$ComplaintComplainantImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'profile': instance.profile,
-    };
+Map<String, dynamic> _$ComplaintComplainantToJson(
+  _ComplaintComplainant instance,
+) => <String, dynamic>{'id': instance.id, 'profile': instance.profile};
 
-_$ComplaintImpl _$$ComplaintImplFromJson(Map<String, dynamic> json) =>
-    _$ComplaintImpl(
-      status: json['status'] == null
-          ? 'pending'
-          : _complaintStatusFromJson(json['status']),
-      id: (json['id'] as num?)?.toInt(),
-      complainantId: (json['complainant_id'] as num?)?.toInt(),
-      complainant: json['complainant'] == null
-          ? null
-          : ComplaintComplainant.fromJson(
-              json['complainant'] as Map<String, dynamic>),
-      listingId: (json['listing_id'] as num?)?.toInt(),
-      categoryId: (json['category_id'] as num?)?.toInt(),
-      category: json['category'] == null
-          ? null
-          : ComplaintCategory.fromJson(
-              json['category'] as Map<String, dynamic>),
-      text: json['text'] as String?,
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
-    );
+_Complaint _$ComplaintFromJson(Map<String, dynamic> json) => _Complaint(
+  status: json['status'] == null
+      ? 'pending'
+      : _complaintStatusFromJson(json['status']),
+  id: (json['id'] as num?)?.toInt(),
+  complainantId: (json['complainant_id'] as num?)?.toInt(),
+  complainant: json['complainant'] == null
+      ? null
+      : ComplaintComplainant.fromJson(
+          json['complainant'] as Map<String, dynamic>,
+        ),
+  listingId: (json['listing_id'] as num?)?.toInt(),
+  categoryId: (json['category_id'] as num?)?.toInt(),
+  category: json['category'] == null
+      ? null
+      : ComplaintCategory.fromJson(json['category'] as Map<String, dynamic>),
+  text: json['text'] as String?,
+  createdAt: json['created_at'] as String?,
+  updatedAt: json['updated_at'] as String?,
+);
 
-Map<String, dynamic> _$$ComplaintImplToJson(_$ComplaintImpl instance) =>
+Map<String, dynamic> _$ComplaintToJson(_Complaint instance) =>
     <String, dynamic>{
       'status': instance.status,
       'id': instance.id,
@@ -73,18 +67,18 @@ Map<String, dynamic> _$$ComplaintImplToJson(_$ComplaintImpl instance) =>
       'updated_at': instance.updatedAt,
     };
 
-_$CreateComplaintRequestImpl _$$CreateComplaintRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CreateComplaintRequestImpl(
-      listingId: (json['listing_id'] as num).toInt(),
-      categoryId: (json['category_id'] as num).toInt(),
-      text: json['text'] as String?,
-    );
+_CreateComplaintRequest _$CreateComplaintRequestFromJson(
+  Map<String, dynamic> json,
+) => _CreateComplaintRequest(
+  listingId: (json['listing_id'] as num).toInt(),
+  categoryId: (json['category_id'] as num).toInt(),
+  text: json['text'] as String?,
+);
 
-Map<String, dynamic> _$$CreateComplaintRequestImplToJson(
-        _$CreateComplaintRequestImpl instance) =>
-    <String, dynamic>{
-      'listing_id': instance.listingId,
-      'category_id': instance.categoryId,
-      'text': instance.text,
-    };
+Map<String, dynamic> _$CreateComplaintRequestToJson(
+  _CreateComplaintRequest instance,
+) => <String, dynamic>{
+  'listing_id': instance.listingId,
+  'category_id': instance.categoryId,
+  'text': instance.text,
+};

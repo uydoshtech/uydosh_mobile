@@ -94,7 +94,7 @@ class ClearConversations extends MessagingEvent {}
 
 // States
 @freezed
-class MessagingState with _$MessagingState {
+sealed class MessagingState with _$MessagingState {
   const factory MessagingState.initial() = MessagingInitial;
   const factory MessagingState.loading() = MessagingLoading;
   const factory MessagingState.conversationsLoaded({

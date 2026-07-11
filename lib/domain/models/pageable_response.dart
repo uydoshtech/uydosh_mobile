@@ -3,7 +3,7 @@ import "package:freezed_annotation/freezed_annotation.dart";
 part "pageable_response.freezed.dart";
 
 @freezed
-class PageableResponse<T> with _$PageableResponse<T> {
+abstract class PageableResponse<T> with _$PageableResponse<T> {
   const factory PageableResponse({
     required List<T> data,
     required int total,

@@ -6,7 +6,7 @@ part "university.freezed.dart";
 part "university.g.dart";
 
 @freezed
-class University with _$University implements IJsonEncodable {
+abstract class University with _$University implements IJsonEncodable {
   const factory University({
     @JsonKey(
       fromJson: NullableIntConverter.convertFromJson,

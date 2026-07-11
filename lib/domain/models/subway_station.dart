@@ -4,7 +4,7 @@ part "subway_station.freezed.dart";
 part "subway_station.g.dart";
 
 @freezed
-class SubwayStation with _$SubwayStation {
+abstract class SubwayStation with _$SubwayStation {
   const factory SubwayStation({
     required int id,
     required int line,

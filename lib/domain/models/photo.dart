@@ -4,7 +4,7 @@ part "photo.freezed.dart";
 part "photo.g.dart";
 
 @freezed
-class Photo with _$Photo {
+abstract class Photo with _$Photo {
   const factory Photo({
     required int id,
     @JsonKey(name: "photo_url") required String photoUrl,

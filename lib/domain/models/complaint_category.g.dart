@@ -6,9 +6,8 @@ part of 'complaint_category.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ComplaintCategoryImpl _$$ComplaintCategoryImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ComplaintCategoryImpl(
+_ComplaintCategory _$ComplaintCategoryFromJson(Map<String, dynamic> json) =>
+    _ComplaintCategory(
       nameUz: json['name_uz'] as String,
       nameRu: json['name_ru'] as String,
       nameEn: json['name_en'] as String,
@@ -17,8 +16,7 @@ _$ComplaintCategoryImpl _$$ComplaintCategoryImplFromJson(
       updatedAt: json['updated_at'] as String?,
     );
 
-Map<String, dynamic> _$$ComplaintCategoryImplToJson(
-        _$ComplaintCategoryImpl instance) =>
+Map<String, dynamic> _$ComplaintCategoryToJson(_ComplaintCategory instance) =>
     <String, dynamic>{
       'name_uz': instance.nameUz,
       'name_ru': instance.nameRu,

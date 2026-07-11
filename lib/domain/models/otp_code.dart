@@ -4,7 +4,7 @@ part "otp_code.freezed.dart";
 part "otp_code.g.dart";
 
 @freezed
-class OtpCode with _$OtpCode {
+abstract class OtpCode with _$OtpCode {
   const factory OtpCode({
     required int id,
     required String email,

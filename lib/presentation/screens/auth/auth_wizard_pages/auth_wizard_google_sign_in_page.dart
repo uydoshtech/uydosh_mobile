@@ -155,7 +155,7 @@ class AuthWizardGoogleSignInPage extends StatelessWidget {
                             style: siwa.SignInWithAppleButtonStyle.black,
                             height: 44,
                             borderRadius: BorderRadius.circular(22),
-                            iconAlignment: siwa.IconAlignment.left,
+                            iconAlignment: siwa.SignInWithAppleIconAlignment.left,
                             text: L10n.get("sign_in_with_apple"),
                           ),
                         ),

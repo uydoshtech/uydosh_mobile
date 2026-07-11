@@ -1,7 +1,7 @@
 part of "gamification_bloc.dart";
 
 @freezed
-class GamificationState with _$GamificationState {
+sealed class GamificationState with _$GamificationState {
   const factory GamificationState.initial() = _Initial;
   const factory GamificationState.loading() = _Loading;
   const factory GamificationState.loaded({

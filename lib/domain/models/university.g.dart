@@ -6,26 +6,25 @@ part of 'university.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UniversityImpl _$$UniversityImplFromJson(Map<String, dynamic> json) =>
-    _$UniversityImpl(
-      id: NullableIntConverter.convertFromJson(json['id']),
-      name: json['name'] as String?,
-      nameEn: json['name_en'] as String?,
-      nameRu: json['name_ru'] as String?,
-      nameUz: json['name_uz'] as String?,
-      shortName: json['short_name'] as String?,
-      shortNameEn: json['short_name_en'] as String?,
-      shortNameRu: json['short_name_ru'] as String?,
-      shortNameUz: json['short_name_uz'] as String?,
-      latitude: json['latitude'] as String?,
-      longitude: json['longitude'] as String?,
-      locationId: (json['location_id'] as num?)?.toInt(),
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
-      location: json['location'] as Map<String, dynamic>?,
-    );
+_University _$UniversityFromJson(Map<String, dynamic> json) => _University(
+  id: NullableIntConverter.convertFromJson(json['id']),
+  name: json['name'] as String?,
+  nameEn: json['name_en'] as String?,
+  nameRu: json['name_ru'] as String?,
+  nameUz: json['name_uz'] as String?,
+  shortName: json['short_name'] as String?,
+  shortNameEn: json['short_name_en'] as String?,
+  shortNameRu: json['short_name_ru'] as String?,
+  shortNameUz: json['short_name_uz'] as String?,
+  latitude: json['latitude'] as String?,
+  longitude: json['longitude'] as String?,
+  locationId: (json['location_id'] as num?)?.toInt(),
+  createdAt: json['created_at'] as String?,
+  updatedAt: json['updated_at'] as String?,
+  location: json['location'] as Map<String, dynamic>?,
+);
 
-Map<String, dynamic> _$$UniversityImplToJson(_$UniversityImpl instance) =>
+Map<String, dynamic> _$UniversityToJson(_University instance) =>
     <String, dynamic>{
       'id': NullableIntConverter.convertFromJson(instance.id),
       'name': instance.name,

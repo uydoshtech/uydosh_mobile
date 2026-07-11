@@ -1,7 +1,7 @@
 part of "complaint_bloc.dart";
 
 @freezed
-class ComplaintState with _$ComplaintState {
+sealed class ComplaintState with _$ComplaintState {
   const factory ComplaintState.initial() = _Initial;
   const factory ComplaintState.loading() = _Loading;
   const factory ComplaintState.categoriesLoaded({

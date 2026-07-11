@@ -9,7 +9,7 @@ String _complaintStatusFromJson(Object? value) =>
     value is String && value.isNotEmpty ? value : "pending";
 
 @freezed
-class ComplaintComplainantProfile with _$ComplaintComplainantProfile {
+abstract class ComplaintComplainantProfile with _$ComplaintComplainantProfile {
   const factory ComplaintComplainantProfile({
     String? name,
     @JsonKey(name: "avatar_url") String? avatarUrl,
@@ -20,7 +20,7 @@ class ComplaintComplainantProfile with _$ComplaintComplainantProfile {
 }
 
 @freezed
-class ComplaintComplainant with _$ComplaintComplainant {
+abstract class ComplaintComplainant with _$ComplaintComplainant {
   const factory ComplaintComplainant({
     int? id,
     ComplaintComplainantProfile? profile,
@@ -31,7 +31,7 @@ class ComplaintComplainant with _$ComplaintComplainant {
 }
 
 @freezed
-class Complaint with _$Complaint {
+abstract class Complaint with _$Complaint {
   const factory Complaint({
     @JsonKey(
       name: "status",
@@ -54,7 +54,7 @@ class Complaint with _$Complaint {
 }
 
 @freezed
-class CreateComplaintRequest
+abstract class CreateComplaintRequest
     with _$CreateComplaintRequest
     implements IJsonEncodable {
   const factory CreateComplaintRequest({

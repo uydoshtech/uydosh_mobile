@@ -6,8 +6,8 @@ part of 'message_sender.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MessageSenderImpl _$$MessageSenderImplFromJson(Map<String, dynamic> json) =>
-    _$MessageSenderImpl(
+_MessageSender _$MessageSenderFromJson(Map<String, dynamic> json) =>
+    _MessageSender(
       id: (json['id'] as num).toInt(),
       email: json['email'] as String?,
       firebaseUid: json['firebase_uid'] as String?,
@@ -16,10 +16,11 @@ _$MessageSenderImpl _$$MessageSenderImplFromJson(Map<String, dynamic> json) =>
       profile: json['profile'] == null
           ? null
           : MessageSenderProfile.fromJson(
-              json['profile'] as Map<String, dynamic>),
+              json['profile'] as Map<String, dynamic>,
+            ),
     );
 
-Map<String, dynamic> _$$MessageSenderImplToJson(_$MessageSenderImpl instance) =>
+Map<String, dynamic> _$MessageSenderToJson(_MessageSender instance) =>
     <String, dynamic>{
       'id': instance.id,
       'email': instance.email,
@@ -29,16 +30,13 @@ Map<String, dynamic> _$$MessageSenderImplToJson(_$MessageSenderImpl instance) =>
       'profile': instance.profile,
     };
 
-_$MessageSenderProfileImpl _$$MessageSenderProfileImplFromJson(
-        Map<String, dynamic> json) =>
-    _$MessageSenderProfileImpl(
-      name: json['name'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
-    );
+_MessageSenderProfile _$MessageSenderProfileFromJson(
+  Map<String, dynamic> json,
+) => _MessageSenderProfile(
+  name: json['name'] as String?,
+  avatarUrl: json['avatar_url'] as String?,
+);
 
-Map<String, dynamic> _$$MessageSenderProfileImplToJson(
-        _$MessageSenderProfileImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'avatar_url': instance.avatarUrl,
-    };
+Map<String, dynamic> _$MessageSenderProfileToJson(
+  _MessageSenderProfile instance,
+) => <String, dynamic>{'name': instance.name, 'avatar_url': instance.avatarUrl};

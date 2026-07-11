@@ -4,7 +4,7 @@ part "message_attachment.freezed.dart";
 part "message_attachment.g.dart";
 
 @freezed
-class MessageAttachment with _$MessageAttachment {
+abstract class MessageAttachment with _$MessageAttachment {
   const factory MessageAttachment({
     required int id,
     @JsonKey(name: "message_id") required int messageId,
@@ -21,7 +21,7 @@ class MessageAttachment with _$MessageAttachment {
 }
 
 @freezed
-class AttachmentType with _$AttachmentType {
+sealed class AttachmentType with _$AttachmentType {
   const factory AttachmentType.image() = _Image;
   const factory AttachmentType.document() = _Document;
   const factory AttachmentType.video() = _Video;

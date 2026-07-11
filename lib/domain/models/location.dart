@@ -4,7 +4,7 @@ part "location.freezed.dart";
 part "location.g.dart";
 
 @freezed
-class Location with _$Location {
+abstract class Location with _$Location {
   const factory Location({
     required int id,
     @JsonKey(name: "created_at") required String createdAt, @JsonKey(name: "updated_at") required String updatedAt, @JsonKey(name: "name_uz") String? nameUz,

@@ -74,18 +74,18 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<dynamic> get values => [
-        googleGLogo,
-        iosDarkRdCtn,
-        iosNeutralRdCtn,
-        telegramLogoWhite,
-        uydoshLightNoPhotoPlaceholder,
-        uydoshNoPhotoPlaceholder,
-        uydoshNoPhotoRoomNeededFemale,
-        uydoshNoPhotoRoomNeededMale,
-        uydoshNoPhotoRoommateNeededFemale,
-        uydoshNoPhotoRoommateNeededMale,
-        vectorOrig
-      ];
+    googleGLogo,
+    iosDarkRdCtn,
+    iosNeutralRdCtn,
+    telegramLogoWhite,
+    uydoshLightNoPhotoPlaceholder,
+    uydoshNoPhotoPlaceholder,
+    uydoshNoPhotoRoomNeededFemale,
+    uydoshNoPhotoRoomNeededMale,
+    uydoshNoPhotoRoommateNeededFemale,
+    uydoshNoPhotoRoommateNeededMale,
+    vectorOrig,
+  ];
 }
 
 class $AssetsSoundsGen {
@@ -116,8 +116,16 @@ class $AssetsSoundsGen {
   String get whooshRefresh => 'assets/sounds/whoosh_refresh.m4a';
 
   /// List of all assets
-  List<String> get values =>
-      [sources, clickM4a, clickMp3, clickWeb, error, like, success, whooshRefresh];
+  List<String> get values => [
+    sources,
+    clickM4a,
+    clickMp3,
+    clickWeb,
+    error,
+    like,
+    success,
+    whooshRefresh,
+  ];
 }
 
 class $AssetsIconComponentsGen {
@@ -157,17 +165,17 @@ class $AssetsIconComponentsGen {
 
   /// List of all assets
   List<dynamic> get values => [
-        aspectRatio,
-        brandLogoTransparentPng,
-        brandLogoTransparentSvg,
-        brandMark,
-        brandMarkLightPng,
-        brandMarkLightSvg,
-        chimney,
-        redRoof,
-        square,
-        uLetter
-      ];
+    aspectRatio,
+    brandLogoTransparentPng,
+    brandLogoTransparentSvg,
+    brandMark,
+    brandMarkLightPng,
+    brandMarkLightSvg,
+    chimney,
+    redRoof,
+    square,
+    uLetter,
+  ];
 }
 
 class $AssetsImagesRoomScanExamplesGen {
@@ -189,12 +197,7 @@ class Assets {
 }
 
 class AssetGenImage {
-  const AssetGenImage(
-    this._assetName, {
-    this.size,
-    this.flavors = const {},
-    this.animation,
-  });
+  const AssetGenImage(this._assetName, {this.size, this.flavors = const {}, this.animation});
 
   final String _assetName;
 
@@ -255,15 +258,8 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({
-    AssetBundle? bundle,
-    String? package,
-  }) {
-    return AssetImage(
-      _assetName,
-      bundle: bundle,
-      package: package,
-    );
+  ImageProvider provider({AssetBundle? bundle, String? package}) {
+    return AssetImage(_assetName, bundle: bundle, package: package);
   }
 
   String get path => _assetName;

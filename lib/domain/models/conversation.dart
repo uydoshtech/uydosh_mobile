@@ -7,7 +7,7 @@ part "conversation.freezed.dart";
 part "conversation.g.dart";
 
 @freezed
-class Conversation with _$Conversation {
+abstract class Conversation with _$Conversation {
   const factory Conversation({
     required int id,
     @JsonKey(name: "initiator_id") required int initiatorId,
@@ -39,7 +39,7 @@ class Conversation with _$Conversation {
 }
 
 @freezed
-class ConversationSummary with _$ConversationSummary {
+abstract class ConversationSummary with _$ConversationSummary {
   const factory ConversationSummary({
     required int id,
     @JsonKey(name: "initiator_id") required int initiatorId,

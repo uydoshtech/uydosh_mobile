@@ -1,7 +1,7 @@
 part of "listing_detail_bloc.dart";
 
 @freezed
-class ListingDetailState with _$ListingDetailState {
+sealed class ListingDetailState with _$ListingDetailState {
   const factory ListingDetailState.initial() = _Initial;
   const factory ListingDetailState.loading() = _Loading;
   const factory ListingDetailState.loaded({

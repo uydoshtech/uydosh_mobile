@@ -4,7 +4,7 @@ part "amenity.freezed.dart";
 part "amenity.g.dart";
 
 @freezed
-class Amenity with _$Amenity {
+abstract class Amenity with _$Amenity {
   const factory Amenity({
     required int id,
     @JsonKey(name: "name_en") required String nameEn,
@@ -17,5 +17,5 @@ class Amenity with _$Amenity {
   }) = _Amenity;
 
   factory Amenity.fromJson(Map<String, dynamic> json) =>
-      _$$AmenityImplFromJson(json);
+      _$AmenityFromJson(json);
 }

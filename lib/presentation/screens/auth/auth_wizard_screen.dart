@@ -151,11 +151,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   StreamSubscription<User?>? _firebaseAuthStateSub;
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb
-        ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
-        : null,
-  );
   // Sign in with Apple is exposed via [AppleAuthService] (kept as a
   // local instance — it's stateless beyond Firebase + Crashlytics
   // singletons, so no DI registration is needed).
@@ -522,29 +517,17 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       // Trigger the authentication flow
       stage = "google_sign_in";
-      final googleUser = await _googleSignIn.signIn();
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
-      if (googleUser == null) {
-        // User cancelled the sign-in
-        if (!kIsWeb) {
-          await _crashlytics.setCustomKey(
-              "auth_step", "google_sign_in_cancelled");
-          _crashlytics.log("AuthWizard: google_sign_in_cancelled");
-        }
-        setStateIfMounted(() {
-          _isAuthenticating = false;
-        });
-        return;
-      }
-
-      // Obtain the auth details from the request
+      // Obtain the auth details from the request (synchronous in v7+;
+      // authorization tokens like accessToken are a separate step via
+      // `googleUser.authorizationClient`, not needed for Firebase here).
       stage = "google_auth_tokens";
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
 
       // Create a new credential
       stage = "firebase_credential";
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -926,6 +909,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   /// * Web: `PlatformException(popup_closed_by_user, …)` or a generic
   ///   error with "popup_closed" in the message.
   bool _isUserCancelledSignIn(Object error) {
+    // google_sign_in 7.x's `authenticate()` throws this (with a `canceled`/
+    // `interrupted` code) instead of returning null on dismissal.
+    if (error is GoogleSignInException) {
+      return error.code == GoogleSignInExceptionCode.canceled ||
+          error.code == GoogleSignInExceptionCode.interrupted;
+    }
     if (error is! PlatformException) return false;
     final code = error.code.toLowerCase();
     if (code == "sign_in_canceled" ||

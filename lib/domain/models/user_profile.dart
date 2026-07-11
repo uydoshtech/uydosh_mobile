@@ -7,7 +7,7 @@ part "user_profile.freezed.dart";
 part "user_profile.g.dart";
 
 @freezed
-class UserProfile with _$UserProfile {
+abstract class UserProfile with _$UserProfile {
   const factory UserProfile({
     @JsonKey(
       fromJson: NullableIntConverter.convertFromJson,
@@ -64,7 +64,7 @@ class UserProfile with _$UserProfile {
 }
 
 @freezed
-class UserProfileRegion with _$UserProfileRegion {
+abstract class UserProfileRegion with _$UserProfileRegion {
   const factory UserProfileRegion({
     @JsonKey(
       fromJson: NullableIntConverter.convertFromJson,
@@ -84,7 +84,7 @@ class UserProfileRegion with _$UserProfileRegion {
 }
 
 @freezed
-class UserProfileUniversity with _$UserProfileUniversity {
+abstract class UserProfileUniversity with _$UserProfileUniversity {
   const factory UserProfileUniversity({
     @JsonKey(
       fromJson: NullableIntConverter.convertFromJson,

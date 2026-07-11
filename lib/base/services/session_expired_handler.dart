@@ -5,6 +5,7 @@ import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/authentication_state.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
@@ -70,7 +71,8 @@ class SessionExpiredHandler {
       // support).
       if (!kIsWeb) {
         try {
-          await GoogleSignIn().signOut();
+          await GoogleSignInWarmup.ensureInitialized();
+          await GoogleSignIn.instance.signOut();
         } catch (e) {
           logger.d("⚠️ SessionExpiredHandler: GoogleSignIn sign out failed: $e");
         }

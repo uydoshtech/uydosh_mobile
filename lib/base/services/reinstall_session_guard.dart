@@ -2,6 +2,7 @@ import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/foundation.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/state/profile_completion_state.dart";
 
@@ -39,7 +40,8 @@ abstract final class ReinstallSessionGuard {
     // silently re-sign-in to the pre-reinstall identity instead of
     // letting the user reconfirm their account.
     try {
-      await GoogleSignIn().signOut();
+      await GoogleSignInWarmup.ensureInitialized();
+      await GoogleSignIn.instance.signOut();
     } catch (e) {
       logger.d("⚠️ ReinstallSessionGuard: GoogleSignIn signOut failed: $e");
     }

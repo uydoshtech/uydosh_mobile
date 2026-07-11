@@ -21,14 +21,15 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 ///     start it has up to ~5 seconds of free runway before the user
 ///     could plausibly reach the auth wizard.
 ///  2. [ensureWarm] is awaited from the wizard's sign-in handler
-///     immediately before [GoogleSignIn.signIn]. If the warmup already
-///     finished this is essentially free; if the user tapped the
+///     immediately before [GoogleSignIn.authenticate]. If the warmup
+///     already finished this is essentially free; if the user tapped the
 ///     button while the warmup was still in flight, we pay the wait
 ///     once here instead of paying the cold-start cost on the system UI
 ///     presentation itself.
 ///
-/// The warmup deliberately does `signInSilently` followed by `signOut`
-/// — the silent call forces the native plugin to fully initialize
+/// The warmup deliberately does `attemptLightweightAuthentication`
+/// followed by `signOut` — the silent call forces the native plugin to
+/// fully initialize
 /// (and on devices where the user previously authorized this app, also
 /// triggers OAuth discovery), and the immediate `signOut` discards any
 /// resolved cached account so the next interactive `signIn` still
@@ -36,6 +37,25 @@ import "package:uy_dosh/base/state/authentication_state.dart";
 /// it doesn't unload the SDK, so the warm-up benefit is preserved.
 abstract final class GoogleSignInWarmup {
   static Future<void>? _future;
+  static Future<void>? _initFuture;
+
+  /// The web OAuth client ID. Only needed on web — native platforms pick up
+  /// their client ID from `GoogleService-Info.plist` / `google-services.json`.
+  static const String _webClientId =
+      "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com";
+
+  /// `google_sign_in` 7.x made [GoogleSignIn] a singleton that must have
+  /// [GoogleSignIn.initialize] called (and awaited) exactly once before any
+  /// other method is touched — calling it more than once is undefined
+  /// behavior. This is the single call site for that; every other file that
+  /// needs [GoogleSignIn.instance] (sign-in button, sign-out on logout /
+  /// session-expiry / reinstall) awaits this first. Idempotent: later calls
+  /// return the same future.
+  static Future<void> ensureInitialized() {
+    return _initFuture ??= GoogleSignIn.instance.initialize(
+      clientId: kIsWeb ? _webClientId : null,
+    );
+  }
 
   /// How long to wait after the first frame before kicking off the
   /// native warm-up when called from app startup. The splash logo's
@@ -82,16 +102,26 @@ abstract final class GoogleSignInWarmup {
       await Future<void>.delayed(_startupDelay);
     }
     final stopwatch = Stopwatch()..start();
-    final gsi = GoogleSignIn();
     try {
-      await gsi.signInSilently(suppressErrors: true);
+      await ensureInitialized();
     } catch (e) {
-      logger.d("GoogleSignInWarmup: signInSilently failed (non-fatal): $e");
+      logger.d("GoogleSignInWarmup: initialize failed (non-fatal): $e");
+      return;
+    }
+    try {
+      // Doesn't throw for cancellation/interruption/no-UI outcomes by
+      // default (see [GoogleSignIn.attemptLightweightAuthentication]),
+      // which mirrors the old `signInSilently(suppressErrors: true)`.
+      await GoogleSignIn.instance.attemptLightweightAuthentication();
+    } catch (e) {
+      logger.d(
+        "GoogleSignInWarmup: attemptLightweightAuthentication failed (non-fatal): $e",
+      );
     }
     // Drop any silently-resolved account so the next interactive signIn
     // shows the account chooser. See class doc for why.
     try {
-      await gsi.signOut();
+      await GoogleSignIn.instance.signOut();
     } catch (e) {
       logger.d("GoogleSignInWarmup: signOut failed (non-fatal): $e");
     }

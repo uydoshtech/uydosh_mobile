@@ -1,7 +1,7 @@
 part of "complaint_bloc.dart";
 
 @freezed
-class ComplaintEvent with _$ComplaintEvent {
+sealed class ComplaintEvent with _$ComplaintEvent {
   const factory ComplaintEvent.fetchComplaintCategories() =
       _FetchComplaintCategories;
   const factory ComplaintEvent.createComplaint(CreateComplaintRequest request) =

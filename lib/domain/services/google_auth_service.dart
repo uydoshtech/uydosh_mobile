@@ -3,16 +3,11 @@ import "package:firebase_crashlytics/firebase_crashlytics.dart";
 import "package:flutter/foundation.dart" show kIsWeb;
 import "package:google_sign_in/google_sign_in.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
 
 class GoogleAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId:
-        kIsWeb
-            ? "626930983094-ir8a7rjvo8o1kjp795024ghh5abrb9o9.apps.googleusercontent.com"
-            : null,
-  );
 
   Future<void> _recordGoogleSignInError(
     Object error,
@@ -50,21 +45,27 @@ class GoogleAuthService {
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
-      final googleUser = await _googleSignIn.signIn();
+      await GoogleSignInWarmup.ensureInitialized();
 
-      if (googleUser == null) {
-        // User cancelled the sign-in
-        return null;
+      // Trigger the authentication flow
+      GoogleSignInAccount googleUser;
+      try {
+        googleUser = await GoogleSignIn.instance.authenticate();
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          // User cancelled the sign-in
+          return null;
+        }
+        rethrow;
       }
 
-      // Obtain the auth details from the request
-      final googleAuth =
-          await googleUser.authentication;
+      // Obtain the auth details from the request (synchronous in v7+;
+      // authorization tokens like accessToken are a separate step via
+      // `googleUser.authorizationClient`, not needed for Firebase here).
+      final googleAuth = googleUser.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -81,7 +82,8 @@ class GoogleAuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
+      await GoogleSignInWarmup.ensureInitialized();
+      await Future.wait([_auth.signOut(), GoogleSignIn.instance.signOut()]);
     } catch (e) {
       logger.d("Error signing out: $e");
       rethrow;

@@ -4,7 +4,7 @@ part "message_sender.freezed.dart";
 part "message_sender.g.dart";
 
 @freezed
-class MessageSender with _$MessageSender {
+abstract class MessageSender with _$MessageSender {
   const factory MessageSender({
     required int id,
     // All three identity fields are independently nullable because a user may
@@ -23,7 +23,7 @@ class MessageSender with _$MessageSender {
 }
 
 @freezed
-class MessageSenderProfile with _$MessageSenderProfile {
+abstract class MessageSenderProfile with _$MessageSenderProfile {
   const factory MessageSenderProfile({
     String? name,
     @JsonKey(name: "avatar_url") String? avatarUrl,

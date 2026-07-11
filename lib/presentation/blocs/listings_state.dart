@@ -4,9 +4,9 @@ import "package:uy_dosh/domain/models/listing.dart";
 part "listings_state.freezed.dart";
 
 @freezed
-class ListingsState with _$ListingsState {
-  const factory ListingsState.initial() = _$InitialImpl;
-  const factory ListingsState.loading() = _$LoadingImpl;
+sealed class ListingsState with _$ListingsState {
+  const factory ListingsState.initial() = _Initial;
+  const factory ListingsState.loading() = _Loading;
   const factory ListingsState.loaded({
     required List<Listing> listings,
     required bool hasMore,
@@ -18,6 +18,6 @@ class ListingsState with _$ListingsState {
 
     /// Monotonic marker so refresh completions still emit when data is unchanged.
     @Default(0) int revision,
-  }) = _$LoadedImpl;
-  const factory ListingsState.error(String message) = _$ErrorImpl;
+  }) = _Loaded;
+  const factory ListingsState.error(String message) = _Error;
 }

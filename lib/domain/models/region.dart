@@ -5,7 +5,7 @@ part "region.freezed.dart";
 part "region.g.dart";
 
 @freezed
-class Region with _$Region implements IJsonEncodable {
+abstract class Region with _$Region implements IJsonEncodable {
   const factory Region({
     required int id,
     @JsonKey(name: "country_id") int? countryId,

@@ -4,7 +4,7 @@ part "auth_response.freezed.dart";
 part "auth_response.g.dart";
 
 @freezed
-class AuthResponse with _$AuthResponse {
+abstract class AuthResponse with _$AuthResponse {
   const factory AuthResponse({
     required String message,
     required User user,
@@ -17,7 +17,7 @@ class AuthResponse with _$AuthResponse {
 }
 
 @freezed
-class User with _$User {
+abstract class User with _$User {
   const factory User({
     required int id,
     required String email,

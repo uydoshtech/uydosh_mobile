@@ -14,7 +14,7 @@ int? _nullableListingIntFromJson(dynamic value) {
 }
 
 @freezed
-class Listing with _$Listing {
+abstract class Listing with _$Listing {
   const factory Listing({
     required int id,
     @JsonKey(name: "user_id") required int userId,
@@ -73,7 +73,7 @@ class Listing with _$Listing {
 }
 
 @freezed
-class SubwayStationDetail with _$SubwayStationDetail {
+abstract class SubwayStationDetail with _$SubwayStationDetail {
   const factory SubwayStationDetail({
     required int id,
     required int line,
@@ -87,7 +87,7 @@ class SubwayStationDetail with _$SubwayStationDetail {
 }
 
 @freezed
-class LocationDetail with _$LocationDetail {
+abstract class LocationDetail with _$LocationDetail {
   const factory LocationDetail({
     required int id,
     @JsonKey(name: "name_uz") String? nameUz,
@@ -103,7 +103,7 @@ class LocationDetail with _$LocationDetail {
 }
 
 @freezed
-class ListingTypeDetail with _$ListingTypeDetail {
+abstract class ListingTypeDetail with _$ListingTypeDetail {
   const factory ListingTypeDetail({
     required int id,
     required String code,

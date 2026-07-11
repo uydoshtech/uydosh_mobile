@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,1866 +9,627 @@ part of 'listings_event.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
 /// @nodoc
 mixin _$ListingsEvent {
-  int get limit => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ListingsEventCopyWith<ListingsEvent> get copyWith =>
-      throw _privateConstructorUsedError;
+ int get limit;
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ListingsEventCopyWith<ListingsEvent> get copyWith => _$ListingsEventCopyWithImpl<ListingsEvent>(this as ListingsEvent, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ListingsEvent&&(identical(other.limit, limit) || other.limit == limit));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,limit);
+
+@override
+String toString() {
+  return 'ListingsEvent(limit: $limit)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ListingsEventCopyWith<$Res> {
-  factory $ListingsEventCopyWith(
-          ListingsEvent value, $Res Function(ListingsEvent) then) =
-      _$ListingsEventCopyWithImpl<$Res, ListingsEvent>;
-  @useResult
-  $Res call({int limit});
-}
+abstract mixin class $ListingsEventCopyWith<$Res>  {
+  factory $ListingsEventCopyWith(ListingsEvent value, $Res Function(ListingsEvent) _then) = _$ListingsEventCopyWithImpl;
+@useResult
+$Res call({
+ int limit
+});
 
+
+
+
+}
 /// @nodoc
-class _$ListingsEventCopyWithImpl<$Res, $Val extends ListingsEvent>
+class _$ListingsEventCopyWithImpl<$Res>
     implements $ListingsEventCopyWith<$Res> {
-  _$ListingsEventCopyWithImpl(this._value, this._then);
+  _$ListingsEventCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final ListingsEvent _self;
+  final $Res Function(ListingsEvent) _then;
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? limit = null,
-  }) {
-    return _then(_value.copyWith(
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
-  }
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? limit = null,}) {
+  return _then(_self.copyWith(
+limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
-/// @nodoc
-abstract class _$$$FetchListingsImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$FetchListingsImplImplCopyWith(_$$FetchListingsImplImpl value,
-          $Res Function(_$$FetchListingsImplImpl) then) =
-      __$$$FetchListingsImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({int page, int limit, bool isActive, bool isRefresh});
 }
 
-/// @nodoc
-class __$$$FetchListingsImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res, _$$FetchListingsImplImpl>
-    implements _$$$FetchListingsImplImplCopyWith<$Res> {
-  __$$$FetchListingsImplImplCopyWithImpl(_$$FetchListingsImplImpl _value,
-      $Res Function(_$$FetchListingsImplImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? page = null,
-    Object? limit = null,
-    Object? isActive = null,
-    Object? isRefresh = null,
-  }) {
-    return _then(_$$FetchListingsImplImpl(
-      page: null == page
-          ? _value.page
-          : page // ignore: cast_nullable_to_non_nullable
-              as int,
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isRefresh: null == isRefresh
-          ? _value.isRefresh
-          : isRefresh // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
+/// Adds pattern-matching-related methods to [ListingsEvent].
+extension ListingsEventPatterns on ListingsEvent {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchListings value)?  fetchListings,TResult Function( _LoadMore value)?  loadMore,TResult Function( _FetchListingsByLocation value)?  fetchListingsByLocation,TResult Function( _SearchListings value)?  searchListings,TResult Function( _FetchUserListings value)?  fetchUserListings,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FetchListings() when fetchListings != null:
+return fetchListings(_that);case _LoadMore() when loadMore != null:
+return loadMore(_that);case _FetchListingsByLocation() when fetchListingsByLocation != null:
+return fetchListingsByLocation(_that);case _SearchListings() when searchListings != null:
+return searchListings(_that);case _FetchUserListings() when fetchUserListings != null:
+return fetchUserListings(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchListings value)  fetchListings,required TResult Function( _LoadMore value)  loadMore,required TResult Function( _FetchListingsByLocation value)  fetchListingsByLocation,required TResult Function( _SearchListings value)  searchListings,required TResult Function( _FetchUserListings value)  fetchUserListings,}){
+final _that = this;
+switch (_that) {
+case _FetchListings():
+return fetchListings(_that);case _LoadMore():
+return loadMore(_that);case _FetchListingsByLocation():
+return fetchListingsByLocation(_that);case _SearchListings():
+return searchListings(_that);case _FetchUserListings():
+return fetchUserListings(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchListings value)?  fetchListings,TResult? Function( _LoadMore value)?  loadMore,TResult? Function( _FetchListingsByLocation value)?  fetchListingsByLocation,TResult? Function( _SearchListings value)?  searchListings,TResult? Function( _FetchUserListings value)?  fetchUserListings,}){
+final _that = this;
+switch (_that) {
+case _FetchListings() when fetchListings != null:
+return fetchListings(_that);case _LoadMore() when loadMore != null:
+return loadMore(_that);case _FetchListingsByLocation() when fetchListingsByLocation != null:
+return fetchListingsByLocation(_that);case _SearchListings() when searchListings != null:
+return searchListings(_that);case _FetchUserListings() when fetchUserListings != null:
+return fetchUserListings(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult Function( int limit,  bool isActive)?  loadMore,TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FetchListings() when fetchListings != null:
+return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore() when loadMore != null:
+return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation() when fetchListingsByLocation != null:
+return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings() when searchListings != null:
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
+return fetchUserListings(_that.page,_that.limit,_that.isRefresh);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)  fetchListings,required TResult Function( int limit,  bool isActive)  loadMore,required TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)  fetchListingsByLocation,required TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)  searchListings,required TResult Function( int page,  int limit,  bool isRefresh)  fetchUserListings,}) {final _that = this;
+switch (_that) {
+case _FetchListings():
+return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore():
+return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation():
+return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings():
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings():
+return fetchUserListings(_that.page,_that.limit,_that.isRefresh);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult? Function( int limit,  bool isActive)?  loadMore,TResult? Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult? Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult? Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,}) {final _that = this;
+switch (_that) {
+case _FetchListings() when fetchListings != null:
+return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore() when loadMore != null:
+return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation() when fetchListingsByLocation != null:
+return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings() when searchListings != null:
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
+return fetchUserListings(_that.page,_that.limit,_that.isRefresh);case _:
+  return null;
+
+}
 }
 
-/// @nodoc
-
-class _$$FetchListingsImplImpl implements _$FetchListingsImpl {
-  const _$$FetchListingsImplImpl(
-      {this.page = 1,
-      this.limit = 10,
-      this.isActive = true,
-      this.isRefresh = true});
-
-  @override
-  @JsonKey()
-  final int page;
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isActive;
-  @override
-  @JsonKey()
-  final bool isRefresh;
-
-  @override
-  String toString() {
-    return 'ListingsEvent.fetchListings(page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$FetchListingsImplImpl &&
-            (identical(other.page, page) || other.page == page) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, page, limit, isActive, isRefresh);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$FetchListingsImplImplCopyWith<_$$FetchListingsImplImpl> get copyWith =>
-      __$$$FetchListingsImplImplCopyWithImpl<_$$FetchListingsImplImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return fetchListings(page, limit, isActive, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return fetchListings?.call(page, limit, isActive, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListings != null) {
-      return fetchListings(page, limit, isActive, isRefresh);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return fetchListings(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return fetchListings?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListings != null) {
-      return fetchListings(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _$FetchListingsImpl implements ListingsEvent {
-  const factory _$FetchListingsImpl(
-      {final int page,
-      final int limit,
-      final bool isActive,
-      final bool isRefresh}) = _$$FetchListingsImplImpl;
-
-  int get page;
-  @override
-  int get limit;
-  bool get isActive;
-  bool get isRefresh;
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$FetchListingsImplImplCopyWith<_$$FetchListingsImplImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$$LoadMoreImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$LoadMoreImplImplCopyWith(
-          _$$LoadMoreImplImpl value, $Res Function(_$$LoadMoreImplImpl) then) =
-      __$$$LoadMoreImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({int limit, bool isActive});
-}
-
-/// @nodoc
-class __$$$LoadMoreImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res, _$$LoadMoreImplImpl>
-    implements _$$$LoadMoreImplImplCopyWith<$Res> {
-  __$$$LoadMoreImplImplCopyWithImpl(
-      _$$LoadMoreImplImpl _value, $Res Function(_$$LoadMoreImplImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? limit = null,
-    Object? isActive = null,
-  }) {
-    return _then(_$$LoadMoreImplImpl(
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$$LoadMoreImplImpl implements _$LoadMoreImpl {
-  const _$$LoadMoreImplImpl({this.limit = 10, this.isActive = true});
 
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isActive;
+class _FetchListings implements ListingsEvent {
+  const _FetchListings({this.page = 1, this.limit = 10, this.isActive = true, this.isRefresh = true});
+  
 
-  @override
-  String toString() {
-    return 'ListingsEvent.loadMore(limit: $limit, isActive: $isActive)';
-  }
+@JsonKey() final  int page;
+@override@JsonKey() final  int limit;
+@JsonKey() final  bool isActive;
+@JsonKey() final  bool isRefresh;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$LoadMoreImplImpl &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive));
-  }
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FetchListingsCopyWith<_FetchListings> get copyWith => __$FetchListingsCopyWithImpl<_FetchListings>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(runtimeType, limit, isActive);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$LoadMoreImplImplCopyWith<_$$LoadMoreImplImpl> get copyWith =>
-      __$$$LoadMoreImplImplCopyWithImpl<_$$LoadMoreImplImpl>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return loadMore(limit, isActive);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return loadMore?.call(limit, isActive);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (loadMore != null) {
-      return loadMore(limit, isActive);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return loadMore(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return loadMore?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (loadMore != null) {
-      return loadMore(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FetchListings&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh));
 }
 
-abstract class _$LoadMoreImpl implements ListingsEvent {
-  const factory _$LoadMoreImpl({final int limit, final bool isActive}) =
-      _$$LoadMoreImplImpl;
 
-  @override
-  int get limit;
-  bool get isActive;
+@override
+int get hashCode => Object.hash(runtimeType,page,limit,isActive,isRefresh);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$LoadMoreImplImplCopyWith<_$$LoadMoreImplImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'ListingsEvent.fetchListings(page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$$FetchListingsByLocationImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$FetchListingsByLocationImplImplCopyWith(
-          _$$FetchListingsByLocationImplImpl value,
-          $Res Function(_$$FetchListingsByLocationImplImpl) then) =
-      __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int locationId, int page, int limit, bool isActive, bool isRefresh});
+abstract mixin class _$FetchListingsCopyWith<$Res> implements $ListingsEventCopyWith<$Res> {
+  factory _$FetchListingsCopyWith(_FetchListings value, $Res Function(_FetchListings) _then) = __$FetchListingsCopyWithImpl;
+@override @useResult
+$Res call({
+ int page, int limit, bool isActive, bool isRefresh
+});
+
+
+
+
+}
+/// @nodoc
+class __$FetchListingsCopyWithImpl<$Res>
+    implements _$FetchListingsCopyWith<$Res> {
+  __$FetchListingsCopyWithImpl(this._self, this._then);
+
+  final _FetchListings _self;
+  final $Res Function(_FetchListings) _then;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? page = null,Object? limit = null,Object? isActive = null,Object? isRefresh = null,}) {
+  return _then(_FetchListings(
+page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,isRefresh: null == isRefresh ? _self.isRefresh : isRefresh // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-class __$$$FetchListingsByLocationImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res,
-        _$$FetchListingsByLocationImplImpl>
-    implements _$$$FetchListingsByLocationImplImplCopyWith<$Res> {
-  __$$$FetchListingsByLocationImplImplCopyWithImpl(
-      _$$FetchListingsByLocationImplImpl _value,
-      $Res Function(_$$FetchListingsByLocationImplImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? locationId = null,
-    Object? page = null,
-    Object? limit = null,
-    Object? isActive = null,
-    Object? isRefresh = null,
-  }) {
-    return _then(_$$FetchListingsByLocationImplImpl(
-      locationId: null == locationId
-          ? _value.locationId
-          : locationId // ignore: cast_nullable_to_non_nullable
-              as int,
-      page: null == page
-          ? _value.page
-          : page // ignore: cast_nullable_to_non_nullable
-              as int,
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isRefresh: null == isRefresh
-          ? _value.isRefresh
-          : isRefresh // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$$FetchListingsByLocationImplImpl
-    implements _$FetchListingsByLocationImpl {
-  const _$$FetchListingsByLocationImplImpl(
-      {required this.locationId,
-      this.page = 1,
-      this.limit = 10,
-      this.isActive = true,
-      this.isRefresh = true});
 
-  @override
-  final int locationId;
-  @override
-  @JsonKey()
-  final int page;
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isActive;
-  @override
-  @JsonKey()
-  final bool isRefresh;
+class _LoadMore implements ListingsEvent {
+  const _LoadMore({this.limit = 10, this.isActive = true});
+  
 
-  @override
-  String toString() {
-    return 'ListingsEvent.fetchListingsByLocation(locationId: $locationId, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
-  }
+@override@JsonKey() final  int limit;
+@JsonKey() final  bool isActive;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$FetchListingsByLocationImplImpl &&
-            (identical(other.locationId, locationId) ||
-                other.locationId == locationId) &&
-            (identical(other.page, page) || other.page == page) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh));
-  }
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoadMoreCopyWith<_LoadMore> get copyWith => __$LoadMoreCopyWithImpl<_LoadMore>(this, _$identity);
 
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, locationId, page, limit, isActive, isRefresh);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$FetchListingsByLocationImplImplCopyWith<
-          _$$FetchListingsByLocationImplImpl>
-      get copyWith => __$$$FetchListingsByLocationImplImplCopyWithImpl<
-          _$$FetchListingsByLocationImplImpl>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return fetchListingsByLocation(
-        locationId, page, limit, isActive, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return fetchListingsByLocation?.call(
-        locationId, page, limit, isActive, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListingsByLocation != null) {
-      return fetchListingsByLocation(
-          locationId, page, limit, isActive, isRefresh);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return fetchListingsByLocation(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return fetchListingsByLocation?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchListingsByLocation != null) {
-      return fetchListingsByLocation(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoadMore&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive));
 }
 
-abstract class _$FetchListingsByLocationImpl implements ListingsEvent {
-  const factory _$FetchListingsByLocationImpl(
-      {required final int locationId,
-      final int page,
-      final int limit,
-      final bool isActive,
-      final bool isRefresh}) = _$$FetchListingsByLocationImplImpl;
 
-  int get locationId;
-  int get page;
-  @override
-  int get limit;
-  bool get isActive;
-  bool get isRefresh;
+@override
+int get hashCode => Object.hash(runtimeType,limit,isActive);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$FetchListingsByLocationImplImplCopyWith<
-          _$$FetchListingsByLocationImplImpl>
-      get copyWith => throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'ListingsEvent.loadMore(limit: $limit, isActive: $isActive)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$$SearchListingsImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$SearchListingsImplImplCopyWith(_$$SearchListingsImplImpl value,
-          $Res Function(_$$SearchListingsImplImpl) then) =
-      __$$$SearchListingsImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int? listingTypeId,
-      List<int>? listingTypeIds,
-      int? locationId,
-      int? subwayStationId,
-      List<int>? subwayStationIds,
-      int? subwayLineId,
-      int? gender,
-      double? minPrice,
-      double? maxPrice,
-      bool? privateRoom,
-      bool? withPhoto,
-      bool? has3dTour,
-      String? priceSortOrder,
-      List<int>? excludeUserIds,
-      int page,
-      int limit,
-      bool isActive,
-      bool isRefresh,
-      bool keepStaleWhileRefreshing});
+abstract mixin class _$LoadMoreCopyWith<$Res> implements $ListingsEventCopyWith<$Res> {
+  factory _$LoadMoreCopyWith(_LoadMore value, $Res Function(_LoadMore) _then) = __$LoadMoreCopyWithImpl;
+@override @useResult
+$Res call({
+ int limit, bool isActive
+});
+
+
+
+
+}
+/// @nodoc
+class __$LoadMoreCopyWithImpl<$Res>
+    implements _$LoadMoreCopyWith<$Res> {
+  __$LoadMoreCopyWithImpl(this._self, this._then);
+
+  final _LoadMore _self;
+  final $Res Function(_LoadMore) _then;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? limit = null,Object? isActive = null,}) {
+  return _then(_LoadMore(
+limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-class __$$$SearchListingsImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res, _$$SearchListingsImplImpl>
-    implements _$$$SearchListingsImplImplCopyWith<$Res> {
-  __$$$SearchListingsImplImplCopyWithImpl(_$$SearchListingsImplImpl _value,
-      $Res Function(_$$SearchListingsImplImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? listingTypeId = freezed,
-    Object? listingTypeIds = freezed,
-    Object? locationId = freezed,
-    Object? subwayStationId = freezed,
-    Object? subwayStationIds = freezed,
-    Object? subwayLineId = freezed,
-    Object? gender = freezed,
-    Object? minPrice = freezed,
-    Object? maxPrice = freezed,
-    Object? privateRoom = freezed,
-    Object? withPhoto = freezed,
-    Object? has3dTour = freezed,
-    Object? priceSortOrder = freezed,
-    Object? excludeUserIds = freezed,
-    Object? page = null,
-    Object? limit = null,
-    Object? isActive = null,
-    Object? isRefresh = null,
-    Object? keepStaleWhileRefreshing = null,
-  }) {
-    return _then(_$$SearchListingsImplImpl(
-      listingTypeId: freezed == listingTypeId
-          ? _value.listingTypeId
-          : listingTypeId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      listingTypeIds: freezed == listingTypeIds
-          ? _value._listingTypeIds
-          : listingTypeIds // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      locationId: freezed == locationId
-          ? _value.locationId
-          : locationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      subwayStationId: freezed == subwayStationId
-          ? _value.subwayStationId
-          : subwayStationId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      subwayStationIds: freezed == subwayStationIds
-          ? _value._subwayStationIds
-          : subwayStationIds // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      subwayLineId: freezed == subwayLineId
-          ? _value.subwayLineId
-          : subwayLineId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      gender: freezed == gender
-          ? _value.gender
-          : gender // ignore: cast_nullable_to_non_nullable
-              as int?,
-      minPrice: freezed == minPrice
-          ? _value.minPrice
-          : minPrice // ignore: cast_nullable_to_non_nullable
-              as double?,
-      maxPrice: freezed == maxPrice
-          ? _value.maxPrice
-          : maxPrice // ignore: cast_nullable_to_non_nullable
-              as double?,
-      privateRoom: freezed == privateRoom
-          ? _value.privateRoom
-          : privateRoom // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      withPhoto: freezed == withPhoto
-          ? _value.withPhoto
-          : withPhoto // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      has3dTour: freezed == has3dTour
-          ? _value.has3dTour
-          : has3dTour // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      priceSortOrder: freezed == priceSortOrder
-          ? _value.priceSortOrder
-          : priceSortOrder // ignore: cast_nullable_to_non_nullable
-              as String?,
-      excludeUserIds: freezed == excludeUserIds
-          ? _value._excludeUserIds
-          : excludeUserIds // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
-      page: null == page
-          ? _value.page
-          : page // ignore: cast_nullable_to_non_nullable
-              as int,
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isRefresh: null == isRefresh
-          ? _value.isRefresh
-          : isRefresh // ignore: cast_nullable_to_non_nullable
-              as bool,
-      keepStaleWhileRefreshing: null == keepStaleWhileRefreshing
-          ? _value.keepStaleWhileRefreshing
-          : keepStaleWhileRefreshing // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$$SearchListingsImplImpl implements _$SearchListingsImpl {
-  const _$$SearchListingsImplImpl(
-      {this.listingTypeId,
-      final List<int>? listingTypeIds,
-      this.locationId,
-      this.subwayStationId,
-      final List<int>? subwayStationIds,
-      this.subwayLineId,
-      this.gender,
-      this.minPrice,
-      this.maxPrice,
-      this.privateRoom,
-      this.withPhoto,
-      this.has3dTour,
-      this.priceSortOrder,
-      final List<int>? excludeUserIds,
-      this.page = 1,
-      this.limit = 10,
-      this.isActive = true,
-      this.isRefresh = true,
-      this.keepStaleWhileRefreshing = false})
-      : _listingTypeIds = listingTypeIds,
-        _subwayStationIds = subwayStationIds,
-        _excludeUserIds = excludeUserIds;
 
-  @override
-  final int? listingTypeId;
-  final List<int>? _listingTypeIds;
-  @override
-  List<int>? get listingTypeIds {
-    final value = _listingTypeIds;
-    if (value == null) return null;
-    if (_listingTypeIds is EqualUnmodifiableListView) return _listingTypeIds;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
+class _FetchListingsByLocation implements ListingsEvent {
+  const _FetchListingsByLocation({required this.locationId, this.page = 1, this.limit = 10, this.isActive = true, this.isRefresh = true});
+  
 
-  @override
-  final int? locationId;
-  @override
-  final int? subwayStationId;
-  final List<int>? _subwayStationIds;
-  @override
-  List<int>? get subwayStationIds {
-    final value = _subwayStationIds;
-    if (value == null) return null;
-    if (_subwayStationIds is EqualUnmodifiableListView)
-      return _subwayStationIds;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
+ final  int locationId;
+@JsonKey() final  int page;
+@override@JsonKey() final  int limit;
+@JsonKey() final  bool isActive;
+@JsonKey() final  bool isRefresh;
 
-  @override
-  final int? subwayLineId;
-  @override
-  final int? gender;
-  @override
-  final double? minPrice;
-  @override
-  final double? maxPrice;
-  @override
-  final bool? privateRoom;
-  @override
-  final bool? withPhoto;
-  @override
-  final bool? has3dTour;
-  @override
-  final String? priceSortOrder;
-  final List<int>? _excludeUserIds;
-  @override
-  List<int>? get excludeUserIds {
-    final value = _excludeUserIds;
-    if (value == null) return null;
-    if (_excludeUserIds is EqualUnmodifiableListView) return _excludeUserIds;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FetchListingsByLocationCopyWith<_FetchListingsByLocation> get copyWith => __$FetchListingsByLocationCopyWithImpl<_FetchListingsByLocation>(this, _$identity);
 
-  @override
-  @JsonKey()
-  final int page;
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isActive;
-  @override
-  @JsonKey()
-  final bool isRefresh;
 
-  /// When true with [isRefresh], keeps current listings on screen until the
-  /// new page returns (skips loading/skeleton state).
-  @override
-  @JsonKey()
-  final bool keepStaleWhileRefreshing;
 
-  @override
-  String toString() {
-    return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, has3dTour: $has3dTour, priceSortOrder: $priceSortOrder, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$SearchListingsImplImpl &&
-            (identical(other.listingTypeId, listingTypeId) ||
-                other.listingTypeId == listingTypeId) &&
-            const DeepCollectionEquality()
-                .equals(other._listingTypeIds, _listingTypeIds) &&
-            (identical(other.locationId, locationId) ||
-                other.locationId == locationId) &&
-            (identical(other.subwayStationId, subwayStationId) ||
-                other.subwayStationId == subwayStationId) &&
-            const DeepCollectionEquality()
-                .equals(other._subwayStationIds, _subwayStationIds) &&
-            (identical(other.subwayLineId, subwayLineId) ||
-                other.subwayLineId == subwayLineId) &&
-            (identical(other.gender, gender) || other.gender == gender) &&
-            (identical(other.minPrice, minPrice) ||
-                other.minPrice == minPrice) &&
-            (identical(other.maxPrice, maxPrice) ||
-                other.maxPrice == maxPrice) &&
-            (identical(other.privateRoom, privateRoom) ||
-                other.privateRoom == privateRoom) &&
-            (identical(other.withPhoto, withPhoto) ||
-                other.withPhoto == withPhoto) &&
-            (identical(other.has3dTour, has3dTour) ||
-                other.has3dTour == has3dTour) &&
-            (identical(other.priceSortOrder, priceSortOrder) ||
-                other.priceSortOrder == priceSortOrder) &&
-            const DeepCollectionEquality()
-                .equals(other._excludeUserIds, _excludeUserIds) &&
-            (identical(other.page, page) || other.page == page) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh) &&
-            (identical(
-                    other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) ||
-                other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      listingTypeId,
-      const DeepCollectionEquality().hash(_listingTypeIds),
-      locationId,
-      subwayStationId,
-      const DeepCollectionEquality().hash(_subwayStationIds),
-      subwayLineId,
-      gender,
-      minPrice,
-      maxPrice,
-      privateRoom,
-      withPhoto,
-      has3dTour,
-      priceSortOrder,
-      const DeepCollectionEquality().hash(_excludeUserIds),
-      page,
-      limit,
-      isActive,
-      isRefresh,
-      keepStaleWhileRefreshing);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$SearchListingsImplImplCopyWith<_$$SearchListingsImplImpl> get copyWith =>
-      __$$$SearchListingsImplImplCopyWithImpl<_$$SearchListingsImplImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return searchListings(
-        listingTypeId,
-        listingTypeIds,
-        locationId,
-        subwayStationId,
-        subwayStationIds,
-        subwayLineId,
-        gender,
-        minPrice,
-        maxPrice,
-        privateRoom,
-        withPhoto,
-        has3dTour,
-        priceSortOrder,
-        excludeUserIds,
-        page,
-        limit,
-        isActive,
-        isRefresh,
-        keepStaleWhileRefreshing);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return searchListings?.call(
-        listingTypeId,
-        listingTypeIds,
-        locationId,
-        subwayStationId,
-        subwayStationIds,
-        subwayLineId,
-        gender,
-        minPrice,
-        maxPrice,
-        privateRoom,
-        withPhoto,
-        has3dTour,
-        priceSortOrder,
-        excludeUserIds,
-        page,
-        limit,
-        isActive,
-        isRefresh,
-        keepStaleWhileRefreshing);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (searchListings != null) {
-      return searchListings(
-          listingTypeId,
-          listingTypeIds,
-          locationId,
-          subwayStationId,
-          subwayStationIds,
-          subwayLineId,
-          gender,
-          minPrice,
-          maxPrice,
-          privateRoom,
-          withPhoto,
-          has3dTour,
-          priceSortOrder,
-          excludeUserIds,
-          page,
-          limit,
-          isActive,
-          isRefresh,
-          keepStaleWhileRefreshing);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return searchListings(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return searchListings?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (searchListings != null) {
-      return searchListings(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FetchListingsByLocation&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh));
 }
 
-abstract class _$SearchListingsImpl implements ListingsEvent {
-  const factory _$SearchListingsImpl(
-      {final int? listingTypeId,
-      final List<int>? listingTypeIds,
-      final int? locationId,
-      final int? subwayStationId,
-      final List<int>? subwayStationIds,
-      final int? subwayLineId,
-      final int? gender,
-      final double? minPrice,
-      final double? maxPrice,
-      final bool? privateRoom,
-      final bool? withPhoto,
-      final bool? has3dTour,
-      final String? priceSortOrder,
-      final List<int>? excludeUserIds,
-      final int page,
-      final int limit,
-      final bool isActive,
-      final bool isRefresh,
-      final bool keepStaleWhileRefreshing}) = _$$SearchListingsImplImpl;
 
-  int? get listingTypeId;
-  List<int>? get listingTypeIds;
-  int? get locationId;
-  int? get subwayStationId;
-  List<int>? get subwayStationIds;
-  int? get subwayLineId;
-  int? get gender;
-  double? get minPrice;
-  double? get maxPrice;
-  bool? get privateRoom;
-  bool? get withPhoto;
-  bool? get has3dTour;
-  String? get priceSortOrder;
-  List<int>? get excludeUserIds;
-  int get page;
-  @override
-  int get limit;
-  bool get isActive;
-  bool get isRefresh;
+@override
+int get hashCode => Object.hash(runtimeType,locationId,page,limit,isActive,isRefresh);
 
-  /// When true with [isRefresh], keeps current listings on screen until the
-  /// new page returns (skips loading/skeleton state).
-  bool get keepStaleWhileRefreshing;
+@override
+String toString() {
+  return 'ListingsEvent.fetchListingsByLocation(locationId: $locationId, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh)';
+}
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$SearchListingsImplImplCopyWith<_$$SearchListingsImplImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+
 }
 
 /// @nodoc
-abstract class _$$$FetchUserListingsImplImplCopyWith<$Res>
-    implements $ListingsEventCopyWith<$Res> {
-  factory _$$$FetchUserListingsImplImplCopyWith(
-          _$$FetchUserListingsImplImpl value,
-          $Res Function(_$$FetchUserListingsImplImpl) then) =
-      __$$$FetchUserListingsImplImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({int page, int limit, bool isRefresh});
+abstract mixin class _$FetchListingsByLocationCopyWith<$Res> implements $ListingsEventCopyWith<$Res> {
+  factory _$FetchListingsByLocationCopyWith(_FetchListingsByLocation value, $Res Function(_FetchListingsByLocation) _then) = __$FetchListingsByLocationCopyWithImpl;
+@override @useResult
+$Res call({
+ int locationId, int page, int limit, bool isActive, bool isRefresh
+});
+
+
+
+
+}
+/// @nodoc
+class __$FetchListingsByLocationCopyWithImpl<$Res>
+    implements _$FetchListingsByLocationCopyWith<$Res> {
+  __$FetchListingsByLocationCopyWithImpl(this._self, this._then);
+
+  final _FetchListingsByLocation _self;
+  final $Res Function(_FetchListingsByLocation) _then;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? locationId = null,Object? page = null,Object? limit = null,Object? isActive = null,Object? isRefresh = null,}) {
+  return _then(_FetchListingsByLocation(
+locationId: null == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
+as int,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,isRefresh: null == isRefresh ? _self.isRefresh : isRefresh // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-class __$$$FetchUserListingsImplImplCopyWithImpl<$Res>
-    extends _$ListingsEventCopyWithImpl<$Res, _$$FetchUserListingsImplImpl>
-    implements _$$$FetchUserListingsImplImplCopyWith<$Res> {
-  __$$$FetchUserListingsImplImplCopyWithImpl(
-      _$$FetchUserListingsImplImpl _value,
-      $Res Function(_$$FetchUserListingsImplImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? page = null,
-    Object? limit = null,
-    Object? isRefresh = null,
-  }) {
-    return _then(_$$FetchUserListingsImplImpl(
-      page: null == page
-          ? _value.page
-          : page // ignore: cast_nullable_to_non_nullable
-              as int,
-      limit: null == limit
-          ? _value.limit
-          : limit // ignore: cast_nullable_to_non_nullable
-              as int,
-      isRefresh: null == isRefresh
-          ? _value.isRefresh
-          : isRefresh // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
-  }
 }
 
 /// @nodoc
 
-class _$$FetchUserListingsImplImpl implements _$FetchUserListingsImpl {
-  const _$$FetchUserListingsImplImpl(
-      {this.page = 1, this.limit = 10, this.isRefresh = true});
 
-  @override
-  @JsonKey()
-  final int page;
-  @override
-  @JsonKey()
-  final int limit;
-  @override
-  @JsonKey()
-  final bool isRefresh;
+class _SearchListings implements ListingsEvent {
+  const _SearchListings({this.listingTypeId, final  List<int>? listingTypeIds, this.locationId, this.subwayStationId, final  List<int>? subwayStationIds, this.subwayLineId, this.gender, this.minPrice, this.maxPrice, this.privateRoom, this.withPhoto, this.has3dTour, this.priceSortOrder, final  List<int>? excludeUserIds, this.page = 1, this.limit = 10, this.isActive = true, this.isRefresh = true, this.keepStaleWhileRefreshing = false}): _listingTypeIds = listingTypeIds,_subwayStationIds = subwayStationIds,_excludeUserIds = excludeUserIds;
+  
 
-  @override
-  String toString() {
-    return 'ListingsEvent.fetchUserListings(page: $page, limit: $limit, isRefresh: $isRefresh)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$$FetchUserListingsImplImpl &&
-            (identical(other.page, page) || other.page == page) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.isRefresh, isRefresh) ||
-                other.isRefresh == isRefresh));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, page, limit, isRefresh);
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$$FetchUserListingsImplImplCopyWith<_$$FetchUserListingsImplImpl>
-      get copyWith => __$$$FetchUserListingsImplImplCopyWithImpl<
-          _$$FetchUserListingsImplImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function(
-            int page, int limit, bool isActive, bool isRefresh)
-        fetchListings,
-    required TResult Function(int limit, bool isActive) loadMore,
-    required TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)
-        fetchListingsByLocation,
-    required TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)
-        searchListings,
-    required TResult Function(int page, int limit, bool isRefresh)
-        fetchUserListings,
-  }) {
-    return fetchUserListings(page, limit, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult? Function(int limit, bool isActive)? loadMore,
-    TResult? Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult? Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult? Function(int page, int limit, bool isRefresh)? fetchUserListings,
-  }) {
-    return fetchUserListings?.call(page, limit, isRefresh);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function(int page, int limit, bool isActive, bool isRefresh)?
-        fetchListings,
-    TResult Function(int limit, bool isActive)? loadMore,
-    TResult Function(
-            int locationId, int page, int limit, bool isActive, bool isRefresh)?
-        fetchListingsByLocation,
-    TResult Function(
-            int? listingTypeId,
-            List<int>? listingTypeIds,
-            int? locationId,
-            int? subwayStationId,
-            List<int>? subwayStationIds,
-            int? subwayLineId,
-            int? gender,
-            double? minPrice,
-            double? maxPrice,
-            bool? privateRoom,
-            bool? withPhoto,
-            bool? has3dTour,
-            String? priceSortOrder,
-            List<int>? excludeUserIds,
-            int page,
-            int limit,
-            bool isActive,
-            bool isRefresh,
-            bool keepStaleWhileRefreshing)?
-        searchListings,
-    TResult Function(int page, int limit, bool isRefresh)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchUserListings != null) {
-      return fetchUserListings(page, limit, isRefresh);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_$FetchListingsImpl value) fetchListings,
-    required TResult Function(_$LoadMoreImpl value) loadMore,
-    required TResult Function(_$FetchListingsByLocationImpl value)
-        fetchListingsByLocation,
-    required TResult Function(_$SearchListingsImpl value) searchListings,
-    required TResult Function(_$FetchUserListingsImpl value) fetchUserListings,
-  }) {
-    return fetchUserListings(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_$FetchListingsImpl value)? fetchListings,
-    TResult? Function(_$LoadMoreImpl value)? loadMore,
-    TResult? Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult? Function(_$SearchListingsImpl value)? searchListings,
-    TResult? Function(_$FetchUserListingsImpl value)? fetchUserListings,
-  }) {
-    return fetchUserListings?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_$FetchListingsImpl value)? fetchListings,
-    TResult Function(_$LoadMoreImpl value)? loadMore,
-    TResult Function(_$FetchListingsByLocationImpl value)?
-        fetchListingsByLocation,
-    TResult Function(_$SearchListingsImpl value)? searchListings,
-    TResult Function(_$FetchUserListingsImpl value)? fetchUserListings,
-    required TResult orElse(),
-  }) {
-    if (fetchUserListings != null) {
-      return fetchUserListings(this);
-    }
-    return orElse();
-  }
+ final  int? listingTypeId;
+ final  List<int>? _listingTypeIds;
+ List<int>? get listingTypeIds {
+  final value = _listingTypeIds;
+  if (value == null) return null;
+  if (_listingTypeIds is EqualUnmodifiableListView) return _listingTypeIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
 }
 
-abstract class _$FetchUserListingsImpl implements ListingsEvent {
-  const factory _$FetchUserListingsImpl(
-      {final int page,
-      final int limit,
-      final bool isRefresh}) = _$$FetchUserListingsImplImpl;
-
-  int get page;
-  @override
-  int get limit;
-  bool get isRefresh;
-
-  /// Create a copy of ListingsEvent
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$$FetchUserListingsImplImplCopyWith<_$$FetchUserListingsImplImpl>
-      get copyWith => throw _privateConstructorUsedError;
+ final  int? locationId;
+ final  int? subwayStationId;
+ final  List<int>? _subwayStationIds;
+ List<int>? get subwayStationIds {
+  final value = _subwayStationIds;
+  if (value == null) return null;
+  if (_subwayStationIds is EqualUnmodifiableListView) return _subwayStationIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
 }
+
+ final  int? subwayLineId;
+ final  int? gender;
+ final  double? minPrice;
+ final  double? maxPrice;
+ final  bool? privateRoom;
+ final  bool? withPhoto;
+ final  bool? has3dTour;
+ final  String? priceSortOrder;
+ final  List<int>? _excludeUserIds;
+ List<int>? get excludeUserIds {
+  final value = _excludeUserIds;
+  if (value == null) return null;
+  if (_excludeUserIds is EqualUnmodifiableListView) return _excludeUserIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+@JsonKey() final  int page;
+@override@JsonKey() final  int limit;
+@JsonKey() final  bool isActive;
+@JsonKey() final  bool isRefresh;
+/// When true with [isRefresh], keeps current listings on screen until the
+/// new page returns (skips loading/skeleton state).
+@JsonKey() final  bool keepStaleWhileRefreshing;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SearchListingsCopyWith<_SearchListings> get copyWith => __$SearchListingsCopyWithImpl<_SearchListings>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchListings&&(identical(other.listingTypeId, listingTypeId) || other.listingTypeId == listingTypeId)&&const DeepCollectionEquality().equals(other._listingTypeIds, _listingTypeIds)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.subwayStationId, subwayStationId) || other.subwayStationId == subwayStationId)&&const DeepCollectionEquality().equals(other._subwayStationIds, _subwayStationIds)&&(identical(other.subwayLineId, subwayLineId) || other.subwayLineId == subwayLineId)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.minPrice, minPrice) || other.minPrice == minPrice)&&(identical(other.maxPrice, maxPrice) || other.maxPrice == maxPrice)&&(identical(other.privateRoom, privateRoom) || other.privateRoom == privateRoom)&&(identical(other.withPhoto, withPhoto) || other.withPhoto == withPhoto)&&(identical(other.has3dTour, has3dTour) || other.has3dTour == has3dTour)&&(identical(other.priceSortOrder, priceSortOrder) || other.priceSortOrder == priceSortOrder)&&const DeepCollectionEquality().equals(other._excludeUserIds, _excludeUserIds)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh)&&(identical(other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) || other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
+}
+
+
+@override
+int get hashCode => Object.hashAll([runtimeType,listingTypeId,const DeepCollectionEquality().hash(_listingTypeIds),locationId,subwayStationId,const DeepCollectionEquality().hash(_subwayStationIds),subwayLineId,gender,minPrice,maxPrice,privateRoom,withPhoto,has3dTour,priceSortOrder,const DeepCollectionEquality().hash(_excludeUserIds),page,limit,isActive,isRefresh,keepStaleWhileRefreshing]);
+
+@override
+String toString() {
+  return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, has3dTour: $has3dTour, priceSortOrder: $priceSortOrder, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SearchListingsCopyWith<$Res> implements $ListingsEventCopyWith<$Res> {
+  factory _$SearchListingsCopyWith(_SearchListings value, $Res Function(_SearchListings) _then) = __$SearchListingsCopyWithImpl;
+@override @useResult
+$Res call({
+ int? listingTypeId, List<int>? listingTypeIds, int? locationId, int? subwayStationId, List<int>? subwayStationIds, int? subwayLineId, int? gender, double? minPrice, double? maxPrice, bool? privateRoom, bool? withPhoto, bool? has3dTour, String? priceSortOrder, List<int>? excludeUserIds, int page, int limit, bool isActive, bool isRefresh, bool keepStaleWhileRefreshing
+});
+
+
+
+
+}
+/// @nodoc
+class __$SearchListingsCopyWithImpl<$Res>
+    implements _$SearchListingsCopyWith<$Res> {
+  __$SearchListingsCopyWithImpl(this._self, this._then);
+
+  final _SearchListings _self;
+  final $Res Function(_SearchListings) _then;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? listingTypeId = freezed,Object? listingTypeIds = freezed,Object? locationId = freezed,Object? subwayStationId = freezed,Object? subwayStationIds = freezed,Object? subwayLineId = freezed,Object? gender = freezed,Object? minPrice = freezed,Object? maxPrice = freezed,Object? privateRoom = freezed,Object? withPhoto = freezed,Object? has3dTour = freezed,Object? priceSortOrder = freezed,Object? excludeUserIds = freezed,Object? page = null,Object? limit = null,Object? isActive = null,Object? isRefresh = null,Object? keepStaleWhileRefreshing = null,}) {
+  return _then(_SearchListings(
+listingTypeId: freezed == listingTypeId ? _self.listingTypeId : listingTypeId // ignore: cast_nullable_to_non_nullable
+as int?,listingTypeIds: freezed == listingTypeIds ? _self._listingTypeIds : listingTypeIds // ignore: cast_nullable_to_non_nullable
+as List<int>?,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
+as int?,subwayStationId: freezed == subwayStationId ? _self.subwayStationId : subwayStationId // ignore: cast_nullable_to_non_nullable
+as int?,subwayStationIds: freezed == subwayStationIds ? _self._subwayStationIds : subwayStationIds // ignore: cast_nullable_to_non_nullable
+as List<int>?,subwayLineId: freezed == subwayLineId ? _self.subwayLineId : subwayLineId // ignore: cast_nullable_to_non_nullable
+as int?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as int?,minPrice: freezed == minPrice ? _self.minPrice : minPrice // ignore: cast_nullable_to_non_nullable
+as double?,maxPrice: freezed == maxPrice ? _self.maxPrice : maxPrice // ignore: cast_nullable_to_non_nullable
+as double?,privateRoom: freezed == privateRoom ? _self.privateRoom : privateRoom // ignore: cast_nullable_to_non_nullable
+as bool?,withPhoto: freezed == withPhoto ? _self.withPhoto : withPhoto // ignore: cast_nullable_to_non_nullable
+as bool?,has3dTour: freezed == has3dTour ? _self.has3dTour : has3dTour // ignore: cast_nullable_to_non_nullable
+as bool?,priceSortOrder: freezed == priceSortOrder ? _self.priceSortOrder : priceSortOrder // ignore: cast_nullable_to_non_nullable
+as String?,excludeUserIds: freezed == excludeUserIds ? _self._excludeUserIds : excludeUserIds // ignore: cast_nullable_to_non_nullable
+as List<int>?,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
+as bool,isRefresh: null == isRefresh ? _self.isRefresh : isRefresh // ignore: cast_nullable_to_non_nullable
+as bool,keepStaleWhileRefreshing: null == keepStaleWhileRefreshing ? _self.keepStaleWhileRefreshing : keepStaleWhileRefreshing // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _FetchUserListings implements ListingsEvent {
+  const _FetchUserListings({this.page = 1, this.limit = 10, this.isRefresh = true});
+  
+
+@JsonKey() final  int page;
+@override@JsonKey() final  int limit;
+@JsonKey() final  bool isRefresh;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FetchUserListingsCopyWith<_FetchUserListings> get copyWith => __$FetchUserListingsCopyWithImpl<_FetchUserListings>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FetchUserListings&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,page,limit,isRefresh);
+
+@override
+String toString() {
+  return 'ListingsEvent.fetchUserListings(page: $page, limit: $limit, isRefresh: $isRefresh)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$FetchUserListingsCopyWith<$Res> implements $ListingsEventCopyWith<$Res> {
+  factory _$FetchUserListingsCopyWith(_FetchUserListings value, $Res Function(_FetchUserListings) _then) = __$FetchUserListingsCopyWithImpl;
+@override @useResult
+$Res call({
+ int page, int limit, bool isRefresh
+});
+
+
+
+
+}
+/// @nodoc
+class __$FetchUserListingsCopyWithImpl<$Res>
+    implements _$FetchUserListingsCopyWith<$Res> {
+  __$FetchUserListingsCopyWithImpl(this._self, this._then);
+
+  final _FetchUserListings _self;
+  final $Res Function(_FetchUserListings) _then;
+
+/// Create a copy of ListingsEvent
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? page = null,Object? limit = null,Object? isRefresh = null,}) {
+  return _then(_FetchUserListings(
+page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
+as int,isRefresh: null == isRefresh ? _self.isRefresh : isRefresh // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+// dart format on

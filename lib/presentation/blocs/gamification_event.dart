@@ -1,7 +1,7 @@
 part of "gamification_bloc.dart";
 
 @freezed
-class GamificationEvent with _$GamificationEvent {
+sealed class GamificationEvent with _$GamificationEvent {
   const factory GamificationEvent.loadAchievements() = _LoadAchievements;
 
   const factory GamificationEvent.checkAndUnlock({

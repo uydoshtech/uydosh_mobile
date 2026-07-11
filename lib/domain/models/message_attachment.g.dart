@@ -6,9 +6,8 @@ part of 'message_attachment.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MessageAttachmentImpl _$$MessageAttachmentImplFromJson(
-        Map<String, dynamic> json) =>
-    _$MessageAttachmentImpl(
+_MessageAttachment _$MessageAttachmentFromJson(Map<String, dynamic> json) =>
+    _MessageAttachment(
       id: (json['id'] as num).toInt(),
       messageId: (json['message_id'] as num).toInt(),
       fileName: json['file_name'] as String,
@@ -20,8 +19,7 @@ _$MessageAttachmentImpl _$$MessageAttachmentImplFromJson(
       thumbnailUrl: json['thumbnail_url'] as String?,
     );
 
-Map<String, dynamic> _$$MessageAttachmentImplToJson(
-        _$MessageAttachmentImpl instance) =>
+Map<String, dynamic> _$MessageAttachmentToJson(_MessageAttachment instance) =>
     <String, dynamic>{
       'id': instance.id,
       'message_id': instance.messageId,

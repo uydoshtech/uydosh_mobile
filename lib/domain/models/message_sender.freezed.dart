@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,479 +9,582 @@ part of 'message_sender.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-MessageSender _$MessageSenderFromJson(Map<String, dynamic> json) {
-  return _MessageSender.fromJson(json);
-}
 
 /// @nodoc
 mixin _$MessageSender {
-  int get id =>
-      throw _privateConstructorUsedError; // All three identity fields are independently nullable because a user may
+
+ int get id;// All three identity fields are independently nullable because a user may
 // have signed in via only one of Google (email + firebase_uid), Phone
 // (firebase_uid + phone_number), or Telegram (telegram_id). The backend
 // returns whichever are present and `null` for the rest.
-  String? get email => throw _privateConstructorUsedError;
-  @JsonKey(name: "firebase_uid")
-  String? get firebaseUid => throw _privateConstructorUsedError;
-  @JsonKey(name: "telegram_id")
-  String? get telegramId => throw _privateConstructorUsedError;
-  @JsonKey(name: "phone_number")
-  String? get phoneNumber => throw _privateConstructorUsedError;
-  MessageSenderProfile? get profile => throw _privateConstructorUsedError;
+ String? get email;@JsonKey(name: "firebase_uid") String? get firebaseUid;@JsonKey(name: "telegram_id") String? get telegramId;@JsonKey(name: "phone_number") String? get phoneNumber; MessageSenderProfile? get profile;
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MessageSenderCopyWith<MessageSender> get copyWith => _$MessageSenderCopyWithImpl<MessageSender>(this as MessageSender, _$identity);
 
   /// Serializes this MessageSender to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $MessageSenderCopyWith<MessageSender> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageSender&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firebaseUid, firebaseUid) || other.firebaseUid == firebaseUid)&&(identical(other.telegramId, telegramId) || other.telegramId == telegramId)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.profile, profile) || other.profile == profile));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,email,firebaseUid,telegramId,phoneNumber,profile);
+
+@override
+String toString() {
+  return 'MessageSender(id: $id, email: $email, firebaseUid: $firebaseUid, telegramId: $telegramId, phoneNumber: $phoneNumber, profile: $profile)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $MessageSenderCopyWith<$Res> {
-  factory $MessageSenderCopyWith(
-          MessageSender value, $Res Function(MessageSender) then) =
-      _$MessageSenderCopyWithImpl<$Res, MessageSender>;
-  @useResult
-  $Res call(
-      {int id,
-      String? email,
-      @JsonKey(name: "firebase_uid") String? firebaseUid,
-      @JsonKey(name: "telegram_id") String? telegramId,
-      @JsonKey(name: "phone_number") String? phoneNumber,
-      MessageSenderProfile? profile});
+abstract mixin class $MessageSenderCopyWith<$Res>  {
+  factory $MessageSenderCopyWith(MessageSender value, $Res Function(MessageSender) _then) = _$MessageSenderCopyWithImpl;
+@useResult
+$Res call({
+ int id, String? email,@JsonKey(name: "firebase_uid") String? firebaseUid,@JsonKey(name: "telegram_id") String? telegramId,@JsonKey(name: "phone_number") String? phoneNumber, MessageSenderProfile? profile
+});
 
-  $MessageSenderProfileCopyWith<$Res>? get profile;
+
+$MessageSenderProfileCopyWith<$Res>? get profile;
+
 }
-
 /// @nodoc
-class _$MessageSenderCopyWithImpl<$Res, $Val extends MessageSender>
+class _$MessageSenderCopyWithImpl<$Res>
     implements $MessageSenderCopyWith<$Res> {
-  _$MessageSenderCopyWithImpl(this._value, this._then);
+  _$MessageSenderCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final MessageSender _self;
+  final $Res Function(MessageSender) _then;
 
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? email = freezed,
-    Object? firebaseUid = freezed,
-    Object? telegramId = freezed,
-    Object? phoneNumber = freezed,
-    Object? profile = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firebaseUid: freezed == firebaseUid
-          ? _value.firebaseUid
-          : firebaseUid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      telegramId: freezed == telegramId
-          ? _value.telegramId
-          : telegramId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profile: freezed == profile
-          ? _value.profile
-          : profile // ignore: cast_nullable_to_non_nullable
-              as MessageSenderProfile?,
-    ) as $Val);
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? firebaseUid = freezed,Object? telegramId = freezed,Object? phoneNumber = freezed,Object? profile = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,firebaseUid: freezed == firebaseUid ? _self.firebaseUid : firebaseUid // ignore: cast_nullable_to_non_nullable
+as String?,telegramId: freezed == telegramId ? _self.telegramId : telegramId // ignore: cast_nullable_to_non_nullable
+as String?,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String?,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
+as MessageSenderProfile?,
+  ));
+}
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MessageSenderProfileCopyWith<$Res>? get profile {
+    if (_self.profile == null) {
+    return null;
   }
 
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $MessageSenderProfileCopyWith<$Res>? get profile {
-    if (_value.profile == null) {
-      return null;
-    }
-
-    return $MessageSenderProfileCopyWith<$Res>(_value.profile!, (value) {
-      return _then(_value.copyWith(profile: value) as $Val);
-    });
-  }
+  return $MessageSenderProfileCopyWith<$Res>(_self.profile!, (value) {
+    return _then(_self.copyWith(profile: value));
+  });
+}
 }
 
-/// @nodoc
-abstract class _$$MessageSenderImplCopyWith<$Res>
-    implements $MessageSenderCopyWith<$Res> {
-  factory _$$MessageSenderImplCopyWith(
-          _$MessageSenderImpl value, $Res Function(_$MessageSenderImpl) then) =
-      __$$MessageSenderImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int id,
-      String? email,
-      @JsonKey(name: "firebase_uid") String? firebaseUid,
-      @JsonKey(name: "telegram_id") String? telegramId,
-      @JsonKey(name: "phone_number") String? phoneNumber,
-      MessageSenderProfile? profile});
 
-  @override
-  $MessageSenderProfileCopyWith<$Res>? get profile;
+/// Adds pattern-matching-related methods to [MessageSender].
+extension MessageSenderPatterns on MessageSender {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MessageSender value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MessageSender() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MessageSender value)  $default,){
+final _that = this;
+switch (_that) {
+case _MessageSender():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MessageSender value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MessageSender() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? email, @JsonKey(name: "firebase_uid")  String? firebaseUid, @JsonKey(name: "telegram_id")  String? telegramId, @JsonKey(name: "phone_number")  String? phoneNumber,  MessageSenderProfile? profile)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MessageSender() when $default != null:
+return $default(_that.id,_that.email,_that.firebaseUid,_that.telegramId,_that.phoneNumber,_that.profile);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? email, @JsonKey(name: "firebase_uid")  String? firebaseUid, @JsonKey(name: "telegram_id")  String? telegramId, @JsonKey(name: "phone_number")  String? phoneNumber,  MessageSenderProfile? profile)  $default,) {final _that = this;
+switch (_that) {
+case _MessageSender():
+return $default(_that.id,_that.email,_that.firebaseUid,_that.telegramId,_that.phoneNumber,_that.profile);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? email, @JsonKey(name: "firebase_uid")  String? firebaseUid, @JsonKey(name: "telegram_id")  String? telegramId, @JsonKey(name: "phone_number")  String? phoneNumber,  MessageSenderProfile? profile)?  $default,) {final _that = this;
+switch (_that) {
+case _MessageSender() when $default != null:
+return $default(_that.id,_that.email,_that.firebaseUid,_that.telegramId,_that.phoneNumber,_that.profile);case _:
+  return null;
+
+}
 }
 
-/// @nodoc
-class __$$MessageSenderImplCopyWithImpl<$Res>
-    extends _$MessageSenderCopyWithImpl<$Res, _$MessageSenderImpl>
-    implements _$$MessageSenderImplCopyWith<$Res> {
-  __$$MessageSenderImplCopyWithImpl(
-      _$MessageSenderImpl _value, $Res Function(_$MessageSenderImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? email = freezed,
-    Object? firebaseUid = freezed,
-    Object? telegramId = freezed,
-    Object? phoneNumber = freezed,
-    Object? profile = freezed,
-  }) {
-    return _then(_$MessageSenderImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      firebaseUid: freezed == firebaseUid
-          ? _value.firebaseUid
-          : firebaseUid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      telegramId: freezed == telegramId
-          ? _value.telegramId
-          : telegramId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      phoneNumber: freezed == phoneNumber
-          ? _value.phoneNumber
-          : phoneNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      profile: freezed == profile
-          ? _value.profile
-          : profile // ignore: cast_nullable_to_non_nullable
-              as MessageSenderProfile?,
-    ));
-  }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$MessageSenderImpl implements _MessageSender {
-  const _$MessageSenderImpl(
-      {required this.id,
-      this.email,
-      @JsonKey(name: "firebase_uid") this.firebaseUid,
-      @JsonKey(name: "telegram_id") this.telegramId,
-      @JsonKey(name: "phone_number") this.phoneNumber,
-      this.profile});
 
-  factory _$MessageSenderImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MessageSenderImplFromJson(json);
+class _MessageSender implements MessageSender {
+  const _MessageSender({required this.id, this.email, @JsonKey(name: "firebase_uid") this.firebaseUid, @JsonKey(name: "telegram_id") this.telegramId, @JsonKey(name: "phone_number") this.phoneNumber, this.profile});
+  factory _MessageSender.fromJson(Map<String, dynamic> json) => _$MessageSenderFromJson(json);
 
-  @override
-  final int id;
+@override final  int id;
 // All three identity fields are independently nullable because a user may
 // have signed in via only one of Google (email + firebase_uid), Phone
 // (firebase_uid + phone_number), or Telegram (telegram_id). The backend
 // returns whichever are present and `null` for the rest.
-  @override
-  final String? email;
-  @override
-  @JsonKey(name: "firebase_uid")
-  final String? firebaseUid;
-  @override
-  @JsonKey(name: "telegram_id")
-  final String? telegramId;
-  @override
-  @JsonKey(name: "phone_number")
-  final String? phoneNumber;
-  @override
-  final MessageSenderProfile? profile;
+@override final  String? email;
+@override@JsonKey(name: "firebase_uid") final  String? firebaseUid;
+@override@JsonKey(name: "telegram_id") final  String? telegramId;
+@override@JsonKey(name: "phone_number") final  String? phoneNumber;
+@override final  MessageSenderProfile? profile;
 
-  @override
-  String toString() {
-    return 'MessageSender(id: $id, email: $email, firebaseUid: $firebaseUid, telegramId: $telegramId, phoneNumber: $phoneNumber, profile: $profile)';
-  }
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MessageSenderCopyWith<_MessageSender> get copyWith => __$MessageSenderCopyWithImpl<_MessageSender>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MessageSenderImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.firebaseUid, firebaseUid) ||
-                other.firebaseUid == firebaseUid) &&
-            (identical(other.telegramId, telegramId) ||
-                other.telegramId == telegramId) &&
-            (identical(other.phoneNumber, phoneNumber) ||
-                other.phoneNumber == phoneNumber) &&
-            (identical(other.profile, profile) || other.profile == profile));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, id, email, firebaseUid, telegramId, phoneNumber, profile);
-
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MessageSenderImplCopyWith<_$MessageSenderImpl> get copyWith =>
-      __$$MessageSenderImplCopyWithImpl<_$MessageSenderImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$MessageSenderImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$MessageSenderToJson(this, );
 }
 
-abstract class _MessageSender implements MessageSender {
-  const factory _MessageSender(
-      {required final int id,
-      final String? email,
-      @JsonKey(name: "firebase_uid") final String? firebaseUid,
-      @JsonKey(name: "telegram_id") final String? telegramId,
-      @JsonKey(name: "phone_number") final String? phoneNumber,
-      final MessageSenderProfile? profile}) = _$MessageSenderImpl;
-
-  factory _MessageSender.fromJson(Map<String, dynamic> json) =
-      _$MessageSenderImpl.fromJson;
-
-  @override
-  int get id; // All three identity fields are independently nullable because a user may
-// have signed in via only one of Google (email + firebase_uid), Phone
-// (firebase_uid + phone_number), or Telegram (telegram_id). The backend
-// returns whichever are present and `null` for the rest.
-  @override
-  String? get email;
-  @override
-  @JsonKey(name: "firebase_uid")
-  String? get firebaseUid;
-  @override
-  @JsonKey(name: "telegram_id")
-  String? get telegramId;
-  @override
-  @JsonKey(name: "phone_number")
-  String? get phoneNumber;
-  @override
-  MessageSenderProfile? get profile;
-
-  /// Create a copy of MessageSender
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MessageSenderImplCopyWith<_$MessageSenderImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageSender&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.firebaseUid, firebaseUid) || other.firebaseUid == firebaseUid)&&(identical(other.telegramId, telegramId) || other.telegramId == telegramId)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.profile, profile) || other.profile == profile));
 }
 
-MessageSenderProfile _$MessageSenderProfileFromJson(Map<String, dynamic> json) {
-  return _MessageSenderProfile.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,email,firebaseUid,telegramId,phoneNumber,profile);
+
+@override
+String toString() {
+  return 'MessageSender(id: $id, email: $email, firebaseUid: $firebaseUid, telegramId: $telegramId, phoneNumber: $phoneNumber, profile: $profile)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MessageSenderCopyWith<$Res> implements $MessageSenderCopyWith<$Res> {
+  factory _$MessageSenderCopyWith(_MessageSender value, $Res Function(_MessageSender) _then) = __$MessageSenderCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String? email,@JsonKey(name: "firebase_uid") String? firebaseUid,@JsonKey(name: "telegram_id") String? telegramId,@JsonKey(name: "phone_number") String? phoneNumber, MessageSenderProfile? profile
+});
+
+
+@override $MessageSenderProfileCopyWith<$Res>? get profile;
+
+}
+/// @nodoc
+class __$MessageSenderCopyWithImpl<$Res>
+    implements _$MessageSenderCopyWith<$Res> {
+  __$MessageSenderCopyWithImpl(this._self, this._then);
+
+  final _MessageSender _self;
+  final $Res Function(_MessageSender) _then;
+
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? firebaseUid = freezed,Object? telegramId = freezed,Object? phoneNumber = freezed,Object? profile = freezed,}) {
+  return _then(_MessageSender(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,firebaseUid: freezed == firebaseUid ? _self.firebaseUid : firebaseUid // ignore: cast_nullable_to_non_nullable
+as String?,telegramId: freezed == telegramId ? _self.telegramId : telegramId // ignore: cast_nullable_to_non_nullable
+as String?,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String?,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
+as MessageSenderProfile?,
+  ));
+}
+
+/// Create a copy of MessageSender
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MessageSenderProfileCopyWith<$Res>? get profile {
+    if (_self.profile == null) {
+    return null;
+  }
+
+  return $MessageSenderProfileCopyWith<$Res>(_self.profile!, (value) {
+    return _then(_self.copyWith(profile: value));
+  });
+}
+}
+
 
 /// @nodoc
 mixin _$MessageSenderProfile {
-  String? get name => throw _privateConstructorUsedError;
-  @JsonKey(name: "avatar_url")
-  String? get avatarUrl => throw _privateConstructorUsedError;
+
+ String? get name;@JsonKey(name: "avatar_url") String? get avatarUrl;
+/// Create a copy of MessageSenderProfile
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MessageSenderProfileCopyWith<MessageSenderProfile> get copyWith => _$MessageSenderProfileCopyWithImpl<MessageSenderProfile>(this as MessageSenderProfile, _$identity);
 
   /// Serializes this MessageSenderProfile to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of MessageSenderProfile
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $MessageSenderProfileCopyWith<MessageSenderProfile> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessageSenderProfile&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,avatarUrl);
+
+@override
+String toString() {
+  return 'MessageSenderProfile(name: $name, avatarUrl: $avatarUrl)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $MessageSenderProfileCopyWith<$Res> {
-  factory $MessageSenderProfileCopyWith(MessageSenderProfile value,
-          $Res Function(MessageSenderProfile) then) =
-      _$MessageSenderProfileCopyWithImpl<$Res, MessageSenderProfile>;
-  @useResult
-  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
-}
+abstract mixin class $MessageSenderProfileCopyWith<$Res>  {
+  factory $MessageSenderProfileCopyWith(MessageSenderProfile value, $Res Function(MessageSenderProfile) _then) = _$MessageSenderProfileCopyWithImpl;
+@useResult
+$Res call({
+ String? name,@JsonKey(name: "avatar_url") String? avatarUrl
+});
 
+
+
+
+}
 /// @nodoc
-class _$MessageSenderProfileCopyWithImpl<$Res,
-        $Val extends MessageSenderProfile>
+class _$MessageSenderProfileCopyWithImpl<$Res>
     implements $MessageSenderProfileCopyWith<$Res> {
-  _$MessageSenderProfileCopyWithImpl(this._value, this._then);
+  _$MessageSenderProfileCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final MessageSenderProfile _self;
+  final $Res Function(MessageSenderProfile) _then;
 
-  /// Create a copy of MessageSenderProfile
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = freezed,
-    Object? avatarUrl = freezed,
-  }) {
-    return _then(_value.copyWith(
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of MessageSenderProfile
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = freezed,Object? avatarUrl = freezed,}) {
+  return _then(_self.copyWith(
+name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$MessageSenderProfileImplCopyWith<$Res>
-    implements $MessageSenderProfileCopyWith<$Res> {
-  factory _$$MessageSenderProfileImplCopyWith(_$MessageSenderProfileImpl value,
-          $Res Function(_$MessageSenderProfileImpl) then) =
-      __$$MessageSenderProfileImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String? name, @JsonKey(name: "avatar_url") String? avatarUrl});
 }
 
-/// @nodoc
-class __$$MessageSenderProfileImplCopyWithImpl<$Res>
-    extends _$MessageSenderProfileCopyWithImpl<$Res, _$MessageSenderProfileImpl>
-    implements _$$MessageSenderProfileImplCopyWith<$Res> {
-  __$$MessageSenderProfileImplCopyWithImpl(_$MessageSenderProfileImpl _value,
-      $Res Function(_$MessageSenderProfileImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of MessageSenderProfile
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? name = freezed,
-    Object? avatarUrl = freezed,
-  }) {
-    return _then(_$MessageSenderProfileImpl(
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatarUrl: freezed == avatarUrl
-          ? _value.avatarUrl
-          : avatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [MessageSenderProfile].
+extension MessageSenderProfilePatterns on MessageSenderProfile {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MessageSenderProfile value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MessageSenderProfile() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MessageSenderProfile value)  $default,){
+final _that = this;
+switch (_that) {
+case _MessageSenderProfile():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MessageSenderProfile value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MessageSenderProfile() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? name, @JsonKey(name: "avatar_url")  String? avatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MessageSenderProfile() when $default != null:
+return $default(_that.name,_that.avatarUrl);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? name, @JsonKey(name: "avatar_url")  String? avatarUrl)  $default,) {final _that = this;
+switch (_that) {
+case _MessageSenderProfile():
+return $default(_that.name,_that.avatarUrl);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? name, @JsonKey(name: "avatar_url")  String? avatarUrl)?  $default,) {final _that = this;
+switch (_that) {
+case _MessageSenderProfile() when $default != null:
+return $default(_that.name,_that.avatarUrl);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$MessageSenderProfileImpl implements _MessageSenderProfile {
-  const _$MessageSenderProfileImpl(
-      {this.name, @JsonKey(name: "avatar_url") this.avatarUrl});
 
-  factory _$MessageSenderProfileImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MessageSenderProfileImplFromJson(json);
+class _MessageSenderProfile implements MessageSenderProfile {
+  const _MessageSenderProfile({this.name, @JsonKey(name: "avatar_url") this.avatarUrl});
+  factory _MessageSenderProfile.fromJson(Map<String, dynamic> json) => _$MessageSenderProfileFromJson(json);
 
-  @override
-  final String? name;
-  @override
-  @JsonKey(name: "avatar_url")
-  final String? avatarUrl;
+@override final  String? name;
+@override@JsonKey(name: "avatar_url") final  String? avatarUrl;
 
-  @override
-  String toString() {
-    return 'MessageSenderProfile(name: $name, avatarUrl: $avatarUrl)';
-  }
+/// Create a copy of MessageSenderProfile
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MessageSenderProfileCopyWith<_MessageSenderProfile> get copyWith => __$MessageSenderProfileCopyWithImpl<_MessageSenderProfile>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MessageSenderProfileImpl &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.avatarUrl, avatarUrl) ||
-                other.avatarUrl == avatarUrl));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, name, avatarUrl);
-
-  /// Create a copy of MessageSenderProfile
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MessageSenderProfileImplCopyWith<_$MessageSenderProfileImpl>
-      get copyWith =>
-          __$$MessageSenderProfileImplCopyWithImpl<_$MessageSenderProfileImpl>(
-              this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$MessageSenderProfileImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$MessageSenderProfileToJson(this, );
 }
 
-abstract class _MessageSenderProfile implements MessageSenderProfile {
-  const factory _MessageSenderProfile(
-          {final String? name,
-          @JsonKey(name: "avatar_url") final String? avatarUrl}) =
-      _$MessageSenderProfileImpl;
-
-  factory _MessageSenderProfile.fromJson(Map<String, dynamic> json) =
-      _$MessageSenderProfileImpl.fromJson;
-
-  @override
-  String? get name;
-  @override
-  @JsonKey(name: "avatar_url")
-  String? get avatarUrl;
-
-  /// Create a copy of MessageSenderProfile
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MessageSenderProfileImplCopyWith<_$MessageSenderProfileImpl>
-      get copyWith => throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessageSenderProfile&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,avatarUrl);
+
+@override
+String toString() {
+  return 'MessageSenderProfile(name: $name, avatarUrl: $avatarUrl)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MessageSenderProfileCopyWith<$Res> implements $MessageSenderProfileCopyWith<$Res> {
+  factory _$MessageSenderProfileCopyWith(_MessageSenderProfile value, $Res Function(_MessageSenderProfile) _then) = __$MessageSenderProfileCopyWithImpl;
+@override @useResult
+$Res call({
+ String? name,@JsonKey(name: "avatar_url") String? avatarUrl
+});
+
+
+
+
+}
+/// @nodoc
+class __$MessageSenderProfileCopyWithImpl<$Res>
+    implements _$MessageSenderProfileCopyWith<$Res> {
+  __$MessageSenderProfileCopyWithImpl(this._self, this._then);
+
+  final _MessageSenderProfile _self;
+  final $Res Function(_MessageSenderProfile) _then;
+
+/// Create a copy of MessageSenderProfile
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = freezed,Object? avatarUrl = freezed,}) {
+  return _then(_MessageSenderProfile(
+name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+// dart format on

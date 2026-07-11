@@ -115,7 +115,7 @@ List<Map<String, dynamic>>? _messageReactionsToJson(
 }
 
 @freezed
-class Message with _$Message {
+abstract class Message with _$Message {
   const factory Message({
     required int id,
     @JsonKey(name: "conversation_id") required int conversationId,
@@ -167,7 +167,7 @@ extension MessageVisibleEditState on Message {
 }
 
 @freezed
-class MessageType with _$MessageType {
+sealed class MessageType with _$MessageType {
   const factory MessageType.text() = _Text;
   const factory MessageType.image() = _Image;
   const factory MessageType.file() = _File;

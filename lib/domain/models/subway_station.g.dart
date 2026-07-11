@@ -6,8 +6,8 @@ part of 'subway_station.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SubwayStationImpl _$$SubwayStationImplFromJson(Map<String, dynamic> json) =>
-    _$SubwayStationImpl(
+_SubwayStation _$SubwayStationFromJson(Map<String, dynamic> json) =>
+    _SubwayStation(
       id: (json['id'] as num).toInt(),
       line: (json['line'] as num).toInt(),
       ordinal: (json['ordinal'] as num).toInt(),
@@ -21,7 +21,7 @@ _$SubwayStationImpl _$$SubwayStationImplFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updated_at'] as String?,
     );
 
-Map<String, dynamic> _$$SubwayStationImplToJson(_$SubwayStationImpl instance) =>
+Map<String, dynamic> _$SubwayStationToJson(_SubwayStation instance) =>
     <String, dynamic>{
       'id': instance.id,
       'line': instance.line,

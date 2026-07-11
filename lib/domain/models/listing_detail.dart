@@ -18,7 +18,7 @@ double? numericStringToDouble(dynamic value) {
 }
 
 @freezed
-class ListingDetail with _$ListingDetail {
+abstract class ListingDetail with _$ListingDetail {
   const factory ListingDetail({
     required int id,
     @JsonKey(name: "user_id") required int userId,
@@ -121,7 +121,7 @@ class ListingNearbyStore {
 }
 
 @freezed
-class UserDetail with _$UserDetail {
+abstract class UserDetail with _$UserDetail {
   const factory UserDetail({
     required int id,
     @JsonKey(name: "created_at") required String createdAt,
@@ -134,7 +134,7 @@ class UserDetail with _$UserDetail {
 }
 
 @freezed
-class ListingTypeDetail with _$ListingTypeDetail {
+abstract class ListingTypeDetail with _$ListingTypeDetail {
   const factory ListingTypeDetail({
     required int id,
     @JsonKey(name: "name_uz") required String nameUz,
@@ -148,7 +148,7 @@ class ListingTypeDetail with _$ListingTypeDetail {
 }
 
 @freezed
-class SubwayStationDetail with _$SubwayStationDetail {
+abstract class SubwayStationDetail with _$SubwayStationDetail {
   const factory SubwayStationDetail({
     required int id,
     @JsonKey(name: "name_uz") required String nameUz,
@@ -162,7 +162,7 @@ class SubwayStationDetail with _$SubwayStationDetail {
 }
 
 @freezed
-class LocationDetail with _$LocationDetail {
+abstract class LocationDetail with _$LocationDetail {
   const factory LocationDetail({
     required int id,
     @JsonKey(name: "name_uz") required String nameUz,
@@ -178,7 +178,7 @@ class LocationDetail with _$LocationDetail {
 }
 
 @freezed
-class AreaPriceStats with _$AreaPriceStats {
+abstract class AreaPriceStats with _$AreaPriceStats {
   const factory AreaPriceStats({
     @JsonKey(name: "subway_station") AreaPriceBenchmark? subwayStation,
     @JsonKey(name: "location") AreaPriceBenchmark? location,
@@ -189,7 +189,7 @@ class AreaPriceStats with _$AreaPriceStats {
 }
 
 @freezed
-class AreaPriceBenchmark with _$AreaPriceBenchmark {
+abstract class AreaPriceBenchmark with _$AreaPriceBenchmark {
   const factory AreaPriceBenchmark({
     required int mean,
     required int median,
