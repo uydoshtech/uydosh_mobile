@@ -3543,8 +3543,31 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       return;
     }
 
-    // Validate location/search area (mandatory)
-    if (_supportsMultiStation &&
+    // Validate location/search area (mandatory).
+    // Roommate-needed's merged address flow is checked separately below: the
+    // address itself is the only required field there — tagging a nearby
+    // metro station is an optional refinement (mirrors `_validateStep`'s case
+    // 0 and the Telegram Mini App's `validateStep`). Without this bypass, an
+    // address with no metro station within walking distance (e.g. outside
+    // Tashkent) would otherwise hit the `_supportsMultiStation` branch below
+    // — true for roommate-needed too — and hard-block publishing with a
+    // "select a metro station" error despite the wizard's own step
+    // validation already having let the author past step 0.
+    if (_isRoommateNeededFlow) {
+      if (_addressTextController.text.trim().isEmpty) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("create_listing_address_required"),
+        );
+        setState(() {
+          _showLocationError = true;
+        });
+        return;
+      }
+      setState(() {
+        _showLocationError = false;
+      });
+    } else if (_supportsMultiStation &&
         _locationSearchMode == _LocationSearchMode.metro &&
         _selectedSearchStations.isEmpty) {
       ToastTheme.showError(
