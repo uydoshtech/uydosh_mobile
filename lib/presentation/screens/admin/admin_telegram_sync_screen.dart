@@ -93,6 +93,8 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   static const List<String> _kDefaultKnownChannels = [
     "@roommateuz",
     "@tashkentpodselenie",
+    // Релокейшн ~ Coliving (Узбекистан) — private group, no @username.
+    "-1001749445963",
   ];
 
   /// Sentinel value for the "Custom…" entry in the chat dropdown: switches the
