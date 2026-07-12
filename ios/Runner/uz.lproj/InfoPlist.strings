@@ -1,4 +1,6 @@
 "NSCameraUsageDescription" = "Ilova e’lon fotosuratlari va mos qurilmalarda 3D xonani skanerlash uchun kameradan foydalanadi.";
 "NSPhotoLibraryUsageDescription" = "E’lonlaringiz uchun surat tanlash uchun ilovaga foto kutubxonaga kirish kerak.";
 "NSLocationWhenInUseUsageDescription" = "Ilova yaqin atrofdagi e’lonlar va metro bekatlarini ko‘rsatish uchun joylashuvingizdan foydalanadi.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Ilova yaqin atrofdagi e’lonlar va metro bekatlarini ko‘rsatish uchun joylashuvingizdan foydalanadi.";
+"NSMicrophoneUsageDescription" = "Ilova siz e’lon tavsifini diktafonga aytganingizda mikrofondan foydalanadi.";
 

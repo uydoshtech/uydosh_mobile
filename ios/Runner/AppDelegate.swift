@@ -134,14 +134,17 @@ final class NativeLanguagePlugin: NSObject, FlutterPlugin {
       return
     }
 
-    // Persist for the next app launch. NOTE: iOS frameworks (RoomPlan, ARKit,
-    // …) read `AppleLanguages` once at process start, so writing it here does
-    // NOT change strings already loaded in the current session — it only takes
-    // effect after the app is relaunched. The launch-time read in
-    // `application(_:didFinishLaunchingWithOptions:)` is what actually switches
-    // the language for the next session.
+    // Always persisted for the next app launch: the launch-time read in
+    // `application(_:didFinishLaunchingWithOptions:)` is the only *guaranteed*
+    // way this reaches RoomPlan/ARKit, since those frameworks may have already
+    // resolved and cached their own bundle's localized strings earlier in this
+    // process. We still set it live (with an explicit `synchronize()` flush to
+    // `cfprefsd`) on the chance that a framework bundle hasn't been touched yet
+    // this session — e.g. the very first RoomPlan scan — in which case its next
+    // localized-string lookup can pick up the new value immediately.
     UserDefaults.standard.set(uydoshAppleLanguagesList(for: code), forKey: "AppleLanguages")
     UserDefaults.standard.set(code, forKey: "AppleLocale")
+    UserDefaults.standard.synchronize()
     result(true)
   }
 }

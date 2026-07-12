@@ -8,6 +8,7 @@ import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
+import "package:uy_dosh/base/services/native_language_service.dart";
 import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/room_scan_bounds_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -21,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/three_d_app_bar_icon_button.
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
+import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 
 // TEMP (for testing): render the 3D scan welcome UI even on web/Chrome.
@@ -163,13 +165,17 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     if (!isIOSDevice) return;
     setState(() => _starting = true);
     try {
-      // NOTE: We intentionally do NOT call NativeLanguageService here. iOS
-      // frameworks (RoomPlan, ARKit) cache localized strings at process start,
-      // so writing `AppleLanguages` mid-session has no effect on the coaching
-      // overlay shown during this scan. The language is applied at app launch
-      // in AppDelegate (reading the in-app language from shared_preferences),
-      // and persisted on every in-app language change via
-      // `LanguageState.setLanguage` for the *next* launch.
+      // Best-effort: re-apply `AppleLanguages` right before touching RoomPlan.
+      // This mid-session write is NOT guaranteed to affect the coaching
+      // overlay — iOS frameworks may have already cached their own bundle's
+      // localized strings earlier this process — but if this is the first
+      // RoomPlan/ARKit access in the session, it can still take effect. Either
+      // way, `LanguageState.setLanguage` / the app-launch read in AppDelegate
+      // guarantee it's correct from the *next* cold launch onward.
+      await NativeLanguageService.setPreferredLanguage(
+        LanguageState().currentLanguage,
+      );
+
       final supported = await _roomPlan.isSupported();
       if (!supported) {
         if (!mounted) return;
