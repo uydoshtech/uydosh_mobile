@@ -223,6 +223,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   final List<SubwayStation> _selectedSearchStations = [];
   List<int> _baselineSearchStationIds = [];
 
+  /// Station ids the author explicitly unchecked via [_toggleNearbyStation].
+  /// [_preselectNearbyStations] must not re-add these on a later recompute
+  /// (e.g. radius chip change, pin drag, re-geocode) — otherwise a removed
+  /// suggestion silently reappears and gets submitted with the listing.
+  final Set<int> _dismissedNearbyStationIds = {};
+
   /// Multi-location selection shown as chips for demand-side flows when the
   /// author chooses "By district" instead of "By metro". Order matters:
   /// element 0 is the primary location persisted on the listing row.
@@ -1073,6 +1079,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       (estimate) => estimate.walkMinutes <= _autoSelectStationWalkMinutes,
     );
     for (final estimate in withinDefaultWalk) {
+      // Respect an explicit removal: don't resurrect a chip the author
+      // already unchecked just because coordinates/radius changed again.
+      if (_dismissedNearbyStationIds.contains(estimate.station.id)) continue;
       final alreadySelected = _selectedSearchStations
           .any((station) => station.id == estimate.station.id);
       if (!alreadySelected) {
@@ -1095,8 +1104,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           _selectedSearchStations.indexWhere((s) => s.id == station.id);
       if (index >= 0) {
         _selectedSearchStations.removeAt(index);
+        _dismissedNearbyStationIds.add(station.id);
       } else {
         _selectedSearchStations.add(station);
+        _dismissedNearbyStationIds.remove(station.id);
       }
       if (_showLocationError &&
           _addressTextController.text.trim().isNotEmpty) {
@@ -3708,9 +3719,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               _selectedSearchLocations.isNotEmpty
           ? _selectedSearchLocations.map((l) => l.id).toList()
           : null;
+      // Multi-station flows (roommate-needed/room-needed/group-forming) only
+      // ever show the chip picker, never the metro-line wheel — so an empty
+      // chip list means "no station", not "fall back to the hidden wheel's
+      // default selection". Otherwise a removed/never-shown suggestion
+      // (e.g. line-1 station index 0) leaks into the submitted listing.
       final primaryStation = multiStationIds != null
           ? _selectedSearchStations.first
-          : usesDistrictMode
+          : (usesDistrictMode || _supportsMultiStation)
               ? null
               : selectedStation;
       final primaryLocation = multiLocationIds != null
@@ -3720,7 +3736,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               : selectedLocation;
       final effectiveSubwayLineId = multiStationIds != null
           ? _selectedSearchStations.first.line
-          : usesDistrictMode
+          : (usesDistrictMode || _supportsMultiStation)
               ? null
               : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
       final addressText =
@@ -3887,6 +3903,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _addressLongitude = null;
         _currentStations = [];
         _selectedSearchStations.clear(); // Clear multi-station chips
+        _dismissedNearbyStationIds.clear();
         _baselineSearchStationIds = [];
         _selectedSearchLocations.clear(); // Clear multi-location chips
         _baselineSearchLocationIds = [];
