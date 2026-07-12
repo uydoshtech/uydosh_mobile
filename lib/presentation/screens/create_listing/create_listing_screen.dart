@@ -118,6 +118,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   static const int _autoSelectStationWalkMinutes = 15;
   List<NearbyStationEstimate> _nearbyStations = [];
   int _nearbyStationsRadiusMinutes = _nearbyStationRadiusOptions.first;
+
+  /// True once the closest metro station overall is farther than every
+  /// [_nearbyStationRadiusOptions] entry — every radius chip would then
+  /// filter to the identical (empty or single-fallback) result, so the
+  /// toggle stops being a meaningful control. Mirrors the Telegram Mini
+  /// App's `nearbyStationsBeyondMaxRadius` (`telegram-create.js`).
+  bool _nearbyStationsBeyondMaxRadius = false;
   bool _isResolvingAddressLocation = false;
   int _addressGeocodeGeneration = 0;
 
@@ -319,6 +326,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _addressLatitude = null;
       _addressLongitude = null;
       _nearbyStations = [];
+      _nearbyStationsBeyondMaxRadius = false;
     }
     _markDirty();
   }
@@ -1025,7 +1033,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final latitude = _addressLatitude;
     final longitude = _addressLongitude;
     if (latitude == null || longitude == null) {
-      setState(() => _nearbyStations = []);
+      setState(() {
+        _nearbyStations = [];
+        _nearbyStationsBeyondMaxRadius = false;
+      });
       return;
     }
     setState(() {
@@ -1034,6 +1045,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         longitude,
         maxMinutes: _nearbyStationsRadiusMinutes,
       );
+      final closest = NearbyMetroStations.closestStationWalkMinutes(
+        latitude,
+        longitude,
+      );
+      _nearbyStationsBeyondMaxRadius = closest == null ||
+          closest > _nearbyStationRadiusOptions.last;
       _preselectNearbyStations(latitude, longitude);
     });
   }
@@ -1944,20 +1961,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final minutes in _nearbyStationRadiusOptions)
-              _buildNearbyRadiusChip(minutes),
-          ],
-        ),
-        const SizedBox(height: 12),
+        if (!_nearbyStationsBeyondMaxRadius) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final minutes in _nearbyStationRadiusOptions)
+                _buildNearbyRadiusChip(minutes),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
         if (_nearbyStations.isEmpty)
           Text(
             L10n.getWithParams(
               "nearby_stations_empty",
-              params: {"minutes": "$_nearbyStationsRadiusMinutes"},
+              params: {
+                "minutes": _nearbyStationsBeyondMaxRadius
+                    // Chips are hidden, so there's no selected radius on
+                    // screen to refer to — fall back to the largest option,
+                    // the radius that's actually true in this state (even
+                    // it found nothing).
+                    ? "${_nearbyStationRadiusOptions.last}"
+                    : "$_nearbyStationsRadiusMinutes",
+              },
             ),
             style: TextStyle(
               fontSize: 13,

@@ -62,6 +62,29 @@ abstract final class NearbyMetroStations {
     return const [];
   }
 
+  /// Walking minutes to the single closest metro station overall (ignoring
+  /// any radius), or `null` if there are no stations to measure against.
+  /// Lets callers detect "nothing nearby at any radius" independent of
+  /// [find]'s own `maxMinutes`/fallback behavior — mirrors the Telegram Mini
+  /// App wizard's `isBeyondMaxRadius` (`telegram-create.js`), which hides
+  /// the walk-radius toggle once even the closest station is farther than
+  /// every radius option (switching between them would just be misleading).
+  static double? closestStationWalkMinutes(double latitude, double longitude) {
+    var closest = double.infinity;
+    for (final station in MetroCache.getAllStations()) {
+      final minutes = _estimatedWalkMinutes(
+        _haversineMeters(
+          latitude,
+          longitude,
+          station.latitude,
+          station.longitude,
+        ),
+      );
+      if (minutes < closest) closest = minutes;
+    }
+    return closest.isFinite ? closest : null;
+  }
+
   static double _estimatedWalkMinutes(double meters) {
     if (meters.isInfinite || meters.isNaN) return double.infinity;
     return (meters * _walkDetourFactor) / _walkMetersPerMinute;
