@@ -415,7 +415,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _currentUser.email ?? L10n.get("not_specified"),
+                        _currentUser.email ??
+                            (_currentUser.telegramUsername
+                                        ?.trim()
+                                        .isNotEmpty ??
+                                    false
+                                ? "@${_currentUser.telegramUsername!.trim()}"
+                                : L10n.get("not_specified")),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
