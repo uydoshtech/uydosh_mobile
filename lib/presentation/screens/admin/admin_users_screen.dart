@@ -376,7 +376,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                   const SizedBox(width: 6),
                                   Flexible(
                                     child: Text(
-                                      user.email ?? L10n.get("not_specified"),
+                                      user.email ??
+                                          (user.telegramUsername
+                                                      ?.trim()
+                                                      .isNotEmpty ??
+                                                  false
+                                              ? "@${user.telegramUsername!.trim()}"
+                                              : L10n.get("not_specified")),
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
