@@ -102,6 +102,16 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
   /// that aren't part of the scheduled set.
   static const String _kCustomChannelSentinel = "__custom__";
 
+  /// Friendly display names for channels with no @username (shown instead of
+  /// the raw numeric chat id in the dropdown). The actual sync/import calls
+  /// still use the raw id from [_knownChannels] — this is display-only.
+  static const Map<String, String> _kChannelDisplayLabels = {
+    "-1001749445963": "Релоканты",
+  };
+
+  String _channelDisplayLabel(String channel) =>
+      _kChannelDisplayLabels[channel] ?? channel;
+
   /// Preset sync sizes (matches admin UX: small counts, then round hundreds,
   /// then +1000 steps up to 20000 for large backfills).
   static const List<int> _kMessageLimitChoices = [
@@ -931,7 +941,7 @@ class _AdminTelegramSyncScreenState extends State<AdminTelegramSyncScreen> {
                             DropdownMenuItem<String>(
                               value: handle,
                               child: Text(
-                                handle,
+                                _channelDisplayLabel(handle),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
