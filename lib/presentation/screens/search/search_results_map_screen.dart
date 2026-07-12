@@ -1108,18 +1108,21 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     );
   }
 
-  /// Same-city sanity bounds mirroring the backend's
-  /// `resolveListingMapCoordinates` guard against bogus/legacy coordinates.
-  static const double _tashkentMinLatitude = 41.15;
-  static const double _tashkentMaxLatitude = 41.42;
-  static const double _tashkentMinLongitude = 69.05;
-  static const double _tashkentMaxLongitude = 69.45;
+  /// Uzbekistan-wide sanity bounds mirroring the backend's
+  /// `resolveListingMapCoordinates`/`uzbekistanBounds.ts` guard against
+  /// bogus/legacy coordinates (0,0, a different country entirely, etc.).
+  /// Loose on purpose — a simple rectangle, not the real border — so it
+  /// never rejects a genuine in-country listing.
+  static const double _uzbekistanMinLatitude = 37;
+  static const double _uzbekistanMaxLatitude = 46;
+  static const double _uzbekistanMinLongitude = 55;
+  static const double _uzbekistanMaxLongitude = 74;
 
-  static bool _isValidTashkentCoordinate(double latitude, double longitude) {
-    return latitude >= _tashkentMinLatitude &&
-        latitude <= _tashkentMaxLatitude &&
-        longitude >= _tashkentMinLongitude &&
-        longitude <= _tashkentMaxLongitude;
+  static bool _isValidUzbekistanCoordinate(double latitude, double longitude) {
+    return latitude >= _uzbekistanMinLatitude &&
+        latitude <= _uzbekistanMaxLatitude &&
+        longitude >= _uzbekistanMinLongitude &&
+        longitude <= _uzbekistanMaxLongitude;
   }
 
   ListingMapPin? _pinForListing(Listing listing) {
@@ -1136,7 +1139,7 @@ class _SearchResultsMapScreenState extends State<SearchResultsMapScreen> {
     final displayLng = listing.displayLng;
     if (displayLat != null &&
         displayLng != null &&
-        _isValidTashkentCoordinate(displayLat, displayLng)) {
+        _isValidUzbekistanCoordinate(displayLat, displayLng)) {
       return ListingMapPin(
         listingId: listing.id,
         latitude: displayLat,

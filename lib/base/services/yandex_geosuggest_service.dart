@@ -107,8 +107,8 @@ class YandexGeosuggestService {
   static const reverseBackendPath = "/app/geosuggest/reverse";
   static const geocodeBackendPath = "/app/geosuggest/geocode";
 
-  /// Greater Tashkent — biases suggestions toward the app's primary market.
-  static const defaultBBox = "69.05,41.15~69.45,41.42";
+  /// All of Uzbekistan — biases suggestions toward the app's country.
+  static const defaultBBox = "55,37~74,46";
 
   final Dio _dio;
   final IOAuthApiClient? _oauthApiClient;
