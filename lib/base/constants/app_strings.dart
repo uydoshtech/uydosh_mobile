@@ -1516,9 +1516,9 @@ class AppStrings {
       "admin_app_setting_property_nav_enabled_subtitle":
           "When on, the real-estate tab appears in the main bottom bar.",
       "admin_app_setting_web_multi_instance_check_title":
-          "Lock duplicate web tabs",
+          "Lock duplicate sessions (web + Telegram)",
       "admin_app_setting_web_multi_instance_check_subtitle":
-          "Web app only. When on, opening UyDosh in a new tab locks older tabs of this browser.",
+          "When on, opening UyDosh in a new browser tab locks older tabs, and opening the Telegram Mini App elsewhere ends older Telegram sessions. Has no effect on the native iOS/Android apps.",
       "web_multi_instance_lock_title": "UyDosh is open in another tab",
       "web_multi_instance_lock_subtitle":
           "This tab was paused because UyDosh is active in a newer browser tab. Use this tab to continue here instead.",
@@ -3802,9 +3802,9 @@ class AppStrings {
       "admin_app_setting_property_nav_enabled_subtitle":
           "Если включено, вкладка недвижимости отображается в нижней панели.",
       "admin_app_setting_web_multi_instance_check_title":
-          "Блокировать повторные вкладки веб-версии",
+          "Блокировать повторные сессии (веб + Telegram)",
       "admin_app_setting_web_multi_instance_check_subtitle":
-          "Только веб-версия. Если включено, открытие UyDosh в новой вкладке блокирует старые вкладки этого браузера.",
+          "Если включено, открытие UyDosh в новой вкладке блокирует старые вкладки браузера, а открытие мини-приложения Telegram в другом месте завершает старые сессии Telegram. Не влияет на нативные приложения iOS/Android.",
       "web_multi_instance_lock_title": "UyDosh открыт в другой вкладке",
       "web_multi_instance_lock_subtitle":
           "Эта вкладка приостановлена, так как UyDosh активен в более новой вкладке браузера. Продолжите здесь, чтобы использовать эту вкладку.",
@@ -6122,9 +6122,9 @@ class AppStrings {
       "admin_app_setting_property_nav_enabled_subtitle":
           "Yoniq bo'lsa, ko'chmas mulk yorligi pastki panelda ko'rinadi.",
       "admin_app_setting_web_multi_instance_check_title":
-          "Takroriy veb-varaqlarni bloklash",
+          "Takroriy sessiyalarni bloklash (veb + Telegram)",
       "admin_app_setting_web_multi_instance_check_subtitle":
-          "Faqat veb-versiya uchun. Yoniq bo'lsa, UyDosh yangi varaqda ochilganda shu brauzerning eski varaqlari bloklanadi.",
+          "Yoniq bo'lsa, UyDosh yangi brauzer varaqida ochilganda shu brauzerning eski varaqlari bloklanadi, Telegram mini-ilovasi boshqa joyda ochilganda esa eski Telegram sessiyalari tugatiladi. Native iOS/Android ilovalariga ta'sir qilmaydi.",
       "web_multi_instance_lock_title": "UyDosh boshqa varaqda ochiq",
       "web_multi_instance_lock_subtitle":
           "Bu varaq to'xtatildi, chunki UyDosh brauzerning yangi varaqida faol. Bu yerda davom etish uchun shu varaqdan foydalaning.",

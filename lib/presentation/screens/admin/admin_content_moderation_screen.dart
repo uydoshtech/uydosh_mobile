@@ -1131,8 +1131,11 @@ class _AdminContentModerationScreenState
     );
   }
 
-  /// Web-only kill switch: locks every browser tab except the most recently
-  /// opened one. Has no effect on the native iOS/Android apps.
+  /// Kill switch for "only one active instance per user": locks every
+  /// browser tab except the most recently opened one on the Flutter web
+  /// app, and also gates the Telegram Mini App's single-session enforcement
+  /// server-side (see `TelegramMiniAppSessionService`). Has no effect on the
+  /// native iOS/Android apps.
   Widget _webAppMultipleInstanceCheckTile(BuildContext context) {
     return ListTile(
       leading: _savingLeading(
