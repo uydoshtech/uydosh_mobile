@@ -26,6 +26,8 @@ class CreateListingRequest implements IJsonEncodable {
     this.hostResident,
     this.userId, // Add user ID parameter
     this.groupSizeTarget,
+    this.contactPhone,
+    this.contactTelegram,
   });
   final String title;
   final int listingTypeId;
@@ -49,6 +51,14 @@ class CreateListingRequest implements IJsonEncodable {
   final bool? hostResident;
   final int? userId;
   final int? groupSizeTarget;
+
+  /// Admin-only override of the listing owner's contact info (see
+  /// `EditListingScreen`'s admin contact section). `null` means "leave the
+  /// currently saved value untouched" — regular (non-admin) edits never set
+  /// these, so they're omitted from `toJson` below rather than clearing
+  /// existing contact info. An empty string explicitly clears it server-side.
+  final String? contactPhone;
+  final String? contactTelegram;
 
   @override
   dynamic toJson() {
@@ -102,6 +112,14 @@ class CreateListingRequest implements IJsonEncodable {
     // form) leaves any previously saved multi-location set untouched server-side.
     if (locationIds != null) {
       json["locationIds"] = locationIds;
+    }
+
+    if (contactPhone != null) {
+      json["contactPhone"] = contactPhone;
+    }
+
+    if (contactTelegram != null) {
+      json["contactTelegram"] = contactTelegram;
     }
 
     return json;

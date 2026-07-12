@@ -78,6 +78,14 @@ class _EditListingScreenState extends State<EditListingScreen>
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _moveInDateController = TextEditingController();
+
+  /// Admin-only override of the listing owner's contact info (see
+  /// [_isAdmin]) — lets staff correct/redact the phone or Telegram handle
+  /// shown to other users so they can reach the real person directly.
+  /// Telegram is stored/sent without a leading "@" (matches the parser
+  /// review screen's convention); the "@" is UI-only via [InputDecoration.prefixText].
+  final _contactPhoneController = TextEditingController();
+  final _contactTelegramController = TextEditingController();
   String _moveInDateValue = "";
   FixedExtentScrollController? _locationScrollController;
   FixedExtentScrollController? _listingTypeScrollController;
@@ -181,6 +189,59 @@ class _EditListingScreenState extends State<EditListingScreen>
           color: color,
         ),
       ),
+    );
+  }
+
+  /// Admin-only fields for correcting/redacting the listing owner's contact
+  /// phone and Telegram handle, so other users can reach the real person
+  /// directly (e.g. when the value was mis-parsed from a Telegram import).
+  /// Only rendered when [_isAdmin] — see the call site in [build].
+  Widget _buildAdminContactSection(ThemeData theme) {
+    final helpColor = ThemeState().isLightTheme
+        ? Colors.grey[600]
+        : theme.colorScheme.onSurfaceVariant.withOpacity(0.75);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          L10n.get("edit_listing_admin_contact_section_title"),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: helpColor,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          L10n.get("edit_listing_admin_contact_help"),
+          style: TextStyle(fontSize: 11, color: helpColor),
+        ),
+        const SizedBox(height: 8),
+        LabeledFieldOverlay(
+          label: L10n.get("admin_parser_review_field_contact_phone"),
+          child: UydoshPlateTextFormField(
+            hintText: L10n.get("edit_listing_admin_contact_phone_hint"),
+            controller: _contactPhoneController,
+            keyboardType: TextInputType.phone,
+            maxLines: 1,
+            textInputAction: TextInputAction.next,
+          ),
+        ),
+        const SizedBox(height: 10),
+        LabeledFieldOverlay(
+          label: L10n.get("admin_parser_review_field_contact_telegram"),
+          child: UydoshPlateTextFormField(
+            hintText: L10n.get("admin_parser_review_owner_hint"),
+            controller: _contactTelegramController,
+            maxLines: 1,
+            textInputAction: TextInputAction.done,
+            decoration: UydoshPlateFieldDecoration.forHint(
+              context,
+              hintText: L10n.get("admin_parser_review_owner_hint"),
+            ).copyWith(prefixText: "@"),
+          ),
+        ),
+      ],
     );
   }
 
@@ -309,6 +370,8 @@ class _EditListingScreenState extends State<EditListingScreen>
     _titleController.addListener(_markDirty);
     _descriptionController.addListener(_markDirty);
     _moveInDateController.addListener(_markDirty);
+    _contactPhoneController.addListener(_markDirty);
+    _contactTelegramController.addListener(_markDirty);
     _locationScrollController = FixedExtentScrollController(initialItem: 0);
     _initializeForm();
     unawaited(_initGender());
@@ -415,6 +478,12 @@ class _EditListingScreenState extends State<EditListingScreen>
     // Pre-populate form with existing listing data
     _titleController.text = widget.listingDetail.title;
     _descriptionController.text = _descriptionForEditing(widget.listingDetail);
+    _contactPhoneController.text = widget.listingDetail.contactPhone ?? "";
+    _contactTelegramController.text =
+        (widget.listingDetail.contactTelegram ?? "").replaceFirst(
+      RegExp(r"^@+"),
+      "",
+    );
 
     // Extract only the date part from moveInDate (remove time component)
     var moveInDate = widget.listingDetail.moveInDate ?? "";
@@ -907,9 +976,13 @@ class _EditListingScreenState extends State<EditListingScreen>
     _titleController.removeListener(_markDirty);
     _descriptionController.removeListener(_markDirty);
     _moveInDateController.removeListener(_markDirty);
+    _contactPhoneController.removeListener(_markDirty);
+    _contactTelegramController.removeListener(_markDirty);
     _titleController.dispose();
     _descriptionController.dispose();
     _moveInDateController.dispose();
+    _contactPhoneController.dispose();
+    _contactTelegramController.dispose();
     _locationScrollController?.dispose();
     _listingTypeScrollController?.dispose();
     _genderScrollController?.dispose();
@@ -1415,6 +1488,13 @@ class _EditListingScreenState extends State<EditListingScreen>
       addLabel("room_scan_title", fallback: "3D scan");
     }
 
+    if (_isAdmin && !_adminContactFieldsMatchBaseline(baseline)) {
+      addLabel(
+        "edit_listing_admin_contact_section_title",
+        fallback: "Owner contact",
+      );
+    }
+
     return changed;
   }
 
@@ -1540,7 +1620,20 @@ class _EditListingScreenState extends State<EditListingScreen>
 
     if (_roomScanChanged) return true;
 
+    if (_isAdmin && !_adminContactFieldsMatchBaseline(d)) return true;
+
     return false;
+  }
+
+  /// Compares the admin-only contact controllers to the listing's saved
+  /// values. Telegram is compared without a leading "@" on either side
+  /// (the controller never stores one; the server value might).
+  bool _adminContactFieldsMatchBaseline(ListingDetail d) {
+    final baselinePhone = (d.contactPhone ?? "").trim();
+    final baselineTelegram =
+        (d.contactTelegram ?? "").trim().replaceFirst(RegExp(r"^@+"), "");
+    return _contactPhoneController.text.trim() == baselinePhone &&
+        _contactTelegramController.text.trim() == baselineTelegram;
   }
 
   Future<void> _onPopInvoked(bool didPop, dynamic result) async {
@@ -1857,6 +1950,11 @@ class _EditListingScreenState extends State<EditListingScreen>
                         ),
 
                         const SizedBox(height: 10),
+
+                        if (_isAdmin) ...[
+                          _buildAdminContactSection(theme),
+                          const SizedBox(height: 10),
+                        ],
 
                         // Move-in Date and Private Room Row
                         IntrinsicHeight(
@@ -2480,6 +2578,15 @@ class _EditListingScreenState extends State<EditListingScreen>
             : null,
         photoPaths: null, // Don"t upload photos during listing update
         groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
+        // Only admins ever see/edit these fields — omit for everyone else so
+        // a regular owner's save never touches the saved contact info.
+        contactPhone: _isAdmin ? _contactPhoneController.text.trim() : null,
+        contactTelegram: _isAdmin
+            ? _contactTelegramController.text.trim().replaceFirst(
+                  RegExp(r"^@+"),
+                  "",
+                )
+            : null,
       );
 
       // Then, upload new photos separately if any were selected.

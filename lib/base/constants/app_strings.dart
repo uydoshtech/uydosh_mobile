@@ -1742,6 +1742,10 @@ class AppStrings {
       "admin_parser_review_owner_help":
           "Telegram @username shown to users as this listing's contact handle.",
       "admin_parser_review_owner_save": "Save contact",
+      "edit_listing_admin_contact_section_title": "Owner contact (admin)",
+      "edit_listing_admin_contact_help":
+          "Shown to other users as the direct contact for this listing. Only admins can edit this.",
+      "edit_listing_admin_contact_phone_hint": "+998 90 123 45 67",
       "admin_parser_review_owner_saved": "Contact telegram updated",
       "admin_panel_section_gig_moderation": "Approve gigs",
       "admin_gig_moderation_title": "Gig moderation",
@@ -4042,6 +4046,11 @@ class AppStrings {
       "admin_parser_review_owner_help":
           "Telegram @username, который пользователи видят как контакт для этого объявления.",
       "admin_parser_review_owner_save": "Сохранить контакт",
+      "edit_listing_admin_contact_section_title":
+          "Контакт владельца (админ)",
+      "edit_listing_admin_contact_help":
+          "Отображается другим пользователям как прямой контакт для этого объявления. Изменить может только администратор.",
+      "edit_listing_admin_contact_phone_hint": "+998 90 123 45 67",
       "admin_parser_review_owner_saved": "Контакт в Telegram обновлён",
       "admin_panel_section_gig_moderation": "Модерация услуг и задач",
       "admin_gig_moderation_title": "Модерация объявлений (гига)",
@@ -6358,6 +6367,11 @@ class AppStrings {
       "admin_parser_review_owner_help":
           "Foydalanuvchilar ushbu e'lon uchun kontakt sifatida ko'radigan Telegram @username.",
       "admin_parser_review_owner_save": "Kontaktni saqlash",
+      "edit_listing_admin_contact_section_title":
+          "Egasining kontakti (admin)",
+      "edit_listing_admin_contact_help":
+          "Boshqa foydalanuvchilarga ushbu e'lon uchun bevosita kontakt sifatida ko'rsatiladi. Faqat administrator o'zgartira oladi.",
+      "edit_listing_admin_contact_phone_hint": "+998 90 123 45 67",
       "admin_parser_review_owner_saved": "Telegram aloqasi yangilandi",
       "admin_panel_section_gig_moderation": "Gig'larni tasdiqlash",
       "admin_gig_moderation_title": "Gig moderatsiyasi",

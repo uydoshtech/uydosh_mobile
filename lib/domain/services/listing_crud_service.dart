@@ -57,6 +57,10 @@ abstract class IListingCrudService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    /// Admin-only; see [CreateListingRequest.contactPhone].
+    String? contactPhone,
+    /// Admin-only; see [CreateListingRequest.contactTelegram].
+    String? contactTelegram,
   });
 
   Future<bool> toggleListingActive(int listingId);
@@ -261,6 +265,8 @@ class ListingCrudService implements IListingCrudService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    String? contactPhone,
+    String? contactTelegram,
   }) async {
     try {
       final userId = await SessionManager.getUserId();
@@ -287,6 +293,8 @@ class ListingCrudService implements IListingCrudService {
         hostResident: hostResident,
         userId: null,
         groupSizeTarget: groupSizeTarget,
+        contactPhone: contactPhone,
+        contactTelegram: contactTelegram,
       );
 
       if (kDebugMode) {

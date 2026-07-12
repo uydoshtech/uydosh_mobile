@@ -87,6 +87,10 @@ abstract class IListingService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    /// Admin-only override of the listing owner's contact info; see
+    /// [CreateListingRequest.contactPhone]/[CreateListingRequest.contactTelegram].
+    String? contactPhone,
+    String? contactTelegram,
   });
 
   Future<PageableResponse<Listing>> searchListings({
@@ -341,6 +345,8 @@ class ListingService implements IListingService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    String? contactPhone,
+    String? contactTelegram,
   }) =>
       _crudService.updateListing(
         listingId: listingId,
@@ -362,6 +368,8 @@ class ListingService implements IListingService {
         hostResident: hostResident,
         photoPaths: photoPaths,
         groupSizeTarget: groupSizeTarget,
+        contactPhone: contactPhone,
+        contactTelegram: contactTelegram,
       );
 
   @override
