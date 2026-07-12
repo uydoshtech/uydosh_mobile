@@ -620,13 +620,21 @@ class _MyAppState extends State<MyApp> {
               // On web, lock this tab out entirely once another, more
               // recently opened tab of the app has claimed activity (see
               // `WebMultiInstanceGuardState`); gated server-side by
-              // `ClientWebAppMultipleInstanceConfig`.
+              // `ClientWebAppMultipleInstanceConfig`. Both listenables are
+              // merged (and `enabled` is re-checked here, not just at
+              // startup) so flipping the admin kill switch off immediately
+              // unlocks a tab that was already revoked, instead of leaving
+              // it stuck on the lock screen until reload.
               return ListenableBuilder(
-                listenable: WebMultiInstanceGuardState(),
+                listenable: Listenable.merge([
+                  WebMultiInstanceGuardState(),
+                  ClientWebAppMultipleInstanceConfig.enabled,
+                ]),
                 builder: (context, _) {
-                  return WebMultiInstanceGuardState().isRevoked
-                      ? const WebMultiInstanceLockScreen()
-                      : subtree;
+                  final locked = ClientWebAppMultipleInstanceConfig
+                          .enabled.value &&
+                      WebMultiInstanceGuardState().isRevoked;
+                  return locked ? const WebMultiInstanceLockScreen() : subtree;
                 },
               );
             },
