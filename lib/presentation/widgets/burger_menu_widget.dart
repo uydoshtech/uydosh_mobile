@@ -248,6 +248,30 @@ class _BurgerMenuWidgetState extends State<BurgerMenuWidget> {
 
       addItem(
         _DrawerItemSpec(
+          icon: Icons.home_outlined,
+          titleKey: "menu_listings",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            context.openHomeListings();
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
+          icon: Icons.map_outlined,
+          titleKey: "menu_map",
+          onTap: () {
+            Navigator.pop(context);
+            if (!context.mounted) return;
+            context.openHomeMap();
+          },
+        ),
+      );
+
+      addItem(
+        _DrawerItemSpec(
           icon: Icons.list_alt,
           titleKey: "menu_my_listings",
           onTap: () {

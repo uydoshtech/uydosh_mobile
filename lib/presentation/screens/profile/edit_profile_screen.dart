@@ -11,6 +11,7 @@ import "package:url_launcher/url_launcher.dart";
 import "package:uy_dosh/base/api/client/json_encodable.dart";
 import "package:uy_dosh/base/api/client/oauth_api_client.dart";
 import "package:uy_dosh/base/cache/country_cache.dart";
+import "package:uy_dosh/base/cache/region_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
@@ -696,13 +697,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       final regionService = getIt<IRegionService>();
       final regions = await regionService.getRegions();
 
-      // Sort regions alphabetically by their localized names
+      // Sort regions alphabetically by their localized names, with Tashkent
+      // City pinned first since it's the capital.
       final currentLanguage = LanguageState().currentLanguage;
-      regions.sort((a, b) {
-        final nameA = a.getLocalizedName(currentLanguage);
-        final nameB = b.getLocalizedName(currentLanguage);
-        return nameA.compareTo(nameB);
-      });
+      regions.sort(
+        (a, b) => RegionCache.compareRegionsCapitalFirst(
+          a,
+          b,
+          currentLanguage,
+        ),
+      );
 
       setStateIfMounted(() => _regions = regions);
       _isLoadingRegions.value = false;

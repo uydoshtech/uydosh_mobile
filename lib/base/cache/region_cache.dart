@@ -7,6 +7,10 @@ class RegionCache {
   static List<Region> _cachedRegions = [];
   static bool _isInitialized = false;
 
+  /// Tashkent City's region id — pinned first in sorted region lists since
+  /// it's the capital, ahead of the alphabetical Cyrillic/Latin ordering.
+  static const int capitalRegionId = 1;
+
   /// Initialize the cache by fetching data from the API
   static Future<void> initialize() async {
     if (_isInitialized) return;
@@ -205,10 +209,10 @@ class RegionCache {
         nameRu: "Ташкентская область",
         nameEn: "Tashkent Region",
         nameUz: "Toshkent viloyati",
-        shortName: "Toshkent",
-        shortNameRu: "Ташкент",
-        shortNameEn: "Tashkent",
-        shortNameUz: "Toshkent",
+        shortName: "Toshkent viloyati",
+        shortNameRu: "Ташкентская область",
+        shortNameEn: "Tashkent Region",
+        shortNameUz: "Toshkent viloyati",
         latitude: "41.00000000",
         longitude: "69.00000000",
         createdAt: "2025-08-01T12:57:51.498Z",
@@ -264,12 +268,21 @@ class RegionCache {
     }
 
     final sortedRegions = List<Region>.from(_cachedRegions);
-    sortedRegions.sort((a, b) {
-      final nameA = a.getLocalizedName(language);
-      final nameB = b.getLocalizedName(language);
-      return nameA.compareTo(nameB);
-    });
+    sortedRegions.sort((a, b) => compareRegionsCapitalFirst(a, b, language));
     return sortedRegions;
+  }
+
+  /// Comparator that pins Tashkent City ([capitalRegionId]) first, then
+  /// falls back to alphabetical order by localized name.
+  static int compareRegionsCapitalFirst(
+    Region a,
+    Region b,
+    String language,
+  ) {
+    if (a.id == capitalRegionId && b.id == capitalRegionId) return 0;
+    if (a.id == capitalRegionId) return -1;
+    if (b.id == capitalRegionId) return 1;
+    return a.getLocalizedName(language).compareTo(b.getLocalizedName(language));
   }
 
   /// Get a specific region by ID

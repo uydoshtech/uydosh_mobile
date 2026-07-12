@@ -1,3 +1,5 @@
+import "dart:async" show unawaited;
+
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -157,5 +159,23 @@ extension NavigatorExtensions on BuildContext {
         builder: (_) => MyHubScreen(initialCategory: category),
       ),
     );
+  }
+
+  /// Switch to the Housing (listings) tab. When [popToRoot] is true, pops
+  /// back to the main shell first (e.g. from a pushed screen).
+  void openHomeListings({bool popToRoot = false}) {
+    if (popToRoot) {
+      Navigator.of(this).popUntil((route) => route.isFirst);
+    }
+    mainNavigationKey.currentState?.navigateToIndex(0);
+  }
+
+  /// Switch to the Housing tab and open its map view. When [popToRoot] is
+  /// true, pops back to the main shell first (e.g. from a pushed screen).
+  void openHomeMap({bool popToRoot = false}) {
+    if (popToRoot) {
+      Navigator.of(this).popUntil((route) => route.isFirst);
+    }
+    unawaited(mainNavigationKey.currentState?.openHomeMapView());
   }
 }
