@@ -19,5 +19,12 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<!-- Required by App Review because this app ships with an App Clip:
+	     the parent app must declare the App Clip's application identifier
+	     (mirrors parent-application-identifiers in UyDoshAppClip.entitlements). -->
+	<key>com.apple.developer.associated-appclip-app-identifiers</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.uydosh.app.Clip</string>
+	</array>
 </dict>
 </plist>

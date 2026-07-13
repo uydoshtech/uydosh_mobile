@@ -18,5 +18,11 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<!-- Kept in lockstep with Runner.entitlements: parent app must declare
+	     its associated App Clip identifier. -->
+	<key>com.apple.developer.associated-appclip-app-identifiers</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.uydosh.app.Clip</string>
+	</array>
 </dict>
 </plist>
