@@ -6,6 +6,7 @@ public struct ScanSession: Codable, Equatable {
     public enum Status: String, Codable, Equatable {
         case created
         case uploading
+        /// Files received; backend is converting/attaching the scan.
         case processing
         case completed
         case failed

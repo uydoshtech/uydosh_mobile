@@ -31,6 +31,8 @@
 	<string>UyDosh uses the camera to scan your room and create a 3D plan with dimensions.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -1,32 +1,48 @@
 import SwiftUI
+import SceneKit
 
-/// Review screen after a finished scan: confirm the result or retry.
-/// Phase 2 adds a 3D preview of the captured room.
+/// Review screen after a finished scan: shows a 3D preview of the exported
+/// USDZ, the estimated area, and lets the user save or rescan. The snapshot
+/// of the preview becomes the uploaded preview image.
 struct ScanReviewView: View {
     @EnvironmentObject private var router: AppClipRouter
+    @State private var scnView: SCNView?
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
-
+        VStack(spacing: 16) {
             Text("review.title")
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
+                .padding(.top, 8)
 
-            Text("review.subtitle")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if let usdzURL = router.artifacts?.usdzURL,
+               let scene = try? SCNScene(url: usdzURL, options: nil) {
+                ModelPreview(scene: scene, scnView: $scnView)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "cube.transparent")
+                        .font(.system(size: 56))
+                        .foregroundStyle(.tint)
+                    Text("review.subtitle")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
 
-            Spacer()
+            if let area = router.artifacts?.metadata.areaSquareMeters {
+                Text(String(format: String(localized: "review.area_format"), area))
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
 
             VStack(spacing: 12) {
                 Button {
-                    router.confirmScan()
+                    let preview = scnView?.snapshot().jpegData(compressionQuality: 0.8)
+                    router.confirmScan(previewJPEG: preview)
                 } label: {
                     Text("review.confirm_button")
                         .font(.headline)
@@ -45,6 +61,25 @@ struct ScanReviewView: View {
                 .controlSize(.large)
             }
         }
-        .padding(24)
+        .padding(20)
     }
+}
+
+/// SceneKit preview with orbit controls; exposes the underlying `SCNView`
+/// so the confirm action can snapshot it for the preview upload.
+private struct ModelPreview: UIViewRepresentable {
+    let scene: SCNScene
+    @Binding var scnView: SCNView?
+
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView()
+        view.scene = scene
+        view.allowsCameraControl = true
+        view.autoenablesDefaultLighting = true
+        view.backgroundColor = .secondarySystemBackground
+        DispatchQueue.main.async { scnView = view }
+        return view
+    }
+
+    func updateUIView(_ uiView: SCNView, context: Context) {}
 }

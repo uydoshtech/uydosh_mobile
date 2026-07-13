@@ -1,5 +1,9 @@
 import Foundation
 import SwiftUI
+import UIKit
+#if canImport(RoomPlan)
+import RoomPlan
+#endif
 
 /// All states of the App Clip scanning flow.
 enum AppClipScanState: Equatable {
@@ -25,19 +29,43 @@ final class AppClipRouter: ObservableObject {
 
     private(set) var scanSessionId: String?
     private(set) var session: ScanSession?
+    private(set) var scanner: (any RoomScanning)?
+    private(set) var artifacts: RoomScanArtifacts?
 
     private let sessionAPI: any ScanSessionAPIProtocol
+    private let uploadService: any UploadServicing
     private let isDeviceSupported: () -> Bool
+    private let makeScanner: (String) -> any RoomScanning
     private var validationTask: Task<Void, Never>?
+    private var uploadTask: Task<Void, Never>?
+    /// True when the upload step failed (vs. validation), so retry re-runs
+    /// the upload with the kept artifacts instead of re-validating.
+    private var failedDuringUpload = false
 
     init(
         sessionAPI: (any ScanSessionAPIProtocol)? = nil,
-        isDeviceSupported: @escaping () -> Bool = { RoomPlanSupport.isSupported }
+        uploadService: (any UploadServicing)? = nil,
+        isDeviceSupported: @escaping () -> Bool = { RoomPlanSupport.isSupported },
+        makeScanner: ((String) -> any RoomScanning)? = nil
     ) {
         // Mock backend is opt-in through the SCAN_CLIP_MOCK scheme variable
         // (see docs/APP_CLIP.md); otherwise the live API is used.
-        self.sessionAPI = sessionAPI ?? MockScanSessionAPI.fromEnvironment() ?? LiveScanSessionAPI()
+        let mockAPI = MockScanSessionAPI.fromEnvironment()
+        self.sessionAPI = sessionAPI ?? mockAPI ?? LiveScanSessionAPI()
+        self.uploadService = uploadService
+            ?? (mockAPI != nil ? MockUploadService.fromEnvironment() : URLSessionUploadService())
         self.isDeviceSupported = isDeviceSupported
+        self.makeScanner = makeScanner ?? Self.defaultScanner(scanSessionId:)
+    }
+
+    /// Real RoomPlan on LiDAR hardware; mock scanner elsewhere (simulator).
+    private static func defaultScanner(scanSessionId: String) -> any RoomScanning {
+        #if canImport(RoomPlan) && !targetEnvironment(simulator)
+        if RoomPlanSupport.isHardwareSupported {
+            return RoomScanCoordinator(scanSessionId: scanSessionId)
+        }
+        #endif
+        return MockRoomScanner(scanSessionId: scanSessionId)
     }
 
     // MARK: - Invocation
@@ -71,6 +99,10 @@ final class AppClipRouter: ObservableObject {
     }
 
     func retryValidation() {
+        if failedDuringUpload {
+            retryUpload()
+            return
+        }
         guard let sessionId = scanSessionId else {
             state = .invalidSession
             return
@@ -84,6 +116,7 @@ final class AppClipRouter: ObservableObject {
             return
         }
 
+        failedDuringUpload = false
         state = .validatingSession
         validationTask?.cancel()
         validationTask = Task { [weak self] in
@@ -94,7 +127,7 @@ final class AppClipRouter: ObservableObject {
                 self.session = session
                 if session.isUsableForScanning() {
                     self.state = .ready
-                } else if session.status == .completed {
+                } else if session.status == .completed || session.status == .processing {
                     // Session already finished (e.g. relaunch after success).
                     self.state = .completed
                 } else {
@@ -110,42 +143,160 @@ final class AppClipRouter: ObservableObject {
         }
     }
 
-    // MARK: - Scan flow (Phase 1: placeholder transitions; RoomPlan lands in Phase 2)
+    // MARK: - Scan flow
 
     func startScan() {
-        guard state == .ready || state == .reviewing else { return }
+        guard state == .ready || state == .reviewing, let sessionId = scanSessionId else { return }
+        artifacts = nil
+
+        let scanner = makeScanner(sessionId)
+        scanner.onOutcome = { [weak self] outcome in
+            Task { @MainActor [weak self] in
+                self?.handleScanOutcome(outcome)
+            }
+        }
+        self.scanner = scanner
         state = .scanning
+        scanner.start()
     }
 
     func cancelScan() {
         guard state == .scanning else { return }
-        state = .ready
+        scanner?.cancel()
     }
 
+    /// Stops capture; RoomPlan post-processes and the outcome callback moves
+    /// the flow to reviewing.
     func finishScan() {
         guard state == .scanning else { return }
-        state = .reviewing
+        state = .exporting
+        scanner?.finish()
+    }
+
+    private func handleScanOutcome(_ outcome: RoomScanOutcome) {
+        switch outcome {
+        case .finished(let artifacts):
+            self.artifacts = artifacts
+            scanner = nil
+            state = .reviewing
+        case .cancelled:
+            scanner = nil
+            state = .ready
+        case .failed:
+            scanner = nil
+            state = .failed(message: String(localized: "error.scan_failed"))
+        }
     }
 
     func retryScan() {
         guard state == .reviewing else { return }
-        state = .scanning
+        artifacts?.cleanUp()
+        artifacts = nil
+        state = .ready
+        startScan()
     }
 
-    func confirmScan() {
-        guard state == .reviewing else { return }
-        // Phase 2 adds real export; Phase 3 adds real uploads. For now, walk
-        // through the states so the full UI flow can be exercised.
-        state = .exporting
-        Task { [weak self] in
-            guard let self else { return }
-            try? await Task.sleep(for: .milliseconds(800))
-            for step in 0...10 {
-                self.state = .uploading(progress: Double(step) / 10.0)
-                try? await Task.sleep(for: .milliseconds(200))
-            }
-            self.state = .completed
+    // MARK: - Upload
+
+    /// Confirms the reviewed scan and uploads all artifacts. `previewJPEG` is
+    /// an optional snapshot from the review screen.
+    func confirmScan(previewJPEG: Data?) {
+        guard state == .reviewing, let artifacts else { return }
+        if let previewJPEG {
+            self.artifacts = RoomExporter.writePreview(jpegData: previewJPEG, for: artifacts)
         }
+        beginUpload()
+    }
+
+    func retryUpload() {
+        guard case .failed = state, artifacts != nil else { return }
+        beginUpload()
+    }
+
+    private func beginUpload() {
+        guard let sessionId = scanSessionId,
+              let uploadToken = session?.uploadToken,
+              let artifacts else {
+            state = .failed(message: String(localized: "error.validation_failed"))
+            failedDuringUpload = false
+            return
+        }
+
+        state = .uploading(progress: 0)
+        uploadTask?.cancel()
+        uploadTask = Task { [weak self] in
+            // Keep running briefly if the user backgrounds the app mid-upload.
+            let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "scan-upload")
+            defer { UIApplication.shared.endBackgroundTask(backgroundTask) }
+
+            guard let self else { return }
+            do {
+                try await self.runUploadPipeline(
+                    sessionId: sessionId,
+                    uploadToken: uploadToken,
+                    artifacts: artifacts
+                )
+                guard !Task.isCancelled else { return }
+                artifacts.cleanUp()
+                self.failedDuringUpload = false
+                self.state = .completed
+            } catch {
+                guard !Task.isCancelled else { return }
+                // Artifacts are intentionally kept for retry.
+                self.failedDuringUpload = true
+                self.state = .failed(message: String(localized: "error.upload_failed"))
+            }
+        }
+    }
+
+    private func runUploadPipeline(
+        sessionId: String,
+        uploadToken: String,
+        artifacts: RoomScanArtifacts
+    ) async throws {
+        var files: [ScanFileType] = [.roomJson, .roomUsdz]
+        if artifacts.previewJPEGURL != nil {
+            files.append(.preview)
+        }
+
+        let targets = try await sessionAPI.requestUploadTargets(
+            sessionId: sessionId,
+            uploadToken: uploadToken,
+            files: files
+        )
+
+        var storageKeys: [ScanFileType: String] = [:]
+        let share = 1.0 / Double(max(targets.count, 1))
+        for (index, target) in targets.enumerated() {
+            guard let fileURL = artifacts.fileURL(for: target.type) else { continue }
+            let base = Double(index) * share
+            try await uploadService.upload(
+                fileURL: fileURL,
+                to: target,
+                uploadToken: uploadToken
+            ) { [weak self] fileProgress in
+                Task { @MainActor [weak self] in
+                    guard let self, case .uploading = self.state else { return }
+                    self.state = .uploading(progress: min(base + fileProgress * share, 1.0))
+                }
+            }
+            storageKeys[target.type] = target.storageKey ?? target.type.rawValue
+        }
+
+        guard let jsonKey = storageKeys[.roomJson], let usdzKey = storageKeys[.roomUsdz] else {
+            throw APIError.invalidResponse
+        }
+
+        try await sessionAPI.completeSession(
+            sessionId: sessionId,
+            uploadToken: uploadToken,
+            result: ScanUploadResult(
+                roomJsonKey: jsonKey,
+                roomUsdzKey: usdzKey,
+                previewKey: storageKeys[.preview],
+                metadata: artifacts.metadata
+            )
+        )
     }
 
     // MARK: - Return to Telegram

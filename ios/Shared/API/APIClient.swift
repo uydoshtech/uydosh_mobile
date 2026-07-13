@@ -11,7 +11,10 @@ public enum APIError: Error, Equatable {
 /// Minimal JSON HTTP client shared between the App Clip and (later) the full
 /// app's native code. Exact routes live in `ScanSessionAPI` so they can change
 /// without touching call sites.
-public final class APIClient {
+///
+/// @unchecked Sendable: the decoder/encoder are configured once in init and
+/// never mutated afterwards.
+public final class APIClient: @unchecked Sendable {
     private let baseURL: URL
     private let session: URLSession
     private let decoder: JSONDecoder

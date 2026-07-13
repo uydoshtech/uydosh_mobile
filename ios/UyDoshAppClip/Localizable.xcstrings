@@ -8,6 +8,20 @@
         "uz" : { "stringUnit" : { "state" : "translated", "value" : "Xatolik yuz berdi" } }
       }
     },
+    "error.scan_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The scan could not be processed. Please try scanning the room again." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось обработать скан. Пожалуйста, отсканируйте комнату ещё раз." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanni qayta ishlab bo‘lmadi. Iltimos, xonani yana bir bor skanerlang." } }
+      }
+    },
+    "error.upload_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload failed. Your scan is kept on this device — check your connection and try again." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось загрузить. Скан сохранён на устройстве — проверьте подключение и повторите попытку." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Yuklab bo‘lmadi. Skan qurilmada saqlangan — aloqani tekshirib, qayta urinib ko‘ring." } }
+      }
+    },
     "error.invalid_message" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to Telegram and start the scan again from your listing." } },
@@ -113,6 +127,20 @@
         "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skan natijasini tekshiring" } }
       }
     },
+    "review.area_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Estimated area: %.1f m²" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Примерная площадь: %.1f м²" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Taxminiy maydon: %.1f m²" } }
+      }
+    },
+    "scan.instructions" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Slowly move your iPhone to scan the walls, windows, and furniture. Tap Finish when the room is fully outlined." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Медленно перемещайте iPhone, чтобы отсканировать стены, окна и мебель. Нажмите «Готово», когда комната будет полностью обведена." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Devorlar, derazalar va mebelni skanerlash uchun iPhone’ni sekin harakatlantiring. Xona to‘liq chizilgach “Tayyor” tugmasini bosing." } }
+      }
+    },
     "scan.cancel" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
@@ -129,16 +157,16 @@
     },
     "scan.placeholder_subtitle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "RoomPlan capture will appear here. Tap Finish to continue the test flow." } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Здесь появится съёмка RoomPlan. Нажмите «Готово», чтобы продолжить тестовый сценарий." } },
-        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Bu yerda RoomPlan suratga olish bo‘ladi. Davom etish uchun “Tayyor” tugmasini bosing." } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This device has no LiDAR camera, so a sample scan is used. Tap Finish to continue." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "На этом устройстве нет LiDAR-камеры, поэтому используется тестовый скан. Нажмите «Готово», чтобы продолжить." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Bu qurilmada LiDAR kamera yo‘q, shuning uchun namunaviy skan ishlatiladi. Davom etish uchun “Tayyor” tugmasini bosing." } }
       }
     },
     "scan.placeholder_title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scanning placeholder" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Заглушка сканирования" } },
-        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash uchun vaqtinchalik ekran" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Simulated scan" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Симуляция сканирования" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash simulyatsiyasi" } }
       }
     },
     "state.exporting" : {
