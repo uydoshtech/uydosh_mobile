@@ -9,10 +9,11 @@
 # Usage:
 #   ruby ios/scripts/add_app_clip_target.rb
 #
-# NOTE: The App Clip is intentionally NOT embedded into the Runner app yet.
-# Embedding would require an App Clip provisioning profile in the TestFlight
-# CI (release-testflight.yml). Embedding happens in Phase 5 — see
-# docs/APP_CLIP.md.
+# The App Clip is embedded into the Runner app ("Embed App Clips" copy-files
+# phase + target dependency), so `flutter build ipa` produces an IPA that
+# contains it. Distribution therefore needs an App Clip provisioning profile
+# in the TestFlight CI — see docs/APP_CLIP.md and
+# ios/scripts/ci_appclip_signing.rb.
 
 require 'xcodeproj'
 
@@ -23,7 +24,7 @@ BUNDLE_ID = 'com.uydosh.app.Clip'
 DEPLOYMENT_TARGET = '17.0'
 DEVELOPMENT_TEAM = 'D5THR62Q33'
 APP_CLIP_PRODUCT_TYPE = 'com.apple.product-type.application.on-demand-install-capable'
-TEST_INVOCATION_URL = 'https://scan.uydosh.uz/s/demo1234'
+TEST_INVOCATION_URL = 'https://scan.uydosh.com/s/demo1234'
 
 SOURCE_DIRS = %w[Shared UyDoshAppClip].freeze
 RESOURCE_FILES = %w[
@@ -32,8 +33,19 @@ RESOURCE_FILES = %w[
 ].freeze
 
 project = Xcodeproj::Project.open(PROJECT_PATH)
+runner_target = project.targets.find { |t| t.name == 'Runner' }
+raise 'Runner target not found' unless runner_target
 
 # --- Remove a previously generated target/groups so the script is re-runnable.
+
+# Runner's embed phase and dependency reference the old target/product;
+# drop them first so they can be recreated against the fresh target.
+runner_target.copy_files_build_phases
+  .select { |phase| phase.name == 'Embed App Clips' }
+  .each(&:remove_from_project)
+runner_target.dependencies
+  .select { |dep| dep.target.nil? || dep.target.name == TARGET_NAME }
+  .each(&:remove_from_project)
 
 if (existing = project.targets.find { |t| t.name == TARGET_NAME })
   puts "Removing existing target #{TARGET_NAME} for regeneration"
@@ -58,7 +70,11 @@ def add_dir_recursively(parent_group, dir_abs, project, target)
   Dir.children(dir_abs).sort.each do |entry|
     next if entry.start_with?('.')
     path_abs = File.join(dir_abs, entry)
-    if File.directory?(path_abs)
+    if File.directory?(path_abs) && entry.end_with?('.xcassets')
+      # Asset catalogs are opaque folder references compiled as resources.
+      file_ref = parent_group.new_reference(entry)
+      target.resources_build_phase.add_file_reference(file_ref)
+    elsif File.directory?(path_abs)
       group = parent_group.new_group(entry, entry)
       add_dir_recursively(group, path_abs, project, target)
     elsif entry.end_with?('.swift')
@@ -80,7 +96,13 @@ end
 
 # --- Build settings.
 
+# Flutter's Generated.xcconfig provides FLUTTER_BUILD_NAME / FLUTTER_BUILD_NUMBER
+# (from pubspec.yaml or --build-name/--build-number), keeping the clip's
+# version in lockstep with the parent app — an App Store requirement.
+generated_xcconfig = project.files.find { |f| f.path == 'Flutter/Generated.xcconfig' }
+
 target.build_configurations.each do |config|
+  config.base_configuration_reference = generated_xcconfig if generated_xcconfig
   settings = config.build_settings
   settings['PRODUCT_BUNDLE_IDENTIFIER'] = BUNDLE_ID
   settings['PRODUCT_NAME'] = '$(TARGET_NAME)'
@@ -92,11 +114,14 @@ target.build_configurations.each do |config|
   settings['IPHONEOS_DEPLOYMENT_TARGET'] = DEPLOYMENT_TARGET
   settings['SWIFT_VERSION'] = '5.0'
   settings['TARGETED_DEVICE_FAMILY'] = '1,2'
-  # Version placeholders. At distribution time (Phase 5) these MUST match the
-  # parent app's CFBundleShortVersionString / CFBundleVersion, which come from
-  # pubspec.yaml via FLUTTER_BUILD_NAME / FLUTTER_BUILD_NUMBER.
-  settings['MARKETING_VERSION'] = '1.0.0'
-  settings['CURRENT_PROJECT_VERSION'] = '1'
+  # Must match the parent app's CFBundleShortVersionString / CFBundleVersion;
+  # both come from Generated.xcconfig (see base_configuration_reference above).
+  settings['MARKETING_VERSION'] = '$(FLUTTER_BUILD_NAME)'
+  settings['CURRENT_PROJECT_VERSION'] = '$(FLUTTER_BUILD_NUMBER)'
+  settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
+  # Embedded clip: without SKIP_INSTALL the archive would contain two
+  # top-level apps and export as a generic Xcode archive.
+  settings['SKIP_INSTALL'] = 'YES'
   settings['LD_RUNPATH_SEARCH_PATHS'] = ['$(inherited)', '@executable_path/Frameworks']
   settings['ENABLE_PREVIEWS'] = 'YES'
   settings['SWIFT_EMIT_LOC_STRINGS'] = 'YES'
@@ -107,8 +132,28 @@ target.build_configurations.each do |config|
   end
 end
 
+# --- Embed into Runner ("Embed App Clips" copy-files phase + dependency).
+
+runner_target.add_dependency(target)
+
+embed_phase = runner_target.new_copy_files_build_phase('Embed App Clips')
+embed_phase.symbol_dst_subfolder_spec = :products_directory
+embed_phase.dst_path = '$(CONTENTS_FOLDER_PATH)/AppClips'
+build_file = embed_phase.add_file_reference(target.product_reference)
+build_file.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
+
+# new_copy_files_build_phase appends the phase last — after script phases
+# like "Thin Binary" and "[CP] Embed Pods Frameworks", which creates a build
+# dependency cycle. Move it up next to "Embed Frameworks", matching Xcode's
+# own placement.
+phases = runner_target.build_phases
+phases.delete(embed_phase)
+anchor = phases.find { |p| p.display_name == 'Embed Frameworks' } ||
+         phases.find { |p| p.is_a?(Xcodeproj::Project::Object::PBXResourcesBuildPhase) }
+phases.insert(phases.index(anchor) + 1, embed_phase)
+
 project.save
-puts "Added target #{TARGET_NAME} to #{PROJECT_PATH}"
+puts "Added target #{TARGET_NAME} to #{PROJECT_PATH} (embedded in Runner)"
 
 # --- Shared scheme with the test invocation URL and mock-backend variables.
 

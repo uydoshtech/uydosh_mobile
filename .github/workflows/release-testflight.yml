@@ -131,15 +131,21 @@ jobs:
           # Show full output to diagnose CI failures.
           bundle exec pod install --repo-update --verbose
 
-      - name: Install Distribution certificate and App Store profile
+      - name: Install Distribution certificate and App Store profiles
         env:
           IOS_DIST_P12_BASE64: ${{ secrets.IOS_DIST_P12_BASE64 }}
           IOS_DIST_P12_PASSWORD: ${{ secrets.IOS_DIST_P12_PASSWORD }}
           IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          IOS_APPCLIP_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_APPCLIP_PROVISION_PROFILE_BASE64 }}
         run: |
           set -euo pipefail
           if [[ -z "${IOS_PROVISION_PROFILE_BASE64:-}" ]]; then
             echo "Missing GitHub secret IOS_PROVISION_PROFILE_BASE64 (base64 of App Store .mobileprovision for com.uydosh.app)."
+            exit 1
+          fi
+          if [[ -z "${IOS_APPCLIP_PROVISION_PROFILE_BASE64:-}" ]]; then
+            echo "Missing GitHub secret IOS_APPCLIP_PROVISION_PROFILE_BASE64 (base64 of App Store .mobileprovision for com.uydosh.app.Clip)."
+            echo "The App Clip is embedded in the Runner app, so its profile is required — see docs/APP_CLIP.md."
             exit 1
           fi
 
@@ -177,8 +183,21 @@ jobs:
           cp /tmp/UyDosh_AppStore.mobileprovision \
             "${HOME}/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
 
-          # Manual export plist for Xcode (bundle id must match profile App ID).
+          # App Clip profile (com.uydosh.app.Clip) — the clip is embedded in
+          # the Runner app, so archive + export need it too.
+          printf '%s' "${IOS_APPCLIP_PROVISION_PROFILE_BASE64}" | tr -d '\n\r ' | base64 -d > /tmp/UyDosh_AppClip_AppStore.mobileprovision
+          test -s /tmp/UyDosh_AppClip_AppStore.mobileprovision
+
+          security cms -D -i /tmp/UyDosh_AppClip_AppStore.mobileprovision > /tmp/appclip.mobileprovision.plist
+          APPCLIP_PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print UUID' /tmp/appclip.mobileprovision.plist)"
+          APPCLIP_PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print Name' /tmp/appclip.mobileprovision.plist)"
+
+          cp /tmp/UyDosh_AppClip_AppStore.mobileprovision \
+            "${HOME}/Library/MobileDevice/Provisioning Profiles/${APPCLIP_PROFILE_UUID}.mobileprovision"
+
+          # Manual export plist for Xcode (bundle ids must match profile App IDs).
           PROFILE_NAME_ESC="$(printf '%s' "${PROFILE_NAME}" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')"
+          APPCLIP_PROFILE_NAME_ESC="$(printf '%s' "${APPCLIP_PROFILE_NAME}" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')"
           {
             echo '<?xml version="1.0" encoding="UTF-8"?>'
             echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
@@ -204,6 +223,8 @@ jobs:
             echo '  <dict>'
             echo '    <key>com.uydosh.app</key>'
             printf '    <string>%s</string>\n' "${PROFILE_NAME_ESC}"
+            echo '    <key>com.uydosh.app.Clip</key>'
+            printf '    <string>%s</string>\n' "${APPCLIP_PROFILE_NAME_ESC}"
             echo '  </dict>'
             echo '</dict>'
             echo '</plist>'
@@ -223,6 +244,11 @@ jobs:
               } >> "${cfg}"
             fi
           done
+
+          # The embedded App Clip target does not include Release.xcconfig, so
+          # flip it to manual signing directly in the project.
+          APPCLIP_PROFILE_NAME="${APPCLIP_PROFILE_NAME}" \
+            bundle exec ruby ios/scripts/ci_appclip_signing.rb
 
           {
             echo "PROFILE_NAME=${PROFILE_NAME}"

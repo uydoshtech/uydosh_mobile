@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
+               BlueprintIdentifier = "C3E663439F97385C11DE4DCD"
                BuildableName = "UyDoshAppClip.app"
                BlueprintName = "UyDoshAppClip"
                ReferencedContainer = "container:Runner.xcodeproj">
@@ -30,7 +30,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
+            BlueprintIdentifier = "C3E663439F97385C11DE4DCD"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">
@@ -53,7 +53,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
+            BlueprintIdentifier = "C3E663439F97385C11DE4DCD"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">
@@ -62,7 +62,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "_XCAppClipURL"
-            value = "https://scan.uydosh.uz/s/demo1234"
+            value = "https://scan.uydosh.com/s/demo1234"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -92,7 +92,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
+            BlueprintIdentifier = "C3E663439F97385C11DE4DCD"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">

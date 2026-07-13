@@ -80,32 +80,41 @@ ruby ios/scripts/add_app_clip_target.rb
 - Bundle ID: `com.uydosh.app.Clip` (parent: `com.uydosh.app`)
 - Deployment target: iOS 17.0 (same as Runner)
 - The invocation domain is centralized in `Shared/AppClipCore/AppClipConfig.swift`
-  (`scan.uydosh.uz` today; URL parsing is host-agnostic, so changing the
+  (`scan.uydosh.com` today; URL parsing is host-agnostic, so changing the
   domain is a one-line edit plus entitlement/AASA updates).
 
-## IMPORTANT: not yet embedded in the Runner app
+## Embedding in the Runner app (Phase 5 — code side done)
 
-The App Clip is intentionally **not** added to Runner's "Embed App Clips"
-build phase yet. Embedding makes `flutter build ipa` (and the
-`release-testflight.yml` workflow, which manually provisions only
-`com.uydosh.app`) require an App Clip provisioning profile and would break
-TestFlight releases until App Store Connect + CI are prepared.
+The App Clip **is embedded** in Runner: `add_app_clip_target.rb` adds the
+"Embed App Clips" copy-files phase (destination
+`$(CONTENTS_FOLDER_PATH)/AppClips`, placed right after "Embed Frameworks" —
+appending it last creates a build-graph cycle with the CocoaPods script
+phases) plus a Runner → UyDoshAppClip target dependency. Consequences:
 
-Until Phase 5, the App Clip runs standalone from its own Xcode scheme, which
-is fully sufficient for development. Phase 5 adds:
+- Every `flutter build ipa` now produces an IPA containing the clip, and the
+  TestFlight workflow needs an **App Clip provisioning profile** (see CI
+  below).
+- The clip's `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` are
+  `$(FLUTTER_BUILD_NAME)` / `$(FLUTTER_BUILD_NUMBER)` via
+  `Flutter/Generated.xcconfig` as the target's base configuration, so the
+  versions always match the parent app (an App Store requirement).
+- The clip target sets `SKIP_INSTALL = YES`; without it the archive contains
+  two top-level apps and exports as a generic Xcode archive.
+- `Runner/Runner.entitlements` includes `applinks:scan.uydosh.com` so the full
+  app (when installed) intercepts the same URLs. NOTE: the Flutter app does
+  not handle `/s/*` universal links yet — a follow-up.
 
-1. Register bundle ID `com.uydosh.app.Clip` + App Clip capability in the
-   developer portal; create an App Store provisioning profile for it.
-2. Add the profile to `release-testflight.yml` signing and
-   `ExportOptions-ci.plist`.
-3. Add the "Embed App Clips" copy-files phase to Runner (destination
-   `$(CONTENTS_FOLDER_PATH)/AppClips`) — a small extension of
-   `add_app_clip_target.rb`.
-4. Set the clip's `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` to match
-   the parent app (`FLUTTER_BUILD_NAME` / `FLUTTER_BUILD_NUMBER` from
-   `pubspec.yaml`).
-5. Add `applinks:scan.uydosh.uz` to `Runner/Runner.entitlements` so the full
-   app (when installed) intercepts the same URLs.
+### CI (release-testflight.yml)
+
+The workflow expects one new GitHub secret:
+
+- `IOS_APPCLIP_PROVISION_PROFILE_BASE64` — base64 of an **App Store**
+  `.mobileprovision` for `com.uydosh.app.Clip` (with the App Clip +
+  Associated Domains capabilities). The workflow installs it, adds it to the
+  generated `ios/ExportOptions-ci.plist` under `provisioningProfiles`, and
+  runs `ios/scripts/ci_appclip_signing.rb` to flip the clip target to manual
+  Distribution signing (Runner's manual-signing overrides live in
+  `Flutter/Release.xcconfig`, which the clip doesn't include).
 
 ## Local testing
 
@@ -117,7 +126,7 @@ is fully sufficient for development. Phase 5 adds:
 
 | Environment variable | Value | Meaning |
 |---|---|---|
-| `_XCAppClipURL` | `https://scan.uydosh.uz/s/demo1234` | Simulated invocation URL (standard Xcode mechanism; edit in Product ▸ Scheme ▸ Edit Scheme ▸ Run ▸ Arguments) |
+| `_XCAppClipURL` | `https://scan.uydosh.com/s/demo1234` | Simulated invocation URL (standard Xcode mechanism; edit in Product ▸ Scheme ▸ Edit Scheme ▸ Run ▸ Arguments) |
 | `SCAN_CLIP_MOCK` | `valid` | Use the mocked backend. Scenarios: `valid`, `expired`, `invalid` (404), `error` (network failure). Disable to hit the live API. |
 | `SCAN_CLIP_FORCE_SUPPORTED` | `1` | Bypass the LiDAR check on the simulator (which has no LiDAR). Remove to test the unsupported-device screen. |
 | `SCAN_CLIP_MOCK_UPLOAD_FAILURES` | `1` (disabled by default) | Number of times the mocked upload fails before succeeding — exercises the upload-retry path. |
@@ -139,7 +148,7 @@ xcodebuild -project ios/Runner.xcodeproj -scheme UyDoshAppClip \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
   CODE_SIGNING_ALLOWED=NO build
 xcrun simctl install booted <DerivedData>/Build/Products/Debug-iphonesimulator/UyDoshAppClip.app
-SIMCTL_CHILD__XCAppClipURL="https://scan.uydosh.uz/s/demo1234" \
+SIMCTL_CHILD__XCAppClipURL="https://scan.uydosh.com/s/demo1234" \
 SIMCTL_CHILD_SCAN_CLIP_MOCK=valid \
 SIMCTL_CHILD_SCAN_CLIP_FORCE_SUPPORTED=1 \
 xcrun simctl launch booted com.uydosh.app.Clip
@@ -196,7 +205,7 @@ session id. No Telegram user ids in URLs; no authentication inside the App
 Clip; uploads/completion additionally authorized by the separate
 `uploadToken` (`X-Scan-Upload-Token` header).
 
-The invocation base URL is `https://scan.uydosh.uz` by default and
+The invocation base URL is `https://scan.uydosh.com` by default and
 overridable with the `SCAN_CLIP_INVOCATION_BASE` env var
 (`src/config/scanSessionConfig.ts`).
 
@@ -210,6 +219,13 @@ overridable with the `SCAN_CLIP_INVOCATION_BASE` env var
   offers copying the scan link to open on an iPhone. Scanning is always
   optional — the regular success actions stay available, and the card hides
   itself when the backend reports `lidar_room_scan_disabled`.
+- **Device pre-filter:** mirroring the Flutter app's native LiDAR check
+  (`RoomPlanCapability`), `isLikelyRoomScanCapableDevice()` hides the card
+  on iPhones that certainly can't scan — iOS below 16 or a CSS screen
+  profile unique to non-Pro/pre-LiDAR models. The WebView can't query LiDAR
+  directly, so the filter is intentionally optimistic; the App Clip's real
+  `RoomCaptureSession.isSupported` check remains the authority and shows
+  the unsupported-device screen for anything that slips through.
 - **Polling:** while the create page stays open, it polls
   `GET /scan-sessions/{id}` every 4s (only while visible, stopping on any
   terminal status) and swaps the button to "View 3D plan" on completion.
@@ -228,49 +244,57 @@ overridable with the `SCAN_CLIP_INVOCATION_BASE` env var
 Entitlements already prepared:
 
 - App Clip (`ios/UyDoshAppClip/UyDoshAppClip.entitlements`):
-  `appclips:scan.uydosh.uz`
-- Full app (Phase 5): add `applinks:scan.uydosh.uz` to
-  `ios/Runner/Runner.entitlements`.
+  `appclips:scan.uydosh.com`
+- Full app (`ios/Runner/Runner.entitlements`): `applinks:scan.uydosh.com`.
 
-The server at `scan.uydosh.uz` must serve
-`https://scan.uydosh.uz/.well-known/apple-app-site-association`
-(content type `application/json`, no redirects):
+The backend serves the AASA host-aware (`deepLinkRoutes.ts`): requests to
+`/.well-known/apple-app-site-association` with the `scan.uydosh.com` Host
+header get the `appclips` association (`TEAM.com.uydosh.app.Clip` plus
+`/s/*` applinks for the full app); any other host (api.uydosh.com) keeps the
+existing listing universal links. The backend also serves a human-readable
+fallback page at `/s/:token` (session status + return-to-Telegram button);
+once `APPLE_APP_STORE_ID` is set (plain env var, `/etc/uydosh/uydosh.env` in
+production), that page emits the `apple-itunes-app` meta tag so Safari shows
+the App Clip card.
 
-```json
-{
-  "appclips": {
-    "apps": ["TEAM_ID.APP_CLIP_BUNDLE_ID"]
-  },
-  "applinks": {
-    "details": [
-      {
-        "appIDs": ["TEAM_ID.FULL_APP_BUNDLE_ID"],
-        "components": [
-          { "/": "/s/*" }
-        ]
-      }
-    ]
-  }
-}
-```
+Infra still needed: point `scan.uydosh.com` DNS at the backend and terminate
+TLS for it (nginx server block proxying to the same Express app). The AASA
+must be reachable at
+`https://scan.uydosh.com/.well-known/apple-app-site-association` with content
+type `application/json` and no redirects.
 
-Replace `TEAM_ID`, `APP_CLIP_BUNDLE_ID` (the clip's bundle id), and
-`FULL_APP_BUNDLE_ID` (the parent app's bundle id) with the real values used
-by your signing setup. The existing AASA files (backend `deepLinkRoutes.ts`
-for `api.uydosh.com`, and `uydoshtech.github.io/.well-known/`) are separate
-and unchanged.
+## Testing on TestFlight
 
-## Beta App Clip Experience (App Store Connect, Phase 5)
+A TestFlight build **cannot** be invoked by tapping the invocation link —
+URL-tap invocation only works for App Store builds with an Advanced App Clip
+Experience and a live AASA. Two mechanisms work instead:
 
-After a build containing the embedded App Clip is uploaded to TestFlight:
+1. **Beta App Clip Experience** — App Store Connect ▸ TestFlight ▸ build ▸
+   App Clip ▸ add an experience with URL prefix `https://scan.uydosh.com/s/`.
+   Testers launch the clip from the TestFlight app with that (static) URL.
+   Good for smoke tests; can't carry a dynamic session id.
+2. **Local Experience + QR** — on the test device: Settings ▸ Developer ▸
+   Local Experiences ▸ register URL prefix `https://scan.uydosh.com/s/` with
+   bundle id `com.uydosh.app.Clip`. Then create a real scan session in the
+   Mini App (on desktop/Android the upsell card shows a QR code of the
+   invocation URL) and scan the QR with the iPhone camera — the clip
+   launches with the real dynamic session URL against the live backend,
+   covering the whole validate → scan → upload → complete →
+   return-to-Telegram flow.
 
-1. App Store Connect ▸ your app ▸ TestFlight ▸ the build ▸ **App Clip**.
-2. Add a **Beta App Clip Experience** (TestFlight-only invocation) with URL
-   prefix `https://scan.uydosh.uz/s/`.
-3. Testers with TestFlight installed can then invoke the clip from that URL
-   (e.g. via the Mini App upsell screen) without the AASA file being live yet.
-4. For production, configure an Advanced App Clip Experience with the same
-   URL prefix, title, and image; the AASA file must be live on the domain.
+## Manual release checklist (developer portal / App Store Connect / infra)
+
+1. developer.apple.com ▸ Identifiers: register `com.uydosh.app.Clip` with
+   the **App Clip** (On Demand Install Capable) and **Associated Domains**
+   capabilities, parent app `com.uydosh.app`.
+2. Create an **App Store distribution provisioning profile** for
+   `com.uydosh.app.Clip` (existing Apple Distribution certificate); base64
+   it into the `IOS_APPCLIP_PROVISION_PROFILE_BASE64` GitHub secret.
+3. Point `scan.uydosh.com` DNS at the backend + TLS + proxy (see AASA above).
+4. Upload a build; add a Beta App Clip Experience for TestFlight testing.
+5. For production: Advanced App Clip Experience with URL prefix
+   `https://scan.uydosh.com/s/`, title, and image; set `APPLE_APP_STORE_ID`
+   on the backend so the `/s/:token` page shows the Safari App Clip card.
 
 ## Implementation status
 
@@ -284,7 +308,9 @@ After a build containing the embedded App Clip is uploaded to TestFlight:
   controller/routes), tokenized uploads, async completion reusing the
   room-scan pipeline.
 - **Phase 4 (done):** Mini App upsell card, `openLink`, `scan_` start_param
-  restore overlay, status polling, non-iOS copy-link fallback.
-- **Phase 5 (remaining):** embedding + provisioning + CI, Runner
-  `applinks`, AASA deployment on `scan.uydosh.uz`, unit tests, Beta App
-  Clip Experience.
+  restore overlay, status polling, non-iOS copy-link fallback + QR code.
+- **Phase 5 (code done):** embedding + CI signing
+  (`ci_appclip_signing.rb`, `IOS_APPCLIP_PROVISION_PROFILE_BASE64`), Runner
+  `applinks`, host-aware AASA + `/s/:token` fallback page in the backend.
+  Remaining: the manual release checklist above, unit tests, and `/s/*`
+  universal-link handling inside the Flutter app.
