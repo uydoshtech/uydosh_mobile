@@ -1,0 +1,209 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "error.failed_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Something went wrong" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Что-то пошло не так" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Xatolik yuz berdi" } }
+      }
+    },
+    "error.invalid_message" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to Telegram and start the scan again from your listing." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вернитесь в Telegram и запустите сканирование заново из объявления." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Telegram’ga qaytib, e’londan skanerlashni qaytadan boshlang." } }
+      }
+    },
+    "error.invalid_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan link is invalid or expired" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ссылка недействительна или устарела" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Havola yaroqsiz yoki muddati o‘tgan" } }
+      }
+    },
+    "error.publish_note" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You can publish your listing without a 3D plan." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вы можете опубликовать объявление без 3D-плана." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "E’lonni 3D rejasiz ham joylashingiz mumkin." } }
+      }
+    },
+    "error.retry_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try again" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Qayta urinish" } }
+      }
+    },
+    "error.return_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to Telegram" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вернуться в Telegram" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Telegram’ga qaytish" } }
+      }
+    },
+    "error.unsupported_message" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "3D room scanning requires an iPhone with a LiDAR scanner (iPhone 12 Pro or newer Pro models). You can still publish your listing without a 3D plan." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Для 3D-сканирования нужен iPhone с LiDAR (iPhone 12 Pro или более новые Pro-модели). Вы всё равно можете опубликовать объявление без 3D-плана." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "3D skanerlash uchun LiDAR’li iPhone kerak (iPhone 12 Pro yoki undan yangi Pro modellari). E’lonni 3D rejasiz ham joylashingiz mumkin." } }
+      }
+    },
+    "error.unsupported_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Device not supported" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Устройство не поддерживается" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Qurilma qo‘llab-quvvatlanmaydi" } }
+      }
+    },
+    "error.validation_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not verify the scan session. Check your internet connection and try again." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось проверить сессию сканирования. Проверьте подключение к интернету и повторите попытку." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash sessiyasini tekshirib bo‘lmadi. Internet aloqasini tekshirib, qayta urinib ko‘ring." } }
+      }
+    },
+    "intro.start_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan room" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сканировать комнату" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Xonani skanerlash" } }
+      }
+    },
+    "intro.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan the room with your iPhone camera and automatically get dimensions and area." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отсканируйте комнату камерой iPhone и автоматически получите размеры и площадь." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Xonani iPhone kamerasi bilan skanerlang va o‘lchamlar hamda maydonni avtomatik oling." } }
+      }
+    },
+    "intro.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create a 3D room plan" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Создайте 3D-план комнаты" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Xonaning 3D rejasini yarating" } }
+      }
+    },
+    "review.confirm_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save scan" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сохранить скан" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanni saqlash" } }
+      }
+    },
+    "review.retry_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan again" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сканировать заново" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Qaytadan skanerlash" } }
+      }
+    },
+    "review.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You can save this scan or scan the room again." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вы можете сохранить этот скан или отсканировать комнату заново." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Bu skanni saqlashingiz yoki xonani qaytadan skanerlashingiz mumkin." } }
+      }
+    },
+    "review.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review your scan" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Проверьте результат сканирования" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skan natijasini tekshiring" } }
+      }
+    },
+    "scan.cancel" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отмена" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Bekor qilish" } }
+      }
+    },
+    "scan.finish" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Tayyor" } }
+      }
+    },
+    "scan.placeholder_subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "RoomPlan capture will appear here. Tap Finish to continue the test flow." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Здесь появится съёмка RoomPlan. Нажмите «Готово», чтобы продолжить тестовый сценарий." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Bu yerda RoomPlan suratga olish bo‘ladi. Davom etish uchun “Tayyor” tugmasini bosing." } }
+      }
+    },
+    "scan.placeholder_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scanning placeholder" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Заглушка сканирования" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash uchun vaqtinchalik ekran" } }
+      }
+    },
+    "state.exporting" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preparing scan files…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Готовим файлы сканирования…" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skan fayllari tayyorlanmoqda…" } }
+      }
+    },
+    "state.loading_invocation" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Opening scan link…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открываем ссылку сканирования…" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash havolasi ochilmoqda…" } }
+      }
+    },
+    "state.validating_session" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checking scan session…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Проверяем сессию сканирования…" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skanerlash sessiyasi tekshirilmoqda…" } }
+      }
+    },
+    "success.fallback" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your 3D plan is already saved. If Telegram doesn’t open, you can find it in your listing drafts." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ваш 3D-план уже сохранён. Если Telegram не открывается, вы найдёте его в черновиках объявления." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "3D rejangiz allaqachon saqlangan. Agar Telegram ochilmasa, uni e’lon qoralamalarida topasiz." } }
+      }
+    },
+    "success.message" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to UyDosh to review and publish your listing." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вернитесь в UyDosh, чтобы проверить и опубликовать объявление." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "E’lonni ko‘rib chiqish va joylash uchun UyDosh’ga qayting." } }
+      }
+    },
+    "success.return_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Return to Telegram" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вернуться в Telegram" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Telegram’ga qaytish" } }
+      }
+    },
+    "success.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "3D plan saved" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "3D-план сохранён" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "3D reja saqlandi" } }
+      }
+    },
+    "upload.subtitle" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Please keep the app open until the upload finishes." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Пожалуйста, не закрывайте приложение до завершения загрузки." } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Iltimos, yuklash tugaguncha ilovani yopmang." } }
+      }
+    },
+    "upload.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Uploading scan…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Загружаем скан…" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Skan yuklanmoqda…" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
