@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import SwiftUI
 import UIKit
@@ -41,6 +42,7 @@ final class AppClipRouter: ObservableObject {
     /// True when the upload step failed (vs. validation), so retry re-runs
     /// the upload with the kept artifacts instead of re-validating.
     private var failedDuringUpload = false
+    private var autopilotCancellable: AnyCancellable?
 
     init(
         sessionAPI: (any ScanSessionAPIProtocol)? = nil,
@@ -56,6 +58,29 @@ final class AppClipRouter: ObservableObject {
             ?? (mockAPI != nil ? MockUploadService.fromEnvironment() : URLSessionUploadService())
         self.isDeviceSupported = isDeviceSupported
         self.makeScanner = makeScanner ?? Self.defaultScanner(scanSessionId:)
+
+        #if DEBUG
+        // SCAN_CLIP_AUTOPILOT=1 drives the whole flow hands-free (mock
+        // scanner + mock backend) so the pipeline can be smoke-tested from
+        // the command line: ready → scan → finish → confirm → completed.
+        if ProcessInfo.processInfo.environment["SCAN_CLIP_AUTOPILOT"] == "1" {
+            autopilotCancellable = $state
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] state in
+                    Task { @MainActor [weak self] in
+                        try? await Task.sleep(for: .milliseconds(800))
+                        guard let self else { return }
+                        switch state {
+                        case .ready: self.startScan()
+                        case .scanning: self.finishScan()
+                        case .reviewing: self.confirmScan(previewJPEG: nil)
+                        default: break
+                        }
+                    }
+                }
+        }
+        #endif
     }
 
     /// Real RoomPlan on LiDAR hardware; mock scanner elsewhere (simulator).

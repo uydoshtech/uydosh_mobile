@@ -124,6 +124,9 @@ env.assign_variable(key: '_XCAppClipURL', value: TEST_INVOCATION_URL, enabled: t
 env.assign_variable(key: 'SCAN_CLIP_MOCK', value: 'valid', enabled: true)
 # The simulator has no LiDAR; force the device-support check to pass there.
 env.assign_variable(key: 'SCAN_CLIP_FORCE_SUPPORTED', value: '1', enabled: true)
+# Number of times the mocked upload should fail before succeeding — enable to
+# exercise the upload-retry path. Only read when SCAN_CLIP_MOCK is active.
+env.assign_variable(key: 'SCAN_CLIP_MOCK_UPLOAD_FAILURES', value: '1', enabled: false)
 scheme.launch_action.environment_variables = env
 
 scheme.save_as(PROJECT_PATH, TARGET_NAME, true)

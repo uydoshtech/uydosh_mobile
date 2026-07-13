@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A4892E0D72B42CBFDC6B9751"
+               BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
                BuildableName = "UyDoshAppClip.app"
                BlueprintName = "UyDoshAppClip"
                ReferencedContainer = "container:Runner.xcodeproj">
@@ -30,7 +30,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A4892E0D72B42CBFDC6B9751"
+            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">
@@ -53,7 +53,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A4892E0D72B42CBFDC6B9751"
+            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">
@@ -75,6 +75,11 @@
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "SCAN_CLIP_MOCK_UPLOAD_FAILURES"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
@@ -87,7 +92,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A4892E0D72B42CBFDC6B9751"
+            BlueprintIdentifier = "AEB06EDFDE50EE25C043F291"
             BuildableName = "UyDoshAppClip.app"
             BlueprintName = "UyDoshAppClip"
             ReferencedContainer = "container:Runner.xcodeproj">
