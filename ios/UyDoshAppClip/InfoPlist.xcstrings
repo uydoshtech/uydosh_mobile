@@ -1,11 +1,51 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "NSCameraUsageDescription" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "UyDosh uses the camera to scan your room and create a 3D plan with dimensions." } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "UyDosh использует камеру, чтобы отсканировать комнату и создать 3D-план с размерами." } },
-        "uz" : { "stringUnit" : { "state" : "translated", "value" : "UyDosh xonangizni skanerlash va o‘lchamlari bilan 3D reja yaratish uchun kameradan foydalanadi." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "UyDosh Scan"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "UyDoshAppClip"
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UyDosh uses the camera to scan your room and create a 3D plan with dimensions."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UyDosh использует камеру, чтобы отсканировать комнату и создать 3D-план с размерами."
+          }
+        },
+        "uz" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UyDosh xonangizni skanerlash va o‘lchamlari bilan 3D reja yaratish uchun kameradan foydalanadi."
+          }
+        }
       }
     }
   },

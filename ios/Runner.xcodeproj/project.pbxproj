@@ -45,6 +45,7 @@
 		95F97BD078C010B9B791EB85 /* ScanUploadResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F3A8B9F06A15EB1778B22C /* ScanUploadResult.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
+		7A11C0FF00000000000000A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7A11C0FF00000000000000A1 /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A56C1D15F68DDCBCCE75BE12 /* AppClipRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99848179AB8CD868BC85891C /* AppClipRouter.swift */; };
 		A92A38C441EC213E902F19C0 /* ScanSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9126E8E41E0689F190A091A /* ScanSuccessView.swift */; };
@@ -162,6 +163,7 @@
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97C146FB1CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7A11C0FF00000000000000A1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		99848179AB8CD868BC85891C /* AppClipRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppClipRouter.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				E73F23A8FAE5A251F64EF1E1 /* AppClipRouter.swift */,
+				7A11C0FF00000000000000A1 /* Assets.xcassets */,
 				245189F485E6FED9C80C5460 /* Info.plist */,
 				15CB28B23CC58554F620BC6B /* InfoPlist.xcstrings */,
 				70A26BA7459AB584A14B1EF2 /* Localizable.xcstrings */,
@@ -582,6 +585,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A11C0FF00000000000000A2 /* Assets.xcassets in Resources */,
 				216BF675CC2499A1E6F9A799 /* InfoPlist.xcstrings in Resources */,
 				6387EF8F6FC6F5473BFDCEEB /* Localizable.xcstrings in Resources */,
 			);

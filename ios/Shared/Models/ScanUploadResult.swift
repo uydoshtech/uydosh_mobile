@@ -38,10 +38,13 @@ public struct ScanUploadResult: Codable, Equatable {
         /// `nil` when the floor area could not be computed reliably —
         /// never fabricated.
         public let areaSquareMeters: Double?
+        /// Ceiling height estimate from wall geometry; optional.
+        public let heightMeters: Double?
 
-        public init(roomsCount: Int, areaSquareMeters: Double?) {
+        public init(roomsCount: Int, areaSquareMeters: Double?, heightMeters: Double? = nil) {
             self.roomsCount = roomsCount
             self.areaSquareMeters = areaSquareMeters
+            self.heightMeters = heightMeters
         }
     }
 
