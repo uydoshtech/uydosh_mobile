@@ -567,7 +567,10 @@ class _ListingThumbnail extends StatelessWidget {
     Widget child;
     if (photoUrl != null) {
       final dpr = MediaQuery.devicePixelRatioOf(context);
-      final decodePx = (GroupShortlistItemCard._thumbSize * dpr).round();
+      // 2x the cell: the cache manager fit-resizes within the cap preserving
+      // aspect ratio, so a tight cap under-resolves the short side of
+      // non-square photos and [BoxFit.cover] blurs them back up.
+      final decodePx = (GroupShortlistItemCard._thumbSize * dpr).round() * 2;
       child = Image(
         image: CachedNetworkImageProvider(
           EnvironmentUtil.hostedImageUrl(photoUrl),

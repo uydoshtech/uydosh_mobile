@@ -1266,11 +1266,17 @@ class _ListingTileState extends State<ListingTile> {
 
     Widget content;
     if (hasPhoto) {
-      // Decode cap: one bound only (or maxWidth/maxHeight on the provider).
-      // Both width *and* height on [ResizeImage] use `ResizeImagePolicy.exact`
-      // and squash non-square photos before [BoxFit.cover] can crop them.
+      // Decode cap sized for [BoxFit.cover] into a square cell. The cache
+      // manager resizes to *fit within* maxWidth x maxHeight preserving aspect
+      // ratio, so capping at exactly the cell size leaves the short side of a
+      // non-square photo under-resolved and `cover` upscales it back — every
+      // 16:9 upload (the picker caps at 1280x720) rendered visibly blurry.
+      // Doubling the cap keeps the short side >= the cell for aspect ratios
+      // up to 2:1 while still bounding decode memory.
+      // (Width *and* height on a plain [ResizeImage] are no alternative:
+      // `ResizeImagePolicy.exact` squashes non-square photos instead.)
       final dpr = MediaQuery.devicePixelRatioOf(context);
-      final decodePx = (thumbWidth * dpr).round();
+      final decodePx = (thumbWidth * dpr).round() * 2;
       content = Image(
         image: CachedNetworkImageProvider(
           _buildPhotoUrl(_primaryPhotoUrl(photos)),
