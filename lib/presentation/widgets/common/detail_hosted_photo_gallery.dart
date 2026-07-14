@@ -180,12 +180,22 @@ class DetailHostedPhotoGallery extends StatelessWidget {
   /// significant cost on low-end Android. Skip the blur there and show a plain
   /// cover fill — the foreground photo still reads the same.
   Widget _buildCoverFill(String rawUrl) {
-    final image = CachedNetworkImage(
+    return CachedNetworkImage(
       imageUrl: buildPhotoUrl(rawUrl),
       fit: BoxFit.cover,
       memCacheWidth: 320,
       fadeInDuration: const Duration(milliseconds: 300),
       fadeInCurve: Curves.easeOut,
+      // Blur only the loaded photo via [imageBuilder] so the loading
+      // placeholder (logo spinner) and error icon stay sharp.
+      imageBuilder: (context, imageProvider) {
+        final image = Image(image: imageProvider, fit: BoxFit.cover);
+        if (isAndroidDevice) return image;
+        return ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: image,
+        );
+      },
       placeholder: (context, url) => Container(
         color: Colors.grey[200],
         child: const Center(
@@ -200,11 +210,6 @@ class DetailHostedPhotoGallery extends StatelessWidget {
           size: 48,
         ),
       ),
-    );
-    if (isAndroidDevice) return image;
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-      child: image,
     );
   }
 

@@ -32,10 +32,12 @@ class _UydoshLogoSpinnerState extends State<UydoshLogoSpinner>
     with SingleTickerProviderStateMixin {
   // Renders the brand mark twice as large as [UydoshLogoSpinner.size] so it
   // reads clearly at the small dimensions most call sites request, while
-  // `Transform.scale` keeps the widget's own layout footprint at `size` —
+  // `OverflowBox` keeps the widget's own layout footprint at `size` —
   // it just paints larger over/around whatever tight row or button already
   // budgeted space for the old CircularProgressIndicator, no call sites
-  // need to change their sizing.
+  // need to change their sizing. The SVG must be laid out at the full
+  // visual size (not scaled up with `Transform.scale`), because flutter_svg
+  // rasterizes at layout size and post-scaling the raster looks blurry.
   static const double _visualScale = 2;
 
   late final AnimationController _controller = AnimationController(
@@ -51,17 +53,19 @@ class _UydoshLogoSpinnerState extends State<UydoshLogoSpinner>
 
   @override
   Widget build(BuildContext context) {
+    final double visualSize = widget.size * _visualScale;
     return SizedBox(
       width: widget.size,
       height: widget.size,
-      child: Transform.scale(
-        scale: _visualScale,
+      child: OverflowBox(
+        maxWidth: visualSize,
+        maxHeight: visualSize,
         child: RotationTransition(
           turns: _controller,
           child: SvgPicture.asset(
             "assets/icon/components/brand_logo_transparent.svg",
-            width: widget.size,
-            height: widget.size,
+            width: visualSize,
+            height: visualSize,
           ),
         ),
       ),
