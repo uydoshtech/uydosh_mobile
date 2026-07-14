@@ -166,6 +166,12 @@ flutter_gen:
 flutter:
   generate: true
 
+  # iOS deps come from CocoaPods; Flutter 3.44's automatic SwiftPM integration
+  # crashes xcodebuild on CI (IDESwiftPackageCore exception while adding
+  # package references), so keep it off per-project.
+  config:
+    enable-swift-package-manager: false
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
