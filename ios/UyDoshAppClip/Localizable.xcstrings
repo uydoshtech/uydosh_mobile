@@ -1,6 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "close.button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Закрыть" } },
+        "uz" : { "stringUnit" : { "state" : "translated", "value" : "Yopish" } }
+      }
+    },
     "error.failed_title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Something went wrong" } },

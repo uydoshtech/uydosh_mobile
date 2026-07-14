@@ -3,6 +3,7 @@ import SwiftUI
 /// Switches between screens based on the router's state machine.
 struct RootView: View {
     @EnvironmentObject private var router: AppClipRouter
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ZStack {
@@ -31,7 +32,41 @@ struct RootView: View {
                 ScanErrorView(kind: .failure(message: message))
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if showsCloseButton {
+                closeButton
+            }
+        }
         .animation(.default, value: router.state)
+    }
+
+    /// The scanning screen has its own cancel/finish controls, and during
+    /// export/upload leaving would lose the scan — hide the close button there.
+    private var showsCloseButton: Bool {
+        switch router.state {
+        case .scanning, .exporting, .uploading:
+            return false
+        default:
+            return true
+        }
+    }
+
+    /// "Closes" the clip by returning the user to the Telegram Mini App —
+    /// iOS apps cannot terminate themselves, so deep-linking back to the
+    /// invoking context is the supported way out.
+    private var closeButton: some View {
+        Button {
+            openURL(router.returnToTelegramURL ?? AppClipConfig.miniAppURL)
+        } label: {
+            Image(systemName: "xmark")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(10)
+                .background(.thinMaterial, in: Circle())
+        }
+        .accessibilityLabel(Text("close.button"))
+        .padding(.top, 8)
+        .padding(.trailing, 16)
     }
 }
 

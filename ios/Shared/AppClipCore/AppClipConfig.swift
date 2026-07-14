@@ -22,6 +22,13 @@ public enum AppClipConfig {
         URL(string: "https://\(invocationHost)/s/\(scanSessionId)")!
     }
 
+    /// Deep link to the Telegram Mini App without any scan context. Used as
+    /// the close-button fallback when the clip was launched without a valid
+    /// invocation and there is no session to return to.
+    public static var miniAppURL: URL {
+        URL(string: "https://t.me/\(telegramBotUsername)/app")!
+    }
+
     /// Deep link that returns the user to the Telegram Mini App after a scan:
     /// `https://t.me/uydosh_bot/app?startapp=scan_{scanSessionId}`.
     public static func returnToTelegramURL(scanSessionId: String) -> URL {
