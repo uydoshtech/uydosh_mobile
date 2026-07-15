@@ -4,6 +4,10 @@ import UIKit
 /// Regenerates simplified 3D room geometry from EditableFloorPlanModel.
 enum Scene3DRegenerationService {
   static let generatedRootName = "UydoshGeneratedRoot"
+  /// Catalog meshes overlaid on an unedited scan (walls/floor stay from the USDZ).
+  static let catalogFurnitureRootName = "UydoshCatalogFurnitureRoot"
+  /// Original RoomPlan furniture moved here so it is never drawn (parent stays hidden).
+  static let hiddenOriginalFurnitureRootName = "UydoshHiddenOriginalFurniture"
   /// Invisible cap that blocks overhead sunlight without occluding the user's top-down view.
   /// Name contains "ceiling" so the viewer's shadow/visibility logic treats it like other ceilings.
   static let shadowCeilingNodeName = "UydoshGeneratedShadowCeiling"
@@ -14,6 +18,7 @@ enum Scene3DRegenerationService {
     stylizedMaterials: Bool
   ) {
     removeGeneratedRoot(from: scene)
+    removeCatalogFurnitureRoot(from: scene)
     let root = SCNNode()
     root.name = generatedRootName
 
@@ -35,19 +40,110 @@ enum Scene3DRegenerationService {
 
     scene.rootNode.addChildNode(root)
     setOriginalRoomStructureHidden(in: scene, hidden: model.metadata.isEdited)
+    // Hide every original furniture mesh — regenerated objects replace them.
+    hideOriginalFurniture(in: scene) { _ in true }
+  }
+
+  /// Swaps RoomPlan box meshes for catalog models on an unedited scan (keeps original walls/floor).
+  /// Replaces geometry in place on the scan nodes so world pose stays exact — editable-model XZ is
+  /// aligned for the 2D plan and must not be used to re-place furniture in the USDZ scene.
+  static func applyCatalogFurniture(
+    in scene: SCNScene,
+    model: EditableFloorPlanModel,
+    stylizedMaterials: Bool
+  ) {
+    _ = model
+    removeCatalogFurnitureRoot(from: scene)
+
+    var hosts: [(SCNNode, EditableObjectType)] = []
+    func visit(_ node: SCNNode) {
+      if node.name == generatedRootName || node.name == catalogFurnitureRootName
+        || node.name == hiddenOriginalFurnitureRootName
+      {
+        return
+      }
+      if node.childNode(withName: FurnitureModelCatalog.catalogMeshName, recursively: false) != nil {
+        return
+      }
+      let type = EditableObjectType.from(nodeName: node.name ?? "")
+      if FurnitureModelCatalog.resourceName(for: type) != nil, node.geometry != nil {
+        hosts.append((node, type))
+        return
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+
+    for (host, type) in hosts {
+      _ = FurnitureModelCatalog.replaceGeometryInPlace(
+        on: host,
+        type: type,
+        stylized: stylizedMaterials
+      )
+    }
+  }
+
+  static func removeCatalogFurnitureRoot(from scene: SCNScene) {
+    scene.rootNode.childNode(withName: catalogFurnitureRootName, recursively: false)?
+      .removeFromParentNode()
+  }
+
+  /// Moves matching original scan furniture under a permanently hidden root (so display-mode
+  /// toggles that set `isHidden = false` on geometry cannot bring the boxes back).
+  private static func hideOriginalFurniture(
+    in scene: SCNScene,
+    matching: (EditableObjectType) -> Bool
+  ) {
+    let hiddenRoot: SCNNode
+    if let existing = scene.rootNode.childNode(
+      withName: hiddenOriginalFurnitureRootName, recursively: false)
+    {
+      hiddenRoot = existing
+    } else {
+      let created = SCNNode()
+      created.name = hiddenOriginalFurnitureRootName
+      created.isHidden = true
+      scene.rootNode.addChildNode(created)
+      hiddenRoot = created
+    }
+    hiddenRoot.isHidden = true
+
+    var toMove: [SCNNode] = []
+    func visit(_ node: SCNNode) {
+      if node === hiddenRoot { return }
+      if node.name == generatedRootName || node.name == catalogFurnitureRootName
+        || node.name == hiddenOriginalFurnitureRootName
+      {
+        return
+      }
+      let type = EditableObjectType.from(nodeName: node.name ?? "")
+      if type != .unknown, matching(type) {
+        toMove.append(node)
+        return
+      }
+      for child in node.childNodes { visit(child) }
+    }
+    visit(scene.rootNode)
+
+    for node in toMove {
+      node.removeFromParentNode()
+      hiddenRoot.addChildNode(node)
+    }
   }
 
   static func setOriginalRoomStructureHidden(in scene: SCNScene, hidden: Bool) {
     func visit(_ node: SCNNode) {
-      if node.name == generatedRootName || node.name == "UydoshFramingCamera" {
+      if node.name == generatedRootName || node.name == catalogFurnitureRootName
+        || node.name == hiddenOriginalFurnitureRootName || node.name == "UydoshFramingCamera"
+      {
         for child in node.childNodes { visit(child) }
         return
       }
-      if node.parent?.name == generatedRootName {
+      if node.parent?.name == generatedRootName || node.parent?.name == catalogFurnitureRootName {
         for child in node.childNodes { visit(child) }
         return
       }
-      if let geo = node.geometry {
+      if node.geometry != nil {
         let name = (node.name ?? "").lowercased()
         let isStructure = name.contains("wall") || name.contains("floor") || name.contains("ground")
           || name.contains("ceiling") || name.contains("door") || name.contains("window")
@@ -189,10 +285,33 @@ enum Scene3DRegenerationService {
   private static func buildObjectNodes(model: EditableFloorPlanModel, stylized: Bool) -> [SCNNode] {
     model.objects.map { object in
       let height = Float(object.height ?? model.wallHeight * 0.45)
+      let width = Float(object.width)
+      let length = Float(object.length)
+      let centerX = Float(object.centerX)
+      let centerZ = Float(object.centerZ)
+      let floorY = Float(model.floorY)
+      let rotation = Float(object.rotationRadians)
+
+      // Real meshes for bed / chair / table / sofa / storage — same footprint as the old boxes.
+      if let mesh = FurnitureModelCatalog.makeNode(
+        for: object.type,
+        width: width,
+        height: height,
+        length: length,
+        centerX: centerX,
+        centerZ: centerZ,
+        floorY: floorY,
+        rotationRadians: rotation,
+        stylized: stylized,
+        outsideBounds: object.isOutsideBounds
+      ) {
+        return mesh
+      }
+
       let box = SCNBox(
-        width: CGFloat(object.width),
+        width: CGFloat(width),
         height: CGFloat(height),
-        length: CGFloat(object.length),
+        length: CGFloat(length),
         chamferRadius: 0.01
       )
       let material: SCNMaterial
@@ -204,7 +323,7 @@ enum Scene3DRegenerationService {
         // furniture edges rather than the world axes. The node below is rotated by
         // `-object.rotationRadians`, so undoing that rotation maps the texture into the box frame.
         material = FurnitureMaterials.material(
-          for: object.type, rotationRadians: Float(object.rotationRadians))
+          for: object.type, rotationRadians: rotation)
       } else {
         material = SCNMaterial()
         material.diffuse.contents = UIColor(white: 0.72, alpha: 1)
@@ -213,12 +332,9 @@ enum Scene3DRegenerationService {
 
       let node = SCNNode(geometry: box)
       node.name = "UydoshGeneratedObject"
-      node.position = SCNVector3(
-        Float(object.centerX),
-        Float(model.floorY + Double(height) * 0.5),
-        Float(object.centerZ)
-      )
-      node.eulerAngles.y = Float(-object.rotationRadians)
+      // Boxes are centered on Y; mesh nodes sit on the floor via pivot instead.
+      node.position = SCNVector3(centerX, floorY + height * 0.5, centerZ)
+      node.eulerAngles.y = -rotation
       return node
     }
   }

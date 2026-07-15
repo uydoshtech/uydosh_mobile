@@ -164,7 +164,7 @@ enum FloorPlanResizeService {
 
   private static func recalculateDerivedFields(_ model: EditableFloorPlanModel) -> EditableFloorPlanModel {
     var updated = model
-    updated.bounds = EditableFloorPlanBoundsCalculator.bounds(for: updated.vertices)
+    updated.bounds = EditableFloorPlanBoundsCalculator.wallBounds(for: updated)
     let oldLengths = Dictionary(uniqueKeysWithValues: model.walls.map { ($0.id, $0.computedLength) })
 
     updated.walls = updated.walls.map { wall in

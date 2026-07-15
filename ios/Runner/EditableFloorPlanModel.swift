@@ -205,6 +205,7 @@ struct EditableFloorPlanModel: Equatable {
   var wallHeight: Double
   var wallThickness: Double
   var floorY: Double
+  /// Drawn-wall AABB (excludes scan-OBB footprint corners kept on `vertices` for the floor polygon).
   var bounds: EditableFloorPlanBounds
   /// Scan OBB footprint (matches 3D banner); walls may extend beyond this after content padding.
   var scanFootprintBounds: EditableFloorPlanBounds

@@ -1658,15 +1658,21 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     } else {
       restoreOriginalMaterials()
     }
-    if let editable = floorPlanStateManager.editableModel,
-      editable.metadata.isEdited,
-      let scene = loadedScene
-    {
-      Scene3DRegenerationService.regenerate(
-        in: scene,
-        model: editable,
-        stylizedMaterials: useStylizedMaterials
-      )
+    if let editable = floorPlanStateManager.editableModel, let scene = loadedScene {
+      if editable.metadata.isEdited {
+        Scene3DRegenerationService.regenerate(
+          in: scene,
+          model: editable,
+          stylizedMaterials: useStylizedMaterials
+        )
+      } else {
+        // Unedited scan: keep original walls/floor, replace bed/chair/table/sofa/storage boxes.
+        Scene3DRegenerationService.applyCatalogFurniture(
+          in: scene,
+          model: editable,
+          stylizedMaterials: useStylizedMaterials
+        )
+      }
     }
     if floorPlanStateManager.editableModel?.metadata.isEdited != true,
       let scene = loadedScene
@@ -1695,6 +1701,17 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     if name.contains("floor") || name.contains("ground") { return false }
     if name.contains("wall") || name.contains("ceiling") { return true }
     if name.contains("door") || name.contains("window") || name.contains("opening") { return true }
+    return false
+  }
+
+  /// True for catalog / regenerated furniture meshes (wrappers or their geometry children).
+  private func isCatalogOrGeneratedFurniture(_ node: SCNNode) -> Bool {
+    var current: SCNNode? = node
+    while let n = current {
+      if n.name == Scene3DRegenerationService.catalogFurnitureRootName { return true }
+      if n.name == "UydoshGeneratedObject" { return true }
+      current = n.parent
+    }
     return false
   }
 
@@ -1753,6 +1770,11 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
     SCNTransaction.animationDuration = 0
 
     func visit(_ node: SCNNode) {
+      // Original RoomPlan furniture replaced by catalog meshes — keep the stash hidden.
+      if node.name == Scene3DRegenerationService.hiddenOriginalFurnitureRootName {
+        node.isHidden = true
+        return
+      }
       if node.geometry != nil {
         switch mode {
         case .fullRoom:
@@ -1767,6 +1789,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           if node.name == "UydoshFramingCamera" {
             node.isHidden = false
           } else if shouldHideWallLikeSurface(node) {
+            node.isHidden = true
+          } else if isCatalogOrGeneratedFurniture(node) {
             node.isHidden = true
           } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
             node.isHidden = true
@@ -2335,6 +2359,8 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
           )
           self.updateNorthAdjustButtonVisibility()
         }
+        // Catalog furniture needs the editable model from importScan — re-apply after import.
+        self.applyMaterialsStyle()
         self.updateModeButtonAppearance()
         self.applyDisplayMode(self.displayMode)
         self.applyScanCeilingIfNeeded()

@@ -70,9 +70,9 @@ enum RoomPlanToEditableModelMapper {
 
     var openings = extractOpenings(from: scene, walls: walls, vertices: vertices, wallHeight: wallHeight)
     attachOpeningsToWalls(openings: &openings, walls: &walls)
-    markObjectsOutsideBounds(&objects, vertices: footprintVertices)
+    // Outside-bounds is marked AFTER alignment / wall regularization, against the drawn wall
+    // extent — not the metrics OBB (which is a rectangle that misses L-shaped wings).
 
-    let bounds = EditableFloorPlanBoundsCalculator.bounds(for: vertices)
     let now = Date()
     var model = EditableFloorPlanModel(
       id: UUID(),
@@ -87,7 +87,9 @@ enum RoomPlanToEditableModelMapper {
       wallHeight: wallHeight,
       wallThickness: wallThickness,
       floorY: floorY,
-      bounds: bounds,
+      // Wall endpoints only — footprint OBB corners stay on `vertices` for the floor polygon but
+      // must not inflate the plan rectangle used by overall dims / resize.
+      bounds: EditableFloorPlanBoundsCalculator.bounds(for: wallVertices),
       scanFootprintBounds: scanFootprintBounds,
       footprintLongM: metrics.floorLongM,
       footprintShortM: metrics.floorShortM,
@@ -120,6 +122,8 @@ enum RoomPlanToEditableModelMapper {
     }
     model.scanWorldPlusXBearingDeg = worldPlusXTrueBearingDeg
     FloorPlanNorthOrientation.applyTrueNorth(to: &model, correctionDeg: northCorrectionDeg)
+    // Wall AABB (with padding) covers the full L-shape; metrics OBB does not.
+    markObjectsOutsideWallBounds(&model)
     model.dimensionAnnotations = DimensionLineService.annotations(for: model)
     return model
   }
@@ -330,7 +334,7 @@ enum RoomPlanToEditableModelMapper {
       return w
     }
     updated.walls.removeAll { $0.computedLength < 1e-3 }
-    updated.bounds = EditableFloorPlanBoundsCalculator.bounds(for: updated.vertices)
+    updated.bounds = EditableFloorPlanBoundsCalculator.wallBounds(for: updated)
     return updated
   }
 
@@ -369,6 +373,21 @@ enum RoomPlanToEditableModelMapper {
         z: objects[index].centerZ,
         ring: ring
       )
+    }
+  }
+
+  /// Flags furniture whose center lies outside the drawn wall bounding box (padded). Prefer this
+  /// over the metrics OBB footprint — an L-shaped scan's OBB leaves whole rooms "outside".
+  private static func markObjectsOutsideWallBounds(_ model: inout EditableFloorPlanModel) {
+    let pad = 0.35
+    let bounds = model.bounds
+    guard bounds.width > 0.1, bounds.length > 0.1 else { return }
+    for index in model.objects.indices {
+      let x = model.objects[index].centerX
+      let z = model.objects[index].centerZ
+      model.objects[index].isOutsideBounds =
+        x < bounds.minX - pad || x > bounds.maxX + pad
+        || z < bounds.minZ - pad || z > bounds.maxZ + pad
     }
   }
 

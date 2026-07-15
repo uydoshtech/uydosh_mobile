@@ -57,9 +57,13 @@ enum EditableFloorPlanProjector {
       )
     }
 
-    // Overall ("Общие") dimension lines are intentionally not rendered; only per-wall dimensions
-    // remain available. The overall size is still shown in the 3D banner.
-    let overallDimensions: [DimensionLine] = []
+    // Overall dims sit on the drawn wall rectangle (see DimensionLineService); wall
+    // segments remain available alongside them.
+    let overallDimensions = DimensionLineService.renderLines(
+      from: model.dimensionAnnotations.filter {
+        $0.type == .overallWidth || $0.type == .overallLength
+      }
+    )
     let wallSegmentDimensions = DimensionLineService.renderLines(
       from: model.dimensionAnnotations.filter { $0.type == .wallSegmentLength }
     )

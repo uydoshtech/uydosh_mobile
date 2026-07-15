@@ -221,8 +221,16 @@ final class FloorPlanCanvas: UIView {
         highlightedDimensionId: highlightedDimensionId
       )
     case .wallSegments:
+      // Wall chips + overall W/H on the drawn wall rectangle when dims are on.
       labelHitRegions = DimensionLineRenderer.draw(
         lines: model.wallSegmentDimensions,
+        in: ctx,
+        transform: transform,
+        color: dimensionColor,
+        highlightedDimensionId: highlightedDimensionId
+      )
+      labelHitRegions += DimensionLineRenderer.draw(
+        lines: model.overallDimensions,
         in: ctx,
         transform: transform,
         color: dimensionColor,

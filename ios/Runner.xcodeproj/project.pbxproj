@@ -81,6 +81,8 @@
 		E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */; };
 		E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */; };
 		E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */; };
+		E8A1B3501ED2DC5600515871 /* FurnitureModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */; };
+		E8A1B3501ED2DC5600515873 /* FurnitureModels in Resources */ = {isa = PBXBuildFile; fileRef = E8A1B3501ED2DC5600515872 /* FurnitureModels */; };
 		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
 		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
 		E8A1B3191ED2DC5600515831 /* RoomScanOrientationCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */; };
@@ -245,6 +247,8 @@
 		E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanProjector.swift; sourceTree = "<group>"; };
 		E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanStateManager.swift; sourceTree = "<group>"; };
 		E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene3DRegenerationService.swift; sourceTree = "<group>"; };
+		E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FurnitureModelCatalog.swift; sourceTree = "<group>"; };
+		E8A1B3501ED2DC5600515872 /* FurnitureModels */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FurnitureModels; sourceTree = "<group>"; };
 		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
 		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
 		E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanOrientationCapture.swift; sourceTree = "<group>"; };
@@ -432,6 +436,8 @@
 				E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */,
 				E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */,
 				E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */,
+				E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */,
+				E8A1B3501ED2DC5600515872 /* FurnitureModels */,
 				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
 				E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */,
 				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
@@ -652,6 +658,7 @@
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				513B63D12E54B0A200D89774 /* GoogleService-Info.plist in Resources */,
 				6A2F5E702EFB000100000001 /* PrivacyInfo.xcprivacy in Resources */,
+				E8A1B3501ED2DC5600515873 /* FurnitureModels in Resources */,
 				F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */,
 				F1A2B3C4D5E60718293A4B75 /* InfoPlist.strings in Resources */,
 			);
@@ -903,6 +910,7 @@
 				E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */,
 				E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */,
 				E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */,
+				E8A1B3501ED2DC5600515871 /* FurnitureModelCatalog.swift in Sources */,
 				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
 				E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */,
 				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,

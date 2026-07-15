@@ -1,0 +1,8 @@
+Kenney Furniture Kit (selected models)
+Source: https://kenney.nl/assets/furniture-kit
+Also distributed via OpenGameArt: https://opengameart.org/content/furniture-kit
+License: Creative Commons Zero (CC0) — https://creativecommons.org/publicdomain/zero/1.0/
+Credit (optional): Kenney (www.kenney.nl)
+
+Models used: bedDouble → bed, chairCushion → chair, table → table,
+loungeSofa → sofa, bookcaseClosed → storage.

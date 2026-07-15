@@ -6,53 +6,55 @@ enum DimensionLineService {
   private static let metersFormat = "%.2f m"
 
   static func annotations(for model: EditableFloorPlanModel) -> [EditableDimensionAnnotation] {
-    let scan = model.scanFootprintBounds
-    let offset = max(model.footprintLongM, model.footprintShortM) * 0.10 + 0.45
-    // After alignment the long edge is horizontal (+X), short edge is vertical (+Z).
-    let longM = model.footprintLongM
-    let shortM = model.footprintShortM
+    // Place overall dims on the drawn wall AABB only — never `scanFootprintBounds` and never
+    // `model.bounds` when that still includes OBB footprint corners. Those inflate past (or cut
+    // through) the blue perimeter on L / multi-room plans.
+    let box = EditableFloorPlanBoundsCalculator.wallBounds(for: model)
+    let widthM = max(box.maxX - box.minX, 0)
+    let lengthM = max(box.maxZ - box.minZ, 0)
+    let offset = max(widthM, lengthM, 1) * 0.10 + 0.45
 
-    let maxXVertices = verticesNearMaxX(in: model)
-    let maxZVertices = verticesNearMaxZ(in: model)
+    let maxXVertices = verticesNear(x: box.maxX, in: model)
+    let maxZVertices = verticesNear(z: box.maxZ, in: model)
 
-    // Long edge (matches 3D banner) — horizontal below the scan footprint.
-    let longY = -scan.maxZ - offset
+    // Horizontal overall — below the plan (plan Y = -Z).
+    let longY = -box.maxZ - offset
     let longAnnotation = EditableDimensionAnnotation(
       id: UUID(),
       type: .overallWidth,
-      startPoint2D: EditablePlanPoint2D(x: scan.minX, y: longY),
-      endPoint2D: EditablePlanPoint2D(x: scan.maxX, y: longY),
-      measuredValueMeters: longM,
-      label: String(format: metersFormat, longM),
+      startPoint2D: EditablePlanPoint2D(x: box.minX, y: longY),
+      endPoint2D: EditablePlanPoint2D(x: box.maxX, y: longY),
+      measuredValueMeters: widthM,
+      label: String(format: metersFormat, widthM),
       editable: true,
       target: DimensionEditTarget(
         editType: .resizeWidth,
-        affectedWallIds: wallsTouchingMaxX(in: model),
+        affectedWallIds: wallsTouching(vertexIds: Set(maxXVertices.map(\.id)), in: model),
         affectedVertexIds: maxXVertices.map(\.id),
         fixedSide: .minX
       ),
-      witnessStart2D: EditablePlanPoint2D(x: scan.minX, y: -scan.maxZ),
-      witnessEnd2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.maxZ)
+      witnessStart2D: EditablePlanPoint2D(x: box.minX, y: -box.maxZ),
+      witnessEnd2D: EditablePlanPoint2D(x: box.maxX, y: -box.maxZ)
     )
 
-    // Short edge — vertical to the right of the scan footprint.
-    let shortX = scan.maxX + offset
+    // Vertical overall — to the right of the plan.
+    let shortX = box.maxX + offset
     let shortAnnotation = EditableDimensionAnnotation(
       id: UUID(),
       type: .overallLength,
-      startPoint2D: EditablePlanPoint2D(x: shortX, y: -scan.maxZ),
-      endPoint2D: EditablePlanPoint2D(x: shortX, y: -scan.minZ),
-      measuredValueMeters: shortM,
-      label: String(format: metersFormat, shortM),
+      startPoint2D: EditablePlanPoint2D(x: shortX, y: -box.maxZ),
+      endPoint2D: EditablePlanPoint2D(x: shortX, y: -box.minZ),
+      measuredValueMeters: lengthM,
+      label: String(format: metersFormat, lengthM),
       editable: true,
       target: DimensionEditTarget(
         editType: .resizeLength,
-        affectedWallIds: wallsTouchingMaxZ(in: model),
+        affectedWallIds: wallsTouching(vertexIds: Set(maxZVertices.map(\.id)), in: model),
         affectedVertexIds: maxZVertices.map(\.id),
         fixedSide: .minZ
       ),
-      witnessStart2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.maxZ),
-      witnessEnd2D: EditablePlanPoint2D(x: scan.maxX, y: -scan.minZ)
+      witnessStart2D: EditablePlanPoint2D(x: box.maxX, y: -box.maxZ),
+      witnessEnd2D: EditablePlanPoint2D(x: box.maxX, y: -box.minZ)
     )
 
     return [longAnnotation, shortAnnotation] + wallSegmentAnnotations(for: model)
@@ -123,29 +125,20 @@ enum DimensionLineService {
 
   private static let tolerance = 0.05
 
-  private static func verticesNearMaxX(in model: EditableFloorPlanModel) -> [EditableVertex] {
-    model.vertices.filter { abs($0.x - model.bounds.maxX) < tolerance }
+  private static func wallVertices(in model: EditableFloorPlanModel) -> [EditableVertex] {
+    let ids = Set(model.walls.flatMap { [$0.startVertexId, $0.endVertexId] })
+    return model.vertices.filter { ids.contains($0.id) }
   }
 
-  private static func verticesNearMinX(in model: EditableFloorPlanModel) -> [EditableVertex] {
-    model.vertices.filter { abs($0.x - model.bounds.minX) < tolerance }
+  private static func verticesNear(x: Double, in model: EditableFloorPlanModel) -> [EditableVertex] {
+    wallVertices(in: model).filter { abs($0.x - x) < tolerance }
   }
 
-  private static func verticesNearMaxZ(in model: EditableFloorPlanModel) -> [EditableVertex] {
-    model.vertices.filter { abs($0.z - model.bounds.maxZ) < tolerance }
+  private static func verticesNear(z: Double, in model: EditableFloorPlanModel) -> [EditableVertex] {
+    wallVertices(in: model).filter { abs($0.z - z) < tolerance }
   }
 
-  private static func verticesNearMinZ(in model: EditableFloorPlanModel) -> [EditableVertex] {
-    model.vertices.filter { abs($0.z - model.bounds.minZ) < tolerance }
-  }
-
-  private static func wallsTouchingMaxX(in model: EditableFloorPlanModel) -> [WallId] {
-    let ids = Set(verticesNearMaxX(in: model).map(\.id))
-    return model.walls.filter { ids.contains($0.startVertexId) || ids.contains($0.endVertexId) }.map(\.id)
-  }
-
-  private static func wallsTouchingMaxZ(in model: EditableFloorPlanModel) -> [WallId] {
-    let ids = Set(verticesNearMaxZ(in: model).map(\.id))
-    return model.walls.filter { ids.contains($0.startVertexId) || ids.contains($0.endVertexId) }.map(\.id)
+  private static func wallsTouching(vertexIds ids: Set<VertexId>, in model: EditableFloorPlanModel) -> [WallId] {
+    model.walls.filter { ids.contains($0.startVertexId) || ids.contains($0.endVertexId) }.map(\.id)
   }
 }

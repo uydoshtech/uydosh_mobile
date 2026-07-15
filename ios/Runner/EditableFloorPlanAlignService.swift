@@ -110,7 +110,7 @@ enum EditableFloorPlanAlignService {
 
   private static func recalculate(_ model: EditableFloorPlanModel) -> EditableFloorPlanModel {
     var updated = model
-    updated.bounds = EditableFloorPlanBoundsCalculator.bounds(for: updated.vertices)
+    updated.bounds = EditableFloorPlanBoundsCalculator.wallBounds(for: updated)
     updated.walls = updated.walls.map { wall in
       var w = wall
       if let start = updated.vertex(w.startVertexId),
@@ -140,5 +140,17 @@ enum EditableFloorPlanBoundsCalculator {
       maxZ = max(maxZ, v.z)
     }
     return EditableFloorPlanBounds(minX: minX, maxX: maxX, minZ: minZ, maxZ: maxZ)
+  }
+
+  /// Axis-aligned box of drawn wall endpoints only. Ignores scan-OBB footprint corners that are
+  /// kept on the model for the floor polygon / outside-footprint flag — those inflate `vertices`
+  /// beyond the blue walls and made overall dimension lines miss the perimeter.
+  static func wallBounds(for model: EditableFloorPlanModel) -> EditableFloorPlanBounds {
+    let wallIds = Set(model.walls.flatMap { [$0.startVertexId, $0.endVertexId] })
+    let wallVertices = model.vertices.filter { wallIds.contains($0.id) }
+    if wallVertices.count >= 2 {
+      return bounds(for: wallVertices)
+    }
+    return bounds(for: model.vertices)
   }
 }
