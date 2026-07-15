@@ -108,8 +108,9 @@ final class FloorPlanTab: UIView {
 
     configureControlButton(objectsButton, symbol: "sofa", action: #selector(objectsTapped))
     controlsStack.addArrangedSubview(objectsButton)
-    // Furniture/objects start hidden; the user opts in via this toggle.
-    canvas.showObjects = false
+    // Match Telegram blueprint: furniture + wall/overall dims visible by default.
+    canvas.showObjects = true
+    canvas.dimensionMode = .wallSegments
 
     NSLayoutConstraint.activate([
       canvas.topAnchor.constraint(equalTo: topAnchor),

@@ -1,35 +1,44 @@
 import CoreGraphics
 import UIKit
 
+/// Telegram mini-app blueprint palette (`FP_COLORS` in listing-detail-floorplan.js).
+enum FloorPlanStyle {
+  static let wall = UIColor(red: 31 / 255, green: 58 / 255, blue: 84 / 255, alpha: 1)
+  static let gridMinor = UIColor(red: 237 / 255, green: 243 / 255, blue: 250 / 255, alpha: 1)
+  static let gridMajor = UIColor(red: 216 / 255, green: 228 / 255, blue: 241 / 255, alpha: 1)
+  static let furnitureFill = UIColor(red: 242 / 255, green: 166 / 255, blue: 90 / 255, alpha: 0.35)
+  static let furnitureStroke = UIColor(red: 217 / 255, green: 145 / 255, blue: 63 / 255, alpha: 1)
+  static let windowFill = UIColor(red: 207 / 255, green: 228 / 255, blue: 247 / 255, alpha: 1)
+  static let dim = UIColor(red: 43 / 255, green: 98 / 255, blue: 168 / 255, alpha: 1)
+  static let dimStroke = UIColor(red: 59 / 255, green: 120 / 255, blue: 194 / 255, alpha: 1)
+  /// Fallback opening thickness when wall thickness is unavailable (meters).
+  static let openingThicknessMeters: CGFloat = 0.12
+  static let gridMinorSpacingMeters: CGFloat = 0.2
+  static let gridMajorSpacingMeters: CGFloat = 1.0
+  static let gridPaddingMeters: CGFloat = 1.5
+}
+
 /// Blueprint-style drawing helpers for floor plan elements.
 enum FloorPlanWallRenderer {
+  /// Filled wall rectangles (true thickness), matching the Telegram SVG blueprint.
   static func draw(
     walls: [FloorPlanWall],
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    strokeColor: UIColor,
-    lineWidth: CGFloat
+    fillColor: UIColor
   ) {
     context.saveGState()
-    context.setStrokeColor(strokeColor.cgColor)
-    context.setLineWidth(lineWidth)
-    context.setLineCap(.square)
-    context.setLineJoin(.miter)
-
+    context.setFillColor(fillColor.cgColor)
     for wall in walls {
-      let start = transform.planToScreen(wall.start)
-      let end = transform.planToScreen(wall.end)
-      let dx = end.x - start.x
-      let dy = end.y - start.y
-      let len = hypot(dx, dy)
-      guard len > 0.5 else { continue }
-      let extra = CGFloat(wall.thickness) * transform.scale * 0.5
-      let nx = dx / len * extra
-      let ny = dy / len * extra
-      context.move(to: CGPoint(x: start.x - nx, y: start.y - ny))
-      context.addLine(to: CGPoint(x: end.x + nx, y: end.y + ny))
+      guard let path = orientedBandPath(
+        start: wall.start,
+        end: wall.end,
+        thicknessMeters: max(wall.thickness, 0.04),
+        transform: transform
+      ) else { continue }
+      context.addPath(path)
+      context.fillPath()
     }
-    context.strokePath()
     context.restoreGState()
   }
 }
@@ -57,7 +66,9 @@ enum FloorPlanObjectRenderer {
         : strokeColor
       context.setFillColor(fill.cgColor)
       context.setStrokeColor(stroke.cgColor)
-      context.setLineWidth(max(1, transform.scale * 0.015))
+      context.setLineWidth(1.4)
+      context.setLineJoin(.round)
+      context.setLineCap(.round)
       context.move(to: screenCorners[0])
       for point in screenCorners.dropFirst() {
         context.addLine(to: point)
@@ -94,104 +105,208 @@ enum FloorPlanOpeningRenderer {
     openings: [FloorPlanOpening],
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    wallColor: UIColor
+    wallColor: UIColor,
+    planCenter: FloorPlanPoint2D,
+    wallThicknessMeters: CGFloat
   ) {
+    let thickness = max(wallThicknessMeters, FloorPlanStyle.openingThicknessMeters)
+    for opening in openings {
+      drawGenericOpening(
+        opening,
+        in: context,
+        transform: transform,
+        color: wallColor,
+        thicknessMeters: thickness
+      )
+    }
     for door in doors {
-      drawDoor(door, in: context, transform: transform, color: wallColor)
+      drawDoor(
+        door,
+        in: context,
+        transform: transform,
+        color: wallColor,
+        planCenter: planCenter,
+        thicknessMeters: thickness
+      )
     }
     for window in windows {
-      drawWindow(window, in: context, transform: transform)
-    }
-    for opening in openings {
-      drawGenericOpening(opening, in: context, transform: transform, color: wallColor)
+      drawWindow(
+        window,
+        in: context,
+        transform: transform,
+        wallColor: wallColor,
+        thicknessMeters: thickness
+      )
     }
   }
 
+  /// White wall cutout + dashed swing arc + door leaf (Telegram `fpDoorEl`).
   private static func drawDoor(
     _ door: FloorPlanOpening,
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    color: UIColor
+    color: UIColor,
+    planCenter: FloorPlanPoint2D,
+    thicknessMeters: CGFloat
   ) {
+    let gapThickness = max(thicknessMeters * 1.4, 0.14)
+    if let gap = orientedBandPath(
+      start: door.start,
+      end: door.end,
+      thicknessMeters: gapThickness,
+      transform: transform
+    ) {
+      context.saveGState()
+      context.setFillColor(UIColor.white.cgColor)
+      context.addPath(gap)
+      context.fillPath()
+      context.restoreGState()
+    }
+
     let start = transform.planToScreen(door.start)
     let end = transform.planToScreen(door.end)
-    context.saveGState()
-    context.setStrokeColor(UIColor.systemBlue.withAlphaComponent(0.85).cgColor)
-    context.setLineWidth(max(2.5, transform.scale * 0.03))
-    context.setLineCap(.butt)
-    context.move(to: start)
-    context.addLine(to: end)
-    context.strokePath()
-
     let dx = end.x - start.x
     let dy = end.y - start.y
     let len = hypot(dx, dy)
-    guard len > 4 else {
-      context.restoreGState()
-      return
+    guard len > 4 else { return }
+
+    let dirX = dx / len
+    let dirY = dy / len
+    var normX = -dirY
+    var normY = dirX
+    let mid = CGPoint(x: (start.x + end.x) * 0.5, y: (start.y + end.y) * 0.5)
+    let centerScreen = transform.planToScreen(planCenter)
+    let toCenterX = centerScreen.x - mid.x
+    let toCenterY = centerScreen.y - mid.y
+    if normX * toCenterX + normY * toCenterY < 0 {
+      normX = -normX
+      normY = -normY
     }
-    let radius = len * 0.85
-    let angle = atan2(dy, dx)
-    context.setStrokeColor(color.withAlphaComponent(0.55).cgColor)
-    context.setLineWidth(max(1, transform.scale * 0.012))
+
+    // Hinge at `start`, leaf swings from `end` jamb toward the room.
+    let hinge = start
+    let jamb = end
+    let leaf = CGPoint(x: hinge.x + normX * len, y: hinge.y + normY * len)
+    let sweepClockwise = (dirX * normY - dirY * normX) < 0
+    let startAngle = atan2(jamb.y - hinge.y, jamb.x - hinge.x)
+    let endAngle = atan2(leaf.y - hinge.y, leaf.x - hinge.x)
+
+    context.saveGState()
+    context.setStrokeColor(color.cgColor)
+    context.setLineWidth(1)
+    context.setLineDash(phase: 0, lengths: [max(3, len * 0.08), max(3, len * 0.08)])
     context.addArc(
-      center: start,
-      radius: radius,
-      startAngle: angle,
-      endAngle: angle + .pi / 2,
-      clockwise: false
+      center: hinge,
+      radius: len,
+      startAngle: startAngle,
+      endAngle: endAngle,
+      clockwise: sweepClockwise
     )
+    context.strokePath()
+
+    context.setLineDash(phase: 0, lengths: [])
+    context.setLineWidth(1.6)
+    context.move(to: hinge)
+    context.addLine(to: leaf)
     context.strokePath()
     context.restoreGState()
   }
 
+  /// Light-blue band + center mullion (Telegram `fpWindowEl`).
   private static func drawWindow(
     _ window: FloorPlanOpening,
     in context: CGContext,
-    transform: FloorPlanViewTransform
+    transform: FloorPlanViewTransform,
+    wallColor: UIColor,
+    thicknessMeters: CGFloat
   ) {
+    let thick = max(thicknessMeters, 0.1)
+    guard let band = orientedBandPath(
+      start: window.start,
+      end: window.end,
+      thicknessMeters: thick,
+      transform: transform
+    ) else { return }
+
+    context.saveGState()
+    context.setFillColor(FloorPlanStyle.windowFill.cgColor)
+    context.setStrokeColor(wallColor.cgColor)
+    context.setLineWidth(1)
+    context.addPath(band)
+    context.drawPath(using: .fillStroke)
+
     let start = transform.planToScreen(window.start)
     let end = transform.planToScreen(window.end)
-    context.saveGState()
-    context.setStrokeColor(UIColor.systemTeal.withAlphaComponent(0.9).cgColor)
-    context.setLineWidth(max(1.5, transform.scale * 0.018))
-    context.setLineCap(.butt)
     context.move(to: start)
     context.addLine(to: end)
-    context.strokePath()
-
-    let dx = end.x - start.x
-    let dy = end.y - start.y
-    let len = hypot(dx, dy)
-    guard len > 2 else {
-      context.restoreGState()
-      return
-    }
-    let nx = -dy / len * 2
-    let ny = dx / len * 2
-    context.move(to: CGPoint(x: start.x + nx, y: start.y + ny))
-    context.addLine(to: CGPoint(x: end.x + nx, y: end.y + ny))
     context.strokePath()
     context.restoreGState()
   }
 
+  /// White cutout + dashed connector (Telegram opening pass-through).
   private static func drawGenericOpening(
     _ opening: FloorPlanOpening,
     in context: CGContext,
     transform: FloorPlanViewTransform,
-    color: UIColor
+    color: UIColor,
+    thicknessMeters: CGFloat
   ) {
+    let gapThickness = max(thicknessMeters * 1.4, 0.14)
+    if let gap = orientedBandPath(
+      start: opening.start,
+      end: opening.end,
+      thicknessMeters: gapThickness,
+      transform: transform
+    ) {
+      context.saveGState()
+      context.setFillColor(UIColor.white.cgColor)
+      context.addPath(gap)
+      context.fillPath()
+      context.restoreGState()
+    }
+
     let start = transform.planToScreen(opening.start)
     let end = transform.planToScreen(opening.end)
     context.saveGState()
-    context.setStrokeColor(color.withAlphaComponent(0.45).cgColor)
-    context.setLineWidth(max(2, transform.scale * 0.02))
-    context.setLineDash(phase: 0, lengths: [4, 3])
+    context.setStrokeColor(color.cgColor)
+    context.setLineWidth(1)
+    context.setLineDash(phase: 0, lengths: [5, 5])
     context.move(to: start)
     context.addLine(to: end)
     context.strokePath()
     context.restoreGState()
   }
+}
+
+/// Oriented rectangle along a plan segment, converted to screen space.
+private func orientedBandPath(
+  start: FloorPlanPoint2D,
+  end: FloorPlanPoint2D,
+  thicknessMeters: CGFloat,
+  transform: FloorPlanViewTransform
+) -> CGPath? {
+  let dx = end.x - start.x
+  let dy = end.y - start.y
+  let len = hypot(dx, dy)
+  guard len > 1e-4 else { return nil }
+  let ux = dx / len
+  let uy = dy / len
+  let nx = -uy
+  let ny = ux
+  let half = thicknessMeters * 0.5
+  let corners = [
+    FloorPlanPoint2D(x: start.x + nx * half, y: start.y + ny * half),
+    FloorPlanPoint2D(x: end.x + nx * half, y: end.y + ny * half),
+    FloorPlanPoint2D(x: end.x - nx * half, y: end.y - ny * half),
+    FloorPlanPoint2D(x: start.x - nx * half, y: start.y - ny * half),
+  ].map { transform.planToScreen($0) }
+  let path = CGMutablePath()
+  path.move(to: corners[0])
+  for point in corners.dropFirst() {
+    path.addLine(to: point)
+  }
+  path.closeSubpath()
+  return path
 }
 
 enum DimensionLineRenderer {
@@ -238,19 +353,17 @@ enum DimensionLineRenderer {
     guard len > 2 else { return nil }
 
     let isHighlighted = line.id == highlightedDimensionId
-    let strokeColor = line.isEditable
-      ? (isHighlighted ? UIColor.systemBlue : color)
-      : color
+    let lineStroke = isHighlighted ? FloorPlanStyle.dim : color
     let dirX = dx / len
     let dirY = dy / len
     let perpX = -dirY
     let perpY = dirX
     let tick = max(4, transform.scale * 0.035)
-    let lineWidth = max(0.65, transform.scale * 0.007)
-    let witnessWidth = max(0.5, transform.scale * 0.005)
+    let lineWidth: CGFloat = 1.2
+    let witnessWidth: CGFloat = 0.9
 
     context.saveGState()
-    context.setStrokeColor(strokeColor.cgColor)
+    context.setStrokeColor(lineStroke.cgColor)
     context.setLineCap(.butt)
     context.setLineJoin(.miter)
 
@@ -272,22 +385,18 @@ enum DimensionLineRenderer {
     context.addLine(to: end)
     context.strokePath()
 
-    func drawArchitecturalTick(at point: CGPoint) {
-      let half = tick * 0.5
-      let slashX = (dirX + perpX) * half
-      let slashY = (dirY + perpY) * half
-      context.move(to: CGPoint(x: point.x - slashX, y: point.y - slashY))
-      context.addLine(to: CGPoint(x: point.x + slashX, y: point.y + slashY))
-      context.strokePath()
+    // End ticks (Telegram overall-dim style: perpendicular caps).
+    let tickHalf = tick * 0.55
+    for point in [start, end] {
+      context.move(to: CGPoint(x: point.x - perpX * tickHalf, y: point.y - perpY * tickHalf))
+      context.addLine(to: CGPoint(x: point.x + perpX * tickHalf, y: point.y + perpY * tickHalf))
     }
-    drawArchitecturalTick(at: start)
-    drawArchitecturalTick(at: end)
+    context.strokePath()
 
     let fontSize = max(9, min(12, transform.scale * 0.085))
-    let textColor = line.isEditable ? UIColor.systemBlue : strokeColor
     let attrs: [NSAttributedString.Key: Any] = [
-      .font: UIFont.monospacedDigitSystemFont(ofSize: fontSize, weight: line.isEditable ? .semibold : .regular),
-      .foregroundColor: textColor,
+      .font: UIFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold),
+      .foregroundColor: FloorPlanStyle.dim,
     ]
     let text = line.label as NSString
     let size = text.size(withAttributes: attrs)
@@ -296,32 +405,40 @@ enum DimensionLineRenderer {
       x: (start.x + end.x) * 0.5 + perpX * labelGap,
       y: (start.y + end.y) * 0.5 + perpY * labelGap
     )
-    let textOrigin = CGPoint(x: mid.x - size.width * 0.5, y: mid.y - size.height * 0.5)
-    let padH: CGFloat = line.isEditable ? 8 : 4
-    let padV: CGFloat = 3
+    let padH: CGFloat = line.isEditable ? 10 : 8
+    let padV: CGFloat = 4
+    let chipW = size.width + padH * 2 + (line.isEditable ? 12 : 0)
+    let chipH = max(size.height + padV * 2, fontSize * 1.7)
     let bgRect = CGRect(
-      x: textOrigin.x - padH,
-      y: textOrigin.y - padV,
-      width: size.width + padH * 2,
-      height: size.height + padV * 2
+      x: mid.x - chipW * 0.5,
+      y: mid.y - chipH * 0.5,
+      width: chipW,
+      height: chipH
     )
-    let bgFill = line.isEditable
-      ? UIColor.systemBlue.withAlphaComponent(isHighlighted ? 0.18 : 0.10)
-      : UIColor(white: 1, alpha: 0.92)
-    context.setFillColor(bgFill.cgColor)
-    context.fill(bgRect)
-    context.setStrokeColor((line.isEditable ? UIColor.systemBlue : strokeColor).withAlphaComponent(0.35).cgColor)
-    context.setLineWidth(line.isEditable ? 1 : 0.5)
-    context.stroke(bgRect)
+    let chipPath = UIBezierPath(roundedRect: bgRect, cornerRadius: chipH * 0.5)
+    context.setFillColor(UIColor.white.cgColor)
+    context.addPath(chipPath.cgPath)
+    context.fillPath()
+    context.setStrokeColor(
+      (isHighlighted ? FloorPlanStyle.dim : FloorPlanStyle.dimStroke).cgColor
+    )
+    context.setLineWidth(isHighlighted ? 1.5 : 1)
+    context.addPath(chipPath.cgPath)
+    context.strokePath()
+
+    let textOrigin = CGPoint(
+      x: mid.x - size.width * 0.5 - (line.isEditable ? 5 : 0),
+      y: mid.y - size.height * 0.5
+    )
     text.draw(at: textOrigin, withAttributes: attrs)
 
     if line.isEditable, let icon = UIImage(systemName: "pencil")?.withTintColor(
-      UIColor.systemBlue.withAlphaComponent(0.85),
+      FloorPlanStyle.dim.withAlphaComponent(0.85),
       renderingMode: .alwaysOriginal
     ) {
-      let iconSide = min(11, bgRect.height - 2)
+      let iconSide = min(11, bgRect.height - 4)
       icon.draw(in: CGRect(
-        x: bgRect.maxX - iconSide - 2,
+        x: bgRect.maxX - iconSide - 5,
         y: bgRect.midY - iconSide * 0.5,
         width: iconSide,
         height: iconSide
@@ -360,16 +477,45 @@ enum FloorPlanBoundaryRenderer {
 }
 
 enum FloorPlanGridRenderer {
+  /// Graph paper: 0.2 m minor + 1 m major (Telegram blueprint).
   static func draw(
     in context: CGContext,
     bounds: FloorPlanBounds,
     transform: FloorPlanViewTransform,
-    spacingMeters: CGFloat = 1.0,
-    color: UIColor
+    minorSpacingMeters: CGFloat = FloorPlanStyle.gridMinorSpacingMeters,
+    majorSpacingMeters: CGFloat = FloorPlanStyle.gridMajorSpacingMeters,
+    minorColor: UIColor = FloorPlanStyle.gridMinor,
+    majorColor: UIColor = FloorPlanStyle.gridMajor
+  ) {
+    drawLines(
+      in: context,
+      bounds: bounds,
+      transform: transform,
+      spacingMeters: minorSpacingMeters,
+      color: minorColor,
+      lineWidth: 1
+    )
+    drawLines(
+      in: context,
+      bounds: bounds,
+      transform: transform,
+      spacingMeters: majorSpacingMeters,
+      color: majorColor,
+      lineWidth: 1
+    )
+  }
+
+  private static func drawLines(
+    in context: CGContext,
+    bounds: FloorPlanBounds,
+    transform: FloorPlanViewTransform,
+    spacingMeters: CGFloat,
+    color: UIColor,
+    lineWidth: CGFloat
   ) {
     context.saveGState()
     context.setStrokeColor(color.cgColor)
-    context.setLineWidth(0.5)
+    context.setLineWidth(lineWidth)
 
     let minX = floor(bounds.minX / spacingMeters) * spacingMeters
     let maxX = ceil(bounds.maxX / spacingMeters) * spacingMeters
@@ -377,7 +523,7 @@ enum FloorPlanGridRenderer {
     let maxY = ceil(bounds.maxY / spacingMeters) * spacingMeters
 
     var x = minX
-    while x <= maxX {
+    while x <= maxX + 1e-9 {
       let a = transform.planToScreen(FloorPlanPoint2D(x: x, y: minY))
       let b = transform.planToScreen(FloorPlanPoint2D(x: x, y: maxY))
       context.move(to: a)
@@ -385,7 +531,7 @@ enum FloorPlanGridRenderer {
       x += spacingMeters
     }
     var y = minY
-    while y <= maxY {
+    while y <= maxY + 1e-9 {
       let a = transform.planToScreen(FloorPlanPoint2D(x: minX, y: y))
       let b = transform.planToScreen(FloorPlanPoint2D(x: maxX, y: y))
       context.move(to: a)

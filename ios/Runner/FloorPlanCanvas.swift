@@ -162,9 +162,8 @@ final class FloorPlanCanvas: UIView {
     if showGrid {
       FloorPlanGridRenderer.draw(
         in: ctx,
-        bounds: expandedBounds(model.bounds, padding: 0.8),
-        transform: transform,
-        color: UIColor(white: 0.85, alpha: 1)
+        bounds: expandedBounds(model.bounds, padding: FloorPlanStyle.gridPaddingMeters),
+        transform: transform
       )
     }
 
@@ -173,19 +172,22 @@ final class FloorPlanCanvas: UIView {
         boundary: model.boundary,
         in: ctx,
         transform: transform,
-        strokeColor: UIColor(red: 0.18, green: 0.24, blue: 0.34, alpha: 1),
+        strokeColor: FloorPlanStyle.wall,
         lineWidth: 1
       )
     }
 
-    let wallColor = UIColor(red: 0.12, green: 0.16, blue: 0.24, alpha: 1)
+    let wallColor = FloorPlanStyle.wall
     FloorPlanWallRenderer.draw(
       walls: model.walls,
       in: ctx,
       transform: transform,
-      strokeColor: wallColor,
-      lineWidth: max(3, transform.scale * 0.045)
+      fillColor: wallColor
     )
+
+    let avgWallThickness = model.walls.isEmpty
+      ? FloorPlanStyle.openingThicknessMeters
+      : model.walls.map(\.thickness).reduce(0, +) / CGFloat(model.walls.count)
 
     FloorPlanOpeningRenderer.draw(
       doors: model.doors,
@@ -193,24 +195,25 @@ final class FloorPlanCanvas: UIView {
       openings: model.openings,
       in: ctx,
       transform: transform,
-      wallColor: wallColor
+      wallColor: wallColor,
+      planCenter: model.planCenter,
+      wallThicknessMeters: avgWallThickness
     )
 
     if showObjects {
-      // Suppress furniture text labels while dimensions are visible: the two label
-      // sets overlap and look cluttered. Shapes still render so the layout reads clearly.
+      // Telegram blueprint: anonymous orange furniture boxes (no category labels).
       FloorPlanObjectRenderer.draw(
         objects: model.objects,
         in: ctx,
         transform: transform,
-        fillColor: UIColor(red: 0.78, green: 0.86, blue: 0.92, alpha: 0.35),
-        strokeColor: UIColor(red: 0.22, green: 0.38, blue: 0.48, alpha: 1),
-        showLabels: dimensionMode == .hidden
+        fillColor: FloorPlanStyle.furnitureFill,
+        strokeColor: FloorPlanStyle.furnitureStroke,
+        showLabels: false
       )
     }
 
     labelHitRegions = []
-    let dimensionColor = UIColor(red: 0.28, green: 0.34, blue: 0.42, alpha: 0.95)
+    let dimensionColor = FloorPlanStyle.dimStroke
     switch dimensionMode {
     case .overall:
       labelHitRegions = DimensionLineRenderer.draw(
@@ -221,7 +224,7 @@ final class FloorPlanCanvas: UIView {
         highlightedDimensionId: highlightedDimensionId
       )
     case .wallSegments:
-      // Wall chips + overall W/H on the drawn wall rectangle when dims are on.
+      // Wall chips + overall W/H on the drawn rectangle when dims are on.
       labelHitRegions = DimensionLineRenderer.draw(
         lines: model.wallSegmentDimensions,
         in: ctx,

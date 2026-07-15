@@ -20,6 +20,15 @@ enum FurnitureModelCatalog {
     }
   }
 
+  /// Kenney bed/chair meshes face the opposite way from RoomPlan boxes (headboard / seat back
+  /// toward the room). Flip 180° about Y so the back sits against the wall.
+  private static func yawOffsetRadians(for type: EditableObjectType) -> Float {
+    switch type {
+    case .bed, .chair: return .pi
+    default: return 0
+    }
+  }
+
   /// Returns a node sized to `(width, height, length)`, sitting on `floorY`, centered at
   /// `(centerX, centerZ)`, rotated by `-rotationRadians` about Y — matching `SCNBox` placement.
   /// Use for fully regenerated scenes where walls and furniture share editable-model space.
@@ -70,36 +79,31 @@ enum FurnitureModelCatalog {
     let dstY = bmax.y - bmin.y
     let dstZ = bmax.z - bmin.z
     guard dstX > 1e-4, dstY > 1e-4, dstZ > 1e-4 else { return false }
-    guard let template = template(for: type) else { return false }
+    guard let mesh = makeScaledMesh(
+      for: type,
+      sizeX: dstX,
+      sizeY: dstY,
+      sizeZ: dstZ,
+      stylized: stylized,
+      outsideBounds: false
+    ) else { return false }
 
-    let mesh = template.clone()
-    deepCopyGeometries(on: mesh)
-    let (smin, smax) = mesh.boundingBox
-    let srcX = smax.x - smin.x
-    let srcY = smax.y - smin.y
-    let srcZ = smax.z - smin.z
-    guard srcX > 1e-4, srcY > 1e-4, srcZ > 1e-4 else { return false }
-
-    // Map source AABB → host local AABB with scale+position only (no pivot — SceneKit pivot+scale
-    // has caused world-space offsets that pushed furniture outside the walls).
-    let sx = dstX / srcX
-    let sy = dstY / srcY
-    let sz = dstZ / srcZ
-    mesh.pivot = SCNMatrix4Identity
-    mesh.scale = SCNVector3(sx, sy, sz)
-    mesh.position = SCNVector3(
-      bmin.x - smin.x * sx,
-      bmin.y - smin.y * sy,
-      bmin.z - smin.z * sz
+    // Mesh bottom-center is at local origin (with optional bed/chair yaw). Park that origin on
+    // the host AABB floor-center so the footprint matches the original box.
+    let container = SCNNode()
+    container.name = catalogMeshName
+    container.position = SCNVector3(
+      (bmin.x + bmax.x) * 0.5,
+      bmin.y,
+      (bmin.z + bmax.z) * 0.5
     )
-    mesh.name = catalogMeshName
-    applyMaterials(to: mesh, stylized: stylized, outsideBounds: false)
+    container.addChildNode(mesh)
 
     host.geometry = nil
     for child in host.childNodes where child.name != catalogMeshName {
       child.removeFromParentNode()
     }
-    host.addChildNode(mesh)
+    host.addChildNode(container)
     host.castsShadow = true
     return true
   }
@@ -135,7 +139,15 @@ enum FurnitureModelCatalog {
     mesh.scale = SCNVector3(sx, sy, sz)
     mesh.position = SCNVector3(-sx * bcX, -sy * minVec.y, -sz * bcZ)
     applyMaterials(to: mesh, stylized: stylized, outsideBounds: outsideBounds)
-    return mesh
+
+    let yaw = yawOffsetRadians(for: type)
+    guard abs(yaw) > 1e-5 else { return mesh }
+
+    // Rotate about the bottom-center origin so the footprint stays put after the 180° flip.
+    let yawNode = SCNNode()
+    yawNode.eulerAngles.y = yaw
+    yawNode.addChildNode(mesh)
+    return yawNode
   }
 
   private static func template(for type: EditableObjectType) -> SCNNode? {
