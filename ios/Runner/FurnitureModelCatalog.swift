@@ -20,11 +20,11 @@ enum FurnitureModelCatalog {
     }
   }
 
-  /// Kenney bed/chair meshes face the opposite way from RoomPlan boxes (headboard / seat back
-  /// toward the room). Flip 180° about Y so the back sits against the wall.
+  /// Kenney bed/chair/sofa meshes face the opposite way from RoomPlan boxes (headboard /
+  /// seat back toward the room). Flip 180° about Y so the back sits against the wall.
   private static func yawOffsetRadians(for type: EditableObjectType) -> Float {
     switch type {
-    case .bed, .chair: return .pi
+    case .bed, .chair, .sofa: return .pi
     default: return 0
     }
   }
@@ -88,7 +88,7 @@ enum FurnitureModelCatalog {
       outsideBounds: false
     ) else { return false }
 
-    // Mesh bottom-center is at local origin (with optional bed/chair yaw). Park that origin on
+    // Mesh bottom-center is at local origin (with optional bed/chair/sofa yaw). Park that origin on
     // the host AABB floor-center so the footprint matches the original box.
     let container = SCNNode()
     container.name = catalogMeshName
