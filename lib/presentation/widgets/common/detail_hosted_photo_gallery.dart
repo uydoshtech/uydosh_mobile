@@ -199,7 +199,7 @@ class DetailHostedPhotoGallery extends StatelessWidget {
       placeholder: (context, url) => Container(
         color: Colors.grey[200],
         child: const Center(
-          child: UydoshLogoSpinner(),
+          child: UydoshLogoSpinner(onLightBackground: true),
         ),
       ),
       errorWidget: (context, url, error) => Container(

@@ -1,0 +1,166 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'conversation.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_Conversation _$ConversationFromJson(Map<String, dynamic> json) =>
+    _Conversation(
+      id: (json['id'] as num).toInt(),
+      initiatorId: (json['initiator_id'] as num).toInt(),
+      participantId: (json['participant_id'] as num).toInt(),
+      isActive: json['is_active'] as bool,
+      createdAt: json['created_at'] as String,
+      updatedAt: json['updated_at'] as String,
+      listingId: (json['listing_id'] as num?)?.toInt(),
+      contextType: json['context_type'] as String?,
+      contextId: (json['context_id'] as num?)?.toInt(),
+      gigRequestId: (json['gig_request_id'] as num?)?.toInt(),
+      gigRequestTitle: json['gig_request_title'] as String?,
+      lastMessageAt: json['last_message_at'] as String?,
+      lastMessageContent: json['last_message_content'] as String?,
+      lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
+      archivedAt: json['archived_at'] as String?,
+      listing: json['listing'] == null
+          ? null
+          : Listing.fromJson(json['listing'] as Map<String, dynamic>),
+      otherUser: json['otherUser'] == null
+          ? null
+          : UserProfile.fromJson(json['otherUser'] as Map<String, dynamic>),
+      unreadCount: (json['unread_count'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'initiator_id': instance.initiatorId,
+      'participant_id': instance.participantId,
+      'is_active': instance.isActive,
+      'created_at': instance.createdAt,
+      'updated_at': instance.updatedAt,
+      'listing_id': instance.listingId,
+      'context_type': instance.contextType,
+      'context_id': instance.contextId,
+      'gig_request_id': instance.gigRequestId,
+      'gig_request_title': instance.gigRequestTitle,
+      'last_message_at': instance.lastMessageAt,
+      'last_message_content': instance.lastMessageContent,
+      'last_message_sender_id': instance.lastMessageSenderId,
+      'archived_at': instance.archivedAt,
+      'listing': instance.listing,
+      'otherUser': instance.otherUser,
+      'unread_count': instance.unreadCount,
+    };
+
+_ConversationSummary _$ConversationSummaryFromJson(
+  Map<String, dynamic> json,
+) => _ConversationSummary(
+  id: (json['id'] as num).toInt(),
+  initiatorId: (json['initiator_id'] as num).toInt(),
+  participantId: (json['participant_id'] as num).toInt(),
+  isActive: json['is_active'] as bool,
+  createdAt: json['created_at'] as String,
+  updatedAt: json['updated_at'] as String,
+  listingId: (json['listing_id'] as num?)?.toInt(),
+  contextType: json['context_type'] as String?,
+  contextId: (json['context_id'] as num?)?.toInt(),
+  gigRequestId: (json['gig_request_id'] as num?)?.toInt(),
+  gigRequestTitle: json['gig_request_title'] as String?,
+  gigCategoryId: (json['gig_category_id'] as num?)?.toInt(),
+  gigBudgetType: json['gig_budget_type'] as String?,
+  lastMessageAt: json['last_message_at'] as String?,
+  lastMessageContent: json['last_message_content'] as String?,
+  lastMessageSenderId: (json['last_message_sender_id'] as num?)?.toInt(),
+  archivedAt: json['archived_at'] as String?,
+  listingTitle: json['listing_title'] as String?,
+  listingTypeId: (json['listing_type_id'] as num?)?.toInt(),
+  listingGender: (json['listing_gender'] as num?)?.toInt(),
+  listingPrice: (json['listing_price'] as num?)?.toInt(),
+  priceCurrencyCode: json['price_currency_code'] as String?,
+  conversationType: json['conversation_type'] as String?,
+  otherUserName: json['other_user_name'] as String?,
+  otherUserAvatar: json['other_user_avatar'] as String?,
+  members:
+      (json['members'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                ConversationMemberSummary.fromJson(e as Map<String, dynamic>),
+          )
+          .toList() ??
+      const <ConversationMemberSummary>[],
+  gigOwnerName: json['gig_owner_name'] as String?,
+  gigOwnerAvatar: json['gig_owner_avatar'] as String?,
+  unreadCount: (json['unread_count'] as num?)?.toInt(),
+  listingSubwayLineId: (json['listing_subway_line_id'] as num?)?.toInt(),
+  listingSubwayStationId: (json['listing_subway_station_id'] as num?)?.toInt(),
+  listingLocationId: (json['listing_location_id'] as num?)?.toInt(),
+  subwayStationNameUz: json['subway_station_name_uz'] as String?,
+  subwayStationNameRu: json['subway_station_name_ru'] as String?,
+  subwayStationNameEn: json['subway_station_name_en'] as String?,
+  subwayStationLine: (json['subway_station_line'] as num?)?.toInt(),
+  subwayStationOrdinal: (json['subway_station_ordinal'] as num?)?.toInt(),
+  searchSubwayStations: (json['search_subway_stations'] as List<dynamic>?)
+      ?.map((e) => SubwayStationDetail.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  locationNameUz: json['location_name_uz'] as String?,
+  locationNameRu: json['location_name_ru'] as String?,
+  locationNameEn: json['location_name_en'] as String?,
+  locationShortNameUz: json['location_short_name_uz'] as String?,
+  locationShortNameRu: json['location_short_name_ru'] as String?,
+  locationShortNameEn: json['location_short_name_en'] as String?,
+  searchLocations: (json['search_locations'] as List<dynamic>?)
+      ?.map((e) => LocationDetail.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
+
+Map<String, dynamic> _$ConversationSummaryToJson(
+  _ConversationSummary instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'initiator_id': instance.initiatorId,
+  'participant_id': instance.participantId,
+  'is_active': instance.isActive,
+  'created_at': instance.createdAt,
+  'updated_at': instance.updatedAt,
+  'listing_id': instance.listingId,
+  'context_type': instance.contextType,
+  'context_id': instance.contextId,
+  'gig_request_id': instance.gigRequestId,
+  'gig_request_title': instance.gigRequestTitle,
+  'gig_category_id': instance.gigCategoryId,
+  'gig_budget_type': instance.gigBudgetType,
+  'last_message_at': instance.lastMessageAt,
+  'last_message_content': instance.lastMessageContent,
+  'last_message_sender_id': instance.lastMessageSenderId,
+  'archived_at': instance.archivedAt,
+  'listing_title': instance.listingTitle,
+  'listing_type_id': instance.listingTypeId,
+  'listing_gender': instance.listingGender,
+  'listing_price': instance.listingPrice,
+  'price_currency_code': instance.priceCurrencyCode,
+  'conversation_type': instance.conversationType,
+  'other_user_name': instance.otherUserName,
+  'other_user_avatar': instance.otherUserAvatar,
+  'members': instance.members,
+  'gig_owner_name': instance.gigOwnerName,
+  'gig_owner_avatar': instance.gigOwnerAvatar,
+  'unread_count': instance.unreadCount,
+  'listing_subway_line_id': instance.listingSubwayLineId,
+  'listing_subway_station_id': instance.listingSubwayStationId,
+  'listing_location_id': instance.listingLocationId,
+  'subway_station_name_uz': instance.subwayStationNameUz,
+  'subway_station_name_ru': instance.subwayStationNameRu,
+  'subway_station_name_en': instance.subwayStationNameEn,
+  'subway_station_line': instance.subwayStationLine,
+  'subway_station_ordinal': instance.subwayStationOrdinal,
+  'search_subway_stations': instance.searchSubwayStations,
+  'location_name_uz': instance.locationNameUz,
+  'location_name_ru': instance.locationNameRu,
+  'location_name_en': instance.locationNameEn,
+  'location_short_name_uz': instance.locationShortNameUz,
+  'location_short_name_ru': instance.locationShortNameRu,
+  'location_short_name_en': instance.locationShortNameEn,
+  'search_locations': instance.searchLocations,
+};

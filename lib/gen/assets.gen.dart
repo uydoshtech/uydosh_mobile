@@ -14,6 +14,9 @@ import 'package:flutter/widgets.dart';
 class $AssetsIconGen {
   const $AssetsIconGen();
 
+  /// File path: assets/icon/app_clip_icon.svg
+  String get appClipIcon => 'assets/icon/app_clip_icon.svg';
+
   /// File path: assets/icon/app_logo.png
   AssetGenImage get appLogo => const AssetGenImage('assets/icon/app_logo.png');
 
@@ -24,7 +27,7 @@ class $AssetsIconGen {
   AssetGenImage get newIcon => const AssetGenImage('assets/icon/new_icon.jpg');
 
   /// List of all assets
-  List<AssetGenImage> get values => [appLogo, newIcon];
+  List<dynamic> get values => [appClipIcon, appLogo, newIcon];
 }
 
 class $AssetsImagesGen {
