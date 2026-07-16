@@ -211,6 +211,14 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_adjust_north_updated", languageCode),
       "floorPlanAdjustNorthDegreesFormat":
           L10n.getForLanguage("room_3d_floor_plan_adjust_north_degrees_format", languageCode),
+      "floorPlanRotateFurnitureTitle":
+          L10n.getForLanguage("room_3d_floor_plan_rotate_furniture_title", languageCode),
+      "floorPlanRotateFurnitureMessage":
+          L10n.getForLanguage("room_3d_floor_plan_rotate_furniture_message", languageCode),
+      "floorPlanRotateFurnitureUpdated":
+          L10n.getForLanguage("room_3d_floor_plan_rotate_furniture_updated", languageCode),
+      "floorPlanRotateFurnitureDegreesFormat":
+          L10n.getForLanguage("room_3d_floor_plan_rotate_furniture_degrees_format", languageCode),
       "floorPlanEditDimensionTitle":
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
       "floorPlanEditDimensionCurrent":
