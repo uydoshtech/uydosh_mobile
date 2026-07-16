@@ -121,10 +121,14 @@ dependencies:
   # Android room-scan 3D viewer: wraps Google's <model-viewer> web component
   # in a WebView to render the server-side USDZ→GLB conversion
   # (`room_scan_glb_url`). iOS keeps its native SceneKit viewer
-  # (see `RoomUsdzViewerService`); this covers the platform where the
-  # native USDZ can't be opened.
+  # (see `RoomUsdzViewerService` → `room_scan_kit`); this covers the platform
+  # where the native USDZ can't be opened.
   model_viewer_plus: ^1.10.0
   path_provider: ^2.1.4
+  room_scan_kit:
+    git:
+      url: https://github.com/uydoshtech/room_scan_kit.git
+      ref: v0.1.0
   firebase_app_check: ^0.4.5
   # Flutter-native crop widget. We render our own UyDosh-styled crop UI on top
   # of [Crop] from this package — see [ListingCropScreen] — so we control the

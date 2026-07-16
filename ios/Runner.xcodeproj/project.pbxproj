@@ -9,43 +9,28 @@
 /* Begin PBXBuildFile section */
 		020638672CE8D99FCC413A76 /* RoomExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6C3A06BA83A55027140935 /* RoomExporter.swift */; };
 		03C3445E4F9E14FFEA00DB7D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74BF6B06039A404DDFF201DA /* APIClient.swift */; };
-		047665D3A6FBB7C97BDF76C9 /* ScanSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E554642B0DC37C0936E2F4 /* ScanSuccessView.swift */; };
 		087979BCF367DDB09F9C3DF0 /* ScanInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88B182B04B2A92AB7D35D9C /* ScanInvocation.swift */; };
-		10D67F8AC2C68E67258F523F /* AppClipConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2625BD19423BFF7594E6BF27 /* AppClipConfig.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		16A8E91BAC2DAD4228F30324 /* AppClipConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BED237CBE2663931ABDC11 /* AppClipConfig.swift */; };
-		1931A3F8CD468B77B8589254 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F52EEAFC6BF08160CC8FC532 /* APIClient.swift */; };
-		1A5BC02AD6F68B775E410C7E /* RoomPlanSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDF1D0651E4C45664D5A6631 /* RoomPlanSupport.swift */; };
-		1CD6517A5F3A69CC8A9591E5 /* ScanIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7165C2114BC987696679532B /* ScanIntroView.swift */; };
-		1D0F48258226A5339BC500B6 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 7E11830F852E1DECF57A74E9 /* InfoPlist.xcstrings */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		33EAECE3DBD900AE70A46D55 /* UploadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B610CF80A4FD43E2CF369F90 /* UploadProgressView.swift */; };
 		35A292706E2E87AAD18C919D /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6932E02C351A9D9008BDD07 /* Pods_Runner.framework */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		3FB9C49759262A68ECC2EAB1 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEDDC6E8D184C1255ECBEAC0 /* Pods_RunnerTests.framework */; };
 		467D0E4125009BBE3A2D2CED /* UyDoshAppClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D32A80D23963DFCEC0B0B4 /* UyDoshAppClipApp.swift */; };
-		487F761EE972B9F6B132E3D3 /* UploadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39F843BD2DD720568E6C4B9 /* UploadProgressView.swift */; };
 		513B63CF2E54A9C400D89774 /* Podfile.lock in Resources */ = {isa = PBXBuildFile; fileRef = 513B63CE2E54A9C400D89774 /* Podfile.lock */; };
 		513B63D12E54B0A200D89774 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 513B63D02E54B0A200D89774 /* GoogleService-Info.plist */; };
 		55BA75AC49B596195AFCF726 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3D23685C05D110D811363CDC /* InfoPlist.xcstrings */; };
-		6382C25A5D20FA8BA213C9E3 /* ScanReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EC0E56B5012EEB6880B26B /* ScanReviewView.swift */; };
-		6795D43E0C67EB43CF5EC1A5 /* UploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1549075ED00AF0D165DA844A /* UploadService.swift */; };
 		6A2F5E702EFB000100000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6A2F5E6F2EFB000100000001 /* PrivacyInfo.xcprivacy */; };
-		6A7E7273E2222A2775694A39 /* RoomExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD725253DB07CC4B2950FEB /* RoomExporter.swift */; };
-		6C80104AF6F8B424B01132C0 /* RoomScanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66DF877F2F00756C892E5C2A /* RoomScanCoordinator.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		78DA3453E43A02CD07953546 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E86683DB0D6DF1868487F9 /* RootView.swift */; };
 		7F3570CBBA1AAA2452C09683 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2159B1C92BB260C331252386 /* Assets.xcassets */; };
 		8393029781431A48E375DDA3 /* ScanErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA17DFEFF4A643117233B571 /* ScanErrorView.swift */; };
 		87960DDA2193EE97035C2DCA /* RoomPlanSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B283EEF1CD7E92A791E94D5 /* RoomPlanSupport.swift */; };
-		8E13D3B383B6BAF5887579FB /* AppClipRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D49442717FC630157838856 /* AppClipRouter.swift */; };
-		8F0F9CEB712CFD848BF3184D /* UyDoshAppClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C9228BA013F005B6B4B8640 /* UyDoshAppClipApp.swift */; };
-		8F7BBEE834419906FFB3BCFB /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A1E08B69C581AA1A5BC54 /* ScanSession.swift */; };
 		907735D0F8BFB04DBDC98D43 /* UploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15B8BDB8227C656E7A7EF1C5 /* UploadService.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
-		98001A200A2B445854218A1F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AAC9E7445DDBA6B055651B1 /* Assets.xcassets */; };
 		9AA8D7B79BB6419725576CA8 /* NormalizedRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = C654B96A9FACBBB2C9055531 /* NormalizedRoom.swift */; };
 		A10C961ABC0C16AEB1125096 /* RoomScanCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EC56EE4F0BF919D7384E39 /* RoomScanCoordinator.swift */; };
 		A12EF209E8D7BD5125DAC8C1 /* RoomScanArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76ECBFE46523760FA4197E1 /* RoomScanArtifacts.swift */; };
@@ -53,60 +38,16 @@
 		A2F853FF510D69BE5DEDA4CF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B233F1ADCACC36C3D12B899A /* Foundation.framework */; };
 		AB05747752C16EE1FD36F57C /* ScanSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 705E86BE2DB8847E86CADBD1 /* ScanSession.swift */; };
 		AB63F5D0479F1114F71B797B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0510F823D07FFF27D427BBFC /* Localizable.xcstrings */; };
-		B1CF693E6637A2E803C2D028 /* NormalizedRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE0300C6F8E328D7C465AF1 /* NormalizedRoom.swift */; };
-		B6F71C0B4455009C6F934509 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6B4DF93D9ABB2AD42562C5 /* RootView.swift */; };
-		BB62A690EF6D7CE188663634 /* RoomScanArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EE649B37A174AE448545318 /* RoomScanArtifacts.swift */; };
 		BB6FED86EBD47104365C4E3A /* ScanSessionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E089C06780AF6275D3EC1AD /* ScanSessionAPI.swift */; };
-		BB7A00B5FABE8DB426C8D275 /* RoomNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0261277B65D8F66942C9DEA4 /* RoomNormalizer.swift */; };
 		CDA3B0FBD93453ADF6051D51 /* AppClipRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EF3DA93220A04217366F876 /* AppClipRouter.swift */; };
-		D17462F267D07C915631FCC0 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25725861DB5A3EADACAB6912 /* ScanView.swift */; };
-		D5EA71199DD57B9208BC7413 /* ScanUploadResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EAEFBA69AF861E3696F18EF /* ScanUploadResult.swift */; };
-		D845C08F97F476B794D2DAB7 /* ScanErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D94B9F368120DC6DD2BDD3 /* ScanErrorView.swift */; };
 		D93E0E7653969445E26B2A21 /* ScanUploadResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF5AFF31BC04075DCF9BB44C /* ScanUploadResult.swift */; };
 		E27A633B164EC951BC0EA60D /* ScanReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2A4D8DC264075FC12484DB /* ScanReviewView.swift */; };
-		E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */; };
-		E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */; };
-		E8A1B2E11ED2DC5600515813 /* RoomScanMetricsComputer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */; };
-		E8A1B2F11ED2DC5600515814 /* FloorPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */; };
-		E8A1B2F21ED2DC5600515815 /* FloorPlanProjectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */; };
-		E8A1B2F41ED2DC5600515816 /* FloorPlanRenderers.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */; };
-		E8A1B2F61ED2DC5600515817 /* FloorPlanCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */; };
-		E8A1B2F81ED2DC5600515818 /* FloorPlanTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */; };
-		E8A1B3011ED2DC5600515819 /* FloorPlanAlignmentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */; };
-		E8A1B3031ED2DC560051581B /* EditableFloorPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */; };
-		E8A1B3051ED2DC560051581D /* RoomPlanToEditableModelMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */; };
-		E8A1B3071ED2DC560051581F /* EditableFloorPlanAlignService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */; };
-		E8A1B3091ED2DC5600515821 /* DimensionLineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */; };
-		E8A1B30B1ED2DC5600515823 /* FloorPlanResizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */; };
-		E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */; };
-		E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */; };
-		E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */; };
-		E8A1B3501ED2DC5600515871 /* FurnitureModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */; };
-		E8A1B3501ED2DC5600515873 /* FurnitureModels in Resources */ = {isa = PBXBuildFile; fileRef = E8A1B3501ED2DC5600515872 /* FurnitureModels */; };
-		E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3141ED2DC560051582C /* DimensionEditController.swift */; };
-		E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */; };
-		E8A1B3191ED2DC5600515831 /* RoomScanOrientationCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */; };
-		E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */; };
-		E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */; };
-		E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */; };
-		E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */; };
-		E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */; };
-		E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */; };
-		E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */; };
-		E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */; };
-		E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */; };
-		E8A1B3401ED2DC5600515860 /* SunClockOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */; };
-		E8A1B3401ED2DC5600515901 /* SolarPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A1B3411ED2DC5600515902 /* SolarPosition.swift */; };
 		EAFD8F1BB4505E37F4C4725E /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D2FBF270D98A0361106485 /* ScanView.swift */; };
-		EBF9CA2B6727BCCACAE64FED /* ScanSessionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4B95F0A4EA5F7624FBE281 /* ScanSessionAPI.swift */; };
-		ED4372EBC4A0E9BA37EBA3B0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B233F1ADCACC36C3D12B899A /* Foundation.framework */; };
 		EE3C00318BED0ACD50B3224E /* RoomNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7876CB0FAE482F309170AEE /* RoomNormalizer.swift */; };
 		F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B60 /* Localizable.strings */; };
 		F1A2B3C4D5E60718293A4B75 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E60718293A4B70 /* InfoPlist.strings */; };
 		F6DB60DC8C18593A4343D052 /* ScanIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66C80DB3307B10F96ED1977 /* ScanIntroView.swift */; };
 		F70364C32FEBE38C4C1F39DD /* ScanSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3456337A1E4C6D9B1022A5 /* ScanSuccessView.swift */; };
-		F84FCA51D384220399E25AB7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 05BB38B2433C57E637EB848B /* Localizable.xcstrings */; };
-		FFB0C410874444F2132F98DF /* ScanInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC8F1DC721879FC18B757E3 /* ScanInvocation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -151,31 +92,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0261277B65D8F66942C9DEA4 /* RoomNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomNormalizer.swift; sourceTree = "<group>"; };
 		02D32A80D23963DFCEC0B0B4 /* UyDoshAppClipApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UyDoshAppClipApp.swift; sourceTree = "<group>"; };
-		02EC0E56B5012EEB6880B26B /* ScanReviewView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanReviewView.swift; sourceTree = "<group>"; };
 		0510F823D07FFF27D427BBFC /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		05BB38B2433C57E637EB848B /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0A18A3A7F07D0FA29AA68066 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
-		0F4B95F0A4EA5F7624FBE281 /* ScanSessionAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSessionAPI.swift; sourceTree = "<group>"; };
 		1481A100196CB6DB570783BC /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
-		1549075ED00AF0D165DA844A /* UploadService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UploadService.swift; sourceTree = "<group>"; };
 		15B8BDB8227C656E7A7EF1C5 /* UploadService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UploadService.swift; sourceTree = "<group>"; };
 		17DE8F13ACFC23971B6499C4 /* UyDoshAppClip.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = UyDoshAppClip.entitlements; sourceTree = "<group>"; };
 		2159B1C92BB260C331252386 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		25725861DB5A3EADACAB6912 /* ScanView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
-		2625BD19423BFF7594E6BF27 /* AppClipConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppClipConfig.swift; sourceTree = "<group>"; };
-		2DE0300C6F8E328D7C465AF1 /* NormalizedRoom.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NormalizedRoom.swift; sourceTree = "<group>"; };
-		2EE649B37A174AE448545318 /* RoomScanArtifacts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanArtifacts.swift; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		3D23685C05D110D811363CDC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
-		3FD725253DB07CC4B2950FEB /* RoomExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomExporter.swift; sourceTree = "<group>"; };
 		47BED237CBE2663931ABDC11 /* AppClipConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppClipConfig.swift; sourceTree = "<group>"; };
-		4AAC9E7445DDBA6B055651B1 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4E089C06780AF6275D3EC1AD /* ScanSessionAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSessionAPI.swift; sourceTree = "<group>"; };
 		513B63CE2E54A9C400D89774 /* Podfile.lock */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile.lock; sourceTree = "<group>"; };
 		513B63D02E54B0A200D89774 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -183,27 +113,18 @@
 		51AF6FB22F4BDD8100369D94 /* RunnerDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RunnerDebug.entitlements; sourceTree = "<group>"; };
 		53E86683DB0D6DF1868487F9 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		5B283EEF1CD7E92A791E94D5 /* RoomPlanSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomPlanSupport.swift; sourceTree = "<group>"; };
-		5D49442717FC630157838856 /* AppClipRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppClipRouter.swift; sourceTree = "<group>"; };
-		5DC8F1DC721879FC18B757E3 /* ScanInvocation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanInvocation.swift; sourceTree = "<group>"; };
 		66A400822C17F17B74EB0C46 /* UyDoshAppClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UyDoshAppClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		66DF877F2F00756C892E5C2A /* RoomScanCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanCoordinator.swift; sourceTree = "<group>"; };
 		6A2F5E6F2EFB000100000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6FB991721B08E71922F358B5 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		705E86BE2DB8847E86CADBD1 /* ScanSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSession.swift; sourceTree = "<group>"; };
-		7165C2114BC987696679532B /* ScanIntroView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanIntroView.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		74BF6B06039A404DDFF201DA /* APIClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7C12674D682E550DE91A8C41 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
-		7E11830F852E1DECF57A74E9 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
-		7EAEFBA69AF861E3696F18EF /* ScanUploadResult.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanUploadResult.swift; sourceTree = "<group>"; };
 		7EF3DA93220A04217366F876 /* AppClipRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppClipRouter.swift; sourceTree = "<group>"; };
-		800A1E08B69C581AA1A5BC54 /* ScanSession.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSession.swift; sourceTree = "<group>"; };
-		89E554642B0DC37C0936E2F4 /* ScanSuccessView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSuccessView.swift; sourceTree = "<group>"; };
 		8C054B8545E4B908B611414E /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		8F6C3A06BA83A55027140935 /* RoomExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomExporter.swift; sourceTree = "<group>"; };
-		92D94B9F368120DC6DD2BDD3 /* ScanErrorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanErrorView.swift; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -212,8 +133,6 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9C3456337A1E4C6D9B1022A5 /* ScanSuccessView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanSuccessView.swift; sourceTree = "<group>"; };
-		9C9228BA013F005B6B4B8640 /* UyDoshAppClipApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UyDoshAppClipApp.swift; sourceTree = "<group>"; };
-		9E6B4DF93D9ABB2AD42562C5 /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A7EC56EE4F0BF919D7384E39 /* RoomScanCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanCoordinator.swift; sourceTree = "<group>"; };
 		B233F1ADCACC36C3D12B899A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		B610CF80A4FD43E2CF369F90 /* UploadProgressView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UploadProgressView.swift; sourceTree = "<group>"; };
@@ -226,43 +145,9 @@
 		C421C8AF8E9A70E1BDB0DC3B /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		C654B96A9FACBBB2C9055531 /* NormalizedRoom.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NormalizedRoom.swift; sourceTree = "<group>"; };
 		C76ECBFE46523760FA4197E1 /* RoomScanArtifacts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomScanArtifacts.swift; sourceTree = "<group>"; };
-		DDF1D0651E4C45664D5A6631 /* RoomPlanSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoomPlanSupport.swift; sourceTree = "<group>"; };
 		E6932E02C351A9D9008BDD07 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7D2FBF270D98A0361106485 /* ScanView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		E88B182B04B2A92AB7D35D9C /* ScanInvocation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanInvocation.swift; sourceTree = "<group>"; };
-		E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomUsdzViewerViewController.swift; sourceTree = "<group>"; };
-		E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanBoundsPlugin.swift; sourceTree = "<group>"; };
-		E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanMetricsComputer.swift; sourceTree = "<group>"; };
-		E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanModel.swift; sourceTree = "<group>"; };
-		E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanProjectionService.swift; sourceTree = "<group>"; };
-		E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanRenderers.swift; sourceTree = "<group>"; };
-		E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanCanvas.swift; sourceTree = "<group>"; };
-		E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanTab.swift; sourceTree = "<group>"; };
-		E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanAlignmentService.swift; sourceTree = "<group>"; };
-		E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanModel.swift; sourceTree = "<group>"; };
-		E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomPlanToEditableModelMapper.swift; sourceTree = "<group>"; };
-		E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanAlignService.swift; sourceTree = "<group>"; };
-		E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionLineService.swift; sourceTree = "<group>"; };
-		E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeService.swift; sourceTree = "<group>"; };
-		E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditableFloorPlanProjector.swift; sourceTree = "<group>"; };
-		E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanStateManager.swift; sourceTree = "<group>"; };
-		E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene3DRegenerationService.swift; sourceTree = "<group>"; };
-		E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FurnitureModelCatalog.swift; sourceTree = "<group>"; };
-		E8A1B3501ED2DC5600515872 /* FurnitureModels */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FurnitureModels; sourceTree = "<group>"; };
-		E8A1B3141ED2DC560051582C /* DimensionEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DimensionEditController.swift; sourceTree = "<group>"; };
-		E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanResizeServiceTests.swift; sourceTree = "<group>"; };
-		E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoomScanOrientationCapture.swift; sourceTree = "<group>"; };
-		E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlanNorthOrientation.swift; sourceTree = "<group>"; };
-		E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationEditController.swift; sourceTree = "<group>"; };
-		E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunPositionMath.swift; sourceTree = "<group>"; };
-		E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationController.swift; sourceTree = "<group>"; };
-		E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunSimulationPanel.swift; sourceTree = "<group>"; };
-		E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunCompassOverlayView.swift; sourceTree = "<group>"; };
-		E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanCeilingService.swift; sourceTree = "<group>"; };
-		E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassScreenProjection.swift; sourceTree = "<group>"; };
-		E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompassOrientationAdjustPanel.swift; sourceTree = "<group>"; };
-		E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SunClockOverlayView.swift; sourceTree = "<group>"; };
-		E8A1B3411ED2DC5600515902 /* SolarPosition.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolarPosition.swift; sourceTree = "<group>"; };
 		EF5AFF31BC04075DCF9BB44C /* ScanUploadResult.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScanUploadResult.swift; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B61 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B62 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -270,8 +155,6 @@
 		F1A2B3C4D5E60718293A4B71 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B72 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F1A2B3C4D5E60718293A4B73 /* uz */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uz; path = uz.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		F39F843BD2DD720568E6C4B9 /* UploadProgressView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UploadProgressView.swift; sourceTree = "<group>"; };
-		F52EEAFC6BF08160CC8FC532 /* APIClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -319,7 +202,6 @@
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
-				E8A1B3161ED2DC560051582E /* FloorPlanResizeServiceTests.swift */,
 			);
 			path = RunnerTests;
 			sourceTree = "<group>";
@@ -418,38 +300,6 @@
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
-				E8A1B2C31ED2DC5600515811 /* RoomUsdzViewerViewController.swift */,
-				E8A1B2D01ED2DC5600515812 /* RoomScanBoundsPlugin.swift */,
-				E8A1B2E01ED2DC5600515813 /* RoomScanMetricsComputer.swift */,
-				E8A1B31A1ED2DC5600515832 /* RoomScanOrientationCapture.swift */,
-				E8A1B2F01ED2DC5600515814 /* FloorPlanModel.swift */,
-				E8A1B2F31ED2DC5600515815 /* FloorPlanProjectionService.swift */,
-				E8A1B2F51ED2DC5600515816 /* FloorPlanRenderers.swift */,
-				E8A1B2F71ED2DC5600515817 /* FloorPlanCanvas.swift */,
-				E8A1B2F91ED2DC5600515818 /* FloorPlanTab.swift */,
-				E8A1B3021ED2DC560051581A /* FloorPlanAlignmentService.swift */,
-				E8A1B3041ED2DC560051581C /* EditableFloorPlanModel.swift */,
-				E8A1B3061ED2DC560051581E /* RoomPlanToEditableModelMapper.swift */,
-				E8A1B3081ED2DC5600515820 /* EditableFloorPlanAlignService.swift */,
-				E8A1B30A1ED2DC5600515822 /* DimensionLineService.swift */,
-				E8A1B30C1ED2DC5600515824 /* FloorPlanResizeService.swift */,
-				E8A1B30E1ED2DC5600515826 /* EditableFloorPlanProjector.swift */,
-				E8A1B3101ED2DC5600515828 /* FloorPlanStateManager.swift */,
-				E8A1B3121ED2DC560051582A /* Scene3DRegenerationService.swift */,
-				E8A1B3501ED2DC5600515870 /* FurnitureModelCatalog.swift */,
-				E8A1B3501ED2DC5600515872 /* FurnitureModels */,
-				E8A1B3141ED2DC560051582C /* DimensionEditController.swift */,
-				E8A1B31C1ED2DC5600515834 /* FloorPlanNorthOrientation.swift */,
-				E8A1B31E1ED2DC5600515836 /* CompassOrientationEditController.swift */,
-				E8A1B32E1ED2DC560051584E /* CompassOrientationAdjustPanel.swift */,
-				E8A1B3221ED2DC5600515842 /* SunPositionMath.swift */,
-				E8A1B3411ED2DC5600515902 /* SolarPosition.swift */,
-				E8A1B3241ED2DC5600515844 /* SunSimulationController.swift */,
-				E8A1B3261ED2DC5600515846 /* SunSimulationPanel.swift */,
-				E8A1B3281ED2DC5600515848 /* SunCompassOverlayView.swift */,
-				E8A1B3411ED2DC5600515861 /* SunClockOverlayView.swift */,
-				E8A1B32C1ED2DC560051584C /* CompassScreenProjection.swift */,
-				E8A1B32A1ED2DC560051584A /* ScanCeilingService.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				513B63CE2E54A9C400D89774 /* Podfile.lock */,
 				513B63D02E54B0A200D89774 /* GoogleService-Info.plist */,
@@ -658,7 +508,6 @@
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				513B63D12E54B0A200D89774 /* GoogleService-Info.plist in Resources */,
 				6A2F5E702EFB000100000001 /* PrivacyInfo.xcprivacy in Resources */,
-				E8A1B3501ED2DC5600515873 /* FurnitureModels in Resources */,
 				F1A2B3C4D5E60718293A4B64 /* Localizable.strings in Resources */,
 				F1A2B3C4D5E60718293A4B75 /* InfoPlist.strings in Resources */,
 			);
@@ -854,7 +703,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */,
-				E8A1B3151ED2DC560051582D /* FloorPlanResizeServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -892,37 +740,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
-				E8A1B2C41ED2DC5600515811 /* RoomUsdzViewerViewController.swift in Sources */,
-				E8A1B2D11ED2DC5600515812 /* RoomScanBoundsPlugin.swift in Sources */,
-				E8A1B2E11ED2DC5600515813 /* RoomScanMetricsComputer.swift in Sources */,
-				E8A1B3191ED2DC5600515831 /* RoomScanOrientationCapture.swift in Sources */,
-				E8A1B2F11ED2DC5600515814 /* FloorPlanModel.swift in Sources */,
-				E8A1B2F21ED2DC5600515815 /* FloorPlanProjectionService.swift in Sources */,
-				E8A1B2F41ED2DC5600515816 /* FloorPlanRenderers.swift in Sources */,
-				E8A1B2F61ED2DC5600515817 /* FloorPlanCanvas.swift in Sources */,
-				E8A1B2F81ED2DC5600515818 /* FloorPlanTab.swift in Sources */,
-				E8A1B3011ED2DC5600515819 /* FloorPlanAlignmentService.swift in Sources */,
-				E8A1B3031ED2DC560051581B /* EditableFloorPlanModel.swift in Sources */,
-				E8A1B3051ED2DC560051581D /* RoomPlanToEditableModelMapper.swift in Sources */,
-				E8A1B3071ED2DC560051581F /* EditableFloorPlanAlignService.swift in Sources */,
-				E8A1B3091ED2DC5600515821 /* DimensionLineService.swift in Sources */,
-				E8A1B30B1ED2DC5600515823 /* FloorPlanResizeService.swift in Sources */,
-				E8A1B30D1ED2DC5600515825 /* EditableFloorPlanProjector.swift in Sources */,
-				E8A1B30F1ED2DC5600515827 /* FloorPlanStateManager.swift in Sources */,
-				E8A1B3111ED2DC5600515829 /* Scene3DRegenerationService.swift in Sources */,
-				E8A1B3501ED2DC5600515871 /* FurnitureModelCatalog.swift in Sources */,
-				E8A1B3131ED2DC560051582B /* DimensionEditController.swift in Sources */,
-				E8A1B31B1ED2DC5600515833 /* FloorPlanNorthOrientation.swift in Sources */,
-				E8A1B31D1ED2DC5600515835 /* CompassOrientationEditController.swift in Sources */,
-				E8A1B32D1ED2DC560051584D /* CompassOrientationAdjustPanel.swift in Sources */,
-				E8A1B3211ED2DC5600515841 /* SunPositionMath.swift in Sources */,
-				E8A1B3401ED2DC5600515901 /* SolarPosition.swift in Sources */,
-				E8A1B3231ED2DC5600515843 /* SunSimulationController.swift in Sources */,
-				E8A1B3251ED2DC5600515845 /* SunSimulationPanel.swift in Sources */,
-				E8A1B3271ED2DC5600515847 /* SunCompassOverlayView.swift in Sources */,
-				E8A1B3401ED2DC5600515860 /* SunClockOverlayView.swift in Sources */,
-				E8A1B32B1ED2DC560051584B /* CompassScreenProjection.swift in Sources */,
-				E8A1B3291ED2DC5600515849 /* ScanCeilingService.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1174,76 +991,6 @@
 			};
 			name = Profile;
 		};
-		5A1443B40F41D1E2BE80F1B5 /* Profile */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = UyDoshAppClip/UyDoshAppClip.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = D5THR62Q33;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = UyDoshAppClip/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.uydosh.app.Clip;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Test Profile";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Profile;
-		};
-		79690F9BAE2C314117A18D79 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = UyDoshAppClip/UyDoshAppClip.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = D5THR62Q33;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = UyDoshAppClip/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.uydosh.app.Clip;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Test Profile";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1405,42 +1152,6 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
-		};
-		F4974762785A5B6829314D6B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB31CF90195004384FC /* Generated.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = UyDoshAppClip/UyDoshAppClip.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = D5THR62Q33;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = UyDoshAppClip/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
-				PRODUCT_BUNDLE_IDENTIFIER = com.uydosh.app.Clip;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Test Profile";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
 		};
 		F6C39DF6706DAE6A978A0B0C /* Debug */ = {
 			isa = XCBuildConfiguration;

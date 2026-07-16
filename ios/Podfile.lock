@@ -251,6 +251,8 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - record_ios (2.0.0):
     - Flutter
+  - room_scan_kit (0.1.0):
+    - Flutter
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
@@ -296,6 +298,7 @@ DEPENDENCIES:
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - pointer_interceptor_ios (from `.symlinks/plugins/pointer_interceptor_ios/ios`)
   - record_ios (from `.symlinks/plugins/record_ios/ios`)
+  - room_scan_kit (from `.symlinks/plugins/room_scan_kit/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
@@ -382,6 +385,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/pointer_interceptor_ios/ios"
   record_ios:
     :path: ".symlinks/plugins/record_ios/ios"
+  room_scan_kit:
+    :path: ".symlinks/plugins/room_scan_kit/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
@@ -451,6 +456,7 @@ SPEC CHECKSUMS:
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   record_ios: 41f9412c3311401689babe6d7ba69362f10b8325
+  room_scan_kit: 6465b541141ece96ecf0146143a093b644beb2ef
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sign_in_with_apple: fb98447f3dfb81e2926945ea43a8c9c7205eaca9

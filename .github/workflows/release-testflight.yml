@@ -108,6 +108,17 @@ jobs:
           gem --version
           bundle exec pod --version
 
+      - name: Auth for private room_scan_kit dependency
+        env:
+          ROOM_SCAN_KIT_GITHUB_TOKEN: ${{ secrets.ROOM_SCAN_KIT_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${ROOM_SCAN_KIT_GITHUB_TOKEN:-}" ]]; then
+            echo "Missing repo secret ROOM_SCAN_KIT_GITHUB_TOKEN (read access to uydoshtech/room_scan_kit)."
+            exit 1
+          fi
+          git config --global url."https://x-access-token:${ROOM_SCAN_KIT_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
       - name: Install dependencies
         run: flutter pub get
 

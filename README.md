@@ -154,10 +154,11 @@ How it works end-to-end:
 3. The `USDZ` is uploaded to the listing's `point_cloud_url` field
    (`IListingService.uploadRoomScan`). Oversized uploads (HTTP 413) show a
    translated toast guiding the user to scan a smaller area.
-4. Viewers tap the 3D badge on the detail screen; the native
-   `RoomUsdzViewerViewController` (SceneKit) is presented via a method channel
-   (`uydosh/room_usdz_viewer`). It is **not** Quick Look — the AR/Object toggle
-   is hidden so the experience stays consistent across iOS versions.
+4. Viewers tap the 3D badge on the detail screen; the shared
+   [`room_scan_kit`](https://github.com/uydoshtech/room_scan_kit) SceneKit
+   viewer is presented via `RoomUsdzViewerService` (`uydosh/room_usdz_viewer`).
+   It is **not** Quick Look — the AR/Object toggle is hidden so the experience
+   stays consistent across iOS versions.
 5. The native viewer ships a **Hide walls / Full room** control that detects
    wall meshes (`Wall0`, `Wall1`…) exported by RoomPlan and toggles their
    visibility so visitors can inspect the floor plan and furniture from above
@@ -345,9 +346,10 @@ Key decisions:
   pattern-matchable union events/states for BLoCs.
 - **Server-driven feature flags** loaded in parallel in `main()` (`Future.wait`)
   so the UI can be reconfigured without a release.
-- **Native bridges on iOS only**: `uydosh/room_usdz_viewer` method channel
-  drives a custom SceneKit viewer (see `ios/Runner/RoomUsdzViewerViewController.swift`),
-  while scanning is delegated to `flutter_roomplan`.
+- **Native bridges on iOS only**: `room_scan_kit` provides the SceneKit viewer /
+  floor-plan stack (`uydosh/room_usdz_viewer` channels); scanning is delegated
+  to `flutter_roomplan`. CI needs secret `ROOM_SCAN_KIT_GITHUB_TOKEN` to fetch
+  the private plugin.
 
 ---
 

@@ -1,8 +1,9 @@
 import "dart:io";
+import "dart:ui";
 
 import "package:dio/dio.dart";
-import "package:flutter/services.dart";
 import "package:path_provider/path_provider.dart";
+import "package:room_scan_kit/room_scan_kit.dart" as kit;
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
@@ -12,86 +13,34 @@ import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/listing_service_common.dart";
 
-/// iOS: download USDZ then present custom SceneKit viewer (object-only, no Quick Look AR tab).
+/// iOS: download USDZ then present custom SceneKit viewer via `room_scan_kit`.
 class RoomUsdzViewerService {
   RoomUsdzViewerService._();
 
-  static const MethodChannel _channel = MethodChannel("uydosh/room_usdz_viewer");
-  static const MethodChannel _metricsSink = MethodChannel("uydosh/room_scan_metrics_sink");
-  static const MethodChannel _northCorrectionSink =
-      MethodChannel("uydosh/room_scan_north_correction_sink");
-
-  static bool _metricsSinkRegistered = false;
-  static bool _northCorrectionSinkRegistered = false;
   static bool _presentInFlight = false;
+  static bool _listingSinksWired = false;
 
-  static void _ensureRoomScanMetricsSink() {
-    if (_metricsSinkRegistered) {
-      return;
-    }
-    _metricsSinkRegistered = true;
-    _metricsSink.setMethodCallHandler((call) async {
-      if (call.method != "onComputedMetrics") {
-        return;
-      }
-      final raw = call.arguments;
-      if (raw is! Map) {
-        return;
-      }
-      final listingId = (raw["listingId"] as num?)?.toInt();
-      final floorLong = (raw["floor_long_m"] as num?)?.toDouble();
-      final floorShort = (raw["floor_short_m"] as num?)?.toDouble();
-      final height = (raw["height_m"] as num?)?.toDouble();
-      final area = (raw["floor_area_m2"] as num?)?.toDouble();
-      if (listingId == null ||
-          floorLong == null ||
-          floorShort == null ||
-          height == null ||
-          area == null) {
-        return;
-      }
+  static void _ensureListingSinks() {
+    if (_listingSinksWired) return;
+    _listingSinksWired = true;
+    kit.RoomUsdzViewer.onComputedMetrics = (listingId, metrics) async {
       try {
         await getIt<IListingService>().patchRoomScanMetricsIfMissing(
           listingId: listingId,
           metrics: RoomScanMetrics(
-            floorLongM: floorLong,
-            floorShortM: floorShort,
-            heightM: height,
-            floorAreaM2: area,
+            floorLongM: metrics.floorLongM,
+            floorShortM: metrics.floorShortM,
+            heightM: metrics.heightM,
+            floorAreaM2: metrics.floorAreaM2,
+            worldPlusXBearingDeg: metrics.worldPlusXBearingDeg,
           ),
         );
       } catch (e, st) {
         logger.d("Room scan metrics backfill failed: $e\n$st");
       }
-    });
-  }
-
-  static void _ensureRoomScanNorthCorrectionSink() {
-    if (_northCorrectionSinkRegistered) {
-      return;
-    }
-    _northCorrectionSinkRegistered = true;
-    _northCorrectionSink.setMethodCallHandler((call) async {
-      if (call.method != "onNorthCorrectionChanged") {
-        return;
-      }
-      final raw = call.arguments;
-      if (raw is! Map) {
-        return;
-      }
-      final listingId = (raw["listingId"] as num?)?.toInt();
-      if (listingId == null) {
-        return;
-      }
-      final rawCorrection = raw["north_correction_deg"];
-      final double? northCorrectionDeg;
-      if (rawCorrection == null) {
-        northCorrectionDeg = null;
-      } else if (rawCorrection is num) {
-        northCorrectionDeg = rawCorrection.toDouble();
-      } else {
-        return;
-      }
+    };
+    kit.RoomUsdzViewer.onNorthCorrectionChanged =
+        (listingId, northCorrectionDeg) async {
       try {
         await getIt<IListingService>().patchRoomScanNorthCorrection(
           listingId: listingId,
@@ -100,7 +49,7 @@ class RoomUsdzViewerService {
       } catch (e, st) {
         logger.d("Room scan north correction save failed: $e\n$st");
       }
-    });
+    };
   }
 
   static String _rgbHex6(Color color) {
@@ -187,11 +136,8 @@ class RoomUsdzViewerService {
     double? northCorrectionDeg,
     bool isListingOwner = false,
   }) async {
-    if (publishMetricsIfMissing) {
-      _ensureRoomScanMetricsSink();
-    }
-    if (isListingOwner) {
-      _ensureRoomScanNorthCorrectionSink();
+    if (publishMetricsIfMissing || isListingOwner) {
+      _ensureListingSinks();
     }
     final file = await downloadUsdToCache(
       absoluteUrl,
@@ -330,15 +276,14 @@ class RoomUsdzViewerService {
       "sunElevationFormat":
           L10n.getForLanguage("room_3d_sun_elevation_format", languageCode),
     };
-    final ok = await _channel.invokeMethod<bool>("presentLocalFile", <String, dynamic>{
-      "path": file.path,
-      "strings": strings,
-      "listingId": listingId,
-      "publishMetricsIfMissing": publishMetricsIfMissing,
-      "isListingOwner": isListingOwner,
-      if (worldPlusXBearingDeg != null) "worldPlusXBearingDeg": worldPlusXBearingDeg,
-      if (northCorrectionDeg != null) "northCorrectionDeg": northCorrectionDeg,
-    });
-    return ok ?? false;
+    return kit.RoomUsdzViewer.presentLocalFile(
+      path: file.path,
+      strings: strings,
+      listingId: listingId,
+      publishMetricsIfMissing: publishMetricsIfMissing,
+      isListingOwner: isListingOwner,
+      worldPlusXBearingDeg: worldPlusXBearingDeg,
+      northCorrectionDeg: northCorrectionDeg,
+    );
   }
 }
