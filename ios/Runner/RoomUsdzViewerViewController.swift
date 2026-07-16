@@ -1705,11 +1705,46 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
   }
 
   /// True for catalog / regenerated furniture meshes (wrappers or their geometry children).
+  /// Includes `UydoshCatalogMesh` — the in-place replacement container used on unedited scans,
+  /// whose geometry children carry Kenney group names, not RoomPlan category names.
   private func isCatalogOrGeneratedFurniture(_ node: SCNNode) -> Bool {
     var current: SCNNode? = node
     while let n = current {
       if n.name == Scene3DRegenerationService.catalogFurnitureRootName { return true }
       if n.name == "UydoshGeneratedObject" { return true }
+      if n.name == FurnitureModelCatalog.catalogMeshName { return true }
+      current = n.parent
+    }
+    return false
+  }
+
+  /// Floor meshes only: by name (`Floor0`, `UydoshGeneratedFloor`, ...) or, for scans whose
+  /// floor mesh is unnamed, by shape (large thin slab at the scene bottom). Furniture — catalog
+  /// or original — never qualifies, so `floorOnly` mode can safely show nothing else.
+  private func isFloorSurface(_ node: SCNNode) -> Bool {
+    if isCatalogOrGeneratedFurniture(node) || isFurnitureByCategoryName(node) { return false }
+    if shouldHideWallLikeSurface(node) { return false }
+    let name = (node.name ?? "").lowercased()
+    if name.contains("floor") || name.contains("ground") { return true }
+    guard let sceneBounds = sceneWorldBounds, let b = worldBounds(of: node) else { return false }
+    return isLikelyFloorSlab(b, sceneBounds: sceneBounds)
+  }
+
+  /// RoomPlan names furniture hosts by category (`Bed0`, `Sofa0`, `Cabinet1`, ...). Geometry may
+  /// live on children with unrelated names (catalog meshes, sub-parts), so walk ancestors too.
+  /// Catches everything shape heuristics can miss (wall-mounted TVs, hanging cabinets, tall
+  /// storage that reads as a wall slab).
+  private func isFurnitureByCategoryName(_ node: SCNNode) -> Bool {
+    var current: SCNNode? = node
+    while let n = current {
+      let name = (n.name ?? "").lowercased()
+      if !name.isEmpty,
+        !name.contains("floor"), !name.contains("ground"), !name.contains("ceiling"),
+        !shouldHideWallLikeSurface(n),
+        EditableObjectType.from(nodeName: name) != .unknown
+      {
+        return true
+      }
       current = n.parent
     }
     return false
@@ -1786,16 +1821,13 @@ final class RoomUsdzViewerViewController: UIViewController, UIGestureRecognizerD
             node.isHidden = shouldHideWallLikeSurface(node)
           }
         case .floorOnly:
+          // Whitelist: only the floor stays visible. Blacklisting furniture by
+          // name/shape kept missing meshes RoomPlan names outside our category
+          // list (Stove*, Fireplace*, unnamed sub-parts, ...).
           if node.name == "UydoshFramingCamera" {
             node.isHidden = false
-          } else if shouldHideWallLikeSurface(node) {
-            node.isHidden = true
-          } else if isCatalogOrGeneratedFurniture(node) {
-            node.isHidden = true
-          } else if let sceneBounds = sceneWorldBounds, isOnFloorObject(node, sceneBounds: sceneBounds) {
-            node.isHidden = true
           } else {
-            node.isHidden = false
+            node.isHidden = !isFloorSurface(node)
           }
         }
       }
