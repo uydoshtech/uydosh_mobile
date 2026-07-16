@@ -30,6 +30,34 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+# RoomScanOrientationCapture moved into room_scan_kit. flutter_roomplan's
+# patched RoomCaptureViewController still needs it in the same module
+# (Classes/**). Copy before CocoaPods indexes source_files so CI clean
+# checkouts compile (Runner no longer vendors this file).
+def ensure_roomplan_orientation_capture!
+  roomplan_classes = File.expand_path('.symlinks/plugins/flutter_roomplan/ios/Classes', __dir__)
+  return unless Dir.exist?(roomplan_classes)
+
+  orientation_dst = File.join(roomplan_classes, 'RoomScanOrientationCapture.swift')
+  orientation_candidates = [
+    File.expand_path('Runner/RoomScanOrientationCapture.swift', __dir__),
+    File.expand_path(
+      '.symlinks/plugins/room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/RoomScanOrientationCapture.swift',
+      __dir__
+    ),
+  ]
+  orientation_src = orientation_candidates.find { |path| File.exist?(path) }
+  if orientation_src.nil?
+    raise "RoomScanOrientationCapture.swift not found (tried: #{orientation_candidates.join(', ')})"
+  end
+
+  FileUtils.cp(orientation_src, orientation_dst)
+  Pod::UI.puts "Synced RoomScanOrientationCapture.swift into flutter_roomplan from #{orientation_src}"
+  orientation_dst
+end
+
+ensure_roomplan_orientation_capture!
+
 target 'Runner' do
   use_frameworks!
 
@@ -514,10 +542,9 @@ post_install do |installer|
 
   # Capture device compass + AR world axes when RoomPlan scan finishes so the floor
   # plan overlay can show true geographic north (not just scan-relative axes).
+  # Source file is synced earlier via ensure_roomplan_orientation_capture!.
   if File.exist?(room_capture_file)
-    orientation_src = File.expand_path('Runner/RoomScanOrientationCapture.swift', __dir__)
-    orientation_dst = File.join(File.dirname(room_capture_file), 'RoomScanOrientationCapture.swift')
-    FileUtils.cp(orientation_src, orientation_dst) if File.exist?(orientation_src)
+    ensure_roomplan_orientation_capture!
 
     src = File.read(room_capture_file)
     marker = '/* uydosh: scan orientation capture */'
