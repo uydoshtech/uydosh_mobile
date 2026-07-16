@@ -61,6 +61,18 @@ class RoomScanNorthCorrectionPatchRequest implements IJsonEncodable {
       };
 }
 
+/// Cumulative furniture edits from the iOS 3D viewer (schema v1 document, or null to clear).
+class RoomScanFurnitureEditsPatchRequest implements IJsonEncodable {
+  RoomScanFurnitureEditsPatchRequest({required this.furnitureEdits});
+
+  final Map<String, dynamic>? furnitureEdits;
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "furniture_edits": furnitureEdits,
+      };
+}
+
 /// Footprint derived from LiDAR USDZ (meters); sent with [RoomScanUploadRequest].
 class RoomScanMetrics implements IJsonEncodable {
   RoomScanMetrics({

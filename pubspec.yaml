@@ -128,7 +128,7 @@ dependencies:
   room_scan_kit:
     git:
       url: https://github.com/uydoshtech/room_scan_kit.git
-      ref: v0.5.0
+      ref: v0.6.0
   firebase_app_check: ^0.4.5
   # Flutter-native crop widget. We render our own UyDosh-styled crop UI on top
   # of [Crop] from this package — see [ListingCropScreen] — so we control the

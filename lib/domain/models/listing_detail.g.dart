@@ -46,6 +46,8 @@ _ListingDetail _$ListingDetailFromJson(
       (json['room_scan_world_plus_x_bearing_deg'] as num?)?.toDouble(),
   roomScanNorthCorrectionDeg: (json['room_scan_north_correction_deg'] as num?)
       ?.toDouble(),
+  roomScanFurnitureEdits:
+      json['room_scan_furniture_edits'] as Map<String, dynamic>?,
   contactPhone: json['contact_phone'] as String?,
   contactTelegram: json['contact_telegram'] as String?,
   addressLatitude: numericStringToDouble(json['address_latitude']),
@@ -119,6 +121,7 @@ Map<String, dynamic> _$ListingDetailToJson(
   'room_scan_floor_area_m2': instance.roomScanFloorAreaM2,
   'room_scan_world_plus_x_bearing_deg': instance.roomScanWorldPlusXBearingDeg,
   'room_scan_north_correction_deg': instance.roomScanNorthCorrectionDeg,
+  'room_scan_furniture_edits': instance.roomScanFurnitureEdits,
   'contact_phone': instance.contactPhone,
   'contact_telegram': instance.contactTelegram,
   'address_latitude': instance.addressLatitude,

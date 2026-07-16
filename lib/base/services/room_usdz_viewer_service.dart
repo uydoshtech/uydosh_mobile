@@ -50,6 +50,17 @@ class RoomUsdzViewerService {
         logger.d("Room scan north correction save failed: $e\n$st");
       }
     };
+    kit.RoomUsdzViewer.onFurnitureEditsChanged =
+        (listingId, furnitureEdits) async {
+      try {
+        await getIt<IListingService>().patchRoomScanFurnitureEdits(
+          listingId: listingId,
+          furnitureEdits: furnitureEdits,
+        );
+      } catch (e, st) {
+        logger.d("Room scan furniture edits save failed: $e\n$st");
+      }
+    };
   }
 
   static String _rgbHex6(Color color) {
@@ -70,6 +81,7 @@ class RoomUsdzViewerService {
     double? worldPlusXBearingDeg,
     double? northCorrectionDeg,
     bool isListingOwner = false,
+    Map<String, dynamic>? furnitureEdits,
   }) async {
     if (!isIOSDevice) return false;
     if (_presentInFlight) return false;
@@ -83,6 +95,7 @@ class RoomUsdzViewerService {
         worldPlusXBearingDeg: worldPlusXBearingDeg,
         northCorrectionDeg: northCorrectionDeg,
         isListingOwner: isListingOwner,
+        furnitureEdits: furnitureEdits,
       );
     } finally {
       _presentInFlight = false;
@@ -135,6 +148,7 @@ class RoomUsdzViewerService {
     double? worldPlusXBearingDeg,
     double? northCorrectionDeg,
     bool isListingOwner = false,
+    Map<String, dynamic>? furnitureEdits,
   }) async {
     if (publishMetricsIfMissing || isListingOwner) {
       _ensureListingSinks();
@@ -304,6 +318,7 @@ class RoomUsdzViewerService {
       isListingOwner: isListingOwner,
       worldPlusXBearingDeg: worldPlusXBearingDeg,
       northCorrectionDeg: northCorrectionDeg,
+      furnitureEdits: furnitureEdits,
     );
   }
 }

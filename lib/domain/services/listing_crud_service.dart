@@ -103,6 +103,12 @@ abstract class IListingCrudService {
     required int listingId,
     required double? northCorrectionDeg,
   });
+
+  /// Stores (or clears with null) the viewer's cumulative furniture-edits document.
+  Future<void> patchRoomScanFurnitureEdits({
+    required int listingId,
+    required Map<String, dynamic>? furnitureEdits,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
 
@@ -630,6 +636,21 @@ class ListingCrudService implements IListingCrudService {
       basePath: EnvironmentUtil.basePath,
       data: RoomScanNorthCorrectionPatchRequest(
         northCorrectionDeg: northCorrectionDeg,
+      ),
+    );
+  }
+
+  @override
+  Future<void> patchRoomScanFurnitureEdits({
+    required int listingId,
+    required Map<String, dynamic>? furnitureEdits,
+  }) async {
+    await _oauthApiClient.patch<dynamic, RoomScanFurnitureEditsPatchRequest>(
+      "/listings/$listingId/room-scan-furniture-edits",
+      (json) => json,
+      basePath: EnvironmentUtil.basePath,
+      data: RoomScanFurnitureEditsPatchRequest(
+        furnitureEdits: furnitureEdits,
       ),
     );
   }

@@ -183,6 +183,10 @@ abstract class IListingService {
     required int listingId,
     required double? northCorrectionDeg,
   });
+  Future<void> patchRoomScanFurnitureEdits({
+    required int listingId,
+    required Map<String, dynamic>? furnitureEdits,
+  });
   Future<bool> featureListing(int listingId);
   Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured);
   Future<RenewListingResult> renewListing(int listingId);
@@ -567,6 +571,16 @@ class ListingService implements IListingService {
       _crudService.patchRoomScanNorthCorrection(
         listingId: listingId,
         northCorrectionDeg: northCorrectionDeg,
+      );
+
+  @override
+  Future<void> patchRoomScanFurnitureEdits({
+    required int listingId,
+    required Map<String, dynamic>? furnitureEdits,
+  }) =>
+      _crudService.patchRoomScanFurnitureEdits(
+        listingId: listingId,
+        furnitureEdits: furnitureEdits,
       );
 
   @override

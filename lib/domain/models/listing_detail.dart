@@ -55,6 +55,10 @@ abstract class ListingDetail with _$ListingDetail {
     double? roomScanWorldPlusXBearingDeg,
     @JsonKey(name: "room_scan_north_correction_deg")
     double? roomScanNorthCorrectionDeg,
+    /// Cumulative furniture edits from the iOS 3D viewer (schema v1 document),
+    /// stored server-side verbatim and passed back into the viewer on open.
+    @JsonKey(name: "room_scan_furniture_edits")
+    Map<String, dynamic>? roomScanFurnitureEdits,
     @JsonKey(name: "contact_phone") String? contactPhone,
     @JsonKey(name: "contact_telegram") String? contactTelegram,
     @JsonKey(name: "address_latitude", fromJson: numericStringToDouble)

@@ -1907,6 +1907,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         worldPlusXBearingDeg: listingDetail.roomScanWorldPlusXBearingDeg,
         northCorrectionDeg: listingDetail.roomScanNorthCorrectionDeg,
         isListingOwner: canEditAsOwner,
+        furnitureEdits: listingDetail.roomScanFurnitureEdits,
       );
       if (!mounted) return;
       if (!ok) {
