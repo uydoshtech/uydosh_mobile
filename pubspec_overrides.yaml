@@ -1,0 +1,7 @@
+# Local-dev override: use the local room_scan_kit checkout instead of the
+# pinned git tag, so kit changes can be tested before tagging a release.
+# Delete this file (or keep it gitignored) once pubspec.yaml points at the
+# new kit tag.
+dependency_overrides:
+  room_scan_kit:
+    path: ../room_scan_kit
