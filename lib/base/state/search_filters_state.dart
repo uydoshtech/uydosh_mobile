@@ -626,6 +626,12 @@ class SearchFiltersState extends ChangeNotifier {
     await RestoreFiltersState().initialize();
     if (!RestoreFiltersState().shouldRestore) {
       await clearAllFilters(persistRemote: false);
+      // Also clear the home ribbon "active" flag so cold start does not
+      // re-open an empty inline search after filters were wiped.
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(HomeInlineSearchState.activePrefsKey, false);
+      } catch (_) {}
       _isInitialized = true;
       notifyListeners();
       return;

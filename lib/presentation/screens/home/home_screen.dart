@@ -19,6 +19,7 @@ import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/home_inline_search_state.dart";
 import "package:uy_dosh/base/state/onboarding_state.dart";
 import "package:uy_dosh/base/state/price_display_settings_state.dart";
+import "package:uy_dosh/base/state/restore_filters_state.dart";
 import "package:uy_dosh/base/state/search_filters_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/tutorial_state.dart";
@@ -319,13 +320,28 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       _ensureUnfilteredBrowseFeed();
       return;
     }
-    if (!await SessionManager.isAuthenticated()) {
-      if (_shouldSkipInlineSearchBootstrap()) {
+
+    await RestoreFiltersState().initialize();
+    if (!RestoreFiltersState().shouldRestore) {
+      if (!await SessionManager.isAuthenticated()) {
         await _resetAnonymousHomeSearchState();
-        return;
+      } else {
+        await _clearInlineSearchActivePrefsFlag();
+        _ensureUnfilteredBrowseFeed();
       }
+      return;
+    }
+
+    if (!await SessionManager.isAuthenticated()) {
       final restored = await _restoreInlineSearchModeFromPrefs();
       if (restored) return;
+      // Filters may be in prefs even when the active flag was lost (quick
+      // kill after Search). Restore the guest ribbon instead of wiping.
+      if (_hasUserAppliedSearchCriteria()) {
+        await _persistInlineSearchActivePrefsFlag();
+        _showGuestInlineSearchRibbon();
+        return;
+      }
       await _resetAnonymousHomeSearchState();
       return;
     }
@@ -343,9 +359,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  /// Inline filter ribbon for guests is only restored when they previously
-  /// committed a search ([HomeInlineSearchState.activePrefsKey]); otherwise
-  /// stale logged-in prefs are cleared.
+  /// Clears guest inline-search UI + local filter prefs when restore is off,
+  /// the ribbon was dismissed, or there is nothing left to restore.
   Future<void> _resetAnonymousHomeSearchState() async {
     _lastDispatchedSearchFilters = null;
     await _searchFiltersState.clearAllFilters(persistRemote: false);
@@ -364,11 +379,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       await p.setBool(HomeInlineSearchState.activePrefsKey, false);
     } catch (_) {}
     _ensureUnfilteredBrowseFeed();
-  }
-
-  /// Auto-restore / bootstrap only — not for explicit search-sheet commits.
-  bool _canAutoRestoreInlineSearchRibbon() {
-    return AuthenticationState().isAuthenticated;
   }
 
   bool _shouldSkipInlineSearchBootstrap() {
@@ -462,6 +472,13 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _ensureUnfilteredBrowseFeed();
         return;
       }
+      await RestoreFiltersState().initialize();
+      if (!RestoreFiltersState().shouldRestore) {
+        _postLoginActivationDeadline = null;
+        await _clearInlineSearchActivePrefsFlag();
+        _ensureUnfilteredBrowseFeed();
+        return;
+      }
       final restored = await _restoreInlineSearchModeFromPrefs();
       if (restored) {
         _postLoginActivationDeadline = null;
@@ -494,16 +511,21 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// profile or role) so a fresh/untouched session always falls through to
   /// the unfiltered browse feed instead of looking "already searched".
   bool _hasUserAppliedSearchCriteria() {
-    return _searchFiltersState.selectedGender > 0 ||
-        _searchFiltersState.searchListingTypeIdsList.isNotEmpty ||
-        _searchFiltersState.selectedLocationIndex > 0 ||
-        _searchFiltersState.selectedStationId > 0 ||
-        _searchFiltersState.selectedStationIdsList.isNotEmpty ||
-        _searchFiltersState.minPrice != 10.0 ||
-        _searchFiltersState.maxPrice != 500.0 ||
-        _searchFiltersState.privateRoom ||
-        _searchFiltersState.withPhoto ||
-        _searchFiltersState.has3dTour;
+    return _searchFiltersState.hasAnyExplicitFilter;
+  }
+
+  Future<void> _persistInlineSearchActivePrefsFlag() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool(HomeInlineSearchState.activePrefsKey, true);
+    } catch (_) {}
+  }
+
+  Future<void> _clearInlineSearchActivePrefsFlag() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool(HomeInlineSearchState.activePrefsKey, false);
+    } catch (_) {}
   }
 
   /// Returns true when the persisted prefs flag was set and we activated the
@@ -511,6 +533,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// committed a search in this install (logout clears the pref).
   Future<bool> _restoreInlineSearchModeFromPrefs() async {
     if (widget.isSearchMode) return false;
+    await RestoreFiltersState().initialize();
+    if (!RestoreFiltersState().shouldRestore) return false;
     final prefs = await SharedPreferences.getInstance();
     final active = prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
     if (!mounted) return false;
@@ -523,10 +547,11 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
     if (await SessionManager.isAuthenticated()) {
       _activateInlineSearch(persistActiveFlag: false);
-    } else {
-      _showGuestInlineSearchRibbon();
+      // [_activateInlineSearch] can no-op when auth UI state lags SessionManager.
+      return _inlineSearchActive && !_inlineSearchClosing;
     }
-    return true;
+    _showGuestInlineSearchRibbon();
+    return _inlineSearchActive && !_inlineSearchClosing;
   }
 
   /// Re-shows the feed ribbon after navigation when the global inline-search
@@ -546,6 +571,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   void _showGuestInlineSearchRibbon({bool keepStaleWhileRibbonAnimates = false}) {
     if (!mounted) return;
+    _syncEmbeddedMapResultFromCurrentFilters();
     setState(() {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
@@ -564,7 +590,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   /// has it set, hence the parameter).
   void _activateInlineSearch({required bool persistActiveFlag}) {
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
-    if (!_canAutoRestoreInlineSearchRibbon()) return;
+    _syncEmbeddedMapResultFromCurrentFilters();
     setState(() {
       _inlineSearchActive = true;
       _inlineSearchClosing = false;
@@ -573,12 +599,7 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     HomeInlineSearchState().setActive(true);
     unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
     if (persistActiveFlag) {
-      unawaited(() async {
-        try {
-          final p = await SharedPreferences.getInstance();
-          await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-        } catch (_) {}
-      }());
+      unawaited(_persistInlineSearchActivePrefsFlag());
     }
     if (mounted) {
       _performSearch(keepStaleWhileRibbonAnimates: true);
@@ -661,28 +682,37 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   void _onSearchFiltersStateChanged() {
     if (!mounted) return;
 
-    // The embedded map screen owns its listing data; filter singleton updates
-    // (e.g. post-login hydration) should not rebuild the map subtree.
-    if (!widget.isSearchMode &&
-        _mapViewState.view == _SearchResultsView.map) {
+    final showingEmbeddedMap =
+        !widget.isSearchMode && _mapViewState.view == _SearchResultsView.map;
+
+    if (showingEmbeddedMap) {
       if (_searchFiltersState.persistedFiltersDismissed) {
         _mapViewState.result = null;
         setState(() {});
+        return;
       }
-      return;
-    }
-
-    // When the ribbon is visible, rebuild so the chips bar reflects the
-    // latest values (filters are read directly off the singleton at build
-    // time). Skipping this rebuild when the ribbon isn't shown avoids
-    // pointless work while the user is scrolling wheels in the search
-    // sheet, which fires a setter on every wheel index update.
-    //
-    // Important: do NOT rebuild while the ribbon is animating out
-    // (`_inlineSearchClosing`). AnimatedSwitcher keeps the outgoing ribbon
-    // widget alive; rebuilding during that window would re-read the singleton
-    // filters and can cause visible "chip flips" mid-animation (e.g. gender).
-    if (_inlineSearchActive && !_inlineSearchClosing) {
+      // Cold-start / post-login hydrate often finishes after the map already
+      // mounted with empty props. Push restored singleton filters into the
+      // embedded map so pins + map ribbon match the feed restore path.
+      // (Editing-session wheel churn does not reach listeners — notify is
+      // suppressed while the search sheet is open.)
+      if (RestoreFiltersState().shouldRestore &&
+          !HomeInlineSearchState().ribbonDismissedByUser &&
+          (_inlineSearchActive || _hasUserAppliedSearchCriteria())) {
+        _syncEmbeddedMapResultFromCurrentFilters();
+        setState(() {});
+      }
+    } else if (_inlineSearchActive && !_inlineSearchClosing) {
+      // When the ribbon is visible, rebuild so the chips bar reflects the
+      // latest values (filters are read directly off the singleton at build
+      // time). Skipping this rebuild when the ribbon isn't shown avoids
+      // pointless work while the user is scrolling wheels in the search
+      // sheet, which fires a setter on every wheel index update.
+      //
+      // Important: do NOT rebuild while the ribbon is animating out
+      // (`_inlineSearchClosing`). AnimatedSwitcher keeps the outgoing ribbon
+      // widget alive; rebuilding during that window would re-read the singleton
+      // filters and can cause visible "chip flips" mid-animation (e.g. gender).
       final current = SearchFiltersSnapshot.capture(_searchFiltersState);
       if (_lastDispatchedSearchFilters == null ||
           !_searchFiltersSnapshotEquals(
@@ -709,9 +739,18 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     if (widget.isSearchMode) return;
     if (_inlineSearchActive || _inlineSearchClosing) return;
     if (HomeInlineSearchState().ribbonDismissedByUser) return;
+    if (!RestoreFiltersState().shouldRestore) return;
     if (!_hasUserAppliedSearchCriteria()) return;
     _postLoginActivationDeadline = null;
     _activateInlineSearch(persistActiveFlag: true);
+  }
+
+  /// Keeps [_mapViewState.result] aligned with [SearchFiltersState] so the
+  /// embedded map's widget props (and therefore pin fetch + filter ribbon)
+  /// pick up cold-start / post-login restore.
+  void _syncEmbeddedMapResultFromCurrentFilters() {
+    if (_mapViewState.view != _SearchResultsView.map) return;
+    _mapViewState.result = _currentSearchResultForViewToggle();
   }
 
   /// Shows the first tutorial (search button) only on the home screen's main
