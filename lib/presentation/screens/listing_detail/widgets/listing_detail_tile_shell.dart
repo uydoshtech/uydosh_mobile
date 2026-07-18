@@ -14,6 +14,7 @@ class ListingDetailTileShell extends StatelessWidget {
     this.clipBehavior = Clip.none,
     this.margin,
     this.useLiquidGlass = false,
+    this.lockBackdropBlur = false,
   });
 
   final Widget child;
@@ -24,6 +25,12 @@ class ListingDetailTileShell extends StatelessWidget {
 
   /// Frosted glass matching inbox chat tiles and alerts (blue/light themes).
   final bool useLiquidGlass;
+
+  /// When true, never toggles [BackdropFilter] with [FeedScrollScope].
+  /// Required for tiles that host a PlatformView (iOS SceneKit / WebView) —
+  /// inserting/removing [BackdropFilter] on scroll start/stop remounts the
+  /// native view and looks like a full 3D reload.
+  final bool lockBackdropBlur;
 
   static BorderRadius _borderRadius(BuildContext context, ShapeBorder shape) {
     if (shape is RoundedRectangleBorder) {
@@ -57,8 +64,12 @@ class ListingDetailTileShell extends StatelessWidget {
             // strategy the feed tiles use. The translucent tint stays, so the
             // tile still reads as glass; only the (invisible-while-moving) blur
             // pauses.
-            enableBackdropBlur:
-                LiquidGlassRendering.feedTileBackdropBlurEnabled(context),
+            //
+            // [lockBackdropBlur] skips the FeedScrollScope dependency entirely
+            // so PlatformView-hosting tiles don't rebuild/remount on scroll.
+            enableBackdropBlur: lockBackdropBlur
+                ? true
+                : LiquidGlassRendering.feedTileBackdropBlurEnabled(context),
             borderRadius: borderRadius,
             child: Material(
               color: Colors.transparent,

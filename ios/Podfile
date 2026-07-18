@@ -38,8 +38,8 @@ def ensure_roomplan_kit_helper!(filename)
   return nil unless Dir.exist?(roomplan_classes)
 
   dst = File.join(roomplan_classes, filename)
+  # Prefer room_scan_kit (symlink / sibling) over a stale Runner/ copy.
   candidates = [
-    File.expand_path("Runner/#{filename}", __dir__),
     File.expand_path(
       ".symlinks/plugins/room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/#{filename}",
       __dir__
@@ -49,6 +49,7 @@ def ensure_roomplan_kit_helper!(filename)
       "../../room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/#{filename}",
       __dir__
     ),
+    File.expand_path("Runner/#{filename}", __dir__),
   ]
   src = candidates.find { |path| File.exist?(path) }
   if src.nil?

@@ -532,6 +532,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
   late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
   final GlobalKey _compatibilitySectionKey = GlobalKey();
+  /// Keeps the mini 3D PlatformView Element alive across listing-detail rebuilds.
+  final GlobalKey _room3dTileKey = GlobalKey(debugLabel: "listingDetailRoom3d");
 
   /// Session uid fallback while [UserListingState] has not finished hydrating.
   int? _sessionUserId;
@@ -1884,7 +1886,12 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       return;
     }
     final raw = listingDetail.pointCloudUrl;
-    if (raw == null || raw.isEmpty) return;
+    // No USDZ (or conversion-only listing): open the same GLB fullscreen
+    // viewer used for the inline mini scene / Android.
+    if (raw == null || raw.isEmpty) {
+      await _openRoom3dViewerAndroid(listingDetail);
+      return;
+    }
     setState(() => _isOpeningRoom3d = true);
     HapticFeedbackUtils.impact();
     final url = _buildPhotoUrl(raw);
@@ -3079,6 +3086,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
   Widget _room3dTile(ListingDetail listingDetail) {
     return ListingRoom3dTile(
+      key: _room3dTileKey,
       listingDetail: listingDetail,
       isLoading: _isOpeningRoom3d,
       onTap: _isOpeningRoom3d ? null : () => _openRoom3dViewer(listingDetail),
@@ -3222,21 +3230,24 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         final isOwner = _isListingOwner(listingDetail.user.id);
         final hasPhotos =
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
-        // iOS/web view the raw USDZ scan via a native/browser-driven flow;
-        // Android has no USDZ renderer, so it instead needs the server-side
-        // GLB conversion (see [RoomGlbViewerScreen]).
+        // Mini preview: iOS uses native USDZ SceneKit; Android uses server GLB.
+        // Fullscreen still prefers USDZ on iOS / browser on web.
+        final hasGlbScan =
+            listingDetail.roomScanGlbUrl?.isNotEmpty ?? false;
         final hasUsdzScan =
             (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
-        final hasAndroidGlbScan =
-            isAndroidDevice &&
-            (listingDetail.roomScanGlbUrl?.isNotEmpty ?? false);
-        final show3d = hasUsdzScan || hasAndroidGlbScan;
+        final show3d = hasGlbScan || hasUsdzScan;
+        // Live mini scene (not the CTA-only fallback) — kept out of SliverList.
+        final hasLiveMiniScene =
+            (isIOSDevice && hasUsdzScan) || hasGlbScan;
         final groupFormingBottomPad = _groupFormingFloatingActionsBottomPad(
           listingDetail,
         );
 
-        final sections = <Widget>[
+        // Split around the 3D tile so it can live in a [SliverToBoxAdapter]
+        // (not recycled by [SliverList] — PlatformViews reload when disposed).
+        final sectionsBefore3d = <Widget>[
           if (isOwner)
             BlocSelector<
               ListingDetailPageBloc,
@@ -3275,11 +3286,9 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             padding: const EdgeInsets.only(bottom: 4),
             child: _metaBadgesTile(listingDetail),
           ),
-          if (show3d)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: _room3dTile(listingDetail),
-            ),
+        ];
+
+        final sectionsAfter3d = <Widget>[
           ListingDetailContentCard(
             listingDetail: listingDetail,
             currentLanguage: currentLanguage,
@@ -3461,16 +3470,42 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
+              cacheExtent: hasLiveMiniScene ? 1200 : null,
               slivers: [
                 SliverPadding(
                   // When the liquid glass app bar is active the body renders
                   // behind the header, so we add [mainShellGlassExtraTopInset]
                   // to keep content clear of the transparent toolbar.
-                  padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, bottomPad),
+                  padding: EdgeInsets.fromLTRB(12.0, topPad, 12.0, 0),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => sections[index],
-                      childCount: sections.length,
+                      (context, index) => sectionsBefore3d[index],
+                      childCount: sectionsBefore3d.length,
+                    ),
+                  ),
+                ),
+                if (show3d)
+                  // Not inside [SliverList]: PlatformViews (SceneKit / WebView)
+                  // get disposed when list children are recycled, which reloads
+                  // the mini 3D scene on every scroll past this section.
+                  // [SliverToBoxAdapter] keeps the Element mounted.
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: KeyedSubtree(
+                        key: ValueKey<String>(
+                          "listing-detail-room-3d-${listingDetail.id}",
+                        ),
+                        child: _room3dTile(listingDetail),
+                      ),
+                    ),
+                  ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(12.0, 0, 12.0, bottomPad),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => sectionsAfter3d[index],
+                      childCount: sectionsAfter3d.length,
                     ),
                   ),
                 ),

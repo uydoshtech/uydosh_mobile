@@ -41,15 +41,21 @@ class FeedScrollScopeHost extends StatefulWidget {
 }
 
 class _FeedScrollScopeHostState extends State<FeedScrollScopeHost> {
-  bool _isUserScrolling = false;
+  final ValueNotifier<bool> _isUserScrolling = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _isUserScrolling.dispose();
+    super.dispose();
+  }
 
   bool _onScrollNotification(ScrollNotification notification) {
     if (notification.depth != 0) return false;
 
     if (notification is UserScrollNotification) {
       final next = notification.direction != ScrollDirection.idle;
-      if (next != _isUserScrolling) {
-        setState(() => _isUserScrolling = next);
+      if (next != _isUserScrolling.value) {
+        _isUserScrolling.value = next;
         if (next) {
           SharedFeaturedSweep.instance.pauseForUserScroll();
         } else {
@@ -64,8 +70,19 @@ class _FeedScrollScopeHostState extends State<FeedScrollScopeHost> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollNotification>(
       onNotification: _onScrollNotification,
-      child: FeedScrollScope(
-        isUserScrolling: _isUserScrolling,
+      // Important: pass [widget.child] as ValueListenableBuilder.child so the
+      // scrollable subtree is NOT rebuilt when scroll start/stop toggles.
+      // A setState()-based host used to rebuild the entire CustomScrollView,
+      // which remounted PlatformViews (mini 3D SceneKit / WebView) on every
+      // fling — looking like a full scene reload.
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _isUserScrolling,
+        builder: (context, scrolling, child) {
+          return FeedScrollScope(
+            isUserScrolling: scrolling,
+            child: child!,
+          );
+        },
         child: widget.child,
       ),
     );
