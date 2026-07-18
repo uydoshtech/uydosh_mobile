@@ -215,6 +215,35 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           "done": L10n.get("done"),
           "finish": L10n.get("room_scan_finish"),
           "scanOtherRooms": L10n.get("room_scan_scan_other_rooms"),
+          // Live detection HUD (native RoomCapture overlay).
+          "roomplan_stats_walls": L10n.get("room_scan_stats_walls"),
+          "roomplan_stats_doors": L10n.get("room_scan_stats_doors"),
+          "roomplan_stats_windows": L10n.get("room_scan_stats_windows"),
+          "roomplan_stats_objects": L10n.get("room_scan_stats_objects"),
+          "roomplan_detected_wall": L10n.get("room_scan_detected_wall"),
+          "roomplan_detected_door": L10n.get("room_scan_detected_door"),
+          "roomplan_detected_window": L10n.get("room_scan_detected_window"),
+          "roomplan_detected_cabinet": L10n.get("room_scan_detected_cabinet"),
+          "roomplan_detected_bed": L10n.get("room_scan_detected_bed"),
+          "roomplan_detected_sofa": L10n.get("room_scan_detected_sofa"),
+          "roomplan_detected_table": L10n.get("room_scan_detected_table"),
+          "roomplan_detected_chair": L10n.get("room_scan_detected_chair"),
+          "roomplan_detected_television": L10n.get("room_scan_detected_television"),
+          "roomplan_detected_refrigerator":
+              L10n.get("room_scan_detected_refrigerator"),
+          "roomplan_detected_sink": L10n.get("room_scan_detected_sink"),
+          "roomplan_detected_toilet": L10n.get("room_scan_detected_toilet"),
+          "roomplan_detected_bathtub": L10n.get("room_scan_detected_bathtub"),
+          "roomplan_detected_oven": L10n.get("room_scan_detected_oven"),
+          "roomplan_detected_stove": L10n.get("room_scan_detected_stove"),
+          "roomplan_detected_dishwasher":
+              L10n.get("room_scan_detected_dishwasher"),
+          "roomplan_detected_washer_dryer":
+              L10n.get("room_scan_detected_washer_dryer"),
+          "roomplan_detected_fireplace":
+              L10n.get("room_scan_detected_fireplace"),
+          "roomplan_detected_stairs": L10n.get("room_scan_detected_stairs"),
+          "roomplan_detected_object": L10n.get("room_scan_detected_object"),
         },
       });
     } on MissingPluginException catch (e, st) {

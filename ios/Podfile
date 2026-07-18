@@ -30,33 +30,46 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
-# RoomScanOrientationCapture moved into room_scan_kit. flutter_roomplan's
-# patched RoomCaptureViewController still needs it in the same module
-# (Classes/**). Copy before CocoaPods indexes source_files so CI clean
-# checkouts compile (Runner no longer vendors this file).
-def ensure_roomplan_orientation_capture!
+# Shared RoomPlan helpers live in room_scan_kit. flutter_roomplan's patched
+# RoomCaptureViewController still needs them in the same module (Classes/**).
+# Copy before CocoaPods indexes source_files so CI clean checkouts compile.
+def ensure_roomplan_kit_helper!(filename)
   roomplan_classes = File.expand_path('.symlinks/plugins/flutter_roomplan/ios/Classes', __dir__)
-  return unless Dir.exist?(roomplan_classes)
+  return nil unless Dir.exist?(roomplan_classes)
 
-  orientation_dst = File.join(roomplan_classes, 'RoomScanOrientationCapture.swift')
-  orientation_candidates = [
-    File.expand_path('Runner/RoomScanOrientationCapture.swift', __dir__),
+  dst = File.join(roomplan_classes, filename)
+  candidates = [
+    File.expand_path("Runner/#{filename}", __dir__),
     File.expand_path(
-      '.symlinks/plugins/room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/RoomScanOrientationCapture.swift',
+      ".symlinks/plugins/room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/#{filename}",
+      __dir__
+    ),
+    # Local path override (pubspec_overrides.yaml) — sibling checkout.
+    File.expand_path(
+      "../../room_scan_kit/ios/room_scan_kit/Sources/room_scan_kit/#{filename}",
       __dir__
     ),
   ]
-  orientation_src = orientation_candidates.find { |path| File.exist?(path) }
-  if orientation_src.nil?
-    raise "RoomScanOrientationCapture.swift not found (tried: #{orientation_candidates.join(', ')})"
+  src = candidates.find { |path| File.exist?(path) }
+  if src.nil?
+    raise "#{filename} not found (tried: #{candidates.join(', ')})"
   end
 
-  FileUtils.cp(orientation_src, orientation_dst)
-  Pod::UI.puts "Synced RoomScanOrientationCapture.swift into flutter_roomplan from #{orientation_src}"
-  orientation_dst
+  FileUtils.cp(src, dst)
+  Pod::UI.puts "Synced #{filename} into flutter_roomplan from #{src}"
+  dst
+end
+
+def ensure_roomplan_orientation_capture!
+  ensure_roomplan_kit_helper!('RoomScanOrientationCapture.swift')
+end
+
+def ensure_roomplan_live_detection_overlay!
+  ensure_roomplan_kit_helper!('RoomScanLiveDetectionOverlay.swift')
 end
 
 ensure_roomplan_orientation_capture!
+ensure_roomplan_live_detection_overlay!
 
 target 'Runner' do
   use_frameworks!
@@ -511,6 +524,27 @@ post_install do |installer|
     end
   end
 
+  # Pass detection/stats HUD string overrides from Flutter into the capture VC.
+  if File.exist?(flutter_roomplan_plugin_file)
+    src = File.read(flutter_roomplan_plugin_file)
+    marker = '/* uydosh: pass live detection strings */'
+    unless src.include?(marker)
+      injection = [
+        '            /* uydosh: pass live detection strings */',
+        '            var liveOverrides: [String: String] = [:]',
+        '            for (key, value) in stringsDict {',
+        '                if let s = value as? String { liveOverrides[key] = s }',
+        '            }',
+        '            roomVC.uydoshLiveDetectionStringOverrides = liveOverrides',
+      ].join("\n")
+      src = src.sub(
+        '            roomVC.uydoshScanOtherRoomsTitle = stringsDict["scanOtherRooms"] as? String',
+        "            roomVC.uydoshScanOtherRoomsTitle = stringsDict[\"scanOtherRooms\"] as? String\n#{injection}"
+      )
+      File.write(flutter_roomplan_plugin_file, src)
+    end
+  end
+
   # Re-apply button titles when the capture UI appears so Flutter-provided labels
   # are always shown even if view setup order changes across iOS versions.
   if File.exist?(room_capture_file)
@@ -698,5 +732,73 @@ post_install do |installer|
     end
 
     File.write(room_capture_file, src) if repaired
+  end
+
+  # Live detection feed + stats HUD during RoomPlan capture.
+  # Source: room_scan_kit RoomScanLiveDetectionOverlay.swift (synced above).
+  if File.exist?(room_capture_file)
+    ensure_roomplan_live_detection_overlay!
+
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: live detection overlay */'
+    unless src.include?(marker)
+      src = src.sub(
+        '    public var uydoshScanOtherRoomsTitle: String?',
+        "    public var uydoshScanOtherRoomsTitle: String?\n\n    #{marker}\n    public var uydoshLiveDetectionStringOverrides: [String: String]?\n    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?"
+      )
+
+      # Attach overlay after logo (or after RoomCaptureView if logo patch missing).
+      if src.include?("uydoshAddLogoOverlay()\n        activityIndicator.stopAnimating()")
+        src = src.sub(
+          "uydoshAddLogoOverlay()\n        activityIndicator.stopAnimating()",
+          "uydoshAddLogoOverlay()\n        uydoshAddLiveDetectionOverlay()\n        activityIndicator.stopAnimating()"
+        )
+      elsif src.include?("setupRoomCaptureView()\n        activityIndicator.stopAnimating()")
+        src = src.sub(
+          "setupRoomCaptureView()\n        activityIndicator.stopAnimating()",
+          "setupRoomCaptureView()\n        uydoshAddLiveDetectionOverlay()\n        activityIndicator.stopAnimating()"
+        )
+      end
+
+      # Reset + show while a capture session is running.
+      src = src.sub(
+        "    private func startSession() {\n\n        isScanning = true\n        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)",
+        "    private func startSession() {\n\n        isScanning = true\n        uydoshLiveDetectionOverlay?.reset()\n        uydoshLiveDetectionOverlay?.setScanningActive(true, animated: true)\n        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)"
+      )
+
+      # Hide when capture stops (Done / post-process).
+      src = src.sub(
+        "    private func stopSession() {\n        isScanning = false",
+        "    private func stopSession() {\n        isScanning = false\n        uydoshLiveDetectionOverlay?.setScanningActive(false, animated: true)"
+      )
+
+      # Process incremental CapturedRoom updates from RoomPlan.
+      unless src.include?('func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom)')
+        src = src.sub(
+          "    public func captureView(shouldPresent roomDataForProcessing: CapturedRoomData, error: Error?) -> Bool {\n        return true\n    }",
+          "    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {\n        uydoshLiveDetectionOverlay?.process(room: room)\n    }\n\n    public func captureView(shouldPresent roomDataForProcessing: CapturedRoomData, error: Error?) -> Bool {\n        return true\n    }"
+        )
+      end
+
+      helper = [
+        '',
+        "    #{marker}",
+        '    private func uydoshAddLiveDetectionOverlay() {',
+        '        let overlay = RoomScanLiveDetectionOverlay(',
+        '            strings: .localized(overrides: uydoshLiveDetectionStringOverrides ?? [:])',
+        '        )',
+        '        overlay.attach(to: view)',
+        '        overlay.setScanningActive(false, animated: false)',
+        '        uydoshLiveDetectionOverlay = overlay',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{helper}\n    private func resetScanningSession() {"
+      )
+
+      File.write(room_capture_file, src)
+    end
   end
 end
