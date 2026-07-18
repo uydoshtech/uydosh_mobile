@@ -66,11 +66,26 @@ class SearchFiltersState extends ChangeNotifier {
       awaitUserScope: authenticated,
     );
     if (HomeInlineSearchState().ribbonDismissedByUser) {
-      markPersistedFiltersDismissed();
-      // Heal a stale `users.search_filters` row left from before dismiss
-      // reliably cleared the backend (e.g. failed network, quick app kill).
-      if (authenticated) {
-        await _clearRemoteSearchFilters();
+      // Contradictory prefs: ribbon was marked dismissed but inline search is
+      // still active (e.g. kill mid-dismiss). Prefer restore when the user
+      // asked for it and an active search flag is present.
+      var keepForRestore = false;
+      if (RestoreFiltersState().shouldRestore) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          keepForRestore =
+              prefs.getBool(HomeInlineSearchState.activePrefsKey) ?? false;
+        } catch (_) {}
+      }
+      if (keepForRestore) {
+        await HomeInlineSearchState().setRibbonDismissedByUser(false);
+      } else {
+        markPersistedFiltersDismissed();
+        // Heal a stale `users.search_filters` row left from before dismiss
+        // reliably cleared the backend (e.g. failed network, quick app kill).
+        if (authenticated) {
+          await _clearRemoteSearchFilters();
+        }
       }
     }
     await initialize();
@@ -143,16 +158,31 @@ class SearchFiltersState extends ChangeNotifier {
   }
 
   /// Ends the current editing session. When [commit] is true, listeners are
-  /// notified and a remote persist is scheduled so the latest filter values
-  /// are propagated. When false, the caller is expected to follow up with
-  /// [restoreToSnapshot] to revert any in-session changes.
-  void endEditingSession({required bool commit}) {
-    if (_editingSessionDepth > 0) _editingSessionDepth--;
-    if (_editingSessionDepth == 0 && commit) {
-      unawaited(_persistCurrentFiltersToPrefs());
-      super.notifyListeners();
-      if (!_remotePersistGated) _scheduleRemotePersist();
-    }
+  /// notified and filters are flushed to local prefs + backend immediately so
+  /// a simulator/app kill right after Search cannot drop the restore snapshot.
+  /// When false, the caller is expected to follow up with [restoreToSnapshot]
+  /// to revert any in-session changes.
+  ///
+  /// Safe to call when no session is open (no-op) so the search sheet can end
+  /// the session before [onApply] and the outer `finally` can call it again.
+  Future<void> endEditingSession({required bool commit}) async {
+    if (_editingSessionDepth <= 0) return;
+    _editingSessionDepth--;
+    if (_editingSessionDepth != 0) return;
+    if (!commit) return;
+    await _persistCurrentFiltersToPrefs();
+    super.notifyListeners();
+    if (_remotePersistGated) return;
+    _remoteSaveDebounce?.cancel();
+    _remoteSaveDebounce = null;
+    await _flushRemotePersist();
+  }
+
+  /// Flushes any in-flight local prefs writes and a pending remote save.
+  /// Call from app-lifecycle pause so backgrounding survives a later kill.
+  Future<void> flushPendingLocalAndRemotePersist() async {
+    await _prefsWriteChain;
+    await flushPendingRemotePersist();
   }
 
   @override
@@ -218,8 +248,16 @@ class SearchFiltersState extends ChangeNotifier {
       final map = await getIt<IUserSearchFiltersService>().fetchMe();
       final raw = map["search_filters"];
       if (raw is Map) {
-        await _applyServerFiltersToStateAndPrefs(
-            Map<String, dynamic>.from(raw));
+        final server = Map<String, dynamic>.from(raw);
+        // An empty/default server snapshot must not overwrite richer local
+        // prefs (e.g. user searched, killed the app before remote flush).
+        if (!_serverMapHasExplicitFilters(server) && hasAnyExplicitFilter) {
+          logger.d(
+            "SearchFiltersState: hydrate kept local filters (server snapshot empty)",
+          );
+        } else {
+          await _applyServerFiltersToStateAndPrefs(server);
+        }
       } else {
         // No server snapshot yet (or explicitly null). Keep filters from
         // [initialize] / device prefs — do not wipe them. Clearing here
@@ -234,6 +272,36 @@ class SearchFiltersState extends ChangeNotifier {
     } finally {
       _suppressRemotePersist = false;
     }
+  }
+
+  bool _serverMapHasExplicitFilters(Map<String, dynamic> m) {
+    int asInt(String key) {
+      final v = m[key];
+      return v is num ? v.toInt() : 0;
+    }
+
+    final minPrice = m["min_price"];
+    final maxPrice = m["max_price"];
+    final hasCustomPrice = (minPrice is num && minPrice.toDouble() != 10.0) ||
+        (maxPrice is num && maxPrice.toDouble() != 500.0);
+    final stationIds = _stationIdsFromDynamic(m["subway_station_ids"]);
+    final listingTypeIds = SearchFilterListingTypeIdsCodec.fromServerJson(
+      m,
+      fallbackUiTypeId: asInt("listing_type_id"),
+    );
+    return asInt("listing_type_id") > 0 ||
+        listingTypeIds.isNotEmpty ||
+        asInt("location_index") > 0 ||
+        asInt("subway_line") > 0 ||
+        asInt("station_id") > 0 ||
+        stationIds.isNotEmpty ||
+        asInt("gender") > 0 ||
+        hasCustomPrice ||
+        m["private_room"] == true ||
+        m["with_photo"] == true ||
+        m["has_3d_tour"] == true ||
+        m["price_sort_order"] == "asc" ||
+        m["price_sort_order"] == "desc";
   }
 
   Future<void> _applyServerFiltersToStateAndPrefs(

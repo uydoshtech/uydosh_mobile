@@ -2046,6 +2046,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     _searchFiltersState.clearPersistedFiltersDismissed();
     await HomeInlineSearchState().setRibbonDismissedByUser(false);
     await _persistSearchResultFilters(result);
+    // Awaited so a simulator kill immediately after Search cannot lose the
+    // ribbon-restore flag (previously fire-and-forget).
+    await _persistInlineSearchActivePrefsFlag();
+    await _searchFiltersState.flushPendingLocalAndRemotePersist();
 
     if (result.action == SearchBottomSheetAction.map) {
       if (!mounted) return;
@@ -2056,12 +2060,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         _inlineSearchSpacerExpanded = true;
       });
       HomeInlineSearchState().setActive(true);
-      unawaited(() async {
-        try {
-          final p = await SharedPreferences.getInstance();
-          await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-        } catch (_) {}
-      }());
       return;
     }
 
@@ -2074,12 +2072,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     });
     HomeInlineSearchState().setMapViewActive(false);
     HomeInlineSearchState().setActive(true);
-    unawaited(() async {
-      try {
-        final p = await SharedPreferences.getInstance();
-        await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-      } catch (_) {}
-    }());
     // Dispatch immediately so the feed cannot sit on a stale unfiltered page
     // while SharedPreferences writes finish (pull-to-refresh was fixing that).
     _performSearch(keepStaleWhileRibbonAnimates: true);
@@ -2401,7 +2393,11 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
   Future<void> _openSearchResultsMap(SearchBottomSheetResult result) async {
     if (!mounted) return;
     _searchFiltersState.clearPersistedFiltersDismissed();
-    unawaited(HomeInlineSearchState().setRibbonDismissedByUser(false));
+    await HomeInlineSearchState().setRibbonDismissedByUser(false);
+    if (!widget.isSearchMode) {
+      await _persistInlineSearchActivePrefsFlag();
+    }
+    if (!mounted) return;
     setState(() {
       _openMapViewWithSnapshot(result);
       if (!widget.isSearchMode) {
@@ -2412,13 +2408,6 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     });
     if (!widget.isSearchMode) {
       HomeInlineSearchState().setActive(true);
-      unawaited(() async {
-        await HomeInlineSearchState().setRibbonDismissedByUser(false);
-        try {
-          final p = await SharedPreferences.getInstance();
-          await p.setBool(HomeInlineSearchState.activePrefsKey, true);
-        } catch (_) {}
-      }());
     }
   }
 

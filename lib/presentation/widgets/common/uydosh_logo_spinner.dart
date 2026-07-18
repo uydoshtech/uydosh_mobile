@@ -1,21 +1,20 @@
 import "package:flutter/material.dart";
 import "package:flutter_svg/flutter_svg.dart";
+import "package:uy_dosh/base/state/theme_state.dart";
 
-/// Rotating UyDosh brand-mark (red roof + white "U") used for major
-/// screen-level loading states (initial screen loads, full-page loaders).
+/// Rotating UyDosh brand-mark (red roof + theme-aware "U"/chimney) used for
+/// major screen-level loading states (initial screen loads, full-page loaders).
 ///
 /// Do not use this for buttons or other small inline controls — use
 /// `UydoshInlineSpinner` (a plain [CircularProgressIndicator]) there instead,
 /// so the brand animation is reserved for moments that matter.
 ///
-/// Defaults to the dark-themed brand mark (white glyph, red roof) so the
-/// spinner reads consistently regardless of the surrounding theme or the
-/// color previously passed to a [CircularProgressIndicator].
+/// By default the glyph follows the app theme: white "U" + chimney on dark /
+/// blue themes, black "U" + chimney on light theme (roof stays brand red).
 ///
-/// Set [onLightBackground] to render the light-surface brand mark (black
-/// glyph, red roof) instead, for cases where the spinner sits on a light
-/// fill (e.g. the listing-detail photo placeholder) and the white glyph
-/// would wash out.
+/// Set [onLightBackground] to force the black-glyph mark regardless of theme,
+/// for cases where the spinner sits on a light fill (e.g. the listing-detail
+/// photo placeholder) and a white glyph would wash out.
 class UydoshLogoSpinner extends StatefulWidget {
   const UydoshLogoSpinner({
     super.key,
@@ -30,7 +29,8 @@ class UydoshLogoSpinner extends StatefulWidget {
   /// Duration of one full 360° rotation.
   final Duration duration;
 
-  /// When `true`, renders the black-glyph mark meant for light backgrounds.
+  /// When `true`, forces the black-glyph mark meant for light backgrounds.
+  /// When `false`, the glyph color follows [ThemeState].
   final bool onLightBackground;
 
   @override
@@ -63,23 +63,30 @@ class _UydoshLogoSpinnerState extends State<UydoshLogoSpinner>
   @override
   Widget build(BuildContext context) {
     final double visualSize = widget.size * _visualScale;
-    return SizedBox(
-      width: widget.size,
-      height: widget.size,
-      child: OverflowBox(
-        maxWidth: visualSize,
-        maxHeight: visualSize,
-        child: RotationTransition(
-          turns: _controller,
-          child: SvgPicture.asset(
-            widget.onLightBackground
-                ? "assets/icon/components/brand_mark_light.svg"
-                : "assets/icon/components/brand_logo_transparent.svg",
-            width: visualSize,
-            height: visualSize,
+    return ListenableBuilder(
+      listenable: ThemeState(),
+      builder: (context, _) {
+        final useLightMark =
+            widget.onLightBackground || ThemeState().isLightTheme;
+        return SizedBox(
+          width: widget.size,
+          height: widget.size,
+          child: OverflowBox(
+            maxWidth: visualSize,
+            maxHeight: visualSize,
+            child: RotationTransition(
+              turns: _controller,
+              child: SvgPicture.asset(
+                useLightMark
+                    ? "assets/icon/components/brand_mark_light.svg"
+                    : "assets/icon/components/brand_logo_transparent.svg",
+                width: visualSize,
+                height: visualSize,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

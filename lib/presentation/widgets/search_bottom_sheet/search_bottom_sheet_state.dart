@@ -748,9 +748,9 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
     );
   }
 
-  void _performSearch({
+  Future<void> _performSearch({
     SearchBottomSheetAction action = SearchBottomSheetAction.feed,
-  }) {
+  }) async {
     HapticFeedbackUtils.impact();
 
     if (widget.commitFiltersOnApply) {
@@ -758,6 +758,14 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
       // Must happen BEFORE Navigator.pop so the show() caller (which awaits
       // the modal future) sees a true flag when the future resolves.
       widget.onCommit?.call();
+      // A prior ribbon X gates remote persist; clear it before the flush so
+      // this Search can actually land in prefs + backend for cold-start restore.
+      _searchFiltersState.clearPersistedFiltersDismissed();
+      // End the editing session before onApply so filter setter prefs writes
+      // are not dropped (writes are gated while a session is open). Also
+      // awaits local + remote flush so a simulator kill right after Search
+      // still has a restore snapshot.
+      await _searchFiltersState.endEditingSession(commit: true);
     }
 
     // Get all current filter values
@@ -785,11 +793,12 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
             ? null
             : _getSelectedLocationId();
     if (hasStationFilter && _searchFiltersState.selectedLocationIndex > 0) {
-      _searchFiltersState.setLocationIndex(0);
+      await _searchFiltersState.setLocationIndex(0);
     }
+    // Whole-line searches keep the line id even without a station pick.
     final effectiveSubwayLineId = isGroupFormingOnlySearch
         ? null
-        : hasStationFilter && subwayLine > 0
+        : subwayLine > 0
             ? subwayLine
             : null;
     final gender = _searchFiltersState.selectedGender;
@@ -817,7 +826,7 @@ class _SearchBottomSheetContentState extends State<_SearchBottomSheetContent> {
 
     final apply = widget.onApply;
     if (apply != null) {
-      apply(
+      await apply(
         SearchBottomSheetResult(
           listingTypeId: listingTypeId,
           listingTypeIds: _searchFiltersState.searchListingTypeIds,

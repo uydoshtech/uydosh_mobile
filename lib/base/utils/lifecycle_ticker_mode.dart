@@ -1,4 +1,7 @@
+import "dart:async" show unawaited;
+
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/state/search_filters_state.dart";
 
 /// Wraps [child] in a [TickerMode] that disables tickers — so every
 /// [AnimationController] using `TickerProviderStateMixin` (or any other
@@ -54,6 +57,14 @@ class _LifecycleTickerModeState extends State<LifecycleTickerMode>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      // Survive simulator stops / background kills: flush search filters that
+      // may still be sitting in the prefs write chain or remote debounce.
+      unawaited(SearchFiltersState().flushPendingLocalAndRemotePersist());
+    }
     final isResumed = state == AppLifecycleState.resumed;
     if (isResumed != _resumed) {
       setState(() => _resumed = isResumed);

@@ -101,7 +101,7 @@ class SearchBottomSheetWidget {
     bool? currentPrivateRoom,
     bool? currentWithPhoto,
     bool? currentHas3dTour,
-    void Function(SearchBottomSheetResult result)? onApply,
+    FutureOr<void> Function(SearchBottomSheetResult result)? onApply,
     String primaryLabelKey = "search",
     IconData primaryIcon = Icons.search,
     SearchBottomSheetAction primaryAction = SearchBottomSheetAction.feed,
@@ -147,14 +147,15 @@ class SearchBottomSheetWidget {
       );
     } finally {
       if (didCommit) {
-        // End the session and notify outside listeners so the home chips
-        // ribbon picks up the freshly applied filters.
-        searchFiltersState.endEditingSession(commit: true);
+        // Usually already ended inside [_performSearch] before onApply so
+        // prefs writes are not gated; this is a no-op then, or a safety net
+        // if commit happened without that path.
+        await searchFiltersState.endEditingSession(commit: true);
       } else {
         // User dismissed without searching: revert any in-sheet edits so the
         // home filter chips ribbon (and persisted prefs) keep their prior
         // values.
-        searchFiltersState.endEditingSession(commit: false);
+        await searchFiltersState.endEditingSession(commit: false);
         await searchFiltersState.restoreToSnapshot(preSheetSnapshot);
       }
     }
@@ -197,7 +198,7 @@ class _SearchBottomSheetContent extends StatefulWidget {
   final bool? currentPrivateRoom;
   final bool? currentWithPhoto;
   final bool? currentHas3dTour;
-  final void Function(SearchBottomSheetResult result)? onApply;
+  final FutureOr<void> Function(SearchBottomSheetResult result)? onApply;
 
   /// Called by [_performSearch] BEFORE popping the sheet so the show()
   /// caller knows to commit (vs. revert) the in-session filter edits.

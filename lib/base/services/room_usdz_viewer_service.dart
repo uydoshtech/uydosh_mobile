@@ -247,6 +247,14 @@ class RoomUsdzViewerService {
           "room_3d_floor_plan_furniture_variant_accessibility", languageCode),
       "floorPlanFurnitureColorTitle":
           L10n.getForLanguage("room_3d_floor_plan_furniture_color_title", languageCode),
+      "floorPlanFurnitureColorPartTitle": L10n.getForLanguage(
+          "room_3d_floor_plan_furniture_color_part_title", languageCode),
+      "floorPlanFurnitureColorRoleFrame": L10n.getForLanguage(
+          "room_3d_floor_plan_furniture_color_role_frame", languageCode),
+      "floorPlanFurnitureColorRoleFabric": L10n.getForLanguage(
+          "room_3d_floor_plan_furniture_color_role_fabric", languageCode),
+      "floorPlanFurnitureColorRoleLinen": L10n.getForLanguage(
+          "room_3d_floor_plan_furniture_color_role_linen", languageCode),
       "floorPlanFurnitureColorDefault":
           L10n.getForLanguage("room_3d_floor_plan_furniture_color_default", languageCode),
       "floorPlanFurnitureColorAccessibility": L10n.getForLanguage(

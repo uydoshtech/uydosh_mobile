@@ -6,12 +6,12 @@ import "package:flutter_svg/flutter_svg.dart";
 /// the light map style, white over the night map style) rather than the app
 /// theme, while the roof stays the fixed brand red.
 ///
-/// Unlike [UydoshLogoSpinner] (which always renders the fixed dark brand
-/// mark), this widget tints the `u_letter.svg` + `chimney.svg` glyphs with
-/// [color] so they stay legible against either map style, layering the
-/// always-red `red_roof.svg` on top — matching `brand_logo_transparent.svg`
-/// / `brand_mark_light.svg`, just with a swappable glyph color instead of a
-/// fixed one.
+/// Unlike [UydoshLogoSpinner] (which follows the app theme, or an explicit
+/// light-surface override), this widget tints the `u_letter.svg` +
+/// `chimney.svg` glyphs with [color] so they stay legible against either map
+/// style, layering the always-red `red_roof.svg` on top — matching
+/// `brand_logo_transparent.svg` / `brand_mark_light.svg`, just with a
+/// swappable glyph color instead of a theme-driven asset.
 class UydoshUSpinner extends StatefulWidget {
   const UydoshUSpinner({
     required this.color,
