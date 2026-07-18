@@ -4,9 +4,11 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
 import "package:permission_handler/permission_handler.dart";
+import "package:room_scan_kit/scan_flow/scan_flow.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
+import "package:uy_dosh/base/scan_flow/uydosh_scan_entry.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/native_language_service.dart";
 import "package:uy_dosh/base/services/room_plan_capability.dart";
@@ -30,10 +32,19 @@ import "package:uy_dosh/presentation/widgets/uydosh_link_button.dart";
 const bool kForceShowRoomScanWelcomeUiOnWeb = true;
 
 /// RoomPlan (LiDAR) capture → upload USDZ to [point_cloud_url] on the listing.
+///
+/// Product: [ProductContext.uydosh] — entire housing only; no mode selection.
 class RoomPlanScanScreen extends StatefulWidget {
-  const RoomPlanScanScreen({required this.listingId, super.key});
+  const RoomPlanScanScreen({
+    required this.listingId,
+    this.scanEntry = kUydoshScanEntry,
+    super.key,
+  });
 
   final int listingId;
+
+  /// Explicit product dependency — never inferred from UI or bundle name.
+  final ScanEntryConfiguration scanEntry;
 
   @override
   State<RoomPlanScanScreen> createState() => _RoomPlanScanScreenState();
@@ -66,6 +77,12 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   @override
   void initState() {
     super.initState();
+    assert(
+      !ScanModePolicy.shouldShowModeSelection(
+        product: widget.scanEntry.product,
+      ),
+      "UyDosh must not show scan-mode selection",
+    );
     getIt<AppAnalyticsService>().logScreenView(screenName: "room_plan_scan");
 
     // 6-second attention burst (2 full rotations), then static. Previously
