@@ -245,6 +245,14 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_furniture_variant_title", languageCode),
       "floorPlanFurnitureVariantAccessibility": L10n.getForLanguage(
           "room_3d_floor_plan_furniture_variant_accessibility", languageCode),
+      "floorPlanDeleteFurniture":
+          L10n.getForLanguage("room_3d_floor_plan_delete_furniture", languageCode),
+      "floorPlanDeleteFurnitureConfirmTitle": L10n.getForLanguage(
+          "room_3d_floor_plan_delete_furniture_confirm_title", languageCode),
+      "floorPlanDeleteFurnitureConfirmMessage": L10n.getForLanguage(
+          "room_3d_floor_plan_delete_furniture_confirm_message", languageCode),
+      "floorPlanDeleteFurnitureUpdated": L10n.getForLanguage(
+          "room_3d_floor_plan_delete_furniture_updated", languageCode),
       "floorPlanEditDimensionTitle":
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
       "floorPlanEditDimensionCurrent":

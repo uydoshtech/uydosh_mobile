@@ -1,0 +1,20 @@
+---
+description: When changing room_scan_kit, always update both UyDosh and Makon hosts
+alwaysApply: true
+---
+
+# room_scan_kit — dual host apps
+
+`room_scan_kit` is shared by **two** host apps:
+
+- [uydosh_client](https://github.com/uydoshtech/uydosh_client) — sibling `../uydosh_client`
+- [makon3d_mobile](https://github.com/uydoshtech/makon3d_mobile) — sibling `../makon3d_mobile`
+
+When changing anything that hosts must adopt (native HUD, Podfile sync/patches, Flutter→native string maps, Runner `Localizable.strings`, capture-channel args, viewer API, metrics, l10n keys for scan UI):
+
+1. Update **both** host apps in the same effort — do not stop at whichever repo is open in the workspace.
+2. Keep Podfile `/* uydosh: … */` markers aligned across hosts where patches are meant to stay byte-diffable (Makon intentionally shares those markers).
+3. Mirror Flutter scan strings (`startScan` `strings:` map + `L10n` / `AppStrings` keys) and Runner `en`/`ru`/`uz` `.strings` in both apps.
+4. If a change is kit-only with no host wiring, still check whether either host’s Podfile sync list or docs need a mention.
+
+Local checkouts usually use `pubspec_overrides.yaml` → `path: ../room_scan_kit`.

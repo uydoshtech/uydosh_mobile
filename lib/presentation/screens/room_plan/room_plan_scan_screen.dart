@@ -209,12 +209,12 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       if (!mounted) return;
 
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
-        "enableMultiRoom": true,
+        // Single-room only — hides the secondary "Scan Other Rooms" button.
+        "enableMultiRoom": false,
         "strings": <String, String>{
           "cancel": L10n.get("cancel"),
           "done": L10n.get("done"),
           "finish": L10n.get("room_scan_finish"),
-          "scanOtherRooms": L10n.get("room_scan_scan_other_rooms"),
           // Live detection HUD (native RoomCapture overlay).
           "roomplan_stats_walls": L10n.get("room_scan_stats_walls"),
           "roomplan_stats_doors": L10n.get("room_scan_stats_doors"),

@@ -776,7 +776,24 @@ post_install do |installer|
       unless src.include?('func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom)')
         src = src.sub(
           "    public func captureView(shouldPresent roomDataForProcessing: CapturedRoomData, error: Error?) -> Bool {\n        return true\n    }",
-          "    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {\n        uydoshLiveDetectionOverlay?.process(room: room)\n    }\n\n    public func captureView(shouldPresent roomDataForProcessing: CapturedRoomData, error: Error?) -> Bool {\n        return true\n    }"
+          [
+            '    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {',
+            '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: true)',
+            '    }',
+            '',
+            '    /* uydosh: live detection didAdd/didChange */',
+            '    public func captureSession(_ session: RoomCaptureSession, didAdd room: CapturedRoom) {',
+            '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: false)',
+            '    }',
+            '',
+            '    public func captureSession(_ session: RoomCaptureSession, didChange room: CapturedRoom) {',
+            '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: false)',
+            '    }',
+            '',
+            '    public func captureView(shouldPresent roomDataForProcessing: CapturedRoomData, error: Error?) -> Bool {',
+            '        return true',
+            '    }',
+          ].join("\n")
         )
       end
 
@@ -799,6 +816,39 @@ post_install do |installer|
       )
 
       File.write(room_capture_file, src)
+    end
+  end
+
+  # Upgrade installs that only wired didUpdate: also toast from didAdd / didChange
+  # (RoomPlan often adds objects there first; category refinements arrive later).
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: live detection didAdd/didChange */'
+    unless src.include?(marker)
+      old = "    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {\n        uydoshLiveDetectionOverlay?.process(room: room)\n    }"
+      oldWithStats = "    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {\n        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: true)\n    }"
+      replacement = [
+        '    public func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {',
+        '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: true)',
+        '    }',
+        '',
+        "    #{marker}",
+        '    public func captureSession(_ session: RoomCaptureSession, didAdd room: CapturedRoom) {',
+        '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: false)',
+        '    }',
+        '',
+        '    public func captureSession(_ session: RoomCaptureSession, didChange room: CapturedRoom) {',
+        '        // Category / transform refinements (e.g. box → television).',
+        '        uydoshLiveDetectionOverlay?.process(room: room, replaceStats: false)',
+        '    }',
+      ].join("\n")
+      if src.include?(old)
+        src = src.sub(old, replacement)
+        File.write(room_capture_file, src)
+      elsif src.include?(oldWithStats)
+        src = src.sub(oldWithStats, replacement)
+        File.write(room_capture_file, src)
+      end
     end
   end
 end
