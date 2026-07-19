@@ -34,6 +34,9 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+# Local-only: path-override sibling checkout of room_scan_kit.
+# CI resolves the git ref from pubspec.yaml.
+pubspec_overrides.yaml
 
 # iOS / Xcode build artifacts.
 #   - `ios/build/` is created when Flutter or Xcode resolves its derived-data
