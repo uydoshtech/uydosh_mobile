@@ -295,6 +295,32 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_add_furniture_title", languageCode),
       "floorPlanAddFurnitureUpdated":
           L10n.getForLanguage("room_3d_floor_plan_add_furniture_updated", languageCode),
+      "floorPlanChangeWalls":
+          L10n.getForLanguage("room_3d_floor_plan_change_walls", languageCode),
+      "floorPlanChangeFloor":
+          L10n.getForLanguage("room_3d_floor_plan_change_floor", languageCode),
+      "floorPlanChangeWallsTitle":
+          L10n.getForLanguage("room_3d_floor_plan_change_walls_title", languageCode),
+      "floorPlanChangeFloorTitle":
+          L10n.getForLanguage("room_3d_floor_plan_change_floor_title", languageCode),
+      "floorPlanWallBrick":
+          L10n.getForLanguage("room_3d_floor_plan_wall_brick", languageCode),
+      "floorPlanWallPlaster":
+          L10n.getForLanguage("room_3d_floor_plan_wall_plaster", languageCode),
+      "floorPlanWallPainted":
+          L10n.getForLanguage("room_3d_floor_plan_wall_painted", languageCode),
+      "floorPlanWallConcrete":
+          L10n.getForLanguage("room_3d_floor_plan_wall_concrete", languageCode),
+      "floorPlanFloorWoodTile":
+          L10n.getForLanguage("room_3d_floor_plan_floor_wood_tile", languageCode),
+      "floorPlanFloorLaminate":
+          L10n.getForLanguage("room_3d_floor_plan_floor_laminate", languageCode),
+      "floorPlanFloorCeramicTile":
+          L10n.getForLanguage("room_3d_floor_plan_floor_ceramic_tile", languageCode),
+      "floorPlanFloorCarpet":
+          L10n.getForLanguage("room_3d_floor_plan_floor_carpet", languageCode),
+      "floorPlanSurfacesUpdated":
+          L10n.getForLanguage("room_3d_floor_plan_surfaces_updated", languageCode),
       "floorPlanEditDimensionTitle":
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
       "floorPlanEditDimensionCurrent":
