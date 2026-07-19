@@ -251,7 +251,7 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - record_ios (2.0.0):
     - Flutter
-  - room_scan_kit (0.6.9):
+  - room_scan_kit (0.6.11):
     - Flutter
   - share_plus (0.0.1):
     - Flutter
@@ -456,7 +456,7 @@ SPEC CHECKSUMS:
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   record_ios: 41f9412c3311401689babe6d7ba69362f10b8325
-  room_scan_kit: dfe7f40525968c472fffa3ef92ab7c19e9257fd2
+  room_scan_kit: e1e952ab5019fa4066d69411b67d558d990319ef
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sign_in_with_apple: fb98447f3dfb81e2926945ea43a8c9c7205eaca9
