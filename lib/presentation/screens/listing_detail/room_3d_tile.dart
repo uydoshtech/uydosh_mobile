@@ -359,10 +359,6 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
   String? _localPath;
   Object? _error;
   bool _loading = true;
-  bool _suspendForFullscreen = false;
-
-  bool get _suspendViewer =>
-      _suspendForFullscreen || widget.isLoadingFullscreen;
 
   @override
   void initState() {
@@ -376,9 +372,6 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
     if (oldWidget.usdzUrl != widget.usdzUrl ||
         oldWidget.listingId != widget.listingId) {
       unawaited(_load());
-    }
-    if (oldWidget.isLoadingFullscreen && !widget.isLoadingFullscreen) {
-      _suspendForFullscreen = false;
     }
   }
 
@@ -416,8 +409,10 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
   }
 
   void _onFullscreenTap() {
-    if (_suspendViewer || widget.onOpenFullscreen == null) return;
-    setState(() => _suspendForFullscreen = true);
+    // Keep the mini PlatformView mounted while fullscreen opens — tearing it
+    // down early flashed the logo spinner over an empty sky until the modal
+    // covered the listing. Only the fullscreen button shows a busy state.
+    if (widget.isLoadingFullscreen || widget.onOpenFullscreen == null) return;
     widget.onOpenFullscreen!();
   }
 
@@ -426,7 +421,8 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
     final autoRotate =
         UiPerformancePolicy.decorativeAnimationsEnabled(context);
     final path = _localPath;
-    final showPreview = !_suspendViewer && path != null && _error == null;
+    final showPreview = path != null && _error == null;
+    final openingFullscreen = widget.isLoadingFullscreen;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -448,14 +444,17 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
                 kit.RoomUsdzPreview(
                   key: _previewViewKey,
                   filePath: path,
-                  autoRotate: autoRotate,
+                  autoRotate: autoRotate && !openingFullscreen,
                 ),
-              if (_suspendViewer || _loading)
+              if (_loading && !showPreview)
                 const ColoredBox(
                   color: Colors.transparent,
-                  child: Center(child: UydoshLogoSpinner(size: 36)),
+                  // Sky gradient is light — force black "U"/chimney mark.
+                  child: Center(
+                    child: UydoshLogoSpinner(size: 36, onLightBackground: true),
+                  ),
                 ),
-              if (!_suspendViewer && _error != null)
+              if (_error != null)
                 ColoredBox(
                   color: Colors.black26,
                   child: Center(
@@ -494,12 +493,12 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: _suspendViewer ? null : _onFullscreenTap,
+                      onTap: openingFullscreen ? null : _onFullscreenTap,
                       child: SizedBox(
                         width: 40,
                         height: 40,
                         child: Center(
-                          child: _suspendViewer
+                          child: openingFullscreen
                               ? const UydoshInlineSpinner(
                                   color: Colors.white,
                                   dimension: 18,
@@ -548,17 +547,11 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
   _MiniLoadStatus _status = _MiniLoadStatus.loading;
   Timer? _loadTimeoutTimer;
   int _reloadToken = 0;
-  /// Set synchronously on fullscreen tap (before parent setState) so the
-  /// WebView unmounts on the next frame instead of lingering under the modal.
-  bool _suspendForFullscreen = false;
 
   String get _resolvedUrl => EnvironmentUtil.hostedImageUrl(widget.glbUrl);
 
   bool get _autoRotate =>
       UiPerformancePolicy.decorativeAnimationsEnabled(context);
-
-  bool get _suspendViewer =>
-      _suspendForFullscreen || widget.isLoadingFullscreen;
 
   @override
   void initState() {
@@ -599,32 +592,16 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
   }
 
   void _onFullscreenTap() {
-    if (_suspendViewer || widget.onOpenFullscreen == null) return;
-    setState(() => _suspendForFullscreen = true);
+    // Keep the mini WebView mounted while fullscreen opens so the room does
+    // not flash the logo spinner. PointerInterceptor on the button still
+    // blocks zoom-through taps.
+    if (widget.isLoadingFullscreen || widget.onOpenFullscreen == null) return;
     widget.onOpenFullscreen!();
   }
 
   @override
-  void didUpdateWidget(covariant _MiniGlbViewer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Opening fullscreen tears down the PlatformView (see build) so it can't
-    // receive a zoom gesture through the overlay button, and so iOS/Android
-    // don't leave it with a glitched camera after the route/modal presents.
-    // When we come back, clear suspend and remount with a fresh reload token.
-    if (oldWidget.isLoadingFullscreen && !widget.isLoadingFullscreen) {
-      _suspendForFullscreen = false;
-      _reloadToken++;
-      _status = _MiniLoadStatus.loading;
-      _armLoadTimeout();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // While fullscreen is opening/open, unmount the WebView. Platform views
-    // under a pushed route (or iOS SceneKit modal) often get a bad layout pass
-    // that makes model-viewer re-frame the room as a tiny speck.
-    final suspendViewer = _suspendViewer;
+    final openingFullscreen = widget.isLoadingFullscreen;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -642,36 +619,35 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (!suspendViewer)
-                ModelViewer(
-                  key: ValueKey(_reloadToken),
-                  id: _elementId,
-                  src: _resolvedUrl,
-                  alt: L10n.get("room_3d_viewer_title"),
-                  backgroundColor: Colors.transparent,
-                  autoRotate: _autoRotate,
-                  autoRotateDelay: 0,
-                  rotationPerSecond: "60deg",
-                  cameraControls: true,
-                  // Pinch/scroll zoom through Flutter overlays is a common
-                  // PlatformView leak — orbit stays enabled, zoom does not.
-                  disableZoom: true,
-                  cameraOrbit: "0deg 45deg 70%",
-                  minFieldOfView: "20deg",
-                  maxFieldOfView: "90deg",
-                  interactionPrompt: InteractionPrompt.none,
-                  shadowIntensity: 0.9,
-                  exposure: 1.08,
-                  ar: false,
-                  debugLogging: false,
-                  javascriptChannels: <JavascriptChannel>{
-                    JavascriptChannel(
-                      "GlbMiniBridge",
-                      onMessageReceived: (message) =>
-                          _onBridgeMessage(message.message),
-                    ),
-                  },
-                  relatedJs: """
+              ModelViewer(
+                key: ValueKey(_reloadToken),
+                id: _elementId,
+                src: _resolvedUrl,
+                alt: L10n.get("room_3d_viewer_title"),
+                backgroundColor: Colors.transparent,
+                autoRotate: _autoRotate && !openingFullscreen,
+                autoRotateDelay: 0,
+                rotationPerSecond: "60deg",
+                cameraControls: !openingFullscreen,
+                // Pinch/scroll zoom through Flutter overlays is a common
+                // PlatformView leak — orbit stays enabled, zoom does not.
+                disableZoom: true,
+                cameraOrbit: "0deg 45deg 70%",
+                minFieldOfView: "20deg",
+                maxFieldOfView: "90deg",
+                interactionPrompt: InteractionPrompt.none,
+                shadowIntensity: 0.9,
+                exposure: 1.08,
+                ar: false,
+                debugLogging: false,
+                javascriptChannels: <JavascriptChannel>{
+                  JavascriptChannel(
+                    "GlbMiniBridge",
+                    onMessageReceived: (message) =>
+                        _onBridgeMessage(message.message),
+                  ),
+                },
+                relatedJs: """
                   (function() {
                     var mv = document.getElementById('$_elementId');
                     if (!mv || !window.GlbMiniBridge) { return; }
@@ -683,13 +659,16 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
                     });
                   })();
                   """,
-                ),
-              if (suspendViewer || _status == _MiniLoadStatus.loading)
+              ),
+              if (_status == _MiniLoadStatus.loading)
                 const ColoredBox(
                   color: Colors.transparent,
-                  child: Center(child: UydoshLogoSpinner(size: 36)),
+                  // Sky gradient is light — force black "U"/chimney mark.
+                  child: Center(
+                    child: UydoshLogoSpinner(size: 36, onLightBackground: true),
+                  ),
                 ),
-              if (!suspendViewer && _status == _MiniLoadStatus.error)
+              if (_status == _MiniLoadStatus.error)
                 ColoredBox(
                   color: Colors.black26,
                   child: Center(
@@ -733,12 +712,12 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: _suspendViewer ? null : _onFullscreenTap,
+                      onTap: openingFullscreen ? null : _onFullscreenTap,
                       child: SizedBox(
                         width: 40,
                         height: 40,
                         child: Center(
-                          child: _suspendViewer
+                          child: openingFullscreen
                               ? const UydoshInlineSpinner(
                                   color: Colors.white,
                                   dimension: 18,
