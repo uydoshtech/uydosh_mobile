@@ -6,6 +6,7 @@
 "roomplan_stats_doors" = "Двери";
 "roomplan_stats_windows" = "Окна";
 "roomplan_stats_objects" = "Объекты";
+"roomplan_compass" = "Компас";
 "roomplan_stats_television" = "ТВ";
 "roomplan_stats_storage" = "Хранение";
 "roomplan_stats_cabinet" = "Шкаф";

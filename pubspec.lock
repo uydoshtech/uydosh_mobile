@@ -1656,11 +1656,9 @@ packages:
   room_scan_kit:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "v0.6.10"
-      resolved-ref: d474d4cde9ce3fa1f0913bb80231f0fad0e78ef9
-      url: "https://github.com/uydoshtech/room_scan_kit.git"
-    source: git
+      path: "../room_scan_kit"
+      relative: true
+    source: path
     version: "0.6.10"
   rxdart:
     dependency: transitive
@@ -2204,5 +2202,5 @@ packages:
     source: hosted
     version: "4.2.1"
 sdks:
-  dart: ">=3.12.2 <4.0.0"
+  dart: ">=3.12.0 <4.0.0"
   flutter: ">=3.44.0"

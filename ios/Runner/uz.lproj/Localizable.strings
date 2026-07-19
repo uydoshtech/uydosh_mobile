@@ -6,6 +6,7 @@
 "roomplan_stats_doors" = "Eshiklar";
 "roomplan_stats_windows" = "Derazalar";
 "roomplan_stats_objects" = "Obyektlar";
+"roomplan_compass" = "Kompas";
 "roomplan_stats_television" = "TV";
 "roomplan_stats_storage" = "Saqlash";
 "roomplan_stats_cabinet" = "Shkaf";

@@ -6,6 +6,7 @@
 "roomplan_stats_doors" = "Doors";
 "roomplan_stats_windows" = "Windows";
 "roomplan_stats_objects" = "Objects";
+"roomplan_compass" = "Compass";
 "roomplan_stats_television" = "TV";
 "roomplan_stats_storage" = "Storage";
 "roomplan_stats_cabinet" = "Cabinet";

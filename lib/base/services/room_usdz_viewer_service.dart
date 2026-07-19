@@ -241,10 +241,16 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_move_furniture_left", languageCode),
       "floorPlanMoveFurnitureRight":
           L10n.getForLanguage("room_3d_floor_plan_move_furniture_right", languageCode),
+      "floorPlanRaiseFurniture":
+          L10n.getForLanguage("room_3d_floor_plan_raise_furniture", languageCode),
+      "floorPlanLowerFurniture":
+          L10n.getForLanguage("room_3d_floor_plan_lower_furniture", languageCode),
       "floorPlanFurnitureVariantTitle":
           L10n.getForLanguage("room_3d_floor_plan_furniture_variant_title", languageCode),
       "floorPlanFurnitureVariantAccessibility": L10n.getForLanguage(
           "room_3d_floor_plan_furniture_variant_accessibility", languageCode),
+      "floorPlanFurnitureRotationTitle":
+          L10n.getForLanguage("room_3d_floor_plan_furniture_rotation_title", languageCode),
       "floorPlanFurnitureColorTitle":
           L10n.getForLanguage("room_3d_floor_plan_furniture_color_title", languageCode),
       "floorPlanFurnitureColorPartTitle": L10n.getForLanguage(

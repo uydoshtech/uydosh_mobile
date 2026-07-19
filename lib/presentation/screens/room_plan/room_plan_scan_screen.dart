@@ -237,6 +237,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           "roomplan_stats_doors": L10n.get("room_scan_stats_doors"),
           "roomplan_stats_windows": L10n.get("room_scan_stats_windows"),
           "roomplan_stats_objects": L10n.get("room_scan_stats_objects"),
+          "roomplan_compass": L10n.get("room_scan_compass"),
           "roomplan_stats_television": L10n.get("room_scan_stats_television"),
           "roomplan_stats_storage": L10n.get("room_scan_stats_storage"),
           "roomplan_stats_cabinet": L10n.get("room_scan_stats_cabinet"),

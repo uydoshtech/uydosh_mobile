@@ -609,11 +609,20 @@ post_install do |installer|
         '',
         "    #{marker}",
         '    private func uydoshStartHeadingUpdates() {',
+        '        /* uydosh: live compass heading feed */',
+        '        uydoshHeadingReader.onHeadingUpdate = { [weak self] heading, accuracy in',
+        '            self?.uydoshLiveDetectionOverlay?.updateHeading(',
+        '                degrees: heading,',
+        '                accuracyDegrees: accuracy',
+        '            )',
+        '        }',
         '        uydoshHeadingReader.start()',
         '    }',
         '',
         '    private func uydoshCaptureScanOrientation() {',
-        '        guard let heading = uydoshHeadingReader.trueHeadingDegrees else { return }',
+        '        /* uydosh: filtered heading for orientation */',
+        '        guard let heading = uydoshHeadingReader.bestTrueHeadingDegrees',
+        '            ?? uydoshHeadingReader.trueHeadingDegrees else { return }',
         '        uydoshPendingOrientation = RoomScanOrientationCapture.snapshot(',
         '            from: roomCaptureView.captureSession.arSession,',
         '            trueHeadingDegrees: heading',
@@ -639,7 +648,7 @@ post_install do |installer|
 
       src = src.sub(
         "    @objc private func doneScanning() {\n        if isScanning {",
-        "    @objc private func doneScanning() {\n        uydoshCaptureScanOrientation()\n        if isScanning {"
+        "    @objc private func doneScanning() {\n        uydoshCaptureScanOrientation()\n        /* uydosh: stop heading before ar teardown */\n        uydoshHeadingReader.stop()\n        if isScanning {"
       )
 
       src = src.gsub(
@@ -649,6 +658,98 @@ post_install do |installer|
 
       File.write(room_capture_file, src)
     end
+  end
+
+  # Stop CoreMotion heading as soon as we have the snapshot (and on every
+  # Flutter-notify / dismiss path). Leaving heading updates running while
+  # RoomPlan tears down the ARSession races MotionThread → EXC_BAD_ACCESS.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: stop heading before ar teardown */'
+    unless src.include?(marker)
+      src = src.sub(
+        "    @objc private func doneScanning() {\n        uydoshCaptureScanOrientation()\n        if isScanning {",
+        "    @objc private func doneScanning() {\n        uydoshCaptureScanOrientation()\n        #{marker}\n        uydoshHeadingReader.stop()\n        if isScanning {"
+      )
+      if src.include?('private func uydoshNotifyRoomCaptureFinishedToFlutter()')
+        src = src.sub(
+          '    private func uydoshNotifyRoomCaptureFinishedToFlutter() {',
+          "    private func uydoshNotifyRoomCaptureFinishedToFlutter() {\n        #{marker}\n        uydoshHeadingReader.stop()"
+        )
+      end
+      File.write(room_capture_file, src)
+    end
+  end
+
+  # Feed live compass HUD + use filtered heading for the orientation sidecar.
+  # Also repairs a shared pub-cache flutter_roomplan that still has Makon's
+  # heading no-op (both hosts symlink the same plugin package).
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    upgraded = false
+
+    live_start = [
+      '    private func uydoshStartHeadingUpdates() {',
+      '        /* uydosh: live compass heading feed */',
+      '        uydoshHeadingReader.onHeadingUpdate = { [weak self] heading, accuracy in',
+      '            self?.uydoshLiveDetectionOverlay?.updateHeading(',
+      '                degrees: heading,',
+      '                accuracyDegrees: accuracy',
+      '            )',
+      '        }',
+      '        uydoshHeadingReader.start()',
+      '    }',
+    ].join("\n")
+
+    unless src.include?('/* uydosh: live compass heading feed */')
+      [
+        [
+          '    private func uydoshStartHeadingUpdates() {',
+          '        uydoshHeadingReader.start()',
+          '    }',
+        ].join("\n"),
+        [
+          '    private func uydoshStartHeadingUpdates() {',
+          '        /* makon3d: disable heading capture */',
+          '        // no-op: avoid CoreMotion race with RoomPlan teardown',
+          '    }',
+        ].join("\n"),
+      ].each do |old_start|
+        next unless src.include?(old_start)
+        src = src.sub(old_start, live_start)
+        upgraded = true
+        break
+      end
+    end
+
+    unless src.include?('/* uydosh: filtered heading for orientation */')
+      old_capture = [
+        '    private func uydoshCaptureScanOrientation() {',
+        '        guard let heading = uydoshHeadingReader.trueHeadingDegrees else { return }',
+        '        uydoshPendingOrientation = RoomScanOrientationCapture.snapshot(',
+        '            from: roomCaptureView.captureSession.arSession,',
+        '            trueHeadingDegrees: heading',
+        '        )',
+        '    }',
+      ].join("\n")
+      new_capture = [
+        '    private func uydoshCaptureScanOrientation() {',
+        '        /* uydosh: filtered heading for orientation */',
+        '        guard let heading = uydoshHeadingReader.bestTrueHeadingDegrees',
+        '            ?? uydoshHeadingReader.trueHeadingDegrees else { return }',
+        '        uydoshPendingOrientation = RoomScanOrientationCapture.snapshot(',
+        '            from: roomCaptureView.captureSession.arSession,',
+        '            trueHeadingDegrees: heading',
+        '        )',
+        '    }',
+      ].join("\n")
+      if src.include?(old_capture)
+        src = src.sub(old_capture, new_capture)
+        upgraded = true
+      end
+    end
+
+    File.write(room_capture_file, src) if upgraded
   end
 
   # Long RoomPlan scans exceed the system auto-lock; keep the screen on while capture UI is visible.
