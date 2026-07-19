@@ -177,6 +177,7 @@ class RoomUsdzViewerService {
       "loadErrorTitle":
           L10n.getForLanguage("room_3d_load_error_title", languageCode),
       "alertOk": L10n.getForLanguage("ok", languageCode),
+      "back": L10n.getForLanguage("back", languageCode),
       "floorOnlyButton":
           L10n.getForLanguage("room_3d_floor_only_button", languageCode),
       "fullRoomButton":
