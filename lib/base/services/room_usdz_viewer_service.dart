@@ -279,6 +279,22 @@ class RoomUsdzViewerService {
           "room_3d_floor_plan_delete_furniture_confirm_message", languageCode),
       "floorPlanDeleteFurnitureUpdated": L10n.getForLanguage(
           "room_3d_floor_plan_delete_furniture_updated", languageCode),
+      "floorPlanFurnitureSizeTitle":
+          L10n.getForLanguage("room_3d_floor_plan_furniture_size_title", languageCode),
+      "floorPlanFurnitureSizeWidth":
+          L10n.getForLanguage("room_3d_floor_plan_furniture_size_width", languageCode),
+      "floorPlanFurnitureSizeLength":
+          L10n.getForLanguage("room_3d_floor_plan_furniture_size_length", languageCode),
+      "floorPlanFurnitureSizeHeight":
+          L10n.getForLanguage("room_3d_floor_plan_furniture_size_height", languageCode),
+      "floorPlanFurnitureSizeMetersFormat": L10n.getForLanguage(
+          "room_3d_floor_plan_furniture_size_meters_format", languageCode),
+      "floorPlanAddFurniture":
+          L10n.getForLanguage("room_3d_floor_plan_add_furniture", languageCode),
+      "floorPlanAddFurnitureTitle":
+          L10n.getForLanguage("room_3d_floor_plan_add_furniture_title", languageCode),
+      "floorPlanAddFurnitureUpdated":
+          L10n.getForLanguage("room_3d_floor_plan_add_furniture_updated", languageCode),
       "floorPlanEditDimensionTitle":
           L10n.getForLanguage("room_3d_floor_plan_edit_dimension_title", languageCode),
       "floorPlanEditDimensionCurrent":
