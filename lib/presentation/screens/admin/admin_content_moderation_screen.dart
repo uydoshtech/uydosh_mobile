@@ -60,7 +60,7 @@ class _AdminContentModerationScreenState
   bool _isSavingListingContacts = false;
   bool _listingGigModerationQueueEnabled = true;
   bool _isSavingModerationQueue = false;
-  bool _propertyNavEnabled = true;
+  bool _propertyNavEnabled = false;
   bool _isSavingPropertyNav = false;
   bool _webAppMultipleInstanceCheckEnabled = false;
   bool _isSavingWebAppMultipleInstanceCheck = false;
@@ -160,7 +160,7 @@ class _AdminContentModerationScreenState
           "Listing/gig moderation queue setting skipped (is the API updated?): $e",
         );
       }
-      var propertyNavEnabled = true;
+      var propertyNavEnabled = false;
       try {
         final propertyNavRes =
             await _settingsService.getPropertyNavEnabledSetting();

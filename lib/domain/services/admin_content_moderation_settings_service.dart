@@ -205,7 +205,7 @@ class PropertyNavEnabledResponse {
 
   factory PropertyNavEnabledResponse.fromJson(Map<String, dynamic> json) {
     return PropertyNavEnabledResponse(
-      enabled: _parseBoolLoose(json["enabled"], defaultValue: true),
+      enabled: _parseBoolLoose(json["enabled"], defaultValue: false),
     );
   }
 
@@ -476,7 +476,7 @@ class AdminSettingsBulkResponse {
       ),
       propertyNavEnabled: _parseBoolLoose(
         json["propertyNavEnabled"],
-        defaultValue: true,
+        defaultValue: false,
       ),
       webAppMultipleInstanceCheckEnabled: _parseBoolLoose(
         json["webAppMultipleInstanceCheckEnabled"],

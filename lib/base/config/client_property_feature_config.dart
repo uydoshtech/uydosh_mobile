@@ -4,9 +4,12 @@ import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/domain/services/public_app_settings_service.dart";
 
 /// Server-backed flag from [GET /app/settings] (`propertyNavEnabled`).
+///
+/// Defaults to off so the Property tab stays hidden unless an admin explicitly
+/// enables it (and clients successfully load that setting).
 abstract final class ClientPropertyFeatureConfig {
   static final ValueNotifier<bool> propertyFeatureEnabled =
-      ValueNotifier(true);
+      ValueNotifier(false);
 
   static Future<void> load() async {
     try {
@@ -15,9 +18,9 @@ abstract final class ClientPropertyFeatureConfig {
       propertyFeatureEnabled.value = enabled;
     } catch (e, st) {
       logger.d(
-        "Property nav enabled: fetch failed, defaulting to enabled: $e\n$st",
+        "Property nav enabled: fetch failed, defaulting to disabled: $e\n$st",
       );
-      propertyFeatureEnabled.value = true;
+      propertyFeatureEnabled.value = false;
     }
   }
 

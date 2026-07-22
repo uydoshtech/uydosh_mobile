@@ -58,7 +58,7 @@ class PublicAppSettingsSnapshot {
       ),
       propertyNavEnabled: _readPublicSettingBool(
         json["propertyNavEnabled"],
-        defaultValue: true,
+        defaultValue: false,
       ),
       homeStartView: _readHomeStartView(json["homeStartView"]),
       mapDefaultShowDistricts: _readPublicSettingBool(
@@ -179,7 +179,7 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
         googleSignInEnabled: true,
         appleSignInEnabled: true,
         telegramSignInEnabled: true,
-        propertyNavEnabled: true,
+        propertyNavEnabled: false,
         homeStartView: "map",
         mapDefaultShowDistricts: true,
         mapDefaultShowMetro: true,
@@ -252,7 +252,7 @@ class PublicAppSettingsService implements IPublicAppSettingsService {
   @override
   Future<bool> getPropertyNavEnabled() async {
     await _ensureLoaded();
-    return _cached?.propertyNavEnabled ?? true;
+    return _cached?.propertyNavEnabled ?? false;
   }
 
   @override
