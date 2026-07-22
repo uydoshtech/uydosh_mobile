@@ -251,7 +251,7 @@ PODS:
   - RecaptchaInterop (101.0.0)
   - record_ios (2.0.0):
     - Flutter
-  - room_scan_kit (0.6.11):
+  - room_scan_kit (0.6.13):
     - Flutter
   - share_plus (0.0.1):
     - Flutter
@@ -456,7 +456,7 @@ SPEC CHECKSUMS:
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   record_ios: 41f9412c3311401689babe6d7ba69362f10b8325
-  room_scan_kit: e1e952ab5019fa4066d69411b67d558d990319ef
+  room_scan_kit: 72124a2b62e784f8a582e8db59f6ed66ea45072c
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sign_in_with_apple: fb98447f3dfb81e2926945ea43a8c9c7205eaca9
@@ -467,6 +467,6 @@ SPEC CHECKSUMS:
   yandex_mapkit: d98af28162446898790eaed6ae5d1d37b9ed1713
   YandexMapsMobile: c73844c6096bbb240d1491adc511c2ef4a88d88d
 
-PODFILE CHECKSUM: 26a8530b4646740824995de71b6de44a02207954
+PODFILE CHECKSUM: e2cd4655091fa82b49877a12113f3b8cf0403d46
 
 COCOAPODS: 1.16.2
