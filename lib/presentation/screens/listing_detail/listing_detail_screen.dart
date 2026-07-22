@@ -1787,7 +1787,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (!has3d) return null;
     try {
       final url =
-          "${EnvironmentUtil.basePath}/images/listings/${listing.id}/rotation.gif";
+          "${EnvironmentUtil.basePath}/images/listings/${listing.id}/rotation.gif"
+          "?v=${DateTime.now().millisecondsSinceEpoch}";
       final temp = await getTemporaryDirectory();
       final file = File("${temp.path}/listing-share-${listing.id}-rotation.gif");
       final dio = Dio(
@@ -1796,6 +1797,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           receiveTimeout: const Duration(seconds: 45),
           responseType: ResponseType.bytes,
           validateStatus: (s) => s != null && s >= 200 && s < 300,
+          headers: const {"Cache-Control": "no-cache"},
         ),
       );
       await dio.download(url, file.path);

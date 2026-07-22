@@ -370,6 +370,8 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_object_fixture", languageCode),
       "floorPlanObjectDoor":
           L10n.getForLanguage("room_3d_floor_plan_object_door", languageCode),
+      "floorPlanObjectWindow":
+          L10n.getForLanguage("room_3d_floor_plan_object_window", languageCode),
       "floorPlanObjectUnknown":
           L10n.getForLanguage("room_3d_floor_plan_object_unknown", languageCode),
       "sunToggleLabel":

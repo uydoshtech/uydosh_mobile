@@ -778,6 +778,7 @@ class AppStrings {
       "room_3d_floor_plan_object_television": "TV",
       "room_3d_floor_plan_object_fixture": "Fixture",
       "room_3d_floor_plan_object_door": "Door",
+      "room_3d_floor_plan_object_window": "Window",
       "room_3d_floor_plan_object_unknown": "Object",
       "room_3d_sun_toggle_label": "Sunlight",
       "room_3d_sun_toggle_hint": "Show or hide sun simulation controls",
@@ -3149,6 +3150,7 @@ class AppStrings {
       "room_3d_floor_plan_object_television": "ТВ",
       "room_3d_floor_plan_object_fixture": "Сантехника",
       "room_3d_floor_plan_object_door": "Дверь",
+      "room_3d_floor_plan_object_window": "Окно",
       "room_3d_floor_plan_object_unknown": "Объект",
       "room_3d_sun_toggle_label": "Солнечный свет",
       "room_3d_sun_toggle_hint": "Показать или скрыть симуляцию солнца",
@@ -5574,6 +5576,7 @@ class AppStrings {
       "room_3d_floor_plan_object_television": "TV",
       "room_3d_floor_plan_object_fixture": "Sanitar jihoz",
       "room_3d_floor_plan_object_door": "Eshik",
+      "room_3d_floor_plan_object_window": "Oyna",
       "room_3d_floor_plan_object_unknown": "Buyum",
       "room_3d_sun_toggle_label": "Quyosh nuri",
       "room_3d_sun_toggle_hint":
