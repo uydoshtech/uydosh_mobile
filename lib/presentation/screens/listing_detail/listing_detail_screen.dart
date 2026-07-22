@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 
 import "package:flutter/cupertino.dart";
 import "package:flutter/material.dart";
@@ -6,6 +7,7 @@ import "package:flutter/foundation.dart" show kIsWeb;
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:dio/dio.dart";
 import "package:flutter/services.dart";
+import "package:path_provider/path_provider.dart";
 import "package:share_plus/share_plus.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:url_launcher/url_launcher.dart";
@@ -20,6 +22,7 @@ import "package:uy_dosh/domain/services/follow_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/theme_helper.dart"
     show ThemeHelper, liquidGlassAppBarMaterialColor;
 import "package:uy_dosh/base/services/app_analytics_service.dart";
@@ -38,7 +41,6 @@ import "package:uy_dosh/base/state/profile_completion_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/state/unread_messages_state.dart";
 import "package:uy_dosh/base/state/user_listing_state.dart";
-import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/util/listing_contact_redaction.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -1735,12 +1737,32 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     }
 
     try {
-      // sharePositionOrigin prevents iOS crash (share_plus 12.0.1 fix for iOS 26)
-      await Share.share(
-        shareText,
-        subject: _getShareSubject(currentLanguage),
-        sharePositionOrigin: Rect.zero,
-      );
+      // When the listing has a 3D scan, try attaching the server turntable GIF
+      // so Telegram/WhatsApp show the looping preview as media (OG also uses it).
+      final gifFile = await _downloadRotationGifIfAvailable(listingDetail);
+      if (gifFile != null) {
+        await SharePlus.instance.share(
+          ShareParams(
+            text: shareText,
+            subject: _getShareSubject(currentLanguage),
+            files: [
+              XFile(
+                gifFile.path,
+                mimeType: "image/gif",
+                name: "uydosh-listing-${listingDetail.id}-3d.gif",
+              ),
+            ],
+            sharePositionOrigin: Rect.zero,
+          ),
+        );
+      } else {
+        // sharePositionOrigin prevents iOS crash (share_plus 12.0.1 fix for iOS 26)
+        await Share.share(
+          shareText,
+          subject: _getShareSubject(currentLanguage),
+          sharePositionOrigin: Rect.zero,
+        );
+      }
     } catch (e, stackTrace) {
       logger.e("Share failed", error: e, stackTrace: stackTrace);
       if (context.mounted) {
@@ -1756,6 +1778,32 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
     if (context.mounted && achievement != null) {
       AchievementUnlockBottomSheet.show(context, achievement: achievement);
     }
+  }
+
+  /// Best-effort download of `/images/listings/{id}/rotation.gif` when a GLB exists.
+  Future<File?> _downloadRotationGifIfAvailable(ListingDetail listing) async {
+    final has3d = (listing.roomScanGlbUrl?.trim().isNotEmpty ?? false) ||
+        (listing.pointCloudUrl?.trim().isNotEmpty ?? false);
+    if (!has3d) return null;
+    try {
+      final url =
+          "${EnvironmentUtil.basePath}/images/listings/${listing.id}/rotation.gif";
+      final temp = await getTemporaryDirectory();
+      final file = File("${temp.path}/listing-share-${listing.id}-rotation.gif");
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 45),
+          responseType: ResponseType.bytes,
+          validateStatus: (s) => s != null && s >= 200 && s < 300,
+        ),
+      );
+      await dio.download(url, file.path);
+      if (file.existsSync() && file.lengthSync() > 0) return file;
+    } catch (e) {
+      logger.d("Listing rotation GIF not available for share: $e");
+    }
+    return null;
   }
 
   String _buildShareText(ListingDetail listingDetail, String language) {

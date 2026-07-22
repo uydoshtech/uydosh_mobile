@@ -1,14 +1,18 @@
+import "dart:async";
 import "dart:io";
 import "dart:ui";
 
 import "package:dio/dio.dart";
 import "package:path_provider/path_provider.dart";
 import "package:room_scan_kit/room_scan_kit.dart" as kit;
+import "package:share_plus/share_plus.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/domain/services/listing_service_common.dart";
@@ -386,16 +390,77 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_sun_azimuth_format", languageCode),
       "sunElevationFormat":
           L10n.getForLanguage("room_3d_sun_elevation_format", languageCode),
+      "share": L10n.getForLanguage("share", languageCode),
     };
+    _ensureShareSink(languageCode);
     return kit.RoomUsdzViewer.presentLocalFile(
       path: file.path,
       strings: strings,
       listingId: listingId,
       publishMetricsIfMissing: publishMetricsIfMissing,
       isListingOwner: isListingOwner,
+      shareEnabled: true,
       worldPlusXBearingDeg: worldPlusXBearingDeg,
       northCorrectionDeg: northCorrectionDeg,
       furnitureEdits: furnitureEdits,
     );
+  }
+
+  static bool _shareSinkWired = false;
+
+  static void _ensureShareSink(String languageCode) {
+    if (_shareSinkWired) return;
+    _shareSinkWired = true;
+    kit.RoomUsdzViewer.onShareTapped = (listingId) {
+      // Host listing detail owns the share sheet; open the listing deep link
+      // with optional GIF from the system share UI via a lightweight call.
+      unawaited(_shareListingFromViewer(listingId, languageCode));
+    };
+  }
+
+  static Future<void> _shareListingFromViewer(
+    int listingId,
+    String languageCode,
+  ) async {
+    try {
+      final deepLink = DeepLinkService.buildListingDeepLink(listingId);
+      final message =
+          "${L10n.getForLanguage("check_out_listing_on_uydosh", languageCode)}\n\n$deepLink";
+      final temp = await getTemporaryDirectory();
+      final file = File("${temp.path}/listing-share-$listingId-rotation.gif");
+      final gifUrl =
+          "${EnvironmentUtil.basePath}/images/listings/$listingId/rotation.gif";
+      try {
+        final dio = Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 15),
+            receiveTimeout: const Duration(seconds: 45),
+            responseType: ResponseType.bytes,
+            validateStatus: (s) => s != null && s >= 200 && s < 300,
+          ),
+        );
+        await dio.download(gifUrl, file.path);
+      } catch (_) {
+        // GIF may still be generating — share link only.
+      }
+      if (file.existsSync() && file.lengthSync() > 0) {
+        await SharePlus.instance.share(
+          ShareParams(
+            text: message,
+            files: [
+              XFile(
+                file.path,
+                mimeType: "image/gif",
+                name: "uydosh-listing-$listingId-3d.gif",
+              ),
+            ],
+          ),
+        );
+      } else {
+        await SharePlus.instance.share(ShareParams(text: message));
+      }
+    } catch (e, st) {
+      logger.d("Viewer share failed: $e\n$st");
+    }
   }
 }
