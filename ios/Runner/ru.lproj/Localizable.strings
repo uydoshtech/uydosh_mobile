@@ -46,3 +46,9 @@
 "roomplan_detected_fireplace" = "✓ Обнаружен камин";
 "roomplan_detected_stairs" = "✓ Обнаружена лестница";
 "roomplan_detected_object" = "✓ Обнаружен объект";
+"roomplan_results_perimeter" = "Периметр: ~{value} м";
+"roomplan_results_floor_area" = "Площадь: ~{value} м²";
+"roomplan_results_wall_area" = "Стены: ~{value} м²";
+"roomplan_results_windows" = "Окна: {count}";
+"roomplan_results_doors" = "Двери: {count}";
+"roomplan_results_height" = "Высота: {value} м";

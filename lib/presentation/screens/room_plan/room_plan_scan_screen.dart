@@ -283,6 +283,15 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
               L10n.get("room_scan_detected_fireplace"),
           "roomplan_detected_stairs": L10n.get("room_scan_detected_stairs"),
           "roomplan_detected_object": L10n.get("room_scan_detected_object"),
+          // Post-scan results card (grey model screen).
+          "roomplan_results_perimeter":
+              L10n.get("room_scan_results_perimeter"),
+          "roomplan_results_floor_area":
+              L10n.get("room_scan_results_floor_area"),
+          "roomplan_results_wall_area": L10n.get("room_scan_results_wall_area"),
+          "roomplan_results_windows": L10n.get("room_scan_results_windows"),
+          "roomplan_results_doors": L10n.get("room_scan_results_doors"),
+          "roomplan_results_height": L10n.get("room_scan_results_height"),
         },
       });
     } on MissingPluginException catch (e, st) {

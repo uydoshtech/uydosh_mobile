@@ -46,3 +46,9 @@
 "roomplan_detected_fireplace" = "✓ Fireplace detected";
 "roomplan_detected_stairs" = "✓ Stairs detected";
 "roomplan_detected_object" = "✓ Object detected";
+"roomplan_results_perimeter" = "Perimeter: ~{value} m";
+"roomplan_results_floor_area" = "Area: ~{value} m²";
+"roomplan_results_wall_area" = "Walls: ~{value} m²";
+"roomplan_results_windows" = "Windows: {count}";
+"roomplan_results_doors" = "Doors: {count}";
+"roomplan_results_height" = "Height: {value} m";

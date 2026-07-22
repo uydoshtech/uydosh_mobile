@@ -46,3 +46,9 @@
 "roomplan_detected_fireplace" = "✓ Kamin aniqlandi";
 "roomplan_detected_stairs" = "✓ Zinapoya aniqlandi";
 "roomplan_detected_object" = "✓ Obyekt aniqlandi";
+"roomplan_results_perimeter" = "Perimetr: ~{value} м";
+"roomplan_results_floor_area" = "Maydon: ~{value} м²";
+"roomplan_results_wall_area" = "Devorlar: ~{value} м²";
+"roomplan_results_windows" = "Derazalar: {count}";
+"roomplan_results_doors" = "Eshiklar: {count}";
+"roomplan_results_height" = "Balandlik: {value} м";

@@ -69,8 +69,13 @@ def ensure_roomplan_live_detection_overlay!
   ensure_roomplan_kit_helper!('RoomScanLiveDetectionOverlay.swift')
 end
 
+def ensure_roomplan_results_overlay!
+  ensure_roomplan_kit_helper!('RoomScanResultsOverlay.swift')
+end
+
 ensure_roomplan_orientation_capture!
 ensure_roomplan_live_detection_overlay!
+ensure_roomplan_results_overlay!
 
 target 'Runner' do
   use_frameworks!
@@ -951,6 +956,55 @@ post_install do |installer|
         src = src.sub(oldWithStats, replacement)
         File.write(room_capture_file, src)
       end
+    end
+  end
+
+  # Post-scan results metrics card (perimeter / area / walls / windows / doors)
+  # shown once RoomPlan presents the grey processed model.
+  if File.exist?(room_capture_file)
+    ensure_roomplan_results_overlay!
+
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: results overlay */'
+    unless src.include?(marker)
+      src = src.sub(
+        '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
+        "    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?\n\n    #{marker}\n    private var uydoshResultsOverlay: RoomScanResultsOverlay?"
+      )
+
+      src = src.sub(
+        'uydoshAddLiveDetectionOverlay()',
+        "uydoshAddLiveDetectionOverlay()\n        uydoshAddResultsOverlay()"
+      )
+
+      src = src.sub(
+        '        uydoshLiveDetectionOverlay?.setScanningActive(true, animated: true)',
+        "        uydoshLiveDetectionOverlay?.setScanningActive(true, animated: true)\n        uydoshResultsOverlay?.hide(animated: true)"
+      )
+
+      src = src.sub(
+        "    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {\n        currentCapturedRoom = processedResult\n        capturedRoomArray.append(processedResult)\n        finishButton.isEnabled = true",
+        "    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {\n        currentCapturedRoom = processedResult\n        capturedRoomArray.append(processedResult)\n        finishButton.isEnabled = true\n        uydoshResultsOverlay?.show(room: processedResult, animated: true)"
+      )
+
+      helper = [
+        '',
+        "    #{marker}",
+        '    private func uydoshAddResultsOverlay() {',
+        '        let overlay = RoomScanResultsOverlay(',
+        '            strings: .localized(overrides: uydoshLiveDetectionStringOverrides ?? [:])',
+        '        )',
+        '        overlay.attach(to: view)',
+        '        uydoshResultsOverlay = overlay',
+        '    }',
+      ].join("\n")
+
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{helper}\n    private func resetScanningSession() {"
+      )
+
+      File.write(room_capture_file, src)
     end
   end
 end
