@@ -1801,7 +1801,16 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
         ),
       );
       await dio.download(url, file.path);
-      if (file.existsSync() && file.lengthSync() > 0) return file;
+      if (!file.existsSync() || file.lengthSync() <= 0) return null;
+      // Telegram silently drops oversized GIF attachments (~4MB+).
+      const maxTelegramShareBytes = (3.8 * 1024 * 1024).round();
+      if (file.lengthSync() > maxTelegramShareBytes) {
+        logger.d(
+          "Listing rotation GIF too large for Telegram share: ${file.lengthSync()} bytes",
+        );
+        return null;
+      }
+      return file;
     } catch (e) {
       logger.d("Listing rotation GIF not available for share: $e");
     }
