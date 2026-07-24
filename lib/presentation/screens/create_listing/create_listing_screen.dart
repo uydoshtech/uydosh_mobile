@@ -3864,7 +3864,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
       if (isIOSDevice &&
           mounted &&
-          listingTypeId != 1 &&
+          listingTypeId != ListingTypeIds.roomNeeded &&
+          listingTypeId != ListingTypeIds.groupForming &&
           !ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) {
         final canScan = await RoomPlanCapability.isSupportedOnDevice();
         if (canScan && mounted) {

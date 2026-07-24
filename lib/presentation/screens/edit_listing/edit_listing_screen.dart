@@ -2329,7 +2329,10 @@ class _EditListingScreenState extends State<EditListingScreen>
                                         kIsWeb;
                                 if (!canShowOnThisDevice ||
                                     (lidarDisabled && !kIsWeb) ||
-                                    _selectedListingTypeId == 1) {
+                                    _selectedListingTypeId ==
+                                        ListingTypeIds.roomNeeded ||
+                                    _selectedListingTypeId ==
+                                        ListingTypeIds.groupForming) {
                                   return const SizedBox.shrink();
                                 }
                                 return Column(
