@@ -178,11 +178,17 @@ prefix). Sessions have a 1-hour TTL; tokens are
    auth in body; owner only; 403 `lidar_room_scan_disabled` when the feature
    is switched off in admin settings) →
    `{ scanSessionId, invocationUrl, expiresAt }`
+   Also: `POST /makon3d/scan-sessions` (anonymous, optional `device_id`) —
+   same response shape, `target = makon3d` (see the Makon3D section below).
 2. `GET /scan-sessions/{scanSessionId}` (no user auth — opaque short-lived
-   id) → `{ scanSessionId, listingId, status, uploadToken?, expiresAt,
-   roomScanGlbUrl?, pointCloudUrl? }`. `uploadToken` only while the session
-   is active; GLB/USDZ URLs once `completed`. Also used by the Mini App to
-   poll status.
+   id) → `{ scanSessionId, target, listingId?, status, uploadToken?,
+   expiresAt, returnUrl, roomScanGlbUrl?, pointCloudUrl?, makon3dScanId? }`.
+   `uploadToken` only while the session is active; GLB/USDZ URLs (or
+   `makon3dScanId` for makon3d sessions) once `completed`. `returnUrl` is
+   the Telegram deep link the clip opens after finishing — it points back at
+   whichever Mini App created the session, so the clip never hardcodes the
+   bot (`AppClipConfig.returnToTelegramURL` remains the UyDosh fallback for
+   older backends). Also used by the Mini Apps to poll status.
 3. `POST /scan-sessions/{scanSessionId}/uploads` (App Clip, `X-Scan-Upload-Token`)
    → `{ uploads: [{ type, uploadUrl, storageKey }] }` — upload URLs point at
    backend-tokenized `PUT /scan-sessions/{id}/files/{type}` endpoints today
@@ -229,15 +235,49 @@ overridable with the `SCAN_CLIP_INVOCATION_BASE` env var
 - **Polling:** while the create page stays open, it polls
   `GET /scan-sessions/{id}` every 4s (only while visible, stopping on any
   terminal status) and swaps the button to "View 3D plan" on completion.
-- **Return leg:** after upload the clip opens
-  `https://t.me/uydosh_bot/app?startapp=scan_{scanSessionId}`
-  (`AppClipConfig.returnToTelegramURL`). `uydosh-mini-app.js`
+- **Return leg:** after upload the clip opens the session's `returnUrl`
+  (`https://t.me/uydosh_bot/app?startapp=scan_{scanSessionId}` for listing
+  sessions; `AppClipConfig.returnToTelegramURL` is the offline fallback).
+  `uydosh-mini-app.js`
   (`redirectFromMiniAppStartParam` → `restoreScanSessionFromStartParam`)
   recognizes the `scan_` start_param, shows a blocking "building the 3D
   plan…" overlay, polls the session, and redirects to
   `listing.html?id={listingId}&mini=1&view=3d` (the existing GLB viewer in
   `listing-detail-roomscan.js`) once completed. Failed/expired sessions get
   a message plus a plain "open listing" fallback.
+
+## Makon3D Mini App integration (implemented across all three repos)
+
+The same App Clip also serves the **Makon3D** Telegram Mini App
+(`uydoshtech.github.io/makon3d/`, `@makon3d_bot`) — scan sessions carry a
+`target` (`listing` | `makon3d`, migration `_0035_scan_sessions_makon3d.js`)
+and the clip itself is flow-agnostic:
+
+- **Create:** the Makon3D gallery's "Scan a room" card (`makon3d.js`) calls
+  `POST /makon3d/scan-sessions` (anonymous — same trust model as
+  `POST /makon3d/scans`; optional install-scoped `device_id`) and opens
+  `invocationUrl` via `Telegram.WebApp.openLink()` on iOS, or shows a QR +
+  copies the link elsewhere. The same optimistic LiDAR device pre-filter as
+  the UyDosh upsell hides the card on iPhones that certainly can't scan.
+- **Complete:** the backend routes makon3d sessions into
+  `Makon3dScanService.uploadScan` (USDZ → stylized GLB → footprint metrics →
+  rotation GIF) instead of the listing pipeline, creating a `makon3d_scans`
+  row and linking it via `makon3d_scan_id`.
+- **Return leg:** the session's `returnUrl` is
+  `https://t.me/makon3d_bot/app?startapp=scan_{scanSessionId}`
+  (bot/app-name configurable via `MAKON3D_BOT_USERNAME` /
+  `MAKON3D_MINI_APP_SHORT_NAME`). `makon3d.js` recognizes the `scan_`
+  start_param, shows a blocking "building the 3D model…" overlay, polls the
+  session, and opens the finished scan (`makon3dScanId`) in the gallery
+  viewer. The `/s/:token` fallback page also brands itself Makon3D and
+  returns there for makon3d sessions.
+- **Manual step:** the `startapp` direct link only resolves if a Mini App
+  with short name `app` is registered for `@makon3d_bot` in BotFather
+  (`/newapp`), pointing at `https://uydoshtech.github.io/makon3d/`.
+
+No Makon3D-specific code exists in the clip: it validates the session,
+scans, uploads, and opens whatever `returnUrl` the backend handed it. (The
+in-clip UI branding/localization still says UyDosh.)
 
 ## Associated Domains / AASA
 

@@ -1,7 +1,8 @@
 import Foundation
 
-/// A temporary scan session created by the Telegram Mini App and consumed by
-/// the App Clip. Mirrors `GET /scan-sessions/{scanSessionId}`.
+/// A temporary scan session created by a Telegram Mini App (UyDosh or
+/// Makon3D) and consumed by the App Clip. Mirrors
+/// `GET /scan-sessions/{scanSessionId}`.
 public struct ScanSession: Codable, Equatable {
     public enum Status: String, Codable, Equatable {
         case created
@@ -14,27 +15,34 @@ public struct ScanSession: Codable, Equatable {
     }
 
     public let scanSessionId: String
-    /// Listing the scan belongs to. The backend uses integer listing ids, but
+    /// Listing the scan belongs to — `listing` sessions only (absent for
+    /// Makon3D gallery sessions). The backend uses integer listing ids, but
     /// the wire format is a string; decoding accepts both.
-    public let listingId: String
+    public let listingId: String?
     public let status: Status
     /// Short-lived token authorizing uploads for this session. Present while
     /// the session is active; never a Telegram user identifier.
     public let uploadToken: String?
     public let expiresAt: Date
+    /// Telegram deep link to open after the scan — points back at whichever
+    /// Mini App created the session. Falls back to the UyDosh Mini App when
+    /// absent (older backends).
+    public let returnUrl: URL?
 
     public init(
         scanSessionId: String,
-        listingId: String,
+        listingId: String?,
         status: Status,
         uploadToken: String?,
-        expiresAt: Date
+        expiresAt: Date,
+        returnUrl: URL? = nil
     ) {
         self.scanSessionId = scanSessionId
         self.listingId = listingId
         self.status = status
         self.uploadToken = uploadToken
         self.expiresAt = expiresAt
+        self.returnUrl = returnUrl
     }
 
     public func isExpired(now: Date = Date()) -> Bool {
@@ -47,7 +55,7 @@ public struct ScanSession: Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case scanSessionId, listingId, status, uploadToken, expiresAt
+        case scanSessionId, listingId, status, uploadToken, expiresAt, returnUrl
     }
 
     public init(from decoder: Decoder) throws {
@@ -55,11 +63,18 @@ public struct ScanSession: Codable, Equatable {
         scanSessionId = try container.decode(String.self, forKey: .scanSessionId)
         if let stringId = try? container.decode(String.self, forKey: .listingId) {
             listingId = stringId
+        } else if let intId = try? container.decode(Int.self, forKey: .listingId) {
+            listingId = String(intId)
         } else {
-            listingId = String(try container.decode(Int.self, forKey: .listingId))
+            listingId = nil
         }
         status = try container.decode(Status.self, forKey: .status)
         uploadToken = try container.decodeIfPresent(String.self, forKey: .uploadToken)
         expiresAt = try container.decode(Date.self, forKey: .expiresAt)
+        if let returnUrlString = try container.decodeIfPresent(String.self, forKey: .returnUrl) {
+            returnUrl = URL(string: returnUrlString)
+        } else {
+            returnUrl = nil
+        }
     }
 }

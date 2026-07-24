@@ -29,8 +29,12 @@ public enum AppClipConfig {
         URL(string: "https://t.me/\(telegramBotUsername)/app")!
     }
 
-    /// Deep link that returns the user to the Telegram Mini App after a scan:
-    /// `https://t.me/uydosh_bot/app?startapp=scan_{scanSessionId}`.
+    /// Deep link that returns the user to the UyDosh Telegram Mini App after
+    /// a scan: `https://t.me/uydosh_bot/app?startapp=scan_{scanSessionId}`.
+    ///
+    /// Fallback only — the backend's session state carries a `returnUrl`
+    /// pointing at whichever Mini App created the session (UyDosh or
+    /// Makon3D), and `AppClipRouter` prefers that.
     public static func returnToTelegramURL(scanSessionId: String) -> URL {
         var components = URLComponents()
         components.scheme = "https"

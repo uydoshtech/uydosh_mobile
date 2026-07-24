@@ -327,6 +327,10 @@ final class AppClipRouter: ObservableObject {
     // MARK: - Return to Telegram
 
     var returnToTelegramURL: URL? {
+        // The backend tells us which Mini App created the session (UyDosh or
+        // Makon3D); the hardcoded UyDosh link is only a fallback for older
+        // backends that don't send `returnUrl`.
+        if let returnUrl = session?.returnUrl { return returnUrl }
         guard let sessionId = scanSessionId else { return nil }
         return AppClipConfig.returnToTelegramURL(scanSessionId: sessionId)
     }
