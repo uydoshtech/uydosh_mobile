@@ -63,21 +63,16 @@ final class MapKitLocalePlugin: NSObject, FlutterPlugin {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Apply the in-app language to `AppleLanguages` BEFORE any framework
-    // bundle resolution happens (i.e. before Flutter / RoomPlan / ARKit load).
+    // Two-way language sync BEFORE any framework bundle resolution happens
+    // (i.e. before Flutter / RoomPlan / ARKit load):
+    // - applies the in-app language to `AppleLanguages` so RoomPlan's coaching
+    //   overlay (e.g. "More light required") follows the in-app language, and
+    // - adopts the iOS per-app language (Settings › Apps › UyDosh › Language)
+    //   into `flutter.selected_language` when the user changed it there.
     // shared_preferences on iOS stores Dart keys in NSUserDefaults under the
-    // "flutter." prefix, so we read the same value Dart wrote in
-    // `LanguageState.setLanguage` / `initialize`. Without this, RoomPlan's
-    // coaching overlay (e.g. "More light required", "Move device to start")
-    // shows in whatever language was cached at process start rather than the
-    // currently-selected in-app language.
-    let defaults = UserDefaults.standard
-    var persistedLang: String?
-    if let persisted = defaults.string(forKey: "flutter.selected_language"), !persisted.isEmpty {
-      persistedLang = persisted
-      defaults.set(RoomScanKitAppleLanguages.list(for: persisted), forKey: "AppleLanguages")
-      defaults.set(persisted, forKey: "AppleLocale")
-    }
+    // "flutter." prefix, so the helper reads/writes the same value Dart uses
+    // in `LanguageState.setLanguage` / `initialize`.
+    let persistedLang = RoomScanKitAppleLanguages.syncAtLaunch()
 
     let mapLangCode =
       persistedLang
