@@ -248,6 +248,13 @@ overridable with the `SCAN_CLIP_INVOCATION_BASE` env var
 
 ## Makon3D Mini App integration (implemented across all three repos)
 
+> **Dedicated Makon3D clip:** makon3d_mobile now has its own
+> `Makon3DAppClip` target (`com.makon3d.app.Clip`, invocation host
+> `scan.makon3d.uydosh.com`) — see `makon3d_mobile/docs/APP_CLIP.md`. The
+> backend keeps sending makon3d sessions to *this* UyDosh clip until
+> `MAKON3D_SCAN_CLIP_INVOCATION_BASE` is set, so everything below still
+> applies during the transition (and as the fallback behavior).
+
 The same App Clip also serves the **Makon3D** Telegram Mini App
 (`uydoshtech.github.io/makon3d/`, `@makon3d_bot`) — scan sessions carry a
 `target` (`listing` | `makon3d`, migration `_0035_scan_sessions_makon3d.js`)
