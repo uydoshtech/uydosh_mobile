@@ -138,7 +138,7 @@ abstract class IListingGroupService {
   /// every active member's housing alert on the backend.
   Future<GroupSearchPrefs> updateSearchPrefs({
     required int groupListingId,
-    int? locationId,
+    List<int> locationIds = const [],
     List<int> subwayStationIds = const [],
     List<int> subwayLineIds = const [],
   });
@@ -481,7 +481,7 @@ class ListingGroupService implements IListingGroupService {
   @override
   Future<GroupSearchPrefs> updateSearchPrefs({
     required int groupListingId,
-    int? locationId,
+    List<int> locationIds = const [],
     List<int> subwayStationIds = const [],
     List<int> subwayLineIds = const [],
   }) async {
@@ -491,7 +491,7 @@ class ListingGroupService implements IListingGroupService {
       _requireResponseMap,
       basePath: EnvironmentUtil.basePath,
       data: _SearchPrefsBody(
-        locationId: locationId,
+        locationIds: locationIds,
         subwayStationIds: subwayStationIds,
         subwayLineIds: subwayLineIds,
       ),
@@ -504,18 +504,20 @@ class ListingGroupService implements IListingGroupService {
 
 class _SearchPrefsBody implements IJsonEncodable {
   const _SearchPrefsBody({
-    this.locationId,
+    this.locationIds = const [],
     this.subwayStationIds = const [],
     this.subwayLineIds = const [],
   });
 
-  final int? locationId;
+  final List<int> locationIds;
   final List<int> subwayStationIds;
   final List<int> subwayLineIds;
 
   @override
   Map<String, dynamic> toJson() => {
-        "locationId": locationId,
+        // Legacy single id kept for older backends.
+        "locationId": locationIds.isNotEmpty ? locationIds.first : null,
+        "locationIds": locationIds,
         "subwayStationIds": subwayStationIds,
         "subwayLineIds": subwayLineIds,
       };

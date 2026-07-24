@@ -134,18 +134,20 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
         detail.groupContext?.groupSizeTarget ?? detail.groupSizeTarget;
     final totalMax = groupSize != null ? bounds.max * groupSize : bounds.max;
 
-    // Prefer the group's shared search area when it has been customized;
-    // otherwise fall back to the group-forming listing's own geo.
+    // Prefer the group's shared search area (customized or the server-seeded
+    // default off the group listing's full district/station selection);
+    // otherwise fall back to the group-forming listing's own single geo.
     final prefs = _searchPrefs;
     final prefStations = prefs?.subwayStationIds ?? const <int>[];
-    final useShared = prefs != null &&
-        !prefs.isDefault &&
-        (prefStations.isNotEmpty || (prefs.locationId ?? 0) > 0);
+    final prefLocations = prefs?.locationIds ?? const <int>[];
+    final useShared =
+        prefs != null && (prefStations.isNotEmpty || prefLocations.isNotEmpty);
 
     _bloc.add(
       ListingsEvent.searchListings(
         listingTypeId: ListingTypeIds.roommateNeeded,
-        locationId: useShared ? prefs.locationId : detail.locationId,
+        locationId: useShared ? null : detail.locationId,
+        locationIds: useShared && prefLocations.isNotEmpty ? prefLocations : null,
         subwayStationId: useShared
             ? (prefStations.length == 1 ? prefStations.first : null)
             : detail.subwayStationId,
@@ -165,7 +167,8 @@ class _GroupHousingSearchScreenState extends State<GroupHousingSearchScreen> {
     final detail = widget.groupListingDetail;
     final initial = _searchPrefs ??
         GroupSearchPrefs(
-          locationId: detail.locationId,
+          locationIds:
+              detail.locationId != null ? [detail.locationId!] : const [],
           subwayStationIds: detail.subwayStationId != null
               ? [detail.subwayStationId!]
               : const [],

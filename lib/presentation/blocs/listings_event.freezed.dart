@@ -159,13 +159,13 @@ return fetchUserListings(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult Function( int limit,  bool isActive)?  loadMore,TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult Function( int limit,  bool isActive)?  loadMore,TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  List<int>? locationIds,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FetchListings() when fetchListings != null:
 return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore() when loadMore != null:
 return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation() when fetchListingsByLocation != null:
 return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings() when searchListings != null:
-return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.locationIds,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
 return fetchUserListings(_that.page,_that.limit,_that.isRefresh);case _:
   return orElse();
 
@@ -184,13 +184,13 @@ return fetchUserListings(_that.page,_that.limit,_that.isRefresh);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)  fetchListings,required TResult Function( int limit,  bool isActive)  loadMore,required TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)  fetchListingsByLocation,required TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)  searchListings,required TResult Function( int page,  int limit,  bool isRefresh)  fetchUserListings,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( int page,  int limit,  bool isActive,  bool isRefresh)  fetchListings,required TResult Function( int limit,  bool isActive)  loadMore,required TResult Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)  fetchListingsByLocation,required TResult Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  List<int>? locationIds,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)  searchListings,required TResult Function( int page,  int limit,  bool isRefresh)  fetchUserListings,}) {final _that = this;
 switch (_that) {
 case _FetchListings():
 return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore():
 return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation():
 return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings():
-return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings():
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.locationIds,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings():
 return fetchUserListings(_that.page,_that.limit,_that.isRefresh);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -205,13 +205,13 @@ return fetchUserListings(_that.page,_that.limit,_that.isRefresh);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult? Function( int limit,  bool isActive)?  loadMore,TResult? Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult? Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult? Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListings,TResult? Function( int limit,  bool isActive)?  loadMore,TResult? Function( int locationId,  int page,  int limit,  bool isActive,  bool isRefresh)?  fetchListingsByLocation,TResult? Function( int? listingTypeId,  List<int>? listingTypeIds,  int? locationId,  List<int>? locationIds,  int? subwayStationId,  List<int>? subwayStationIds,  int? subwayLineId,  int? gender,  double? minPrice,  double? maxPrice,  bool? privateRoom,  bool? withPhoto,  bool? has3dTour,  String? priceSortOrder,  List<int>? excludeUserIds,  int page,  int limit,  bool isActive,  bool isRefresh,  bool keepStaleWhileRefreshing)?  searchListings,TResult? Function( int page,  int limit,  bool isRefresh)?  fetchUserListings,}) {final _that = this;
 switch (_that) {
 case _FetchListings() when fetchListings != null:
 return fetchListings(_that.page,_that.limit,_that.isActive,_that.isRefresh);case _LoadMore() when loadMore != null:
 return loadMore(_that.limit,_that.isActive);case _FetchListingsByLocation() when fetchListingsByLocation != null:
 return fetchListingsByLocation(_that.locationId,_that.page,_that.limit,_that.isActive,_that.isRefresh);case _SearchListings() when searchListings != null:
-return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
+return searchListings(_that.listingTypeId,_that.listingTypeIds,_that.locationId,_that.locationIds,_that.subwayStationId,_that.subwayStationIds,_that.subwayLineId,_that.gender,_that.minPrice,_that.maxPrice,_that.privateRoom,_that.withPhoto,_that.has3dTour,_that.priceSortOrder,_that.excludeUserIds,_that.page,_that.limit,_that.isActive,_that.isRefresh,_that.keepStaleWhileRefreshing);case _FetchUserListings() when fetchUserListings != null:
 return fetchUserListings(_that.page,_that.limit,_that.isRefresh);case _:
   return null;
 
@@ -438,7 +438,7 @@ as bool,
 
 
 class _SearchListings implements ListingsEvent {
-  const _SearchListings({this.listingTypeId, final  List<int>? listingTypeIds, this.locationId, this.subwayStationId, final  List<int>? subwayStationIds, this.subwayLineId, this.gender, this.minPrice, this.maxPrice, this.privateRoom, this.withPhoto, this.has3dTour, this.priceSortOrder, final  List<int>? excludeUserIds, this.page = 1, this.limit = 10, this.isActive = true, this.isRefresh = true, this.keepStaleWhileRefreshing = false}): _listingTypeIds = listingTypeIds,_subwayStationIds = subwayStationIds,_excludeUserIds = excludeUserIds;
+  const _SearchListings({this.listingTypeId, final  List<int>? listingTypeIds, this.locationId, final  List<int>? locationIds, this.subwayStationId, final  List<int>? subwayStationIds, this.subwayLineId, this.gender, this.minPrice, this.maxPrice, this.privateRoom, this.withPhoto, this.has3dTour, this.priceSortOrder, final  List<int>? excludeUserIds, this.page = 1, this.limit = 10, this.isActive = true, this.isRefresh = true, this.keepStaleWhileRefreshing = false}): _listingTypeIds = listingTypeIds,_locationIds = locationIds,_subwayStationIds = subwayStationIds,_excludeUserIds = excludeUserIds;
   
 
  final  int? listingTypeId;
@@ -452,6 +452,17 @@ class _SearchListings implements ListingsEvent {
 }
 
  final  int? locationId;
+/// Multi-district filter (matches ANY); takes priority over [locationId].
+ final  List<int>? _locationIds;
+/// Multi-district filter (matches ANY); takes priority over [locationId].
+ List<int>? get locationIds {
+  final value = _locationIds;
+  if (value == null) return null;
+  if (_locationIds is EqualUnmodifiableListView) return _locationIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
  final  int? subwayStationId;
  final  List<int>? _subwayStationIds;
  List<int>? get subwayStationIds {
@@ -497,16 +508,16 @@ _$SearchListingsCopyWith<_SearchListings> get copyWith => __$SearchListingsCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchListings&&(identical(other.listingTypeId, listingTypeId) || other.listingTypeId == listingTypeId)&&const DeepCollectionEquality().equals(other._listingTypeIds, _listingTypeIds)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&(identical(other.subwayStationId, subwayStationId) || other.subwayStationId == subwayStationId)&&const DeepCollectionEquality().equals(other._subwayStationIds, _subwayStationIds)&&(identical(other.subwayLineId, subwayLineId) || other.subwayLineId == subwayLineId)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.minPrice, minPrice) || other.minPrice == minPrice)&&(identical(other.maxPrice, maxPrice) || other.maxPrice == maxPrice)&&(identical(other.privateRoom, privateRoom) || other.privateRoom == privateRoom)&&(identical(other.withPhoto, withPhoto) || other.withPhoto == withPhoto)&&(identical(other.has3dTour, has3dTour) || other.has3dTour == has3dTour)&&(identical(other.priceSortOrder, priceSortOrder) || other.priceSortOrder == priceSortOrder)&&const DeepCollectionEquality().equals(other._excludeUserIds, _excludeUserIds)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh)&&(identical(other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) || other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchListings&&(identical(other.listingTypeId, listingTypeId) || other.listingTypeId == listingTypeId)&&const DeepCollectionEquality().equals(other._listingTypeIds, _listingTypeIds)&&(identical(other.locationId, locationId) || other.locationId == locationId)&&const DeepCollectionEquality().equals(other._locationIds, _locationIds)&&(identical(other.subwayStationId, subwayStationId) || other.subwayStationId == subwayStationId)&&const DeepCollectionEquality().equals(other._subwayStationIds, _subwayStationIds)&&(identical(other.subwayLineId, subwayLineId) || other.subwayLineId == subwayLineId)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.minPrice, minPrice) || other.minPrice == minPrice)&&(identical(other.maxPrice, maxPrice) || other.maxPrice == maxPrice)&&(identical(other.privateRoom, privateRoom) || other.privateRoom == privateRoom)&&(identical(other.withPhoto, withPhoto) || other.withPhoto == withPhoto)&&(identical(other.has3dTour, has3dTour) || other.has3dTour == has3dTour)&&(identical(other.priceSortOrder, priceSortOrder) || other.priceSortOrder == priceSortOrder)&&const DeepCollectionEquality().equals(other._excludeUserIds, _excludeUserIds)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isRefresh, isRefresh) || other.isRefresh == isRefresh)&&(identical(other.keepStaleWhileRefreshing, keepStaleWhileRefreshing) || other.keepStaleWhileRefreshing == keepStaleWhileRefreshing));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,listingTypeId,const DeepCollectionEquality().hash(_listingTypeIds),locationId,subwayStationId,const DeepCollectionEquality().hash(_subwayStationIds),subwayLineId,gender,minPrice,maxPrice,privateRoom,withPhoto,has3dTour,priceSortOrder,const DeepCollectionEquality().hash(_excludeUserIds),page,limit,isActive,isRefresh,keepStaleWhileRefreshing]);
+int get hashCode => Object.hashAll([runtimeType,listingTypeId,const DeepCollectionEquality().hash(_listingTypeIds),locationId,const DeepCollectionEquality().hash(_locationIds),subwayStationId,const DeepCollectionEquality().hash(_subwayStationIds),subwayLineId,gender,minPrice,maxPrice,privateRoom,withPhoto,has3dTour,priceSortOrder,const DeepCollectionEquality().hash(_excludeUserIds),page,limit,isActive,isRefresh,keepStaleWhileRefreshing]);
 
 @override
 String toString() {
-  return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, has3dTour: $has3dTour, priceSortOrder: $priceSortOrder, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
+  return 'ListingsEvent.searchListings(listingTypeId: $listingTypeId, listingTypeIds: $listingTypeIds, locationId: $locationId, locationIds: $locationIds, subwayStationId: $subwayStationId, subwayStationIds: $subwayStationIds, subwayLineId: $subwayLineId, gender: $gender, minPrice: $minPrice, maxPrice: $maxPrice, privateRoom: $privateRoom, withPhoto: $withPhoto, has3dTour: $has3dTour, priceSortOrder: $priceSortOrder, excludeUserIds: $excludeUserIds, page: $page, limit: $limit, isActive: $isActive, isRefresh: $isRefresh, keepStaleWhileRefreshing: $keepStaleWhileRefreshing)';
 }
 
 
@@ -517,7 +528,7 @@ abstract mixin class _$SearchListingsCopyWith<$Res> implements $ListingsEventCop
   factory _$SearchListingsCopyWith(_SearchListings value, $Res Function(_SearchListings) _then) = __$SearchListingsCopyWithImpl;
 @override @useResult
 $Res call({
- int? listingTypeId, List<int>? listingTypeIds, int? locationId, int? subwayStationId, List<int>? subwayStationIds, int? subwayLineId, int? gender, double? minPrice, double? maxPrice, bool? privateRoom, bool? withPhoto, bool? has3dTour, String? priceSortOrder, List<int>? excludeUserIds, int page, int limit, bool isActive, bool isRefresh, bool keepStaleWhileRefreshing
+ int? listingTypeId, List<int>? listingTypeIds, int? locationId, List<int>? locationIds, int? subwayStationId, List<int>? subwayStationIds, int? subwayLineId, int? gender, double? minPrice, double? maxPrice, bool? privateRoom, bool? withPhoto, bool? has3dTour, String? priceSortOrder, List<int>? excludeUserIds, int page, int limit, bool isActive, bool isRefresh, bool keepStaleWhileRefreshing
 });
 
 
@@ -534,12 +545,13 @@ class __$SearchListingsCopyWithImpl<$Res>
 
 /// Create a copy of ListingsEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? listingTypeId = freezed,Object? listingTypeIds = freezed,Object? locationId = freezed,Object? subwayStationId = freezed,Object? subwayStationIds = freezed,Object? subwayLineId = freezed,Object? gender = freezed,Object? minPrice = freezed,Object? maxPrice = freezed,Object? privateRoom = freezed,Object? withPhoto = freezed,Object? has3dTour = freezed,Object? priceSortOrder = freezed,Object? excludeUserIds = freezed,Object? page = null,Object? limit = null,Object? isActive = null,Object? isRefresh = null,Object? keepStaleWhileRefreshing = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? listingTypeId = freezed,Object? listingTypeIds = freezed,Object? locationId = freezed,Object? locationIds = freezed,Object? subwayStationId = freezed,Object? subwayStationIds = freezed,Object? subwayLineId = freezed,Object? gender = freezed,Object? minPrice = freezed,Object? maxPrice = freezed,Object? privateRoom = freezed,Object? withPhoto = freezed,Object? has3dTour = freezed,Object? priceSortOrder = freezed,Object? excludeUserIds = freezed,Object? page = null,Object? limit = null,Object? isActive = null,Object? isRefresh = null,Object? keepStaleWhileRefreshing = null,}) {
   return _then(_SearchListings(
 listingTypeId: freezed == listingTypeId ? _self.listingTypeId : listingTypeId // ignore: cast_nullable_to_non_nullable
 as int?,listingTypeIds: freezed == listingTypeIds ? _self._listingTypeIds : listingTypeIds // ignore: cast_nullable_to_non_nullable
 as List<int>?,locationId: freezed == locationId ? _self.locationId : locationId // ignore: cast_nullable_to_non_nullable
-as int?,subwayStationId: freezed == subwayStationId ? _self.subwayStationId : subwayStationId // ignore: cast_nullable_to_non_nullable
+as int?,locationIds: freezed == locationIds ? _self._locationIds : locationIds // ignore: cast_nullable_to_non_nullable
+as List<int>?,subwayStationId: freezed == subwayStationId ? _self.subwayStationId : subwayStationId // ignore: cast_nullable_to_non_nullable
 as int?,subwayStationIds: freezed == subwayStationIds ? _self._subwayStationIds : subwayStationIds // ignore: cast_nullable_to_non_nullable
 as List<int>?,subwayLineId: freezed == subwayLineId ? _self.subwayLineId : subwayLineId // ignore: cast_nullable_to_non_nullable
 as int?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable

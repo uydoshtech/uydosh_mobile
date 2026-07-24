@@ -61,16 +61,15 @@ class _GroupSearchPrefsEditSheet extends StatefulWidget {
 class _GroupSearchPrefsEditSheetState
     extends State<_GroupSearchPrefsEditSheet> {
   late final Set<int> _stationIds;
+  late final Set<int> _locationIds;
   final Set<int> _expandedLines = {};
-  int? _locationId;
   var _saving = false;
 
   @override
   void initState() {
     super.initState();
     _stationIds = {...widget.initial.subwayStationIds};
-    final loc = widget.initial.locationId;
-    _locationId = loc != null && loc > 0 ? loc : null;
+    _locationIds = widget.initial.locationIds.where((id) => id > 0).toSet();
   }
 
   void _toggleStation(int id) {
@@ -95,7 +94,9 @@ class _GroupSearchPrefsEditSheetState
 
   void _toggleLocation(int id) {
     HapticFeedbackUtils.selection();
-    setState(() => _locationId = _locationId == id ? null : id);
+    setState(() {
+      if (!_locationIds.remove(id)) _locationIds.add(id);
+    });
   }
 
   void _toggleLineExpanded(int line) {
@@ -118,7 +119,7 @@ class _GroupSearchPrefsEditSheetState
 
   Future<void> _save() async {
     if (_saving) return;
-    if (_stationIds.isEmpty && (_locationId ?? 0) <= 0) {
+    if (_stationIds.isEmpty && _locationIds.isEmpty) {
       ToastTheme.showError(
         context,
         message: L10n.get("group_search_area_empty"),
@@ -128,9 +129,10 @@ class _GroupSearchPrefsEditSheetState
     setState(() => _saving = true);
     try {
       final stations = _stationIds.toList()..sort();
+      final locations = _locationIds.toList()..sort();
       final prefs = await getIt<IListingGroupService>().updateSearchPrefs(
         groupListingId: widget.groupListingId,
-        locationId: _locationId,
+        locationIds: locations,
         subwayStationIds: stations,
         subwayLineIds: _fullLineIds,
       );
@@ -186,7 +188,8 @@ class _GroupSearchPrefsEditSheetState
             const SizedBox(height: 2),
             Text(
               L10n.get("group_search_area_hint"),
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.black),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: onSurface.withValues(alpha: 0.7)),
             ),
             const SizedBox(height: 12),
             Flexible(
@@ -211,7 +214,7 @@ class _GroupSearchPrefsEditSheetState
                               loc.id,
                               lang,
                             ),
-                            selected: _locationId == loc.id,
+                            selected: _locationIds.contains(loc.id),
                             onTap: () => _toggleLocation(loc.id),
                           ),
                       ],

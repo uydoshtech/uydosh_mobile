@@ -80,12 +80,13 @@ class GroupHousingListingFit {
     GroupSearchPrefs? prefs,
   }) {
     // Shared group preferences win when present: a listing matches if it falls
-    // in the chosen district or in ANY of the selected stations.
+    // in ANY of the chosen districts or ANY of the selected stations.
     final prefStations = prefs?.subwayStationIds ?? const <int>[];
-    final prefLoc = prefs?.locationId;
-    if (prefStations.isNotEmpty || (prefLoc != null && prefLoc > 0)) {
-      if (prefLoc != null && prefLoc > 0 && housingListing.locationId != null) {
-        if (prefLoc == housingListing.locationId) {
+    final prefLocations =
+        (prefs?.locationIds ?? const <int>[]).where((id) => id > 0).toList();
+    if (prefStations.isNotEmpty || prefLocations.isNotEmpty) {
+      if (prefLocations.isNotEmpty && housingListing.locationId != null) {
+        if (prefLocations.contains(housingListing.locationId)) {
           return GroupHousingLocationFit.matches;
         }
       }
@@ -94,7 +95,7 @@ class GroupHousingListingFit {
             ? GroupHousingLocationFit.matches
             : GroupHousingLocationFit.different;
       }
-      if (prefLoc != null && prefLoc > 0 && housingListing.locationId != null) {
+      if (prefLocations.isNotEmpty && housingListing.locationId != null) {
         return GroupHousingLocationFit.different;
       }
       return GroupHousingLocationFit.unknown;

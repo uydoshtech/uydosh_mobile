@@ -22,6 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_alert_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_error_retry_column.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/uydosh_inline_spinner.dart";
+import "package:uy_dosh/presentation/widgets/common/uydosh_popup_menu.dart";
 import "package:yandex_mapkit/yandex_mapkit.dart";
 
 /// Admin screen: chronological device-location history for a single Telegram
@@ -403,7 +404,16 @@ class _DedupPrecisionButton extends StatelessWidget {
                 SizedBox(
                   width: 24,
                   child: option == precision
-                      ? const Icon(Icons.check, size: 16)
+                      // Ambient iconTheme is white in blue theme; the menu
+                      // panel is light, so resolve from popupMenuTheme.
+                      ? Icon(
+                          Icons.check,
+                          size: 16,
+                          color: UydoshPopupMenuColors.itemForeground(
+                            context,
+                            enabled: true,
+                          ),
+                        )
                       : null,
                 ),
                 Text(_formatDedupDistance(option)),

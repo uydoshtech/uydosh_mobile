@@ -49,19 +49,26 @@ abstract final class UydoshDropdownChrome {
     );
   }
 
-  /// Foreground for rows inside the opened menu panel.
-  static Color menuItemForeground(BuildContext context) {
-    final isLightTheme = ThemeState().isLightTheme;
-    final isBlueTheme = ThemeState().isBlueTheme;
-    if (isBlueTheme) {
-      return BlueThemeColors.textPrimary;
+  /// Foreground for rows inside the opened menu panel. Contrast is picked
+  /// against [panelColor] (defaults to [menuPanelColor]): the blue theme's
+  /// default panel is the *light* [AppTheme.menuOverlaySurfaceColor], so it
+  /// needs dark text (matches [PopupMenuThemeData] in [AppTheme]) — not the
+  /// white [BlueThemeColors.textPrimary] used on dark surfaces.
+  static Color menuItemForeground(BuildContext context, {Color? panelColor}) {
+    final resolvedPanel = panelColor ?? menuPanelColor(context);
+    final panelIsLight = ThemeData.estimateBrightnessForColor(resolvedPanel) ==
+        Brightness.light;
+    if (ThemeState().isBlueTheme) {
+      return panelIsLight
+          ? BlueThemeColors.primary
+          : BlueThemeColors.textPrimary;
     }
-    return isLightTheme ? Colors.grey[800]! : Colors.grey[200]!;
+    return panelIsLight ? Colors.grey[800]! : Colors.grey[200]!;
   }
 
-  static TextStyle? menuItemStyle(BuildContext context) {
+  static TextStyle? menuItemStyle(BuildContext context, {Color? panelColor}) {
     return Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: menuItemForeground(context),
+          color: menuItemForeground(context, panelColor: panelColor),
         );
   }
 
@@ -148,8 +155,15 @@ class UydoshDropdownFormField<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveStyle =
         style ?? UydoshDropdownChrome.selectedItemStyle(context);
-    final menuItemStyle = UydoshDropdownChrome.menuItemStyle(context);
-    final menuItemForeground = UydoshDropdownChrome.menuItemForeground(context);
+    final resolvedMenuColor = _resolvedMenuColor(context);
+    final menuItemStyle = UydoshDropdownChrome.menuItemStyle(
+      context,
+      panelColor: resolvedMenuColor,
+    );
+    final menuItemForeground = UydoshDropdownChrome.menuItemForeground(
+      context,
+      panelColor: resolvedMenuColor,
+    );
     final selectedItemForeground = effectiveStyle?.color;
     final effectiveIcon = icon ??
         UydoshDropdownChrome.arrowIcon(
@@ -202,7 +216,7 @@ class UydoshDropdownFormField<T> extends StatelessWidget {
       icon: effectiveIcon,
       elevation: elevation,
       borderRadius: menuBorderRadius ?? BorderRadius.circular(16),
-      dropdownColor: _resolvedMenuColor(context),
+      dropdownColor: resolvedMenuColor,
       isExpanded: isExpanded,
       validator: validator,
       onSaved: onSaved,

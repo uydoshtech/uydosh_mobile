@@ -67,6 +67,9 @@ abstract class IListingSearchService {
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
+
+    /// Multi-district filter (matches ANY); takes priority over [locationId].
+    List<int>? locationIds,
     int? subwayStationId,
     List<int>? subwayStationIds,
     int? subwayLineId,
@@ -370,6 +373,7 @@ class ListingSearchService implements IListingSearchService {
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
+    List<int>? locationIds,
     int? subwayStationId,
     List<int>? subwayStationIds,
     int? subwayLineId,
@@ -400,7 +404,13 @@ class ListingSearchService implements IListingSearchService {
         listingTypeId: listingTypeId,
         listingTypeIds: listingTypeIds,
       );
-      if (locationId != null && locationId > 0) {
+      final finalLocationIds =
+          (locationIds ?? const <int>[]).where((id) => id > 0).toList();
+      if (finalLocationIds.length > 1) {
+        queryParams["locationIds"] = finalLocationIds.join(",");
+      } else if (finalLocationIds.length == 1) {
+        queryParams["locationId"] = finalLocationIds.first;
+      } else if (locationId != null && locationId > 0) {
         queryParams["locationId"] = locationId;
       }
 

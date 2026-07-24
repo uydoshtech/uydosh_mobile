@@ -466,7 +466,7 @@ class ListingGroupShortlistParticipantRating {
 /// the group-forming listing's own location/station.
 class GroupSearchPrefs {
   const GroupSearchPrefs({
-    this.locationId,
+    this.locationIds = const [],
     this.subwayStationIds = const [],
     this.subwayLineIds = const [],
     this.isDefault = false,
@@ -481,16 +481,23 @@ class GroupSearchPrefs {
           .toList();
     }
 
-    final locId = (json["location_id"] as num?)?.toInt();
+    // `location_ids` is canonical; older servers only send the single
+    // `location_id`.
+    var locationIds = toIntList(json["location_ids"]);
+    if (locationIds.isEmpty) {
+      final locId = (json["location_id"] as num?)?.toInt();
+      if (locId != null && locId > 0) locationIds = [locId];
+    }
     return GroupSearchPrefs(
-      locationId: locId != null && locId > 0 ? locId : null,
+      locationIds: locationIds,
       subwayStationIds: toIntList(json["subway_station_ids"]),
       subwayLineIds: toIntList(json["subway_line_ids"]),
       isDefault: json["is_default"] == true,
     );
   }
 
-  final int? locationId;
+  /// Selected districts; the group's housing search matches ANY of them.
+  final List<int> locationIds;
   final List<int> subwayStationIds;
   final List<int> subwayLineIds;
   final bool isDefault;

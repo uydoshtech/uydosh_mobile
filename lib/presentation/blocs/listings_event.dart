@@ -28,6 +28,8 @@ sealed class ListingsEvent with _$ListingsEvent {
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
+    /// Multi-district filter (matches ANY); takes priority over [locationId].
+    List<int>? locationIds,
     int? subwayStationId,
     List<int>? subwayStationIds,
     int? subwayLineId,

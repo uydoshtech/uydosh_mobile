@@ -101,6 +101,9 @@ abstract class IListingService {
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
+
+    /// Multi-district filter (matches ANY); takes priority over [locationId].
+    List<int>? locationIds,
     int? subwayStationId,
     List<int>? subwayStationIds,
     int? subwayLineId,
@@ -385,6 +388,7 @@ class ListingService implements IListingService {
     int? listingTypeId,
     List<int>? listingTypeIds,
     int? locationId,
+    List<int>? locationIds,
     int? subwayStationId,
     List<int>? subwayStationIds,
     int? subwayLineId,
@@ -406,6 +410,7 @@ class ListingService implements IListingService {
         listingTypeId: listingTypeId,
         listingTypeIds: listingTypeIds,
         locationId: locationId,
+        locationIds: locationIds,
         subwayStationId: subwayStationId,
         subwayStationIds: subwayStationIds,
         subwayLineId: subwayLineId,

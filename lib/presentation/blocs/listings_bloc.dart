@@ -41,6 +41,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
   int? _lastListingTypeId;
   List<int>? _lastListingTypeIds;
   int? _lastLocationId;
+  List<int>? _lastLocationIds;
   int? _lastSubwayStationId;
   List<int>? _lastSubwayStationIds;
   int? _lastSubwayLineId;
@@ -78,6 +79,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       _lastListingTypeId != null ||
       (_lastListingTypeIds != null && _lastListingTypeIds!.isNotEmpty) ||
       _lastLocationId != null ||
+      (_lastLocationIds != null && _lastLocationIds!.isNotEmpty) ||
       _lastSubwayStationId != null ||
       (_lastSubwayStationIds != null && _lastSubwayStationIds!.isNotEmpty) ||
       _lastSubwayLineId != null ||
@@ -247,6 +249,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
                   _lastListingTypeIds != null ? null : _lastListingTypeId,
               listingTypeIds: _lastListingTypeIds,
               locationId: _lastLocationId,
+              locationIds: _lastLocationIds,
               subwayStationId: _lastSubwayStationId,
               subwayStationIds: _lastSubwayStationIds,
               subwayLineId: _lastSubwayLineId,
@@ -422,6 +425,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
     _lastListingTypeId = searchParams["listingTypeId"] as int?;
     _lastListingTypeIds = searchParams["listingTypeIds"] as List<int>?;
     _lastLocationId = searchParams["locationId"] as int?;
+    _lastLocationIds = searchParams["locationIds"] as List<int>?;
     _lastSubwayStationId = searchParams["subwayStationId"] as int?;
     _lastSubwayStationIds = searchParams["subwayStationIds"] as List<int>?;
     _lastSubwayLineId = searchParams["subwayLineId"] as int?;
@@ -475,6 +479,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
         "listingTypeId": e.listingTypeId,
         "listingTypeIds": e.listingTypeIds,
         "locationId": e.locationId,
+        "locationIds": e.locationIds,
         "subwayStationId": e.subwayStationId,
         "subwayStationIds": e.subwayStationIds,
         "subwayLineId": e.subwayLineId,
@@ -508,6 +513,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
           "listingTypeId": e.listingTypeId,
           "listingTypeIds": e.listingTypeIds,
           "locationId": e.locationId,
+          "locationIds": e.locationIds,
           "subwayStationId": e.subwayStationId,
           "subwayStationIds": e.subwayStationIds,
           "subwayLineId": e.subwayLineId,
@@ -558,6 +564,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
       final subwayStationId = searchParams?["subwayStationId"] as int?;
       final subwayStationIds = searchParams?["subwayStationIds"] as List<int>?;
       final locationId = searchParams?["locationId"] as int?;
+      final locationIds = searchParams?["locationIds"] as List<int>?;
       final listingTypeId = searchParams?["listingTypeId"] as int?;
       final listingTypeIds = searchParams?["listingTypeIds"] as List<int>?;
       final subwayLineId = searchParams?["subwayLineId"] as int?;
@@ -592,6 +599,7 @@ class ListingsBloc extends Bloc<ListingsEvent, ListingsState> {
             listingTypeId: listingTypeIds != null ? null : listingTypeId,
             listingTypeIds: listingTypeIds,
             locationId: locationId,
+            locationIds: locationIds,
             subwayStationId: subwayStationId,
             subwayStationIds: subwayStationIds,
             subwayLineId: subwayLineId,
