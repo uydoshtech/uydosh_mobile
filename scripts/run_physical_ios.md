@@ -19,10 +19,10 @@ Names are the same as in **Xcode → Window → Devices and Simulators** and in 
 
 ## How to run
 
-From the **repository root** (`uydosh_client`):
+From the **repository root** (`uydosh_mobile`):
 
 ```bash
-cd /path/to/uydosh_client
+cd /path/to/uydosh_mobile
 
 # See default targets + what Flutter sees + what a run would use
 ./scripts/run_physical_ios.sh list

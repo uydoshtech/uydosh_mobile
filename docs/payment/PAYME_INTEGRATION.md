@@ -32,7 +32,7 @@ Exact request/response shapes and **error codes** are only authoritative in Paym
 |--------|------------|--------|
 | Merchant API endpoint (JSON-RPC handler) | `uydosh_backend` | Today: `POST /payments/payme/callback` is a **stub** — must implement Payme’s RPC contract. |
 | Orders, amounts, gigs, AI SKUs | `uydosh_backend` | `paymentController.ts`, `paymentService.ts`, `gigService.ts`, `aiProductSkus.ts` |
-| Client checkout | `uydosh_client` | Build Payme checkout URL per Payme «Инициализация платежей» + poll `GET /payments/orders/:id` |
+| Client checkout | `uydosh_mobile` | Build Payme checkout URL per Payme «Инициализация платежей» + poll `GET /payments/orders/:id` |
 
 ## Quick facts (vs Click)
 

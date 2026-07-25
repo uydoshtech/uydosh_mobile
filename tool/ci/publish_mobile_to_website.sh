@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Optional: duplicate the sideload APK to the static site repository via GitHub Releases.
-# Primary rolling release is created in uydosh_client by CI (GITHUB_TOKEN) — see release-apk.yml.
+# Primary rolling release is created in uydosh_mobile by CI (GITHUB_TOKEN) — see release-apk.yml.
 #
 # Tag "android-latest", asset basename must be app-release.apk
 # (matches https://github.com/uydoshtech/uydoshtech.github.io/releases/latest/download/app-release.apk).

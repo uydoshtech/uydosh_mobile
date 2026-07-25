@@ -451,8 +451,8 @@ SceneKit viewer.
 ### Clone & install
 
 ```bash
-git clone <repository-url> uydosh_client
-cd uydosh_client
+git clone <repository-url> uydosh_mobile
+cd uydosh_mobile
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 flutter gen-l10n

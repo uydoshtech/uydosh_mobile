@@ -7,7 +7,7 @@ This document is the **project-specific** checklist and architecture notes for i
 | Piece | Repository | Notes |
 |--------|------------|--------|
 | SHOP API callbacks, orders, signing | `uydosh_backend` | `paymentRoutes.ts`, `paymentController.ts`, `paymentService.ts` |
-| Pay link / deep link from app | `uydosh_client` | Call backend for URL or fields, then `url_launcher` / WebView |
+| Pay link / deep link from app | `uydosh_mobile` | Call backend for URL or fields, then `url_launcher` / WebView |
 | Official protocol details | This repo | `docs/payment/click_uz/` |
 
 ## Quick facts (SHOP API + payment page)

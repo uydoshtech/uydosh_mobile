@@ -7,7 +7,7 @@ alwaysApply: true
 
 `room_scan_kit` is shared by **two** host apps:
 
-- [uydosh_client](https://github.com/uydoshtech/uydosh_client) — sibling `../uydosh_client`
+- [uydosh_mobile](https://github.com/uydoshtech/uydosh_mobile) — sibling `../uydosh_client` (local folder keeps the old name)
 - [makon3d_mobile](https://github.com/uydoshtech/makon3d_mobile) — sibling `../makon3d_mobile`
 
 When changing anything that hosts must adopt (native HUD, Podfile sync/patches, Flutter→native string maps, Runner `Localizable.strings`, capture-channel args, viewer API, metrics, l10n keys for scan UI):
