@@ -939,17 +939,22 @@ post_install do |installer|
         '        let roomVC = RoomCaptureViewController()',
         "        let roomVC = RoomCaptureViewController()\n        #{marker}\n        roomVC.uydoshPhotogrammetryEnabled = arguments?[\"enablePhotogrammetry\"] as? Bool ?? false"
       )
-      File.write(flutter_roomplan_plugin_file, src)
     end
+    src = src.sub(
+      'roomVC.uydoshPhotogrammetryEnabled = arguments?["enablePhotogrammetry"] as? Bool ?? true',
+      'roomVC.uydoshPhotogrammetryEnabled = arguments?["enablePhotogrammetry"] as? Bool ?? false'
+    )
+    File.write(flutter_roomplan_plugin_file, src)
   end
   if File.exist?(room_capture_file)
     src = File.read(room_capture_file)
-    unless src.include?('public var uydoshPhotogrammetryEnabled = false')
+    if src.include?('public var uydoshPhotogrammetryEnabled = true')
+      src = src.sub('public var uydoshPhotogrammetryEnabled = true', 'public var uydoshPhotogrammetryEnabled = false')
+    elsif !src.include?('public var uydoshPhotogrammetryEnabled = false')
       src = src.sub(
         '    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?',
         "    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?\n    public var uydoshPhotogrammetryEnabled = false"
       )
-      src = src.sub('public var uydoshPhotogrammetryEnabled = true', 'public var uydoshPhotogrammetryEnabled = false')
     end
     unless src.include?('guard self.uydoshPhotogrammetryEnabled else { return }')
       src = src.sub(
