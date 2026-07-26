@@ -35,6 +35,7 @@ abstract class IListingCrudService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    String? contactTelegram,
   });
 
   Future<ListingDetail> updateListing({
@@ -57,8 +58,10 @@ abstract class IListingCrudService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+
     /// Admin-only; see [CreateListingRequest.contactPhone].
     String? contactPhone,
+
     /// Admin-only; see [CreateListingRequest.contactTelegram].
     String? contactTelegram,
   });
@@ -145,6 +148,7 @@ class ListingCrudService implements IListingCrudService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    String? contactTelegram,
   }) async {
     try {
       final userId = await SessionManager.getUserId();
@@ -174,6 +178,7 @@ class ListingCrudService implements IListingCrudService {
         hostResident: hostResident,
         userId: null,
         groupSizeTarget: groupSizeTarget,
+        contactTelegram: contactTelegram,
       );
 
       if (kDebugMode) {
@@ -186,11 +191,11 @@ class ListingCrudService implements IListingCrudService {
 
       final response = await _oauthApiClient
           .post<Map<String, dynamic>, CreateListingRequest>(
-        "/listings",
-        (json) => json as Map<String, dynamic>,
-        basePath: EnvironmentUtil.basePath,
-        data: request,
-      );
+            "/listings",
+            (json) => json as Map<String, dynamic>,
+            basePath: EnvironmentUtil.basePath,
+            data: request,
+          );
 
       if (kDebugMode) {
         logger.d("=== CREATE LISTING RESPONSE DEBUG ===");
@@ -314,22 +319,22 @@ class ListingCrudService implements IListingCrudService {
       try {
         response = await _oauthApiClient
             .put<Map<String, dynamic>, CreateListingRequest>(
-          "/listings/$listingId",
-          (json) => json as Map<String, dynamic>,
-          basePath: EnvironmentUtil.basePath,
-          data: request,
-        );
+              "/listings/$listingId",
+              (json) => json as Map<String, dynamic>,
+              basePath: EnvironmentUtil.basePath,
+              data: request,
+            );
       } catch (e) {
         if (kDebugMode) {
           logger.d("PUT method failed: $e, trying PATCH...");
         }
         response = await _oauthApiClient
             .patch<Map<String, dynamic>, CreateListingRequest>(
-          "/listings/$listingId",
-          (json) => json as Map<String, dynamic>,
-          basePath: EnvironmentUtil.basePath,
-          data: request,
-        );
+              "/listings/$listingId",
+              (json) => json as Map<String, dynamic>,
+              basePath: EnvironmentUtil.basePath,
+              data: request,
+            );
       }
 
       if (kDebugMode) {
@@ -471,13 +476,13 @@ class ListingCrudService implements IListingCrudService {
         isPrimary: isPrimary,
       );
 
-      final response =
-          await _oauthApiClient.post<Map<String, dynamic>, PhotoUploadRequest>(
-        "/listings/$listingId/photos",
-        (json) => json as Map<String, dynamic>,
-        basePath: EnvironmentUtil.basePath,
-        data: requestData,
-      );
+      final response = await _oauthApiClient
+          .post<Map<String, dynamic>, PhotoUploadRequest>(
+            "/listings/$listingId/photos",
+            (json) => json as Map<String, dynamic>,
+            basePath: EnvironmentUtil.basePath,
+            data: requestData,
+          );
 
       // Backend returns { message, photo: { id, ... } }.
       final photo = response["photo"];
@@ -649,9 +654,7 @@ class ListingCrudService implements IListingCrudService {
       "/listings/$listingId/room-scan-furniture-edits",
       (json) => json,
       basePath: EnvironmentUtil.basePath,
-      data: RoomScanFurnitureEditsPatchRequest(
-        furnitureEdits: furnitureEdits,
-      ),
+      data: RoomScanFurnitureEditsPatchRequest(furnitureEdits: furnitureEdits),
     );
   }
 
@@ -678,11 +681,11 @@ class ListingCrudService implements IListingCrudService {
     try {
       final response = await _oauthApiClient
           .patch<Map<String, dynamic>, EmptyListingRequest>(
-        "/listings/$listingId/renew",
-        (json) => json as Map<String, dynamic>,
-        basePath: EnvironmentUtil.basePath,
-        data: EmptyListingRequest(),
-      );
+            "/listings/$listingId/renew",
+            (json) => json as Map<String, dynamic>,
+            basePath: EnvironmentUtil.basePath,
+            data: EmptyListingRequest(),
+          );
 
       final listingJson = response["listing"];
       if (listingJson is Map<String, dynamic>) {

@@ -65,6 +65,7 @@ abstract class IListingService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+    String? contactTelegram,
   });
 
   Future<ListingDetail> updateListing({
@@ -87,6 +88,7 @@ abstract class IListingService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
+
     /// Admin-only override of the listing owner's contact info; see
     /// [CreateListingRequest.contactPhone]/[CreateListingRequest.contactTelegram].
     String? contactPhone,
@@ -209,9 +211,9 @@ abstract class IListingService {
 /// and [IListingDetailService].
 class ListingService implements IListingService {
   ListingService(IPublicApiClient apiClient, IOAuthApiClient oauthApiClient)
-      : _searchService = ListingSearchService(apiClient, oauthApiClient),
-        _crudService = ListingCrudService(oauthApiClient),
-        _detailService = ListingDetailService(oauthApiClient);
+    : _searchService = ListingSearchService(apiClient, oauthApiClient),
+      _crudService = ListingCrudService(oauthApiClient),
+      _detailService = ListingDetailService(oauthApiClient);
 
   final IListingSearchService _searchService;
   final IListingCrudService _crudService;
@@ -233,23 +235,22 @@ class ListingService implements IListingService {
     double? minPrice,
     double? maxPrice,
     int createdWithinDays = 30,
-  }) =>
-      _searchService.getListings(
-        page: page,
-        limit: limit,
-        isActive: isActive,
-        language: language,
-        listingTypeId: listingTypeId,
-        listingTypeIds: listingTypeIds,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        createdWithinDays: createdWithinDays,
-      );
+  }) => _searchService.getListings(
+    page: page,
+    limit: limit,
+    isActive: isActive,
+    language: language,
+    listingTypeId: listingTypeId,
+    listingTypeIds: listingTypeIds,
+    locationId: locationId,
+    subwayStationId: subwayStationId,
+    subwayStationIds: subwayStationIds,
+    subwayLineId: subwayLineId,
+    gender: gender,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    createdWithinDays: createdWithinDays,
+  );
 
   @override
   Future<List<Listing>> getListingsByLocation(
@@ -258,14 +259,13 @@ class ListingService implements IListingService {
     int limit = 10,
     String? language,
     int createdWithinDays = 30,
-  }) =>
-      _searchService.getListingsByLocation(
-        locationId,
-        page: page,
-        limit: limit,
-        language: language,
-        createdWithinDays: createdWithinDays,
-      );
+  }) => _searchService.getListingsByLocation(
+    locationId,
+    page: page,
+    limit: limit,
+    language: language,
+    createdWithinDays: createdWithinDays,
+  );
 
   @override
   Future<ListingDetail> getListingDetail(int listingId, {String? language}) =>
@@ -276,12 +276,11 @@ class ListingService implements IListingService {
     required int listingId,
     required String targetLanguageCode,
     required String translatedText,
-  }) =>
-      _detailService.saveDescriptionTranslation(
-        listingId: listingId,
-        targetLanguageCode: targetLanguageCode,
-        translatedText: translatedText,
-      );
+  }) => _detailService.saveDescriptionTranslation(
+    listingId: listingId,
+    targetLanguageCode: targetLanguageCode,
+    translatedText: translatedText,
+  );
 
   @override
   Future<ListingDetail> createListing({
@@ -306,30 +305,31 @@ class ListingService implements IListingService {
     bool? hostResident,
     List<String>? photoPaths,
     int? groupSizeTarget,
-  }) =>
-      _crudService.createListing(
-        title: title,
-        listingTypeId: listingTypeId,
-        price: price,
-        description: description,
-        gender: gender,
-        locationId: locationId,
-        locationIds: locationIds,
-        amenityIds: amenityIds,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        addressText: addressText,
-        addressLatitude: addressLatitude,
-        addressLongitude: addressLongitude,
-        moveInDate: moveInDate,
-        privateRoom: privateRoom,
-        hostResident: hostResident,
-        photoPaths: photoPaths,
-        groupSizeTarget: groupSizeTarget,
-      );
+    String? contactTelegram,
+  }) => _crudService.createListing(
+    title: title,
+    listingTypeId: listingTypeId,
+    price: price,
+    description: description,
+    gender: gender,
+    locationId: locationId,
+    locationIds: locationIds,
+    amenityIds: amenityIds,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    subwayStationId: subwayStationId,
+    subwayStationIds: subwayStationIds,
+    subwayLineId: subwayLineId,
+    addressText: addressText,
+    addressLatitude: addressLatitude,
+    addressLongitude: addressLongitude,
+    moveInDate: moveInDate,
+    privateRoom: privateRoom,
+    hostResident: hostResident,
+    photoPaths: photoPaths,
+    groupSizeTarget: groupSizeTarget,
+    contactTelegram: contactTelegram,
+  );
 
   @override
   Future<ListingDetail> updateListing({
@@ -354,30 +354,29 @@ class ListingService implements IListingService {
     int? groupSizeTarget,
     String? contactPhone,
     String? contactTelegram,
-  }) =>
-      _crudService.updateListing(
-        listingId: listingId,
-        title: title,
-        listingTypeId: listingTypeId,
-        price: price,
-        description: description,
-        gender: gender,
-        locationId: locationId,
-        locationIds: locationIds,
-        amenityIds: amenityIds,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        moveInDate: moveInDate,
-        privateRoom: privateRoom,
-        hostResident: hostResident,
-        photoPaths: photoPaths,
-        groupSizeTarget: groupSizeTarget,
-        contactPhone: contactPhone,
-        contactTelegram: contactTelegram,
-      );
+  }) => _crudService.updateListing(
+    listingId: listingId,
+    title: title,
+    listingTypeId: listingTypeId,
+    price: price,
+    description: description,
+    gender: gender,
+    locationId: locationId,
+    locationIds: locationIds,
+    amenityIds: amenityIds,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    subwayStationId: subwayStationId,
+    subwayStationIds: subwayStationIds,
+    subwayLineId: subwayLineId,
+    moveInDate: moveInDate,
+    privateRoom: privateRoom,
+    hostResident: hostResident,
+    photoPaths: photoPaths,
+    groupSizeTarget: groupSizeTarget,
+    contactPhone: contactPhone,
+    contactTelegram: contactTelegram,
+  );
 
   @override
   Future<PageableResponse<Listing>> searchListings({
@@ -401,29 +400,28 @@ class ListingService implements IListingService {
     String? priceSortOrder,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
-  }) =>
-      _searchService.searchListings(
-        page: page,
-        limit: limit,
-        isActive: isActive,
-        language: language,
-        listingTypeId: listingTypeId,
-        listingTypeIds: listingTypeIds,
-        locationId: locationId,
-        locationIds: locationIds,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoom,
-        withPhoto: withPhoto,
-        has3dTour: has3dTour,
-        priceSortOrder: priceSortOrder,
-        createdWithinDays: createdWithinDays,
-        excludeUserIds: excludeUserIds,
-      );
+  }) => _searchService.searchListings(
+    page: page,
+    limit: limit,
+    isActive: isActive,
+    language: language,
+    listingTypeId: listingTypeId,
+    listingTypeIds: listingTypeIds,
+    locationId: locationId,
+    locationIds: locationIds,
+    subwayStationId: subwayStationId,
+    subwayStationIds: subwayStationIds,
+    subwayLineId: subwayLineId,
+    gender: gender,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    privateRoom: privateRoom,
+    withPhoto: withPhoto,
+    has3dTour: has3dTour,
+    priceSortOrder: priceSortOrder,
+    createdWithinDays: createdWithinDays,
+    excludeUserIds: excludeUserIds,
+  );
 
   @override
   Future<PageableResponse<ListingMapPinData>> searchMapListings({
@@ -445,39 +443,37 @@ class ListingService implements IListingService {
     bool? has3dTour,
     int createdWithinDays = 30,
     List<int>? excludeUserIds,
-  }) =>
-      _searchService.searchMapListings(
-        page: page,
-        limit: limit,
-        isActive: isActive,
-        language: language,
-        listingTypeId: listingTypeId,
-        listingTypeIds: listingTypeIds,
-        locationId: locationId,
-        subwayStationId: subwayStationId,
-        subwayStationIds: subwayStationIds,
-        subwayLineId: subwayLineId,
-        gender: gender,
-        minPrice: minPrice,
-        maxPrice: maxPrice,
-        privateRoom: privateRoom,
-        withPhoto: withPhoto,
-        has3dTour: has3dTour,
-        createdWithinDays: createdWithinDays,
-        excludeUserIds: excludeUserIds,
-      );
+  }) => _searchService.searchMapListings(
+    page: page,
+    limit: limit,
+    isActive: isActive,
+    language: language,
+    listingTypeId: listingTypeId,
+    listingTypeIds: listingTypeIds,
+    locationId: locationId,
+    subwayStationId: subwayStationId,
+    subwayStationIds: subwayStationIds,
+    subwayLineId: subwayLineId,
+    gender: gender,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    privateRoom: privateRoom,
+    withPhoto: withPhoto,
+    has3dTour: has3dTour,
+    createdWithinDays: createdWithinDays,
+    excludeUserIds: excludeUserIds,
+  );
 
   @override
   Future<PageableResponse<Listing>> getUserListings({
     int page = 1,
     int limit = 10,
     String? language,
-  }) =>
-      _searchService.getUserListings(
-        page: page,
-        limit: limit,
-        language: language,
-      );
+  }) => _searchService.getUserListings(
+    page: page,
+    limit: limit,
+    language: language,
+  );
 
   @override
   Future<PageableResponse<Listing>> getListingsByUserId({
@@ -485,13 +481,12 @@ class ListingService implements IListingService {
     int page = 1,
     int limit = 10,
     String? language,
-  }) =>
-      _searchService.getListingsByUserId(
-        userId: userId,
-        page: page,
-        limit: limit,
-        language: language,
-      );
+  }) => _searchService.getListingsByUserId(
+    userId: userId,
+    page: page,
+    limit: limit,
+    language: language,
+  );
 
   @override
   Future<bool> toggleListingActive(int listingId) =>
@@ -506,97 +501,83 @@ class ListingService implements IListingService {
     required int listingId,
     required List<String> photoPaths,
     required List<bool> isPrimaryFlags,
-  }) =>
-      _crudService.uploadListingPhotos(
-        listingId: listingId,
-        photoPaths: photoPaths,
-        isPrimaryFlags: isPrimaryFlags,
-      );
+  }) => _crudService.uploadListingPhotos(
+    listingId: listingId,
+    photoPaths: photoPaths,
+    isPrimaryFlags: isPrimaryFlags,
+  );
 
   @override
   Future<int> uploadPhoto({
     required int listingId,
     required String photoPath,
     required bool isPrimary,
-  }) =>
-      _crudService.uploadPhoto(
-        listingId: listingId,
-        photoPath: photoPath,
-        isPrimary: isPrimary,
-      );
+  }) => _crudService.uploadPhoto(
+    listingId: listingId,
+    photoPath: photoPath,
+    isPrimary: isPrimary,
+  );
 
   @override
-  Future<bool> deletePhoto({
-    required int listingId,
-    required int photoId,
-  }) =>
+  Future<bool> deletePhoto({required int listingId, required int photoId}) =>
       _crudService.deletePhoto(listingId: listingId, photoId: photoId);
 
   @override
   Future<bool> setPrimaryPhoto({
     required int listingId,
     required int photoId,
-  }) =>
-      _crudService.setPrimaryPhoto(listingId: listingId, photoId: photoId);
+  }) => _crudService.setPrimaryPhoto(listingId: listingId, photoId: photoId);
 
   @override
   Future<bool> reorderPhotos({
     required int listingId,
     required List<int> photoIds,
-  }) =>
-      _crudService.reorderPhotos(listingId: listingId, photoIds: photoIds);
+  }) => _crudService.reorderPhotos(listingId: listingId, photoIds: photoIds);
 
   @override
   Future<void> uploadRoomScan({
     required int listingId,
     required String usdzFilePath,
     RoomScanMetrics? roomScanMetrics,
-  }) =>
-      _crudService.uploadRoomScan(
-        listingId: listingId,
-        usdzFilePath: usdzFilePath,
-        roomScanMetrics: roomScanMetrics,
-      );
+  }) => _crudService.uploadRoomScan(
+    listingId: listingId,
+    usdzFilePath: usdzFilePath,
+    roomScanMetrics: roomScanMetrics,
+  );
 
   @override
   Future<void> patchRoomScanMetricsIfMissing({
     required int listingId,
     required RoomScanMetrics metrics,
-  }) =>
-      _crudService.patchRoomScanMetricsIfMissing(
-        listingId: listingId,
-        metrics: metrics,
-      );
+  }) => _crudService.patchRoomScanMetricsIfMissing(
+    listingId: listingId,
+    metrics: metrics,
+  );
 
   @override
   Future<void> patchRoomScanNorthCorrection({
     required int listingId,
     required double? northCorrectionDeg,
-  }) =>
-      _crudService.patchRoomScanNorthCorrection(
-        listingId: listingId,
-        northCorrectionDeg: northCorrectionDeg,
-      );
+  }) => _crudService.patchRoomScanNorthCorrection(
+    listingId: listingId,
+    northCorrectionDeg: northCorrectionDeg,
+  );
 
   @override
   Future<void> patchRoomScanFurnitureEdits({
     required int listingId,
     required Map<String, dynamic>? furnitureEdits,
-  }) =>
-      _crudService.patchRoomScanFurnitureEdits(
-        listingId: listingId,
-        furnitureEdits: furnitureEdits,
-      );
+  }) => _crudService.patchRoomScanFurnitureEdits(
+    listingId: listingId,
+    furnitureEdits: furnitureEdits,
+  );
 
   @override
   Future<bool> featureListing(int listingId) =>
       _crudService.featureListing(listingId);
 
   @override
-  Future<bool> toggleFeatureListing(
-    int listingId,
-    bool isCurrentlyFeatured,
-  ) =>
+  Future<bool> toggleFeatureListing(int listingId, bool isCurrentlyFeatured) =>
       _crudService.toggleFeatureListing(listingId, isCurrentlyFeatured);
 
   @override
@@ -611,8 +592,7 @@ class ListingService implements IListingService {
   Future<PageableResponse<Listing>> getViewedListings({
     int page = 1,
     int limit = 50,
-  }) =>
-      _detailService.getViewedListings(page: page, limit: limit);
+  }) => _detailService.getViewedListings(page: page, limit: limit);
 
   @override
   Future<int> getListingViewCount(int listingId) =>
@@ -622,6 +602,5 @@ class ListingService implements IListingService {
   Future<List<Map<String, dynamic>>> getListingViewStatsByDay(
     int listingId, {
     int daysBack = 30,
-  }) =>
-      _detailService.getListingViewStatsByDay(listingId, daysBack: daysBack);
+  }) => _detailService.getListingViewStatsByDay(listingId, daysBack: daysBack);
 }

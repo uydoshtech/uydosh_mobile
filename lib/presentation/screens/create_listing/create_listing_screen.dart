@@ -100,6 +100,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Controllers
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _contactTelegramController =
+      TextEditingController();
   final TextEditingController _moveInDateController = TextEditingController();
   final TextEditingController _addressTextController = TextEditingController();
   String _moveInDateValue = "";
@@ -194,6 +196,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   int _selectedLocationIndex = -1;
   _LocationSearchMode _locationSearchMode = _LocationSearchMode.metro;
   bool _isSubmitting = false;
+  bool _isAdmin = false;
   bool _isResolvingCurrentLocation = false;
   bool _isLoadingLocations = false;
   bool _isLoadingStations = false;
@@ -251,6 +254,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _baselineCaptured = false;
   String _baselineTitle = "";
   String _baselineDescription = "";
+  String _baselineContactTelegram = "";
   String _baselineAddressText = "";
   int _baselineListingTypeId = 2;
   double _baselineRoommatePrice = 10.0;
@@ -273,6 +277,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     getIt<AppAnalyticsService>().logScreenView(screenName: "create_listing");
     _titleController.addListener(_markDirty);
     _descriptionController.addListener(_markDirty);
+    _contactTelegramController.addListener(_markDirty);
     _moveInDateController.addListener(_markDirty);
     _addressTextController.addListener(_onAddressTextChanged);
     final initialListingTypeId = _initialListingTypeId;
@@ -315,6 +320,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       _selectedListingTypeId = initialListingTypeId ?? defaultType;
       _defaultGenderFromProfile = defaultGender;
       _selectedGender = defaultGender;
+      _isAdmin = role == "admin";
     });
     _updateTitle();
     _captureBaseline();
@@ -340,6 +346,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _captureBaseline() {
     _baselineTitle = _titleController.text;
     _baselineDescription = _descriptionController.text;
+    _baselineContactTelegram = _contactTelegramController.text;
     _baselineAddressText = _addressTextController.text;
     _baselineListingTypeId = _selectedListingTypeId;
     _baselineRoommatePrice = _roommatePrice;
@@ -353,10 +360,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _baselineSelectedStationIndex = _selectedStationIndex;
     _baselineSelectedLocationIndex = _selectedLocationIndex;
     _baselineLocationSearchMode = _locationSearchMode;
-    _baselineSearchStationIds =
-        _selectedSearchStations.map((s) => s.id).toList();
-    _baselineSearchLocationIds =
-        _selectedSearchLocations.map((l) => l.id).toList();
+    _baselineSearchStationIds = _selectedSearchStations
+        .map((s) => s.id)
+        .toList();
+    _baselineSearchLocationIds = _selectedSearchLocations
+        .map((l) => l.id)
+        .toList();
     _baselineAmenityIds = Set<int>.from(_selectedAmenityIds);
     _baselineSelectedPhotos = List<String>.from(_selectedPhotos);
     _baselineCaptured = true;
@@ -397,7 +406,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       }
       for (final id in ids) {
         if (!addedIds.add(id)) continue;
-        final station = _stationCache[id] ??
+        final station =
+            _stationCache[id] ??
             _selectedSearchStations
                 .where((s) => s.id == id)
                 .cast<SubwayStation?>()
@@ -552,6 +562,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _normListingText(_baselineDescription)) {
       addLabel("listing_description_label", fallback: "Description");
     }
+    if (_normListingText(_contactTelegramController.text) !=
+        _normListingText(_baselineContactTelegram)) {
+      addLabel(
+        "admin_parser_review_field_contact_telegram",
+        fallback: "Contact telegram",
+      );
+    }
     if (_normListingText(_addressTextController.text) !=
         _normListingText(_baselineAddressText)) {
       addLabel("listing_address_text_label", fallback: "Address");
@@ -581,8 +598,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         (_locationSearchMode == _LocationSearchMode.metro ||
             _baselineLocationSearchMode == _LocationSearchMode.metro)) {
       final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
-      final baseLine =
-          _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
+      final baseLine = _baselineSelectedSubwayLine > 0
+          ? _baselineSelectedSubwayLine
+          : null;
       if (_currentSubwayStationId() != _baselineSubwayStationId() ||
           curLine != baseLine) {
         addLabel("select_metro_line_optional", fallback: "Metro");
@@ -616,6 +634,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _normListingText(_baselineDescription)) {
       return true;
     }
+    if (_normListingText(_contactTelegramController.text) !=
+        _normListingText(_baselineContactTelegram)) {
+      return true;
+    }
     if (_normListingText(_addressTextController.text) !=
         _normListingText(_baselineAddressText)) {
       return true;
@@ -639,8 +661,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         (_locationSearchMode == _LocationSearchMode.metro ||
             _baselineLocationSearchMode == _LocationSearchMode.metro)) {
       final curLine = _selectedSubwayLine > 0 ? _selectedSubwayLine : null;
-      final baseLine =
-          _baselineSelectedSubwayLine > 0 ? _baselineSelectedSubwayLine : null;
+      final baseLine = _baselineSelectedSubwayLine > 0
+          ? _baselineSelectedSubwayLine
+          : null;
       if (_currentSubwayStationId() != _baselineSubwayStationId() ||
           curLine != baseLine) {
         return true;
@@ -700,10 +723,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     try {
       final response = await getIt<IOAuthApiClient>()
           .post<Map<String, dynamic>, _EmptyRequest>(
-        "/users/verify-session",
-        (json) => json as Map<String, dynamic>,
-        data: _EmptyRequest(),
-      );
+            "/users/verify-session",
+            (json) => json as Map<String, dynamic>,
+            data: _EmptyRequest(),
+          );
       final user = response["user"];
       role = user is Map<String, dynamic> ? user["role"] as String? : null;
       if (role != null) await SessionManager.storeUserRole(role);
@@ -738,8 +761,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     // Trigger the BLoC to fetch stations for the selected line
     context.read<SubwayStationsBloc>().add(
-          SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
-        );
+      SubwayStationsEvent.fetchSubwayStationsByLine(line: line),
+    );
   }
 
   void _loadLocations() {
@@ -754,9 +777,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String _formatMoveInDateDisplay(DateTime date) {
     final locale = LanguageState().currentLanguage;
     try {
-      return _capitalizeMonth(
-        DateFormat("d MMMM yyyy", locale).format(date),
-      );
+      return _capitalizeMonth(DateFormat("d MMMM yyyy", locale).format(date));
     } catch (_) {
       return _capitalizeMonth(DateFormat("d MMMM yyyy").format(date));
     }
@@ -876,15 +897,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// center point). No-op when the district can't be resolved or isn't in
   /// the currently loaded location list.
   void _syncLocationWithCoordinates(double latitude, double longitude) {
-    final locationId = TashkentDistrictBoundaryCache.findLocationIdForCoordinate(
+    final locationId =
+        TashkentDistrictBoundaryCache.findLocationIdForCoordinate(
           latitude,
           longitude,
         ) ??
         LocationCache.findNearestLocationId(latitude, longitude);
     if (locationId == null) return;
 
-    final locationIndex =
-        _currentLocations.indexWhere((location) => location.id == locationId);
+    final locationIndex = _currentLocations.indexWhere(
+      (location) => location.id == locationId,
+    );
     if (locationIndex < 0) return;
 
     setState(() {
@@ -982,8 +1005,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         message: L10n.get("current_location_address_failed"),
       );
     } catch (e, st) {
-      logger.w("Failed to resolve current location address",
-          error: e, stackTrace: st);
+      logger.w(
+        "Failed to resolve current location address",
+        error: e,
+        stackTrace: st,
+      );
       if (!mounted) return;
       ToastTheme.showError(
         context,
@@ -1055,8 +1081,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         latitude,
         longitude,
       );
-      _nearbyStationsBeyondMaxRadius = closest == null ||
-          closest > _nearbyStationRadiusOptions.last;
+      _nearbyStationsBeyondMaxRadius =
+          closest == null || closest > _nearbyStationRadiusOptions.last;
       _preselectNearbyStations(latitude, longitude);
     });
   }
@@ -1071,19 +1097,21 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// out here so we never force-select a station that isn't actually within
   /// the auto-select walk time.
   void _preselectNearbyStations(double latitude, double longitude) {
-    final withinDefaultWalk = NearbyMetroStations.find(
-      latitude,
-      longitude,
-      maxMinutes: _autoSelectStationWalkMinutes,
-    ).where(
-      (estimate) => estimate.walkMinutes <= _autoSelectStationWalkMinutes,
-    );
+    final withinDefaultWalk =
+        NearbyMetroStations.find(
+          latitude,
+          longitude,
+          maxMinutes: _autoSelectStationWalkMinutes,
+        ).where(
+          (estimate) => estimate.walkMinutes <= _autoSelectStationWalkMinutes,
+        );
     for (final estimate in withinDefaultWalk) {
       // Respect an explicit removal: don't resurrect a chip the author
       // already unchecked just because coordinates/radius changed again.
       if (_dismissedNearbyStationIds.contains(estimate.station.id)) continue;
-      final alreadySelected = _selectedSearchStations
-          .any((station) => station.id == estimate.station.id);
+      final alreadySelected = _selectedSearchStations.any(
+        (station) => station.id == estimate.station.id,
+      );
       if (!alreadySelected) {
         _selectedSearchStations.add(estimate.station);
       }
@@ -1100,8 +1128,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void _toggleNearbyStation(SubwayStation station) {
     HapticFeedbackUtils.selection();
     setState(() {
-      final index =
-          _selectedSearchStations.indexWhere((s) => s.id == station.id);
+      final index = _selectedSearchStations.indexWhere(
+        (s) => s.id == station.id,
+      );
       if (index >= 0) {
         _selectedSearchStations.removeAt(index);
         _dismissedNearbyStationIds.add(station.id);
@@ -1109,8 +1138,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         _selectedSearchStations.add(station);
         _dismissedNearbyStationIds.remove(station.id);
       }
-      if (_showLocationError &&
-          _addressTextController.text.trim().isNotEmpty) {
+      if (_showLocationError && _addressTextController.text.trim().isNotEmpty) {
         _showLocationError = false;
       }
     });
@@ -1119,17 +1147,17 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// Dashed walking-path lines drawn on [AddressPinMapPreview] from the
   /// address pin to every currently tapped/selected nearby-station chip.
   List<MapPathTarget> get _selectedStationPathTargets => [
-        for (final station in _selectedSearchStations)
-          if (station.latitude != null && station.longitude != null)
-            MapPathTarget(
-              id: "${station.id}",
-              point: Point(
-                latitude: station.latitude!,
-                longitude: station.longitude!,
-              ),
-              color: AppColors.getMetroLineColor(station.line),
-            ),
-      ];
+    for (final station in _selectedSearchStations)
+      if (station.latitude != null && station.longitude != null)
+        MapPathTarget(
+          id: "${station.id}",
+          point: Point(
+            latitude: station.latitude!,
+            longitude: station.longitude!,
+          ),
+          color: AppColors.getMetroLineColor(station.line),
+        ),
+  ];
 
   /// Fired once the author releases the address-map pin after dragging it —
   /// updates coordinates and nearby stations immediately, then reverse
@@ -1218,8 +1246,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final color = isAtLimit
         ? theme.colorScheme.error
         : (ThemeState().isLightTheme
-            ? Colors.grey[700]
-            : theme.colorScheme.onSurfaceVariant.withOpacity(0.8));
+              ? Colors.grey[700]
+              : theme.colorScheme.onSurfaceVariant.withOpacity(0.8));
     return Padding(
       padding: const EdgeInsets.only(top: 4, right: 4),
       child: Text(
@@ -1278,10 +1306,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   void dispose() {
     _titleController.removeListener(_markDirty);
     _descriptionController.removeListener(_markDirty);
+    _contactTelegramController.removeListener(_markDirty);
     _moveInDateController.removeListener(_markDirty);
     _addressTextController.removeListener(_onAddressTextChanged);
     _titleController.dispose();
     _descriptionController.dispose();
+    _contactTelegramController.dispose();
     _moveInDateController.dispose();
     _addressTextController.dispose();
     _locationScrollController?.dispose();
@@ -1308,8 +1338,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         final scrollTopPad = embeddedInGlassShell
             ? 4.0 + themeState.mainShellGlassExtraTopInset(context)
             : useLiquidGlassAppBar
-                ? 12.0
-                : 16.0;
+            ? 12.0
+            : 16.0;
 
         return PopScope(
           canPop:
@@ -1327,7 +1357,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       _isGroupFormingFlow
                           ? "create_group_title"
                           : "create_listing_title",
-                      style: appBarTheme.titleTextStyle?.copyWith(
+                      style:
+                          appBarTheme.titleTextStyle?.copyWith(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ) ??
@@ -1360,8 +1391,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             iconData: Icons.close,
                             onPressed: _closeWizard,
                             semanticsLabel: L10n.get("close"),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(999)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(999),
+                            ),
                           ),
                         ),
                       ),
@@ -1674,7 +1706,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     final isLast = _currentStep == _stepCount - 1;
     final label = theme.textTheme.labelLarge;
     final baseSize = label?.fontSize ?? 14;
-    final textStyle = label?.copyWith(fontSize: baseSize * 1.1, height: 1.0) ??
+    final textStyle =
+        label?.copyWith(fontSize: baseSize * 1.1, height: 1.0) ??
         TextStyle(
           fontSize: baseSize * 1.1,
           height: 1.0,
@@ -1695,8 +1728,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           if (!isFirst) ...[
             Expanded(
               child: GhostButtonFactory.iconText(
-                onPressed:
-                    _isSubmitting ? null : () => _goToStep(_currentStep - 1),
+                onPressed: _isSubmitting
+                    ? null
+                    : () => _goToStep(_currentStep - 1),
                 icon: Icons.arrow_back,
                 text: L10n.get("wizard_back"),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1753,8 +1787,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           MultiStationPicker(
             selectedSubwayLine: _selectedSubwayLine,
             currentStations: _currentStations,
-            selectedStationIds:
-                _selectedSearchStations.map((s) => s.id).toSet(),
+            selectedStationIds: _selectedSearchStations
+                .map((s) => s.id)
+                .toSet(),
             metroLineScrollController: _metroLineScrollController,
             isLoadingStations: _isLoadingStations,
             onSubwayLineChanged: (index) {
@@ -1775,8 +1810,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             _supportsMultiLocation) ...[
           MultiLocationPicker(
             locations: _currentLocations,
-            selectedLocationIds:
-                _selectedSearchLocations.map((l) => l.id).toSet(),
+            selectedLocationIds: _selectedSearchLocations
+                .map((l) => l.id)
+                .toSet(),
             isLoading: _isLoadingLocations,
             accentColor: _getBorderColor(),
             getLocationName: (location) => _getLocalizedName(
@@ -1853,7 +1889,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   /// address step (`roommateLocationSectionHtml`).
   Widget _buildRoommateLocationStep() {
     final theme = Theme.of(context);
-    final hasCoordinates = _addressLatitude != null && _addressLongitude != null;
+    final hasCoordinates =
+        _addressLatitude != null && _addressLongitude != null;
     return UydoshFormScrollBody(
       topPadding: 12,
       children: [
@@ -1946,9 +1983,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           _buildNearbyStationsSection(),
         ] else if (_isResolvingAddressLocation) ...[
           const SizedBox(height: 16),
-          const Center(
-            child: UydoshLogoSpinner(size: 22),
-          ),
+          const Center(child: UydoshLogoSpinner(size: 22)),
         ] else ...[
           const SizedBox(height: 8),
           Text(
@@ -2070,8 +2105,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             fontWeight: FontWeight.w600,
             color: selected
                 ? (ThemeState().isLightTheme
-                    ? Colors.black
-                    : theme.colorScheme.onSurface)
+                      ? Colors.black
+                      : theme.colorScheme.onSurface)
                 : theme.colorScheme.onSurfaceVariant,
           ),
         ),
@@ -2120,9 +2155,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     );
     final minutesLabel = L10n.getWithParams(
       "nearby_walk_minutes_label",
-      params: {
-        "minutes": "${estimate.walkMinutes.round().clamp(1, 999)}",
-      },
+      params: {"minutes": "${estimate.walkMinutes.round().clamp(1, 999)}"},
     );
     return GestureDetector(
       onTap: () => _toggleNearbyStation(station),
@@ -2178,12 +2211,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   Widget _buildLocationModeToggle() {
     final accent = _getBorderColor();
-    final selectedIndex =
-        _locationSearchMode == _LocationSearchMode.metro ? 0 : 1;
+    final selectedIndex = _locationSearchMode == _LocationSearchMode.metro
+        ? 0
+        : 1;
     final selectedTextColor =
         ThemeData.estimateBrightnessForColor(accent) == Brightness.dark
-            ? Colors.white
-            : Colors.black;
+        ? Colors.white
+        : Colors.black;
     final unselectedTextColor = ThemeState().unselectedTabTextColor;
 
     const height = 52.0;
@@ -2192,8 +2226,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final innerTrack =
-            (constraints.maxWidth - thumbInset * 2).clamp(0.0, double.infinity);
+        final innerTrack = (constraints.maxWidth - thumbInset * 2).clamp(
+          0.0,
+          double.infinity,
+        );
         final segmentWidth = innerTrack / 2;
         final thumbLeft = thumbInset + selectedIndex * segmentWidth;
 
@@ -2264,7 +2300,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       child: SizedBox(
                         height: height,
                         child: _LocationModeTabContent(
-                          isSelected: _locationSearchMode ==
+                          isSelected:
+                              _locationSearchMode ==
                               _LocationSearchMode.district,
                           label: L10n.get("wizard_location_mode_district"),
                           icon: Icons.location_on,
@@ -2495,10 +2532,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           maxPrice: _priceSliderMax,
           initialVisibleMaxPrice: _priceSliderInitialVisibleMax,
           maxExpansionStep: _priceSliderExpansionStep,
-          initialMinPrice:
-              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMin,
-          initialMaxPrice:
-              _pricePickerSingleHandle ? _roommatePrice : _roomBudgetMax,
+          initialMinPrice: _pricePickerSingleHandle
+              ? _roommatePrice
+              : _roomBudgetMin,
+          initialMaxPrice: _pricePickerSingleHandle
+              ? _roommatePrice
+              : _roomBudgetMax,
           useSinglePrice: _pricePickerSingleHandle,
           showErrorBorder: _showPriceError,
           onPriceRangeChanged: (minPrice, maxPrice) {
@@ -2557,8 +2596,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       builder: (context, value, child) {
                         final isEmpty = value.text.isEmpty;
                         final moveInDateLabel = L10n.get("move_in_date_label");
-                        final anyDateText =
-                            L10n.get("any_date").replaceAll("\n", " ");
+                        final anyDateText = L10n.get(
+                          "any_date",
+                        ).replaceAll("\n", " ");
                         final displayValue = isEmpty ? anyDateText : value.text;
                         final displayText = "$moveInDateLabel\n$displayValue";
                         final displayStyle = TextStyle(
@@ -2585,21 +2625,22 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             final existingDate = _moveInDateValue.isNotEmpty
                                 ? DateTime.tryParse(_moveInDateValue)
                                 : null;
-                            final initialDate = existingDate != null &&
+                            final initialDate =
+                                existingDate != null &&
                                     !existingDate.isBefore(firstDate) &&
                                     !existingDate.isAfter(lastDate)
                                 ? existingDate
                                 : firstDate;
                             final picked =
                                 await LanguageAwareDatePicker.showDatePicker(
-                              context: context,
-                              initialDate: initialDate,
-                              firstDate: firstDate,
-                              lastDate: lastDate,
-                              helpText: L10n.get("select_date"),
-                              cancelText: L10n.get("cancel"),
-                              confirmText: L10n.get("ok"),
-                            );
+                                  context: context,
+                                  initialDate: initialDate,
+                                  firstDate: firstDate,
+                                  lastDate: lastDate,
+                                  helpText: L10n.get("select_date"),
+                                  cancelText: L10n.get("cancel"),
+                                  confirmText: L10n.get("ok"),
+                                );
                             if (picked != null) {
                               setState(() {
                                 _moveInDateValue =
@@ -2641,7 +2682,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               prefixIcon: ThemeIcon(
                                 CupertinoIcons.calendar,
                                 size: 22,
-                                color: Theme.of(context).brightness ==
+                                color:
+                                    Theme.of(context).brightness ==
                                         Brightness.dark
                                     ? Theme.of(
                                         context,
@@ -2688,12 +2730,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             color: _isPrivateRoom
                                 ? _getBorderColor()
                                 : (Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant
-                                        .withOpacity(0.7)
-                                    : Colors.grey[600]),
+                                          Brightness.dark
+                                      ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                            .withOpacity(0.7)
+                                      : Colors.grey[600]),
                             size: 22,
                           ),
                           const SizedBox(width: 8),
@@ -2703,8 +2745,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  L10n.get("private_room")
-                                      .replaceFirst(" ", "\n"),
+                                  L10n.get(
+                                    "private_room",
+                                  ).replaceFirst(" ", "\n"),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -2726,18 +2769,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                             ),
                             inactiveThumbColor:
                                 Theme.of(context).brightness == Brightness.dark
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant
-                                        .withOpacity(0.7)
-                                    : Colors.grey.shade600,
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                      .withOpacity(0.7)
+                                : Colors.grey.shade600,
                             inactiveTrackColor:
                                 Theme.of(context).brightness == Brightness.dark
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant
-                                        .withOpacity(0.3)
-                                    : Colors.grey.shade300,
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                      .withOpacity(0.3)
+                                : Colors.grey.shade300,
                             onChanged: (value) {
                               HapticFeedbackUtils.impact();
                               setState(() {
@@ -2773,71 +2812,69 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                  ThemeIcon(
-                    ListingTypeHelper.hostResidentFieldIcon,
-                    color: _hostResident
-                        ? _getBorderColor()
-                        : (Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withOpacity(0.7)
-                            : Colors.grey[600]),
-                    size: 22,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          L10n.get("host_resident"),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeState().isLightTheme
-                                ? Colors.black
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                    ThemeIcon(
+                      ListingTypeHelper.hostResidentFieldIcon,
+                      color: _hostResident
+                          ? _getBorderColor()
+                          : (Theme.of(context).brightness == Brightness.dark
+                                ? Theme.of(context).colorScheme.onSurfaceVariant
+                                      .withOpacity(0.7)
+                                : Colors.grey[600]),
+                      size: 22,
                     ),
-                  ),
-                  NeumorphicToggle(
-                    value: _hostResident,
-                    activeAccentColor: _getBorderColor(),
-                    activeTrackColor: _getBorderColor().withValues(alpha: 0.3),
-                    inactiveThumbColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withOpacity(0.7)
-                            : Colors.grey.shade600,
-                    inactiveTrackColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withOpacity(0.3)
-                            : Colors.grey.shade300,
-                    onChanged: (value) {
-                      HapticFeedbackUtils.impact();
-                      setState(() {
-                        _hostResident = value;
-                      });
-                    },
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            L10n.get("host_resident"),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: ThemeState().isLightTheme
+                                  ? Colors.black
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    NeumorphicToggle(
+                      value: _hostResident,
+                      activeAccentColor: _getBorderColor(),
+                      activeTrackColor: _getBorderColor().withValues(
+                        alpha: 0.3,
+                      ),
+                      inactiveThumbColor:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.7)
+                          : Colors.grey.shade600,
+                      inactiveTrackColor:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.3)
+                          : Colors.grey.shade300,
+                      onChanged: (value) {
+                        HapticFeedbackUtils.impact();
+                        setState(() {
+                          _hostResident = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
         ],
       ],
     );
@@ -2868,7 +2905,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ),
         ),
         const SizedBox(height: 10), // Space between title and description
-
         // Description Field
         L10n.inputField(
           "listing_description_hint",
@@ -2903,41 +2939,61 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     });
                   }
                 },
-                minLines: _descriptionBaseLines +
+                minLines:
+                    _descriptionBaseLines +
                     (_isDescriptionExpanded
                         ? _descriptionExpandedExtraLines
                         : 0),
-                maxLines: _descriptionBaseLines +
+                maxLines:
+                    _descriptionBaseLines +
                     (_isDescriptionExpanded
                         ? _descriptionExpandedExtraLines
                         : 0),
                 maxLength: 1000,
-                buildCounter: (
-                  context, {
-                  required currentLength,
-                  required isFocused,
-                  maxLength,
-                }) {
-                  return DescriptionCounterToolbar(
-                    controller: _descriptionController,
-                    listingTypeId: _selectedListingTypeId,
-                    gender: _selectedGender,
-                    currentLength: currentLength,
-                    maxLength: maxLength ?? 0,
-                    isExpanded: _isDescriptionExpanded,
-                    onToggleExpanded: () => setState(() {
-                      _isDescriptionExpanded = !_isDescriptionExpanded;
-                    }),
-                    onTranscriptInserted: () => setState(() {}),
-                    layout: DescriptionCounterToolbarLayout.stack,
-                    counterVisibleAtFraction: 0.7,
-                    debugShowTapBounds: false,
-                  );
-                },
+                buildCounter:
+                    (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) {
+                      return DescriptionCounterToolbar(
+                        controller: _descriptionController,
+                        listingTypeId: _selectedListingTypeId,
+                        gender: _selectedGender,
+                        currentLength: currentLength,
+                        maxLength: maxLength ?? 0,
+                        isExpanded: _isDescriptionExpanded,
+                        onToggleExpanded: () => setState(() {
+                          _isDescriptionExpanded = !_isDescriptionExpanded;
+                        }),
+                        onTranscriptInserted: () => setState(() {}),
+                        layout: DescriptionCounterToolbarLayout.stack,
+                        counterVisibleAtFraction: 0.7,
+                        debugShowTapBounds: false,
+                      );
+                    },
               ),
             ),
           ),
         ),
+
+        if (_isAdmin) ...[
+          const SizedBox(height: 16),
+          LabeledFieldOverlay(
+            label: L10n.get("admin_parser_review_field_contact_telegram"),
+            child: UydoshPlateTextFormField(
+              hintText: L10n.get("admin_parser_review_owner_hint"),
+              controller: _contactTelegramController,
+              maxLines: 1,
+              textInputAction: TextInputAction.next,
+              decoration: UydoshPlateFieldDecoration.forHint(
+                context,
+                hintText: L10n.get("admin_parser_review_owner_hint"),
+              ).copyWith(prefixText: "@"),
+            ),
+          ),
+        ],
 
         // Photos Section - roommate listings only (not group_forming / room_needed)
         if (_selectedListingTypeId != 1 && !_isGroupFormingFlow) ...[
@@ -2959,7 +3015,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             onMakeNewPhotoPrimary:
                 _makeNewPhotoPrimary, // Handle new photo primary selection
             deletingPhotoIds: const {}, // No deleting for new listings
-            makingPhotoPrimaryIds: const {}, // No making primary for new listings
+            makingPhotoPrimaryIds:
+                const {}, // No making primary for new listings
             // Drive the grid off `_selectedPhotos` directly (as NewPhotoItem).
             // On reorder we mutate the same list so the submit flow uploads
             // photos in the user's chosen order (index 0 -> primary) without
@@ -3010,8 +3067,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         ),
         if (_isGroupFormingFlow)
           _summaryTile(
-            label: _summaryLabel("group_size_target_label",
-                fallback: "Group size"),
+            label: _summaryLabel(
+              "group_size_target_label",
+              fallback: "Group size",
+            ),
             value: L10n.plural("group_size_target_option", _groupSizeTarget),
             stepIndex: 1,
           ),
@@ -3027,8 +3086,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           ),
         if (_isRoommateNeededFlow)
           _summaryTile(
-            label: _summaryLabel("listing_address_text_label",
-                fallback: "Address"),
+            label: _summaryLabel(
+              "listing_address_text_label",
+              fallback: "Address",
+            ),
             value: _addressTextController.text.trim().isEmpty
                 ? notSet
                 : _addressTextController.text.trim(),
@@ -3057,8 +3118,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         ),
         _summaryTile(
           label: _summaryLabel("move_in_date_label", fallback: "Move-in date"),
-          value:
-              _moveInDateValue.isNotEmpty ? _moveInDateController.text : notSet,
+          value: _moveInDateValue.isNotEmpty
+              ? _moveInDateController.text
+              : notSet,
           stepIndex: 1,
         ),
         if (!_isGroupFormingFlow)
@@ -3096,8 +3158,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           stepIndex: 2,
         ),
         _summaryTile(
-          label: _summaryLabel("listing_description_label",
-              fallback: "Description"),
+          label: _summaryLabel(
+            "listing_description_label",
+            fallback: "Description",
+          ),
           value: _descriptionController.text.trim().isEmpty
               ? notSet
               : _descriptionController.text.trim(),
@@ -3379,8 +3443,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   ) async {
     if (!mounted) return;
 
-    final suggestion =
-        PostCreateListingSearchAlertSuggestion.fromListing(createdListing);
+    final suggestion = PostCreateListingSearchAlertSuggestion.fromListing(
+      createdListing,
+    );
     if (suggestion == null) return;
 
     final shouldCreate = await _showPostCreateSearchAlertSheet(suggestion);
@@ -3466,10 +3531,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       ThreeDAppBarIconButton(
                         iconData: Icons.close,
                         onPressed: () => Navigator.of(context).pop(false),
-                        semanticsLabel: MaterialLocalizations.of(context)
-                            .closeButtonTooltip,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(999)),
+                        semanticsLabel: MaterialLocalizations.of(
+                          context,
+                        ).closeButtonTooltip,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(999),
+                        ),
                       ),
                     ],
                   ),
@@ -3531,8 +3598,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       getIt<AppAnalyticsService>().logListingPublishTapped(
         flow: "create",
         listingTypeId: _selectedListingTypeId,
-        photoCount:
-            _selectedListingTypeId != 1 ? _selectedPhotos.length : 0,
+        photoCount: _selectedListingTypeId != 1 ? _selectedPhotos.length : 0,
       ),
     );
 
@@ -3542,27 +3608,18 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     // Validate title
     if (title.isEmpty) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("title_required"),
-      );
+      ToastTheme.showError(context, message: L10n.get("title_required"));
       return;
     }
 
     if (title.length > _titleMaxLength) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("title_too_long"),
-      );
+      ToastTheme.showError(context, message: L10n.get("title_too_long"));
       return;
     }
 
     // Validate description
     if (description.isEmpty) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("description_required"),
-      );
+      ToastTheme.showError(context, message: L10n.get("description_required"));
       setState(() {
         _showDescriptionError = true;
       });
@@ -3574,10 +3631,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
 
     if (description.length > 1000) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("description_too_long"),
-      );
+      ToastTheme.showError(context, message: L10n.get("description_too_long"));
       return;
     }
 
@@ -3608,10 +3662,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     } else if (_supportsMultiStation &&
         _locationSearchMode == _LocationSearchMode.metro &&
         _selectedSearchStations.isEmpty) {
-      ToastTheme.showError(
-        context,
-        message: _locationRequiredMessage(),
-      );
+      ToastTheme.showError(context, message: _locationRequiredMessage());
       setState(() {
         _showLocationError = true;
       });
@@ -3619,10 +3670,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     } else if (_supportsMultiLocation &&
         _locationSearchMode == _LocationSearchMode.district &&
         _selectedSearchLocations.isEmpty) {
-      ToastTheme.showError(
-        context,
-        message: _locationRequiredMessage(),
-      );
+      ToastTheme.showError(context, message: _locationRequiredMessage());
       setState(() {
         _showLocationError = true;
       });
@@ -3630,10 +3678,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     } else if (!_supportsMultiStation &&
         _locationSearchMode == _LocationSearchMode.metro &&
         _currentSubwayStationId() == null) {
-      ToastTheme.showError(
-        context,
-        message: _locationRequiredMessage(),
-      );
+      ToastTheme.showError(context, message: _locationRequiredMessage());
       setState(() {
         _showLocationError = true;
       });
@@ -3641,10 +3686,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     } else if (!_supportsMultiLocation &&
         _locationSearchMode == _LocationSearchMode.district &&
         _selectedLocationIndex < 0) {
-      ToastTheme.showError(
-        context,
-        message: _locationRequiredMessage(),
-      );
+      ToastTheme.showError(context, message: _locationRequiredMessage());
       setState(() {
         _showLocationError = true;
       });
@@ -3657,10 +3699,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     // Validate price: user must actively pick a value.
     if (!_priceTouched) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("price_required"),
-      );
+      ToastTheme.showError(context, message: L10n.get("price_required"));
       setState(() {
         _showPriceError = true;
       });
@@ -3672,10 +3711,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     }
 
     if (_priceForCreateRequest() < 1) {
-      ToastTheme.showError(
-        context,
-        message: L10n.get("listing_price_minimum"),
-      );
+      ToastTheme.showError(context, message: L10n.get("listing_price_minimum"));
       setState(() {
         _showPriceError = true;
       });
@@ -3694,14 +3730,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     try {
       // Get the selected location and station (if available)
-      final selectedLocation = _selectedLocationIndex >= 0 &&
+      final selectedLocation =
+          _selectedLocationIndex >= 0 &&
               _selectedLocationIndex < _currentLocations.length
           ? _currentLocations[_selectedLocationIndex]
           : null;
       final selectedStation =
           _selectedSubwayLine > 0 && _currentStations.isNotEmpty
-              ? _currentStations[_selectedStationIndex]
-              : null;
+          ? _currentStations[_selectedStationIndex]
+          : null;
 
       // Demand-side flows persist either station ids or district ids. The UI
       // toggle makes these mutually exclusive; element 0 doubles as the primary
@@ -3709,12 +3746,14 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final usesMetroMode = _locationSearchMode == _LocationSearchMode.metro;
       final usesDistrictMode =
           _locationSearchMode == _LocationSearchMode.district;
-      final multiStationIds = _supportsMultiStation &&
+      final multiStationIds =
+          _supportsMultiStation &&
               usesMetroMode &&
               _selectedSearchStations.isNotEmpty
           ? _selectedSearchStations.map((s) => s.id).toList()
           : null;
-      final multiLocationIds = _supportsMultiLocation &&
+      final multiLocationIds =
+          _supportsMultiLocation &&
               usesDistrictMode &&
               _selectedSearchLocations.isNotEmpty
           ? _selectedSearchLocations.map((l) => l.id).toList()
@@ -3727,20 +3766,21 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       final primaryStation = multiStationIds != null
           ? _selectedSearchStations.first
           : (usesDistrictMode || _supportsMultiStation)
-              ? null
-              : selectedStation;
+          ? null
+          : selectedStation;
       final primaryLocation = multiLocationIds != null
           ? _selectedSearchLocations.first
           : usesMetroMode
-              ? null
-              : selectedLocation;
+          ? null
+          : selectedLocation;
       final effectiveSubwayLineId = multiStationIds != null
           ? _selectedSearchStations.first.line
           : (usesDistrictMode || _supportsMultiStation)
-              ? null
-              : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
-      final addressText =
-          _isRoommateNeededFlow ? _addressTextController.text.trim() : "";
+          ? null
+          : (_selectedSubwayLine > 0 ? _selectedSubwayLine : null);
+      final addressText = _isRoommateNeededFlow
+          ? _addressTextController.text.trim()
+          : "";
       final addressLatitude = addressText.isNotEmpty && _isRoommateNeededFlow
           ? _addressLatitude
           : null;
@@ -3766,12 +3806,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         "(${_pricePickerSingleHandle ? "scalar $_roommatePrice" : "range $_roomBudgetMin-$_roomBudgetMax"})",
       );
       logger.d("  description: \"${_descriptionController.text.trim()}\"");
-      logger.d(
-        "  subwayStationId: ${primaryStation?.id ?? "null (optional)"}",
-      );
-      logger.d(
-        "  subwayLineId: ${effectiveSubwayLineId ?? "null (optional)"}",
-      );
+      logger.d("  subwayStationId: ${primaryStation?.id ?? "null (optional)"}");
+      logger.d("  subwayLineId: ${effectiveSubwayLineId ?? "null (optional)"}");
       logger.d("  locationId: ${primaryLocation?.id ?? "null (optional)"}");
       logger.d("  locationIds: ${multiLocationIds ?? "null"}");
       logger.d(
@@ -3834,11 +3870,19 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
         hostResident: _isRoommateNeededFlow ? _hostResident : null,
         photoPaths: orderedPhotos.isNotEmpty ? orderedPhotos : null,
         groupSizeTarget: _isGroupFormingFlow ? _groupSizeTarget : null,
+        contactTelegram:
+            _isAdmin && _contactTelegramController.text.trim().isNotEmpty
+            ? _contactTelegramController.text.trim().replaceFirst(
+                RegExp(r"^@+"),
+                "",
+              )
+            : null,
       );
 
       if (_isGroupFormingFlow) {
         unawaited(
-            GroupHousingSearchAlerts.ensureForGroupListing(createdListing));
+          GroupHousingSearchAlerts.ensureForGroupListing(createdListing),
+        );
       }
 
       if (!mounted) return;
@@ -3872,9 +3916,8 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           await Navigator.of(context).push<bool>(
             MaterialPageRoute(
               fullscreenDialog: true,
-              builder: (context) => RoomPlanScanScreen(
-                listingId: createdListing.id,
-              ),
+              builder: (context) =>
+                  RoomPlanScanScreen(listingId: createdListing.id),
             ),
           );
         }
