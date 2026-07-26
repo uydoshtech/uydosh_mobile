@@ -73,6 +73,10 @@ def ensure_roomplan_quality_heatmap!
   ensure_roomplan_kit_helper!('RoomScanQualityHeatmap.swift')
 end
 
+def ensure_roomplan_photogrammetry_capture!
+  ensure_roomplan_kit_helper!('PhotogrammetryCapture.swift')
+end
+
 def ensure_roomplan_results_overlay!
   ensure_roomplan_kit_helper!('RoomScanResultsOverlay.swift')
 end
@@ -80,6 +84,7 @@ end
 ensure_roomplan_orientation_capture!
 ensure_roomplan_live_detection_overlay!
 ensure_roomplan_quality_heatmap!
+ensure_roomplan_photogrammetry_capture!
 ensure_roomplan_results_overlay!
 
 target 'Runner' do
@@ -262,6 +267,22 @@ post_install do |installer|
       src = src.sub(
         '    private func resetScanningSession() {',
         "#{injection}\n    private func resetScanningSession() {"
+      )
+      File.write(room_capture_file, src)
+    end
+    unless src.include?('name: "room_scan_kit/photogrammetry"')
+      src = src.sub(
+        '                self.uydoshPhotogrammetryPackageReady?(package.archiveURL)',
+        [
+          '                self.uydoshPhotogrammetryPackageReady?(package.archiveURL)',
+          '                if let root = self.view.window?.rootViewController,',
+          '                   let flutter = Self.uydoshFindFlutterViewController(in: root) {',
+          '                    FlutterMethodChannel(',
+          '                        name: "room_scan_kit/photogrammetry",',
+          '                        binaryMessenger: flutter.binaryMessenger',
+          '                    ).invokeMethod("onPackageReady", arguments: package.archiveURL.path)',
+          '                }',
+        ].join("\n")
       )
       File.write(room_capture_file, src)
     end
@@ -844,6 +865,65 @@ post_install do |installer|
     end
 
     File.write(room_capture_file, src) if repaired
+  end
+
+  # Capture synchronized RGB/depth/pose keyframes without taking ownership of
+  # RoomPlan's ARSession. The host receives the completed ZIP URL and decides
+  # when/how to upload it.
+  if File.exist?(room_capture_file)
+    ensure_roomplan_photogrammetry_capture!
+
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: photogrammetry capture phase 1 */'
+    unless src.include?(marker)
+      src = src.sub(
+        '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
+        [
+          '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
+          '',
+          "    #{marker}",
+          '    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?',
+          '    private let uydoshPhotogrammetryCapture = PhotogrammetryCaptureSession()',
+        ].join("\n")
+      )
+      src = src.sub(
+        '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
+        [
+          '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
+          '        try? uydoshPhotogrammetryCapture.start(',
+          '            arSession: roomCaptureView.captureSession.arSession',
+          '        )',
+        ].join("\n")
+      )
+      src = src.sub(
+        "    private func stopSession() {\n        isScanning = false",
+        [
+          '    private func stopSession() {',
+          '        isScanning = false',
+          '        uydoshPhotogrammetryCapture.stopCapturingFrames()',
+        ].join("\n")
+      )
+      src = src.sub(
+        '    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {',
+        [
+          '    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {',
+          '        Task { [weak self] in',
+          '            guard let self else { return }',
+          '            if let package = try? await self.uydoshPhotogrammetryCapture.finish(room: processedResult) {',
+          '                self.uydoshPhotogrammetryPackageReady?(package.archiveURL)',
+          '                if let root = self.view.window?.rootViewController,',
+          '                   let flutter = Self.uydoshFindFlutterViewController(in: root) {',
+          '                    FlutterMethodChannel(',
+          '                        name: "room_scan_kit/photogrammetry",',
+          '                        binaryMessenger: flutter.binaryMessenger',
+          '                    ).invokeMethod("onPackageReady", arguments: package.archiveURL.path)',
+          '                }',
+          '            }',
+          '        }',
+        ].join("\n")
+      )
+      File.write(room_capture_file, src)
+    end
   end
 
   # Real-time scan quality heatmap. This is a transparent renderer over the

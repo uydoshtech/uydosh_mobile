@@ -5,6 +5,7 @@ import "package:flutter/services.dart";
 import "package:flutter_roomplan/flutter_roomplan.dart";
 import "package:permission_handler/permission_handler.dart";
 import "package:room_scan_kit/scan_flow/scan_flow.dart";
+import "package:room_scan_kit/photogrammetry_upload.dart";
 import "package:uy_dosh/base/config/client_lidar_room_scan_config.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
@@ -17,6 +18,7 @@ import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/ios_device.dart";
+import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
 import "package:uy_dosh/presentation/screens/permissions/camera_permission_gate.dart";
 import "package:uy_dosh/presentation/widgets/common/primary_button.dart";
@@ -53,12 +55,19 @@ class RoomPlanScanScreen extends StatefulWidget {
 class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     with SingleTickerProviderStateMixin {
   final _roomPlan = FlutterRoomplan();
-  static const MethodChannel _roomplanChannel = MethodChannel("rkg/flutter_roomplan");
+  static const MethodChannel _roomplanChannel = MethodChannel(
+    "rkg/flutter_roomplan",
+  );
+
   /// The RoomPlan plugin keeps the last capture-finished handler in a singleton; clear it on
   /// dispose so this [State] is not retained after leaving the screen.
   bool _registeredRoomCaptureCallback = false;
   bool _uploading = false;
   bool _starting = false;
+  PhotogrammetryUploadProgress? _photogrammetryProgress;
+  bool _standardUploadComplete = false;
+  bool _photogrammetryFinished = false;
+
   /// Null until [RoomPlanCapability.isSupportedOnDevice] resolves on iOS; unused on web.
   bool? _roomPlanSupported;
 
@@ -71,6 +80,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       _roomPlan.onRoomCaptureFinished(() {});
     }
     _iconRotationController.dispose();
+    PhotogrammetryUpload.instance.stopListening();
     super.dispose();
   }
 
@@ -100,7 +110,25 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
+    PhotogrammetryUpload.instance.listen(_uploadPhotogrammetryPackage);
     unawaited(_resolveSupportAndRegisterCapture());
+  }
+
+  Future<void> _uploadPhotogrammetryPackage(String path) async {
+    try {
+      await PhotogrammetryUpload.instance.submit(
+        packagePath: path,
+        apiBaseUrl: EnvironmentUtil.basePath,
+        onProgress: (progress) {
+          if (mounted) setState(() => _photogrammetryProgress = progress);
+        },
+      );
+    } catch (error, stack) {
+      logger.d("Photogrammetry upload failed: $error\n$stack");
+    } finally {
+      _photogrammetryFinished = true;
+      if (mounted && _standardUploadComplete) Navigator.of(context).pop(true);
+    }
   }
 
   Future<void> _resolveSupportAndRegisterCapture() async {
@@ -148,7 +176,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                 metrics: metrics,
               );
             } catch (e, st) {
-              logger.d("Room scan metrics backfill after upload failed: $e\n$st");
+              logger.d(
+                "Room scan metrics backfill after upload failed: $e\n$st",
+              );
             }
           }
           if (!mounted) return;
@@ -156,13 +186,16 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
             context,
             message: L10n.get("room_scan_success"),
           );
-          Navigator.of(context).pop(true);
+          _standardUploadComplete = true;
+          if (_photogrammetryFinished) Navigator.of(context).pop(true);
         } catch (e, st) {
           logger.e("Room scan upload failed", error: e, stackTrace: st);
           if (!mounted) return;
           final msg = e.toString();
           final isTooLarge =
-              msg.contains("File too large") || msg.contains("413") || msg.contains("Payload Too Large");
+              msg.contains("File too large") ||
+              msg.contains("413") ||
+              msg.contains("Payload Too Large");
           ToastTheme.showError(
             context,
             message: isTooLarge
@@ -180,7 +213,12 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
   Future<void> _startScan() async {
     if (!isIOSDevice) return;
-    setState(() => _starting = true);
+    setState(() {
+      _starting = true;
+      _standardUploadComplete = false;
+      _photogrammetryFinished = false;
+      _photogrammetryProgress = null;
+    });
     try {
       // Best-effort: re-apply `AppleLanguages` right before touching RoomPlan.
       // This mid-session write is NOT guaranteed to affect the coaching
@@ -245,16 +283,18 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           "roomplan_stats_bed": L10n.get("room_scan_stats_bed"),
           "roomplan_stats_table": L10n.get("room_scan_stats_table"),
           "roomplan_stats_chair": L10n.get("room_scan_stats_chair"),
-          "roomplan_stats_refrigerator":
-              L10n.get("room_scan_stats_refrigerator"),
+          "roomplan_stats_refrigerator": L10n.get(
+            "room_scan_stats_refrigerator",
+          ),
           "roomplan_stats_sink": L10n.get("room_scan_stats_sink"),
           "roomplan_stats_toilet": L10n.get("room_scan_stats_toilet"),
           "roomplan_stats_bathtub": L10n.get("room_scan_stats_bathtub"),
           "roomplan_stats_oven": L10n.get("room_scan_stats_oven"),
           "roomplan_stats_stove": L10n.get("room_scan_stats_stove"),
           "roomplan_stats_dishwasher": L10n.get("room_scan_stats_dishwasher"),
-          "roomplan_stats_washer_dryer":
-              L10n.get("room_scan_stats_washer_dryer"),
+          "roomplan_stats_washer_dryer": L10n.get(
+            "room_scan_stats_washer_dryer",
+          ),
           "roomplan_stats_fireplace": L10n.get("room_scan_stats_fireplace"),
           "roomplan_stats_stairs": L10n.get("room_scan_stats_stairs"),
           "roomplan_stats_object": L10n.get("room_scan_stats_object"),
@@ -267,27 +307,33 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           "roomplan_detected_sofa": L10n.get("room_scan_detected_sofa"),
           "roomplan_detected_table": L10n.get("room_scan_detected_table"),
           "roomplan_detected_chair": L10n.get("room_scan_detected_chair"),
-          "roomplan_detected_television": L10n.get("room_scan_detected_television"),
-          "roomplan_detected_refrigerator":
-              L10n.get("room_scan_detected_refrigerator"),
+          "roomplan_detected_television": L10n.get(
+            "room_scan_detected_television",
+          ),
+          "roomplan_detected_refrigerator": L10n.get(
+            "room_scan_detected_refrigerator",
+          ),
           "roomplan_detected_sink": L10n.get("room_scan_detected_sink"),
           "roomplan_detected_toilet": L10n.get("room_scan_detected_toilet"),
           "roomplan_detected_bathtub": L10n.get("room_scan_detected_bathtub"),
           "roomplan_detected_oven": L10n.get("room_scan_detected_oven"),
           "roomplan_detected_stove": L10n.get("room_scan_detected_stove"),
-          "roomplan_detected_dishwasher":
-              L10n.get("room_scan_detected_dishwasher"),
-          "roomplan_detected_washer_dryer":
-              L10n.get("room_scan_detected_washer_dryer"),
-          "roomplan_detected_fireplace":
-              L10n.get("room_scan_detected_fireplace"),
+          "roomplan_detected_dishwasher": L10n.get(
+            "room_scan_detected_dishwasher",
+          ),
+          "roomplan_detected_washer_dryer": L10n.get(
+            "room_scan_detected_washer_dryer",
+          ),
+          "roomplan_detected_fireplace": L10n.get(
+            "room_scan_detected_fireplace",
+          ),
           "roomplan_detected_stairs": L10n.get("room_scan_detected_stairs"),
           "roomplan_detected_object": L10n.get("room_scan_detected_object"),
           // Post-scan results card (grey model screen).
-          "roomplan_results_perimeter":
-              L10n.get("room_scan_results_perimeter"),
-          "roomplan_results_floor_area":
-              L10n.get("room_scan_results_floor_area"),
+          "roomplan_results_perimeter": L10n.get("room_scan_results_perimeter"),
+          "roomplan_results_floor_area": L10n.get(
+            "room_scan_results_floor_area",
+          ),
           "roomplan_results_wall_area": L10n.get("room_scan_results_wall_area"),
           "roomplan_results_windows": L10n.get("room_scan_results_windows"),
           "roomplan_results_doors": L10n.get("room_scan_results_doors"),
@@ -297,24 +343,15 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     } on MissingPluginException catch (e, st) {
       logger.e("Room scan plugin missing", error: e, stackTrace: st);
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_scan_error"),
-      );
+      ToastTheme.showError(context, message: L10n.get("room_scan_error"));
     } on PlatformException catch (e, st) {
       logger.e("Room scan platform error", error: e, stackTrace: st);
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_scan_error"),
-      );
+      ToastTheme.showError(context, message: L10n.get("room_scan_error"));
     } catch (e, st) {
       logger.e("Room scan start failed", error: e, stackTrace: st);
       if (!mounted) return;
-      ToastTheme.showError(
-        context,
-        message: L10n.get("room_scan_error"),
-      );
+      ToastTheme.showError(context, message: L10n.get("room_scan_error"));
     } finally {
       if (mounted) setState(() => _starting = false);
     }
@@ -441,6 +478,25 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                   const SizedBox(height: 28),
                 ],
                 const SizedBox(height: 24),
+                if (_photogrammetryProgress case final progress?) ...[
+                  LinearProgressIndicator(
+                    value: progress.phase == PhotogrammetryUploadPhase.uploading
+                        ? progress.fraction
+                        : progress.phase == PhotogrammetryUploadPhase.complete
+                        ? 1
+                        : null,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    progress.phase == PhotogrammetryUploadPhase.complete
+                        ? "Textured model ready"
+                        : progress.phase == PhotogrammetryUploadPhase.failed
+                        ? "Textured model processing failed"
+                        : "Preparing textured model…",
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (_uploading)
                   Column(
                     children: [
