@@ -47,6 +47,8 @@ abstract class ListingDetail with _$ListingDetail {
     @JsonKey(name: "host_resident") bool? hostResident,
     @JsonKey(name: "point_cloud_url") String? pointCloudUrl,
     @JsonKey(name: "room_scan_glb_url") String? roomScanGlbUrl,
+    @JsonKey(name: "textured_glb_url") String? texturedGlbUrl,
+    @JsonKey(name: "photogrammetry_status") String? photogrammetryStatus,
     @JsonKey(name: "room_scan_floor_long_m") double? roomScanFloorLongM,
     @JsonKey(name: "room_scan_floor_short_m") double? roomScanFloorShortM,
     @JsonKey(name: "room_scan_height_m") double? roomScanHeightM,
@@ -55,6 +57,7 @@ abstract class ListingDetail with _$ListingDetail {
     double? roomScanWorldPlusXBearingDeg,
     @JsonKey(name: "room_scan_north_correction_deg")
     double? roomScanNorthCorrectionDeg,
+
     /// Cumulative furniture edits from the iOS 3D viewer (schema v1 document),
     /// stored server-side verbatim and passed back into the viewer on open.
     @JsonKey(name: "room_scan_furniture_edits")
@@ -115,13 +118,13 @@ class ListingNearbyStore {
   final int distanceM;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        "id": id,
-        "name": name,
-        "address": address,
-        "latitude": latitude,
-        "longitude": longitude,
-        "distance_m": distanceM,
-      };
+    "id": id,
+    "name": name,
+    "address": address,
+    "latitude": latitude,
+    "longitude": longitude,
+    "distance_m": distanceM,
+  };
 }
 
 @freezed

@@ -65,8 +65,6 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   bool _uploading = false;
   bool _starting = false;
   PhotogrammetryUploadProgress? _photogrammetryProgress;
-  bool _standardUploadComplete = false;
-  bool _photogrammetryFinished = false;
   bool _photogrammetryEnabled = false;
 
   /// Null until [RoomPlanCapability.isSupportedOnDevice] resolves on iOS; unused on web.
@@ -130,15 +128,14 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       await PhotogrammetryUpload.instance.submit(
         packagePath: path,
         apiBaseUrl: EnvironmentUtil.basePath,
+        targetType: "listing",
+        targetId: widget.listingId,
         onProgress: (progress) {
           if (mounted) setState(() => _photogrammetryProgress = progress);
         },
       );
     } catch (error, stack) {
       logger.d("Photogrammetry upload failed: $error\n$stack");
-    } finally {
-      _photogrammetryFinished = true;
-      if (mounted && _standardUploadComplete) Navigator.of(context).pop(true);
     }
   }
 
@@ -151,11 +148,12 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   }
 
   void _registerRoomCaptureCallback() {
-    if (_registeredRoomCaptureCallback) return;
     _registeredRoomCaptureCallback = true;
     _roomPlan.onRoomCaptureFinished(() {
       Future<void> run() async {
+        logger.d("[RoomScan] Native completion callback received");
         final path = await _roomPlan.getUsdzFilePath();
+        logger.d("[RoomScan] Completed USDZ path: $path");
         if (!mounted) return;
         if (path == null || path.isEmpty) {
           // RoomPlan invokes onRoomCaptureFinished on Cancel too, with no
@@ -169,6 +167,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
         }
         setState(() => _uploading = true);
         try {
+          logger.d("[RoomScan] Starting standard model upload");
           var metrics = await RoomScanBoundsService.computeFromUsdPath(path);
           await getIt<IListingService>().uploadRoomScan(
             listingId: widget.listingId,
@@ -197,8 +196,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
             context,
             message: L10n.get("room_scan_success"),
           );
-          _standardUploadComplete = true;
-          if (_photogrammetryFinished) Navigator.of(context).pop(true);
+          Navigator.of(context).pop(true);
+          logger.d("[RoomScan] Standard upload complete; leaving scan screen");
         } catch (e, st) {
           logger.e("Room scan upload failed", error: e, stackTrace: st);
           if (!mounted) return;
@@ -226,8 +225,6 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     if (!isIOSDevice) return;
     setState(() {
       _starting = true;
-      _standardUploadComplete = false;
-      _photogrammetryFinished = !_photogrammetryEnabled;
       _photogrammetryProgress = null;
     });
     try {
@@ -274,6 +271,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       }
       if (!mounted) return;
 
+      // flutter_roomplan stores one global completion handler. Re-register
+      // here so this active screen cannot inherit a stale/cleared callback.
+      _registerRoomCaptureCallback();
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
         // Single-room only — hides the secondary "Scan Other Rooms" button.
         "enableMultiRoom": false,
@@ -492,10 +492,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                 const SizedBox(height: 24),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text("Photogrammetry"),
-                  subtitle: const Text(
-                    "Create a textured 3D model after scanning",
-                  ),
+                  title: Text(L10n.get("room_scan_photogrammetry_title")),
+                  subtitle: Text(L10n.get("room_scan_photogrammetry_subtitle")),
                   value: _photogrammetryEnabled,
                   onChanged: loading
                       ? null

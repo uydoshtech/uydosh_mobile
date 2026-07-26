@@ -594,6 +594,12 @@ class AppStrings {
       "room_scan_start": "Start scan",
       "room_scan_finish": "Finish",
       "room_scan_scan_other_rooms": "Scan Other Rooms",
+      "room_scan_photogrammetry_title": "Photogrammetry",
+      "room_scan_photogrammetry_subtitle":
+          "Create a textured 3D model after scanning",
+      "room_3d_structure": "Structure",
+      "room_3d_textured": "Textured",
+      "room_3d_textured_processing": "Textured model processing",
       "room_scan_stats_walls": "Walls",
       "room_scan_stats_doors": "Doors",
       "room_scan_stats_windows": "Windows",
@@ -2964,6 +2970,12 @@ class AppStrings {
       "room_scan_start": "Начать сканирование",
       "room_scan_finish": "Завершить",
       "room_scan_scan_other_rooms": "Сканировать другие комнаты",
+      "room_scan_photogrammetry_title": "Фотограмметрия",
+      "room_scan_photogrammetry_subtitle":
+          "Создать текстурированную 3D-модель после сканирования",
+      "room_3d_structure": "Геометрия",
+      "room_3d_textured": "С текстурами",
+      "room_3d_textured_processing": "Обработка текстурированной модели",
       "room_scan_stats_walls": "Стены",
       "room_scan_stats_doors": "Двери",
       "room_scan_stats_windows": "Окна",
@@ -4250,8 +4262,7 @@ class AppStrings {
       "admin_parser_review_owner_help":
           "Telegram @username, который пользователи видят как контакт для этого объявления.",
       "admin_parser_review_owner_save": "Сохранить контакт",
-      "edit_listing_admin_contact_section_title":
-          "Контакт владельца (админ)",
+      "edit_listing_admin_contact_section_title": "Контакт владельца (админ)",
       "edit_listing_admin_contact_help":
           "Отображается другим пользователям как прямой контакт для этого объявления. Изменить может только администратор.",
       "edit_listing_admin_contact_phone_hint": "+998 90 123 45 67",
@@ -5391,6 +5402,12 @@ class AppStrings {
       "room_scan_start": "Skanlashni boshlash",
       "room_scan_finish": "Yakunlash",
       "room_scan_scan_other_rooms": "Boshqa xonalarni skanerlash",
+      "room_scan_photogrammetry_title": "Fotogrammetriya",
+      "room_scan_photogrammetry_subtitle":
+          "Skanlashdan so‘ng teksturali 3D model yarating",
+      "room_3d_structure": "Geometriya",
+      "room_3d_textured": "Teksturali",
+      "room_3d_textured_processing": "Teksturali model qayta ishlanmoqda",
       "room_scan_stats_walls": "Devorlar",
       "room_scan_stats_doors": "Eshiklar",
       "room_scan_stats_windows": "Derazalar",
@@ -5511,7 +5528,8 @@ class AppStrings {
       "room_3d_floor_plan_rotate_furniture_updated": "Mebel yangilandi",
       "room_3d_floor_plan_rotate_furniture_degrees_format": "%+.0f°",
       "room_3d_floor_plan_delete_furniture": "O'chirish",
-      "room_3d_floor_plan_delete_furniture_confirm_title": "Mebelni olib tashlash?",
+      "room_3d_floor_plan_delete_furniture_confirm_title":
+          "Mebelni olib tashlash?",
       "room_3d_floor_plan_delete_furniture_confirm_message":
           "Bu buyum 3D ko'rinish va qavat rejasidan yashiriladi.",
       "room_3d_floor_plan_delete_furniture_updated": "Mebel olib tashlandi",
@@ -6673,8 +6691,7 @@ class AppStrings {
       "admin_parser_review_owner_help":
           "Foydalanuvchilar ushbu e'lon uchun kontakt sifatida ko'radigan Telegram @username.",
       "admin_parser_review_owner_save": "Kontaktni saqlash",
-      "edit_listing_admin_contact_section_title":
-          "Egasining kontakti (admin)",
+      "edit_listing_admin_contact_section_title": "Egasining kontakti (admin)",
       "edit_listing_admin_contact_help":
           "Boshqa foydalanuvchilarga ushbu e'lon uchun bevosita kontakt sifatida ko'rsatiladi. Faqat administrator o'zgartira oladi.",
       "edit_listing_admin_contact_phone_hint": "+998 90 123 45 67",

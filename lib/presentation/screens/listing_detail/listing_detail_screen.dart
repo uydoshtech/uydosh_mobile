@@ -534,6 +534,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
   /// [FutureBuilder] and re-invoke [SessionManager.getUserRole] on every rebuild.
   late final Future<String?> _userRoleFuture = SessionManager.getUserRole();
   final GlobalKey _compatibilitySectionKey = GlobalKey();
+
   /// Keeps the mini 3D PlatformView Element alive across listing-detail rebuilds.
   final GlobalKey _room3dTileKey = GlobalKey(debugLabel: "listingDetailRoom3d");
 
@@ -1782,7 +1783,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
 
   /// Best-effort download of `/images/listings/{id}/rotation.gif` when a GLB exists.
   Future<File?> _downloadRotationGifIfAvailable(ListingDetail listing) async {
-    final has3d = (listing.roomScanGlbUrl?.trim().isNotEmpty ?? false) ||
+    final has3d =
+        (listing.roomScanGlbUrl?.trim().isNotEmpty ?? false) ||
         (listing.pointCloudUrl?.trim().isNotEmpty ?? false);
     if (!has3d) return null;
     try {
@@ -1790,7 +1792,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
           "${EnvironmentUtil.basePath}/images/listings/${listing.id}/rotation.gif"
           "?v=${DateTime.now().millisecondsSinceEpoch}";
       final temp = await getTemporaryDirectory();
-      final file = File("${temp.path}/listing-share-${listing.id}-rotation.gif");
+      final file = File(
+        "${temp.path}/listing-share-${listing.id}-rotation.gif",
+      );
       final dio = Dio(
         BaseOptions(
           connectTimeout: const Duration(seconds: 15),
@@ -1940,6 +1944,38 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
 
   Future<void> _openRoom3dViewer(ListingDetail listingDetail) async {
     if (_isOpeningRoom3d) return;
+    final textured = listingDetail.texturedGlbUrl?.trim();
+    if (textured != null && textured.isNotEmpty) {
+      final choice = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.account_tree_outlined),
+                title: Text(L10n.get("room_3d_structure")),
+                onTap: () => Navigator.pop(context, "structure"),
+              ),
+              ListTile(
+                leading: const Icon(Icons.texture),
+                title: Text(L10n.get("room_3d_textured")),
+                onTap: () => Navigator.pop(context, "textured"),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (!mounted || choice == null) return;
+      if (choice == "textured") {
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(
+            builder: (_) => RoomGlbViewerScreen(glbUrl: textured),
+          ),
+        );
+        return;
+      }
+    }
     if (isAndroidDevice) {
       await _openRoom3dViewerAndroid(listingDetail);
       return;
@@ -2630,8 +2666,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           final themeState = ThemeState();
           final theme = Theme.of(context);
           final appBarTheme = theme.appBarTheme;
-          final useLiquidGlassAppBar =
-              themeState.usesLiquidGlassChrome;
+          final useLiquidGlassAppBar = themeState.usesLiquidGlassChrome;
           return Scaffold(
             extendBodyBehindAppBar: useLiquidGlassAppBar,
             // Mirror [extendBodyBehindAppBar] for the bottom bar so the
@@ -3291,15 +3326,13 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
             listingDetail.photos != null && listingDetail.photos!.isNotEmpty;
         // Mini preview: iOS uses native USDZ SceneKit; Android uses server GLB.
         // Fullscreen still prefers USDZ on iOS / browser on web.
-        final hasGlbScan =
-            listingDetail.roomScanGlbUrl?.isNotEmpty ?? false;
+        final hasGlbScan = listingDetail.roomScanGlbUrl?.isNotEmpty ?? false;
         final hasUsdzScan =
             (kIsWeb || isIOSDevice) &&
             (listingDetail.pointCloudUrl?.isNotEmpty ?? false);
         final show3d = hasGlbScan || hasUsdzScan;
         // Live mini scene (not the CTA-only fallback) — kept out of SliverList.
-        final hasLiveMiniScene =
-            (isIOSDevice && hasUsdzScan) || hasGlbScan;
+        final hasLiveMiniScene = (isIOSDevice && hasUsdzScan) || hasGlbScan;
         final groupFormingBottomPad = _groupFormingFloatingActionsBottomPad(
           listingDetail,
         );

@@ -22,10 +22,7 @@ import "package:uy_dosh/presentation/widgets/common/uydosh_logo_spinner.dart";
 /// Matches the web Telegram mini-app `.roomscan-viewer-wrap` sky gradient
 /// (`assets/listing-detail.css` in uydoshtech.github.io) and the fullscreen
 /// [RoomGlbViewerScreen] backdrop.
-const List<Color> _roomScanSkyGradient = [
-  Color(0xFFBCDCF7),
-  Color(0xFF6FA3E0),
-];
+const List<Color> _roomScanSkyGradient = [Color(0xFFBCDCF7), Color(0xFF6FA3E0)];
 
 /// Mini preview height — same as web `.roomscan-viewer-wrap { height: 280px }`.
 const double _miniViewerHeight = 280;
@@ -38,9 +35,9 @@ Widget _room3dDimensionMetricRow({
   required IconData icon,
   required String text,
 }) {
-  final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-      );
+  final style = Theme.of(
+    context,
+  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600);
   final iconColor = style?.color ?? Theme.of(context).colorScheme.onSurface;
   return Row(
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -72,15 +69,11 @@ Widget _room3dDimensionMetricRow({
     ),
     lineHeight: L10n.getWithParams(
       "room_3d_dimensions_height_template",
-      params: <String, String>{
-        "height": h.toStringAsFixed(1),
-      },
+      params: <String, String>{"height": h.toStringAsFixed(1)},
     ),
     line2: L10n.getWithParams(
       "room_3d_dimensions_line2_template",
-      params: <String, String>{
-        "floorArea": area.toStringAsFixed(1),
-      },
+      params: <String, String>{"floorArea": area.toStringAsFixed(1)},
     ),
   );
 }
@@ -126,8 +119,7 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
   }
 
   /// Native SceneKit mini preview — iOS only (avoids WebView scroll reload).
-  bool get _useIosUsdzPreview =>
-      !kIsWeb && isIOSDevice && _usdzUrl != null;
+  bool get _useIosUsdzPreview => !kIsWeb && isIOSDevice && _usdzUrl != null;
 
   bool get _hasMiniScene => _useIosUsdzPreview || _glbUrl != null;
 
@@ -156,7 +148,8 @@ class _ListingRoom3dTileState extends State<ListingRoom3dTile>
       _rotateController.value = 0;
       return;
     }
-    final enabled = UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
+    final enabled =
+        UiPerformancePolicy.decorativeAnimationsEnabled(context) &&
         TickerMode.of(context);
     if (enabled) {
       if (!_rotateController.isAnimating) {
@@ -272,18 +265,26 @@ class _MiniSceneTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(
-                        L10n.get("view_room_3d"),
-                        style: Theme.of(context).textTheme.titleSmall,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            L10n.get("view_room_3d"),
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          if (listingDetail.photogrammetryStatus ==
+                              "processing")
+                            Text(
+                              L10n.get("room_3d_textured_processing"),
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                        ],
                       ),
                     ),
                     AnimatedRotation(
                       turns: expanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 180),
-                      child: ThemeIcon(
-                        Icons.expand_more,
-                        color: variant,
-                      ),
+                      child: ThemeIcon(Icons.expand_more, color: variant),
                     ),
                   ],
                 ),
@@ -354,7 +355,9 @@ class _MiniUsdzViewer extends StatefulWidget {
 
 class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
   /// Pins the UiKitView Element across ancestor rebuilds.
-  final GlobalKey _previewViewKey = GlobalKey(debugLabel: "roomUsdzMiniPreview");
+  final GlobalKey _previewViewKey = GlobalKey(
+    debugLabel: "roomUsdzMiniPreview",
+  );
 
   String? _localPath;
   Object? _error;
@@ -418,8 +421,7 @@ class _MiniUsdzViewerState extends State<_MiniUsdzViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final autoRotate =
-        UiPerformancePolicy.decorativeAnimationsEnabled(context);
+    final autoRotate = UiPerformancePolicy.decorativeAnimationsEnabled(context);
     final path = _localPath;
     final showPreview = path != null && _error == null;
     final openingFullscreen = widget.isLoadingFullscreen;
@@ -578,8 +580,9 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
     if (!mounted) return;
     _loadTimeoutTimer?.cancel();
     setState(() {
-      _status =
-          message == "loaded" ? _MiniLoadStatus.loaded : _MiniLoadStatus.error;
+      _status = message == "loaded"
+          ? _MiniLoadStatus.loaded
+          : _MiniLoadStatus.error;
     });
   }
 
@@ -647,7 +650,8 @@ class _MiniGlbViewerState extends State<_MiniGlbViewer> {
                         _onBridgeMessage(message.message),
                   ),
                 },
-                relatedJs: """
+                relatedJs:
+                    """
                   (function() {
                     var mv = document.getElementById('$_elementId');
                     if (!mv || !window.GlbMiniBridge) { return; }
@@ -842,10 +846,7 @@ class _CtaRowTile extends StatelessWidget {
                 if (isLoading)
                   UydoshInlineSpinner(color: variant, dimension: 20)
                 else
-                  ThemeIcon(
-                    Icons.chevron_right,
-                    color: variant,
-                  ),
+                  ThemeIcon(Icons.chevron_right, color: variant),
               ],
             ),
           ),

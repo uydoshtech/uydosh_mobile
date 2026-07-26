@@ -944,6 +944,16 @@ post_install do |installer|
       'roomVC.uydoshPhotogrammetryEnabled = arguments?["enablePhotogrammetry"] as? Bool ?? true',
       'roomVC.uydoshPhotogrammetryEnabled = arguments?["enablePhotogrammetry"] as? Bool ?? false'
     )
+    unless src.include?('/* uydosh: persistent completed scan path */')
+      src = src.sub(
+        '        let roomVC = RoomCaptureViewController()',
+        "        /* uydosh: persistent completed scan path */\n        UserDefaults.standard.removeObject(forKey: \"uydosh.lastRoomPlanUsdzPath\")\n        let roomVC = RoomCaptureViewController()"
+      )
+      src = src.sub(
+        '        result(FlutterError(code: "NO_SCAN", message: "No active room scan found", details: nil))',
+        "        if let path = UserDefaults.standard.string(forKey: \"uydosh.lastRoomPlanUsdzPath\") {\n          result(path)\n        } else {\n          result(FlutterError(code: \"NO_SCAN\", message: \"No completed room scan found\", details: nil))\n        }"
+      )
+    end
     File.write(flutter_roomplan_plugin_file, src)
   end
   if File.exist?(room_capture_file)
@@ -965,6 +975,12 @@ post_install do |installer|
     old_start = "        try? uydoshPhotogrammetryCapture.start(\n            arSession: roomCaptureView.captureSession.arSession\n        )"
     unless src.include?("        if uydoshPhotogrammetryEnabled {\n#{old_start}")
       src = src.sub(old_start, "        if uydoshPhotogrammetryEnabled {\n#{old_start}\n        }")
+    end
+    unless src.include?('UserDefaults.standard.set(fileURL.path, forKey: "uydosh.lastRoomPlanUsdzPath")')
+      src = src.gsub(
+        '                self.usdzFilePath = fileURL.path',
+        "                self.usdzFilePath = fileURL.path\n                UserDefaults.standard.set(fileURL.path, forKey: \"uydosh.lastRoomPlanUsdzPath\")"
+      )
     end
     File.write(room_capture_file, src)
   end
