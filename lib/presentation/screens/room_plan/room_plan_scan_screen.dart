@@ -67,6 +67,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   PhotogrammetryUploadProgress? _photogrammetryProgress;
   bool _standardUploadComplete = false;
   bool _photogrammetryFinished = false;
+  bool _photogrammetryEnabled = false;
 
   /// Null until [RoomPlanCapability.isSupportedOnDevice] resolves on iOS; unused on web.
   bool? _roomPlanSupported;
@@ -111,6 +112,16 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
     PhotogrammetryUpload.instance.listen(_uploadPhotogrammetryPackage);
+    unawaited(
+      PhotogrammetryPreference.load().then((value) {
+        if (mounted) setState(() => _photogrammetryEnabled = value);
+      }),
+    );
+    unawaited(
+      PhotogrammetryUpload.instance.resumePendingMonitors(
+        apiBaseUrl: EnvironmentUtil.basePath,
+      ),
+    );
     unawaited(_resolveSupportAndRegisterCapture());
   }
 
@@ -216,7 +227,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     setState(() {
       _starting = true;
       _standardUploadComplete = false;
-      _photogrammetryFinished = false;
+      _photogrammetryFinished = !_photogrammetryEnabled;
       _photogrammetryProgress = null;
     });
     try {
@@ -266,6 +277,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       await _roomplanChannel.invokeMethod<void>("startScan", <String, dynamic>{
         // Single-room only — hides the secondary "Scan Other Rooms" button.
         "enableMultiRoom": false,
+        "enablePhotogrammetry": _photogrammetryEnabled,
         "strings": <String, String>{
           "cancel": L10n.get("cancel"),
           "done": L10n.get("done"),
@@ -478,6 +490,20 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                   const SizedBox(height: 28),
                 ],
                 const SizedBox(height: 24),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text("Photogrammetry"),
+                  subtitle: const Text(
+                    "Create a textured 3D model after scanning",
+                  ),
+                  value: _photogrammetryEnabled,
+                  onChanged: loading
+                      ? null
+                      : (value) {
+                          setState(() => _photogrammetryEnabled = value);
+                          unawaited(PhotogrammetryPreference.save(value));
+                        },
+                ),
                 if (_photogrammetryProgress case final progress?) ...[
                   LinearProgressIndicator(
                     value: progress.phase == PhotogrammetryUploadPhase.uploading

@@ -883,6 +883,7 @@ post_install do |installer|
           '',
           "    #{marker}",
           '    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?',
+          '    public var uydoshPhotogrammetryEnabled = false',
           '    private let uydoshPhotogrammetryCapture = PhotogrammetryCaptureSession()',
         ].join("\n")
       )
@@ -910,6 +911,7 @@ post_install do |installer|
           '        uydoshQualityHeatmap?.stop()',
           '        Task { [weak self] in',
           '            guard let self else { return }',
+          '            guard self.uydoshPhotogrammetryEnabled else { return }',
           '            if let package = try? await self.uydoshPhotogrammetryCapture.finish(room: processedResult) {',
           '                self.uydoshPhotogrammetryPackageReady?(package.archiveURL)',
           '                if let root = self.view.window?.rootViewController,',
@@ -925,6 +927,41 @@ post_install do |installer|
       )
       File.write(room_capture_file, src)
     end
+  end
+
+  # Pass the pre-scan photogrammetry toggle into the capture controller and
+  # keep already-patched flutter_roomplan installations upgrade-safe.
+  if File.exist?(flutter_roomplan_plugin_file)
+    src = File.read(flutter_roomplan_plugin_file)
+    marker = '/* uydosh: photogrammetry enabled argument */'
+    unless src.include?(marker)
+      src = src.sub(
+        '        let roomVC = RoomCaptureViewController()',
+        "        let roomVC = RoomCaptureViewController()\n        #{marker}\n        roomVC.uydoshPhotogrammetryEnabled = arguments?[\"enablePhotogrammetry\"] as? Bool ?? false"
+      )
+      File.write(flutter_roomplan_plugin_file, src)
+    end
+  end
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    unless src.include?('public var uydoshPhotogrammetryEnabled = false')
+      src = src.sub(
+        '    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?',
+        "    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?\n    public var uydoshPhotogrammetryEnabled = false"
+      )
+      src = src.sub('public var uydoshPhotogrammetryEnabled = true', 'public var uydoshPhotogrammetryEnabled = false')
+    end
+    unless src.include?('guard self.uydoshPhotogrammetryEnabled else { return }')
+      src = src.sub(
+        '            guard let self else { return }',
+        "            guard let self else { return }\n            guard self.uydoshPhotogrammetryEnabled else { return }"
+      )
+    end
+    old_start = "        try? uydoshPhotogrammetryCapture.start(\n            arSession: roomCaptureView.captureSession.arSession\n        )"
+    unless src.include?("        if uydoshPhotogrammetryEnabled {\n#{old_start}")
+      src = src.sub(old_start, "        if uydoshPhotogrammetryEnabled {\n#{old_start}\n        }")
+    end
+    File.write(room_capture_file, src)
   end
 
   # Ensure the live heatmap cannot leak into RoomPlan's processed-result view,
