@@ -907,6 +907,7 @@ post_install do |installer|
         '    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {',
         [
           '    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {',
+          '        uydoshQualityHeatmap?.stop()',
           '        Task { [weak self] in',
           '            guard let self else { return }',
           '            if let package = try? await self.uydoshPhotogrammetryCapture.finish(room: processedResult) {',
@@ -922,6 +923,17 @@ post_install do |installer|
           '        }',
         ].join("\n")
       )
+      File.write(room_capture_file, src)
+    end
+  end
+
+  # Ensure the live heatmap cannot leak into RoomPlan's processed-result view,
+  # including upgrades where the Phase 1 marker already exists.
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    needle = "    public func captureView(didPresent processedResult: CapturedRoom, error: Error?) {\n"
+    unless src.include?("#{needle}        uydoshQualityHeatmap?.stop()\n")
+      src = src.sub(needle, "#{needle}        uydoshQualityHeatmap?.stop()\n")
       File.write(room_capture_file, src)
     end
   end
