@@ -166,7 +166,13 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
   void _handlePhotogrammetryPackageFailure(String error) {
     logger.d("Photogrammetry package failed: $error");
-    // No zip was produced — nothing to keep for retry.
+    if (mounted) {
+      ToastTheme.showError(
+        context,
+        message:
+            "${L10n.get("room_scan_photogrammetry_retry_missing")}: $error",
+      );
+    }
     _photogrammetryQueued = true;
     _finishFlowIfReady();
   }
