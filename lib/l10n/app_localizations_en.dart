@@ -242,7 +242,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.';
 
   @override
-  String get permission_location_cta => 'Allow location access';
+  String get permission_location_cta => 'Continue';
 
   @override
   String get permission_location_denied_body =>

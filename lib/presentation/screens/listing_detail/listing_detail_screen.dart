@@ -19,6 +19,7 @@ import "package:uy_dosh/base/cache/metro_cache.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/follow_service.dart";
+import "package:uy_dosh/domain/services/user_block_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -2493,7 +2494,7 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       ),
     );
 
-    // Complain option - only show when not owner
+    // Complain / block — only show when not owner
     if (!isOwner) {
       items.add(
         ActionMenuItem(
@@ -2506,9 +2507,45 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           textColor: Colors.red,
         ),
       );
+      items.add(
+        ActionMenuItem(
+          value: "block_user",
+          icon: Icons.block,
+          textKey: "block_user",
+          onPressed: () => _blockListingOwner(listingDetail),
+          enabled: menuEnabled,
+          iconColor: Colors.red,
+          textColor: Colors.red,
+        ),
+      );
     }
 
     return items;
+  }
+
+  Future<void> _blockListingOwner(ListingDetail listingDetail) async {
+    final confirmed = await CommonConfirmationDialogs.showGenericConfirmation(
+      context: context,
+      titleKey: "block_user_confirm_title",
+      messageKey: "block_user_confirm_body",
+      confirmButtonKey: "block_user",
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final result = await getIt<IUserBlockService>().toggleBlock(
+      listingDetail.user.id,
+      reason: "Blocked from listing ${listingDetail.id}",
+    );
+    if (!mounted) return;
+    if (result == null || !result.isBlocked) {
+      ToastReporting.errorKey(context, "block_user_error");
+      return;
+    }
+
+    HomeRefreshState().forceRefreshNow();
+    ToastReporting.successKey(context, "block_user_success");
+    Navigator.of(context).pop();
   }
 
   Future<void> _createComplaint(ListingDetail listingDetail) async {

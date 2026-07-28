@@ -34,6 +34,7 @@ class PermissionRationaleScreen extends StatelessWidget {
     this.tertiaryLabel,
     this.onTertiary,
     this.onBeforePopAllow,
+    this.allowSkip = true,
   });
 
   /// Icon shown above the title (e.g. [Icons.camera_alt],
@@ -60,93 +61,100 @@ class PermissionRationaleScreen extends StatelessWidget {
   /// underneath (e.g. onboarding) does not show through.
   final Future<void> Function()? onBeforePopAllow;
 
+  /// When false, hides the secondary skip control and blocks system back so the
+  /// user must tap the primary CTA (App Store 5.1.1(iv) for location).
+  final bool allowSkip;
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final colors = _RationaleColors.of(context);
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + mq.padding.bottom * 0),
-          child: Column(
-            children: [
-              const Spacer(flex: 1),
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.foreground.withValues(alpha: 0.12),
-                  border: Border.all(
-                    color: colors.foreground.withValues(alpha: 0.18),
+    return PopScope(
+      canPop: allowSkip,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + mq.padding.bottom * 0),
+            child: Column(
+              children: [
+                const Spacer(flex: 1),
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.foreground.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: colors.foreground.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Icon(icon, color: colors.foreground, size: 44),
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.foreground,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
                   ),
                 ),
-                child: Icon(icon, color: colors.foreground, size: 44),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.foreground,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.foreground.withValues(alpha: 0.82),
-                  fontSize: 15.5,
-                  height: 1.45,
-                ),
-              ),
-              const Spacer(flex: 2),
-              _PermissionPrimaryButton(
-                label: primaryLabel,
-                colors: colors,
-                onPressed: () async {
-                  final hook = onBeforePopAllow;
-                  if (hook != null) {
-                    await hook();
-                  }
-                  if (!context.mounted) return;
-                  Navigator.of(context)
-                      .pop(PermissionRationaleResult.allow);
-                },
-              ),
-              if (secondaryLabel != null) ...[
                 const SizedBox(height: 14),
-                _PermissionSecondaryButton(
-                  label: secondaryLabel!,
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.foreground.withValues(alpha: 0.82),
+                    fontSize: 15.5,
+                    height: 1.45,
+                  ),
+                ),
+                const Spacer(flex: 2),
+                _PermissionPrimaryButton(
+                  label: primaryLabel,
                   colors: colors,
-                  onPressed: () {
+                  onPressed: () async {
+                    final hook = onBeforePopAllow;
+                    if (hook != null) {
+                      await hook();
+                    }
+                    if (!context.mounted) return;
                     Navigator.of(context)
-                        .pop(PermissionRationaleResult.skip);
+                        .pop(PermissionRationaleResult.allow);
                   },
                 ),
-              ],
-              if (tertiaryLabel != null) ...[
-                const SizedBox(height: 8),
-                _PermissionTertiaryButton(
-                  label: tertiaryLabel!,
-                  colors: colors,
-                  onPressed: () {
-                    HapticFeedbackUtils.impact();
-                    if (onTertiary != null) {
-                      onTertiary!();
-                    } else {
+                if (allowSkip && secondaryLabel != null) ...[
+                  const SizedBox(height: 14),
+                  _PermissionSecondaryButton(
+                    label: secondaryLabel!,
+                    colors: colors,
+                    onPressed: () {
                       Navigator.of(context)
                           .pop(PermissionRationaleResult.skip);
-                    }
-                  },
-                ),
+                    },
+                  ),
+                ],
+                if (tertiaryLabel != null) ...[
+                  const SizedBox(height: 8),
+                  _PermissionTertiaryButton(
+                    label: tertiaryLabel!,
+                    colors: colors,
+                    onPressed: () {
+                      HapticFeedbackUtils.impact();
+                      if (onTertiary != null) {
+                        onTertiary!();
+                      } else {
+                        Navigator.of(context)
+                            .pop(PermissionRationaleResult.skip);
+                      }
+                    },
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

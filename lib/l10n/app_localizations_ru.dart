@@ -243,7 +243,7 @@ class AppLocalizationsRu extends AppLocalizations {
       'Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.';
 
   @override
-  String get permission_location_cta => 'Разрешить геопозицию';
+  String get permission_location_cta => 'Продолжить';
 
   @override
   String get permission_location_denied_body =>

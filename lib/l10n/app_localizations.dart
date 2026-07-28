@@ -535,7 +535,7 @@ abstract class AppLocalizations {
   /// No description provided for @permission_location_cta.
   ///
   /// In en, this message translates to:
-  /// **'Allow location access'**
+  /// **'Continue'**
   String get permission_location_cta;
 
   /// No description provided for @permission_location_denied_body.

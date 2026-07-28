@@ -66,6 +66,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   bool _starting = false;
   PhotogrammetryUploadProgress? _photogrammetryProgress;
   bool _photogrammetryEnabled = false;
+  bool _standardUploadComplete = false;
+  bool _photogrammetryQueued = false;
+  bool _didFinishFlow = false;
 
   /// Null until [RoomPlanCapability.isSupportedOnDevice] resolves on iOS; unused on web.
   bool? _roomPlanSupported;
@@ -109,7 +112,10 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
     if (!isIOSDevice) return;
     if (ClientLidarRoomScanConfig.lidarRoomScanDisabled.value) return;
-    PhotogrammetryUpload.instance.listen(_uploadPhotogrammetryPackage);
+    PhotogrammetryUpload.instance.listen(
+      _uploadPhotogrammetryPackage,
+      onPackageFailed: _handlePhotogrammetryPackageFailure,
+    );
     unawaited(
       PhotogrammetryPreference.load().then((value) {
         if (mounted) setState(() => _photogrammetryEnabled = value);
@@ -134,9 +140,30 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           if (mounted) setState(() => _photogrammetryProgress = progress);
         },
       );
+      _photogrammetryQueued = true;
+      _finishFlowIfReady();
     } catch (error, stack) {
       logger.d("Photogrammetry upload failed: $error\n$stack");
+      _photogrammetryQueued = true;
+      _finishFlowIfReady();
     }
+  }
+
+  void _handlePhotogrammetryPackageFailure(String error) {
+    logger.d("Photogrammetry package failed: $error");
+    _photogrammetryQueued = true;
+    _finishFlowIfReady();
+  }
+
+  void _finishFlowIfReady() {
+    if (_didFinishFlow ||
+        !_standardUploadComplete ||
+        !_photogrammetryQueued ||
+        !mounted) {
+      return;
+    }
+    _didFinishFlow = true;
+    Navigator.of(context).pop(true);
   }
 
   Future<void> _resolveSupportAndRegisterCapture() async {
@@ -196,8 +223,11 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
             context,
             message: L10n.get("room_scan_success"),
           );
-          Navigator.of(context).pop(true);
-          logger.d("[RoomScan] Standard upload complete; leaving scan screen");
+          _standardUploadComplete = true;
+          _finishFlowIfReady();
+          logger.d(
+            "[RoomScan] Standard upload complete; waiting for package queue",
+          );
         } catch (e, st) {
           logger.e("Room scan upload failed", error: e, stackTrace: st);
           if (!mounted) return;
@@ -226,6 +256,9 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
     setState(() {
       _starting = true;
       _photogrammetryProgress = null;
+      _standardUploadComplete = false;
+      _photogrammetryQueued = !_photogrammetryEnabled;
+      _didFinishFlow = false;
     });
     try {
       // Best-effort: re-apply `AppleLanguages` right before touching RoomPlan.
@@ -350,6 +383,8 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
           "roomplan_results_windows": L10n.get("room_scan_results_windows"),
           "roomplan_results_doors": L10n.get("room_scan_results_doors"),
           "roomplan_results_height": L10n.get("room_scan_results_height"),
+          "roomplan_quality_overlay": L10n.get("room_scan_quality_overlay"),
+          "roomplan_scan_quality": L10n.get("room_scan_scan_quality"),
         },
       });
     } on MissingPluginException catch (e, st) {

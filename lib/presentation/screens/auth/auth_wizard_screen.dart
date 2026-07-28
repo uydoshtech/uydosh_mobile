@@ -84,6 +84,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   late final PageController _pageController;
   final ScrollController _profileScrollController = ScrollController();
 
+  static const int _pageLanguage = 0;
+  static const int _pageTerms = 1;
+  static const int _pageSignIn = 2;
+  static const int _pageProfile = 3;
+  static const int _pageProfileOffer = 4;
+
   /// Keys for [Scrollable.ensureVisible] when profile validation fails, so the
   /// first invalid control is scrolled into view inside the profile
   /// [SingleChildScrollView].
@@ -101,6 +107,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       GlobalKey(debugLabel: "authWizard_profile_university");
 
   int _currentPage = 0; // Start with language selection page
+  bool _termsAccepted = false;
 
   // Form controllers
   final TextEditingController _nameController = TextEditingController();
@@ -184,6 +191,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     getIt<AppAnalyticsService>().logScreenView(screenName: "auth_wizard");
     _pageController = PageController(initialPage: widget.initialPage);
     _currentPage = widget.initialPage;
+    // Skipping past Terms (e.g. profile-setup redirect) treats acceptance as done.
+    if (widget.initialPage > _pageTerms) {
+      _termsAccepted = true;
+    }
     _nameController.addListener(_onNameChanged);
     // Make the language selection step reflect the app's current locale
     // (loaded during app startup via LanguageState.initialize()).
@@ -434,7 +445,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     if (!mounted) return;
 
     if (result == true) {
-      await _goToTermsFinishPage();
+      _finishCreateAccountFlow();
     }
   }
 
@@ -457,24 +468,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     setState(() {
       _isAuthenticating = false;
       _profileCreated = true;
-      _currentPage = 3;
+      _currentPage = _pageProfileOffer;
     });
     await _pageController.animateToPage(
-      3,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  Future<void> _goToTermsFinishPage() async {
-    if (!mounted) return;
-    setState(() {
-      _isAuthenticating = false;
-      _profileCreated = true;
-      _currentPage = 4;
-    });
-    await _pageController.animateToPage(
-      4,
+      _pageProfileOffer,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
@@ -1149,10 +1146,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       );
     } else if (mounted) {
       setState(() {
-        _currentPage = 2;
+        _currentPage = _pageProfile;
       });
       await _pageController.animateToPage(
-        2,
+        _pageProfile,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -1276,12 +1273,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d("🔍 Navigating to profile creation page...");
         if (mounted) {
           setState(() {
-            _currentPage = 2; // Required profile creation page
+            _currentPage = _pageProfile; // Required profile creation page
           });
           logger.d("🔍 Page updated to: $_currentPage");
 
           _pageController.animateToPage(
-            2, // Required profile creation page
+            _pageProfile, // Required profile creation page
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
@@ -1410,7 +1407,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   void _nextPage() {
     HapticFeedbackUtils.impact();
     // Check if current step is complete before allowing next
-    if (_currentPage == 1 && !_isGoogleSignedIn) {
+    if (_currentPage == _pageTerms && !_termsAccepted) {
+      ToastTheme.showWarning(
+        context,
+        message: L10n.get("auth_terms_accept_required"),
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+
+    if (_currentPage == _pageSignIn && !_isGoogleSignedIn) {
       // Show error message if trying to proceed without Google Sign-In
       ToastTheme.showWarning(
         context,
@@ -1421,13 +1427,13 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     // For returning users with existing profiles, skip the new-user profile flow.
-    if (_currentPage == 1 && _isGoogleSignedIn) {
+    if (_currentPage == _pageSignIn && _isGoogleSignedIn) {
       // Check if user already has a profile
       _checkIfUserHasProfile();
       return;
     }
 
-    if (_currentPage < 4) {
+    if (_currentPage < _pageProfileOffer) {
       setState(() {
         _currentPage++;
       });
@@ -1495,12 +1501,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         logger.d("🔍 Navigating to profile creation page...");
         if (mounted) {
           setState(() {
-            _currentPage = 2; // Required profile creation page
+            _currentPage = _pageProfile; // Required profile creation page
           });
           logger.d("🔍 Page updated to: $_currentPage");
 
           _pageController.animateToPage(
-            2, // Required profile creation page
+            _pageProfile, // Required profile creation page
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
@@ -1513,7 +1519,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
       logger.d("🔍 Fallback: navigating to profile creation page...");
       if (mounted) {
         setState(() {
-          _currentPage = 2; // Go to required profile creation as fallback
+          _currentPage = _pageProfile; // Go to required profile creation as fallback
         });
         logger.d("🔍 Page updated to: $_currentPage");
 
@@ -1521,7 +1527,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         _isProgrammaticNavigation = true;
 
         _pageController.animateToPage(
-          2, // Required profile creation page
+          _pageProfile, // Required profile creation page
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
@@ -1541,15 +1547,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   // Get total number of steps based on user needs
   int _getTotalSteps() {
-    return 5; // Language, sign-in, profile, profile offer, terms/finish
+    return 5; // Language, terms, sign-in, profile, profile offer
   }
 
   /// Index of the last lit progress stripe.
   int _getProgressStep() {
-    if (_currentPage >= 4) return 4;
-    if (_currentPage >= 3) return 3;
-    if (_currentPage >= 2) return 2;
-    if (_currentPage == 1 && _isGoogleSignedIn) return 2;
+    if (_currentPage >= _pageProfileOffer) return _pageProfileOffer;
+    if (_currentPage >= _pageProfile) return _pageProfile;
+    if (_currentPage == _pageSignIn && _isGoogleSignedIn) return _pageProfile;
+    if (_currentPage >= _pageSignIn) return _pageSignIn;
     return _currentPage;
   }
 
@@ -2068,7 +2074,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     message: L10n.get("welcome_back_profile_exists"),
                   );
 
-                  await _goToTermsFinishPage();
+                  _finishCreateAccountFlow();
                 }
                 return; // Exit early, don"t try to create profile
               } catch (fetchError) {
@@ -2163,7 +2169,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                             ),
                             semanticsLabel: L10n.get("close"),
                             onPressed: () {
-                              if (_currentPage == 4) {
+                              if (_currentPage == _pageProfileOffer) {
                                 _finishCreateAccountFlow();
                                 return;
                               }
@@ -2191,18 +2197,18 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 48),
                         child: Text(
-                          _currentPage == 0
+                          _currentPage == _pageLanguage
                               ? L10n.get("select_language")
-                              : _currentPage == 1
-                                  ? L10n.get("auth_wizard_oauth_step_header")
-                                  : _currentPage == 2
-                                      ? L10n.get("complete_profile")
-                                      : _currentPage == 3
-                                          ? L10n.get(
-                                              "complete_profile_prompt_title",
-                                            )
+                              : _currentPage == _pageTerms
+                                  ? L10n.get("auth_terms_finish_header")
+                                  : _currentPage == _pageSignIn
+                                      ? L10n.get(
+                                          "auth_wizard_oauth_step_header",
+                                        )
+                                      : _currentPage == _pageProfile
+                                          ? L10n.get("complete_profile")
                                           : L10n.get(
-                                              "auth_terms_finish_header",
+                                              "complete_profile_prompt_title",
                                             ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -2287,6 +2293,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           selectedLanguage: _selectedLanguage,
                           onLanguageSelected: _selectLanguage,
                         ),
+                        AuthWizardTermsFinishPage(
+                          onOpenTermsOfService: _openTermsOfService,
+                          termsAccepted: _termsAccepted,
+                          onTermsAcceptedChanged: (v) =>
+                              setState(() => _termsAccepted = v),
+                        ),
                         ValueListenableBuilder<bool>(
                           valueListenable:
                               ClientPhoneSignInConfig.phoneSignInEnabled,
@@ -2367,10 +2379,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                         ),
                         AuthWizardProfileOfferPage(
                           onCompleteNow: _openEditProfileFromOffer,
-                          onDoLater: _goToTermsFinishPage,
-                        ),
-                        AuthWizardTermsFinishPage(
-                          onOpenTermsOfService: _openTermsOfService,
+                          onDoLater: _finishCreateAccountFlow,
                         ),
                       ],
                     ),
@@ -2379,16 +2388,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
                 // Navigation buttons.
                 //
-                // On the Google Sign-In page (page 1) once the user has
-                // authenticated, both Back and Next become redundant —
-                // navigation continues automatically through
-                // [_authenticateWithBackend] (which animates to the profile
-                // page or routes home for returning users). Hiding the
-                // entire button strip in that state avoids leaving the
-                // wizard with dead-end controls flashing under the success
-                // card.
-                if (!(_currentPage == 1 && _isGoogleSignedIn) &&
-                    _currentPage != 3)
+                // On the Sign-In page once the user has authenticated, both
+                // Back and Next become redundant — navigation continues
+                // automatically through [_authenticateWithBackend] (which
+                // animates to the profile page or routes home for returning
+                // users). Hiding the entire button strip in that state avoids
+                // leaving the wizard with dead-end controls flashing under
+                // the success card. The profile-offer page has its own CTAs.
+                if (!(_currentPage == _pageSignIn && _isGoogleSignedIn) &&
+                    _currentPage != _pageProfileOffer)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
@@ -2397,7 +2405,8 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                     margin: const EdgeInsets.only(bottom: 20),
                     child: Row(
                       children: [
-                        if (_currentPage > 0 && _currentPage != 4)
+                        if (_currentPage > _pageLanguage &&
+                            _currentPage != _pageProfileOffer)
                           Expanded(
                             child: Builder(
                               builder: (context) {
@@ -2443,16 +2452,15 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                               },
                             ),
                           ),
-                        if (_currentPage > 0 &&
-                            _currentPage != 1 &&
-                            _currentPage != 4)
+                        if (_currentPage > _pageLanguage &&
+                            _currentPage != _pageSignIn &&
+                            _currentPage != _pageProfileOffer)
                           const SizedBox(width: 20),
-                        // The Next button is hidden on the Google Sign-In
-                        // page (page 1) because navigation happens
-                        // automatically after a successful sign-in, and the
-                        // whole strip is hidden once signed in (handled by
-                        // the outer `if` above), so there is no dead-end.
-                        if (_currentPage != 1)
+                        // The Next button is hidden on the Sign-In page
+                        // because navigation happens automatically after a
+                        // successful sign-in, and the whole strip is hidden
+                        // once signed in (handled by the outer `if` above).
+                        if (_currentPage != _pageSignIn)
                           Expanded(
                             child: Builder(
                               builder: (context) {
@@ -2787,19 +2795,19 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   bool _canAccessPage(int page) {
     switch (page) {
-      case 0:
+      case _pageLanguage:
         return true; // Language page always accessible
-      case 1:
-        return _selectedLanguage
-            .isNotEmpty; // Google Sign-In page only if language selected
-      case 2:
-        return _selectedLanguage.isNotEmpty && _isGoogleSignedIn;
-      case 3:
+      case _pageTerms:
+        return _selectedLanguage.isNotEmpty;
+      case _pageSignIn:
+        return _selectedLanguage.isNotEmpty && _termsAccepted;
+      case _pageProfile:
         return _selectedLanguage.isNotEmpty &&
-            _isGoogleSignedIn &&
-            _profileCreated;
-      case 4:
+            _termsAccepted &&
+            _isGoogleSignedIn;
+      case _pageProfileOffer:
         return _selectedLanguage.isNotEmpty &&
+            _termsAccepted &&
             _isGoogleSignedIn &&
             _profileCreated;
       default:
@@ -2812,25 +2820,26 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     if (_isAuthenticating || _isFinishingCreateAccountFlow) return null;
 
     switch (_currentPage) {
-      case 0:
+      case _pageLanguage:
         // Language selection - always allow next
         return _nextPage;
-      case 1:
-        // Google Sign-In - only allow next if signed in
+      case _pageTerms:
+        // Terms — [_nextPage] toasts if not accepted yet
+        return _nextPage;
+      case _pageSignIn:
+        // Sign-In - only allow next if signed in
         if (!_isGoogleSignedIn) {
           return null;
         }
         return _nextPage;
-      case 2:
+      case _pageProfile:
         // Profile setup — keep the button enabled; [_completeProfile] runs
         // validation, toggles [_showValidationErrors] for red borders, scrolls
         // to the first invalid control, and only submits when everything is
         // filled (matches [_completeProfile] rules, including region only for
         // Uzbekistan and university only when student).
         return _completeProfile;
-      case 3:
-        return _openEditProfileFromOffer;
-      case 4:
+      case _pageProfileOffer:
         return _finishCreateAccountFlow;
       default:
         return null;
@@ -2843,18 +2852,18 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
     }
 
     switch (_currentPage) {
-      case 0:
+      case _pageLanguage:
         return "next";
-      case 1:
+      case _pageTerms:
+        return "next";
+      case _pageSignIn:
         if (!_isGoogleSignedIn) {
           return "sign_in_google_first";
         }
         return "next";
-      case 2:
+      case _pageProfile:
         return "complete";
-      case 3:
-        return "complete_profile_prompt_cta";
-      case 4:
+      case _pageProfileOffer:
         return "finish";
       default:
         return "next";

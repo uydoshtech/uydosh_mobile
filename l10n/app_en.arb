@@ -121,7 +121,7 @@
   "map_update_my_location": "Update my location",
   "permission_location_title": "See listings on the map",
   "permission_location_body": "Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.",
-  "permission_location_cta": "Allow location access",
+  "permission_location_cta": "Continue",
   "permission_location_denied_body": "Location access is turned off in Settings. Open Settings to enable the map experience.",
   "show_district_layer": "Show districts layer",
   "hide_district_layer": "Hide districts layer",

@@ -597,6 +597,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Photogrammetry",
       "room_scan_photogrammetry_subtitle":
           "Create a textured 3D model after scanning",
+      "room_scan_quality_overlay": "Scan Quality Overlay",
+      "room_scan_scan_quality": "Scan Quality: %d%%",
       "room_3d_structure": "Structure",
       "room_3d_textured": "Textured",
       "room_3d_textured_processing": "Textured model processing",
@@ -801,13 +803,23 @@ class AppStrings {
 
       "profile_completed_success": "Profile completed successfully!",
       "profile_updated_success": "Profile updated successfully",
-      "auth_terms_finish_header": "Almost Done",
-      "auth_terms_finish_title": "Review the terms",
+      "auth_terms_finish_header": "Terms of Use",
+      "auth_terms_finish_title": "Agree to continue",
       "auth_terms_finish_body":
-          "By continuing, you agree to UyDosh's Terms of Use, Privacy Policy, and Community Rules.",
+          "UyDosh has zero tolerance for objectionable content and abusive users. By continuing, you agree to UyDosh's Terms of Use and Privacy Policy. You can report content and block abusive users in the app.",
+      "auth_terms_accept_checkbox":
+          "I agree to the Terms of Use and confirm there is no tolerance for objectionable content or abusive users.",
+      "auth_terms_accept_required": "Please agree to the Terms of Use to continue.",
       "view_terms_of_service": "View Terms of Use",
       "could_not_open_terms_of_service":
           "Could not open the Terms of Use. Please try again.",
+      "block_user": "Block user",
+      "block_user_confirm_title": "Block this user?",
+      "block_user_confirm_body":
+          "Their listings will be removed from your feed immediately. We will be notified so we can review their content.",
+      "block_user_success": "User blocked. Their content was removed from your feed.",
+      "block_user_error": "Could not block this user. Please try again.",
+      "chat_safety_sheet_block": "Block user",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
@@ -1157,7 +1169,7 @@ class AppStrings {
       "permission_location_title": "See listings on the map",
       "permission_location_body":
           "Allow location so UyDosh can open the map experience and show where you are relative to nearby listings.",
-      "permission_location_cta": "Allow location access",
+      "permission_location_cta": "Continue",
       "permission_location_denied_body":
           "Location access is turned off in Settings. Open Settings to enable the map experience.",
       "permission_not_now": "Not now",
@@ -2973,6 +2985,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Фотограмметрия",
       "room_scan_photogrammetry_subtitle":
           "Создать текстурированную 3D-модель после сканирования",
+      "room_scan_quality_overlay": "Карта качества скана",
+      "room_scan_scan_quality": "Качество скана: %d%%",
       "room_3d_structure": "Геометрия",
       "room_3d_textured": "С текстурами",
       "room_3d_textured_processing": "Обработка текстурированной модели",
@@ -3179,13 +3193,26 @@ class AppStrings {
 
       "profile_completed_success": "Профиль успешно завершен!",
       "profile_updated_success": "Профиль успешно обновлен",
-      "auth_terms_finish_header": "Почти готово",
-      "auth_terms_finish_title": "Ознакомьтесь с условиями",
+      "auth_terms_finish_header": "Условия использования",
+      "auth_terms_finish_title": "Примите условия, чтобы продолжить",
       "auth_terms_finish_body":
-          "Продолжая, вы соглашаетесь с Условиями использования, Политикой конфиденциальности и Правилами сообщества UyDosh.",
+          "UyDosh придерживается нулевой терпимости к неприемлемому контенту и оскорбительным пользователям. Продолжая, вы соглашаетесь с Условиями использования и Политикой конфиденциальности UyDosh. В приложении можно пожаловаться на контент и заблокировать оскорбительных пользователей.",
+      "auth_terms_accept_checkbox":
+          "Я соглашаюсь с Условиями использования и подтверждаю, что неприемлемый контент и оскорбительные пользователи не допускаются.",
+      "auth_terms_accept_required":
+          "Чтобы продолжить, примите Условия использования.",
       "view_terms_of_service": "Открыть Условия использования",
       "could_not_open_terms_of_service":
           "Не удалось открыть Условия использования. Попробуйте снова.",
+      "block_user": "Заблокировать",
+      "block_user_confirm_title": "Заблокировать пользователя?",
+      "block_user_confirm_body":
+          "Его объявления сразу исчезнут из вашей ленты. Мы получим уведомление и проверим контент.",
+      "block_user_success":
+          "Пользователь заблокирован. Его контент удалён из вашей ленты.",
+      "block_user_error":
+          "Не удалось заблокировать пользователя. Попробуйте ещё раз.",
+      "chat_safety_sheet_block": "Заблокировать",
 
       "successfully_signed_in_google": "Успешный вход через Google!",
       "successfully_signed_in_apple": "Успешный вход через Apple!",
@@ -3540,7 +3567,7 @@ class AppStrings {
       "permission_location_title": "Смотреть объявления на карте",
       "permission_location_body":
           "Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.",
-      "permission_location_cta": "Разрешить геопозицию",
+      "permission_location_cta": "Продолжить",
       "permission_location_denied_body":
           "Доступ к геопозиции отключён в настройках. Откройте настройки, чтобы включить карту.",
       "permission_not_now": "Не сейчас",
@@ -5405,6 +5432,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Fotogrammetriya",
       "room_scan_photogrammetry_subtitle":
           "Skanlashdan so‘ng teksturali 3D model yarating",
+      "room_scan_quality_overlay": "Skan sifati xaritasi",
+      "room_scan_scan_quality": "Skan sifati: %d%%",
       "room_3d_structure": "Geometriya",
       "room_3d_textured": "Teksturali",
       "room_3d_textured_processing": "Teksturali model qayta ishlanmoqda",
@@ -5612,13 +5641,26 @@ class AppStrings {
 
       "profile_completed_success": "Profil muvaffaqiyatli to'ldirildi!",
       "profile_updated_success": "Profil muvaffaqiyatli yangilandi",
-      "auth_terms_finish_header": "Deyarli tayyor",
-      "auth_terms_finish_title": "Shartlarni ko'rib chiqing",
+      "auth_terms_finish_header": "Foydalanish shartlari",
+      "auth_terms_finish_title": "Davom etish uchun rozilik bering",
       "auth_terms_finish_body":
-          "Davom etish orqali siz UyDosh Foydalanish shartlari, Maxfiylik siyosati va Hamjamiyat qoidalariga rozilik bildirasiz.",
+          "UyDosh nomaqbul kontent va haqoratli foydalanuvchilarga nisbatan nol bag‘rikenglikka ega. Davom etib, UyDosh Foydalanish shartlari va Maxfiylik siyosatiga rozilik bildirasiz. Ilovada kontent ustidan shikoyat qilish va haqoratli foydalanuvchilarni bloklash mumkin.",
+      "auth_terms_accept_checkbox":
+          "Foydalanish shartlariga roziman va nomaqbul kontent hamda haqoratli foydalanuvchilarga yo‘l qo‘yilmasligini tasdiqlayman.",
+      "auth_terms_accept_required":
+          "Davom etish uchun Foydalanish shartlariga rozilik bering.",
       "view_terms_of_service": "Foydalanish shartlarini ko'rish",
       "could_not_open_terms_of_service":
           "Foydalanish shartlarini ochib bo'lmadi. Qayta urinib ko'ring.",
+      "block_user": "Bloklash",
+      "block_user_confirm_title": "Bu foydalanuvchini bloklaysizmi?",
+      "block_user_confirm_body":
+          "Uning e’lonlari tasmangizdan darhol olib tashlanadi. Biz xabardor qilinamiz va kontentni tekshiramiz.",
+      "block_user_success":
+          "Foydalanuvchi bloklandi. Uning kontenti tasmangizdan olib tashlandi.",
+      "block_user_error":
+          "Foydalanuvchini bloklab bo‘lmadi. Qayta urinib ko‘ring.",
+      "chat_safety_sheet_block": "Bloklash",
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
@@ -5971,7 +6013,7 @@ class AppStrings {
       "permission_location_title": "E'lonlarni xaritada ko‘ring",
       "permission_location_body":
           "UyDosh xarita tajribasini ochishi va yaqin e'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.",
-      "permission_location_cta": "Joylashuvga ruxsat berish",
+      "permission_location_cta": "Davom etish",
       "permission_location_denied_body":
           "Joylashuvga kirish Sozlamalarda o‘chirilgan. Xaritani yoqish uchun Sozlamalarni oching.",
       "permission_not_now": "Hozir emas",

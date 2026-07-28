@@ -618,7 +618,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               context.pushAuthWizard(
-                initialPage: 2,
+                // Auth wizard pages: 0 language, 1 terms, 2 sign-in, 3 profile
+                initialPage: 3,
                 skipExistingSessionCheck: true,
               );
             });

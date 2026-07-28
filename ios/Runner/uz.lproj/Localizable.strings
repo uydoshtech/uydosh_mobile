@@ -52,3 +52,5 @@
 "roomplan_results_windows" = "Derazalar: {count}";
 "roomplan_results_doors" = "Eshiklar: {count}";
 "roomplan_results_height" = "Balandlik: {value} м";
+"roomplan_quality_overlay" = "Skan sifati xaritasi";
+"roomplan_scan_quality" = "Skan sifati: %d%%";

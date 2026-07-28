@@ -912,7 +912,8 @@ post_install do |installer|
           '        Task { [weak self] in',
           '            guard let self else { return }',
           '            guard self.uydoshPhotogrammetryEnabled else { return }',
-          '            if let package = try? await self.uydoshPhotogrammetryCapture.finish(room: processedResult) {',
+          '            do {',
+          '                let package = try await self.uydoshPhotogrammetryCapture.finish(room: processedResult)',
           '                self.uydoshPhotogrammetryPackageReady?(package.archiveURL)',
           '                if let root = self.view.window?.rootViewController,',
           '                   let flutter = Self.uydoshFindFlutterViewController(in: root) {',
@@ -920,6 +921,15 @@ post_install do |installer|
           '                        name: "room_scan_kit/photogrammetry",',
           '                        binaryMessenger: flutter.binaryMessenger',
           '                    ).invokeMethod("onPackageReady", arguments: package.archiveURL.path)',
+          '                }',
+          '            } catch {',
+          '                print("[Photogrammetry] native package FAILED: \(error)")',
+          '                if let root = self.view.window?.rootViewController,',
+          '                   let flutter = Self.uydoshFindFlutterViewController(in: root) {',
+          '                    FlutterMethodChannel(',
+          '                        name: "room_scan_kit/photogrammetry",',
+          '                        binaryMessenger: flutter.binaryMessenger',
+          '                    ).invokeMethod("onPackageFailed", arguments: String(describing: error))',
           '                }',
           '            }',
           '        }',
@@ -958,6 +968,16 @@ post_install do |installer|
   end
   if File.exist?(room_capture_file)
     src = File.read(room_capture_file)
+    src = src.sub(
+      '            if let package = try? await self.uydoshPhotogrammetryCapture.finish(room: processedResult) {',
+      "            do {\n                let package = try await self.uydoshPhotogrammetryCapture.finish(room: processedResult)"
+    )
+    unless src.include?('invokeMethod("onPackageFailed"')
+      src = src.sub(
+        "                }\n            }\n        }\n        currentCapturedRoom = processedResult",
+        "                }\n            } catch {\n                print(\"[Photogrammetry] native package FAILED: \\(error)\")\n                if let root = self.view.window?.rootViewController,\n                   let flutter = Self.uydoshFindFlutterViewController(in: root) {\n                    FlutterMethodChannel(\n                        name: \"room_scan_kit/photogrammetry\",\n                        binaryMessenger: flutter.binaryMessenger\n                    ).invokeMethod(\"onPackageFailed\", arguments: String(describing: error))\n                }\n            }\n        }\n        currentCapturedRoom = processedResult"
+      )
+    end
     if src.include?('public var uydoshPhotogrammetryEnabled = true')
       src = src.sub('public var uydoshPhotogrammetryEnabled = true', 'public var uydoshPhotogrammetryEnabled = false')
     elsif !src.include?('public var uydoshPhotogrammetryEnabled = false')
@@ -1033,7 +1053,9 @@ post_install do |installer|
         '',
         "    #{marker}",
         '    private func uydoshAddQualityHeatmap() {',
-        '        let heatmap = RoomScanQualityHeatmap()',
+        '        let heatmap = RoomScanQualityHeatmap(',
+        '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
+        '        )',
         '        heatmap.attach(to: roomCaptureView)',
         '        uydoshQualityHeatmap = heatmap',
         '    }',
@@ -1043,6 +1065,20 @@ post_install do |installer|
         "#{helper}\n    private func resetScanningSession() {"
       )
 
+      File.write(room_capture_file, src)
+    end
+
+    # Upgrade-safe: pass Flutter startScan strings into the quality overlay HUD.
+    src = File.read(room_capture_file)
+    old_heatmap_init = "        let heatmap = RoomScanQualityHeatmap()\n        heatmap.attach(to: roomCaptureView)"
+    new_heatmap_init = [
+      '        let heatmap = RoomScanQualityHeatmap(',
+      '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
+      '        )',
+      '        heatmap.attach(to: roomCaptureView)',
+    ].join("\n")
+    if src.include?(old_heatmap_init)
+      src = src.sub(old_heatmap_init, new_heatmap_init)
       File.write(room_capture_file, src)
     end
   end

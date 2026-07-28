@@ -52,3 +52,5 @@
 "roomplan_results_windows" = "Окна: {count}";
 "roomplan_results_doors" = "Двери: {count}";
 "roomplan_results_height" = "Высота: {value} м";
+"roomplan_quality_overlay" = "Карта качества скана";
+"roomplan_scan_quality" = "Качество скана: %d%%";

@@ -243,7 +243,7 @@ class AppLocalizationsUz extends AppLocalizations {
       'UyDosh xarita tajribasini ochishi va yaqin e\'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.';
 
   @override
-  String get permission_location_cta => 'Joylashuvga ruxsat berish';
+  String get permission_location_cta => 'Davom etish';
 
   @override
   String get permission_location_denied_body =>

@@ -52,3 +52,5 @@
 "roomplan_results_windows" = "Windows: {count}";
 "roomplan_results_doors" = "Doors: {count}";
 "roomplan_results_height" = "Height: {value} m";
+"roomplan_quality_overlay" = "Scan Quality Overlay";
+"roomplan_scan_quality" = "Scan Quality: %d%%";

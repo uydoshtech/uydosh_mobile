@@ -16,6 +16,7 @@ class SuspiciousMessageBottomSheet {
     required List<String> reasons,
     required VoidCallback onCopyPressed,
     VoidCallback? onReportPressed,
+    VoidCallback? onBlockPressed,
   }) {
     final dedupedReasons =
         reasons.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
@@ -167,6 +168,25 @@ class SuspiciousMessageBottomSheet {
                               },
                               icon: Icons.report_outlined,
                               text: L10n.get("chat_safety_sheet_report"),
+                              iconSize: 18,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (onBlockPressed != null) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: GhostButtonFactory.iconText(
+                              onPressed: () {
+                                Navigator.of(sheetContext).pop();
+                                onBlockPressed();
+                              },
+                              icon: Icons.block,
+                              text: L10n.get("chat_safety_sheet_block"),
                               iconSize: 18,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,

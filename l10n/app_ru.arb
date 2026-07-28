@@ -121,7 +121,7 @@
   "map_update_my_location": "Обновить мою геопозицию",
   "permission_location_title": "Смотреть объявления на карте",
   "permission_location_body": "Разрешите геопозицию, чтобы UyDosh мог открыть карту и показать, где вы находитесь относительно объявлений рядом.",
-  "permission_location_cta": "Разрешить геопозицию",
+  "permission_location_cta": "Продолжить",
   "permission_location_denied_body": "Доступ к геопозиции отключён в настройках. Откройте настройки, чтобы включить карту.",
   "show_district_layer": "Показать слой районов",
   "hide_district_layer": "Скрыть слой районов",

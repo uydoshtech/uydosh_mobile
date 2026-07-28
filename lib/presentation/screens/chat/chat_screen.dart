@@ -8,6 +8,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/services/follow_service.dart";
+import "package:uy_dosh/domain/services/user_block_service.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/localization/l10n_extension.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -67,6 +68,7 @@ import "package:uy_dosh/presentation/screens/profile/ai_premium_placeholder_scre
 import "package:uy_dosh/presentation/utils/conversation_entry_flow.dart";
 import "package:uy_dosh/presentation/utils/destructive_action_flow.dart";
 import "package:uy_dosh/base/utils/toast_reporting.dart";
+import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_header.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_message_input.dart";
 import "package:uy_dosh/presentation/widgets/chat/chat_messages_skeleton.dart";
@@ -84,6 +86,7 @@ import "package:uy_dosh/presentation/widgets/chat/message_grouping_utils.dart";
 import "package:uy_dosh/presentation/widgets/chat/quick_questions_widget.dart";
 import "package:uy_dosh/presentation/widgets/chat/suspicious_message_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
+import "package:uy_dosh/presentation/widgets/common/confirmation_dialog.dart";
 import "package:uy_dosh/presentation/widgets/common/gemini_quota_exceeded_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/swipe_dismissible_sheet.dart";
 import "package:uy_dosh/presentation/widgets/common/common_list_view.dart";
@@ -1595,6 +1598,13 @@ class _ChatScreenState extends State<ChatScreen> {
       onReportPressed: (widget.listingId == null || _isViewerListingOwner)
           ? null
           : _createComplaint,
+      onBlockPressed: _isGroupChat
+          ? null
+          : () {
+              final peerId =
+                  widget.otherUserId ?? _getOtherUserIdFromMessages();
+              if (peerId != null) unawaited(_blockUser(peerId));
+            },
     );
   }
 
@@ -3355,6 +3365,33 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _blockUser(int userId) async {
+    final confirmed = await CommonConfirmationDialogs.showGenericConfirmation(
+      context: context,
+      titleKey: "block_user_confirm_title",
+      messageKey: "block_user_confirm_body",
+      confirmButtonKey: "block_user",
+      isDestructive: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final result = await getIt<IUserBlockService>().toggleBlock(
+      userId,
+      reason: "Blocked from chat ${widget.conversationId}",
+    );
+    if (!mounted) return;
+    if (result == null || !result.isBlocked) {
+      ToastReporting.errorKey(context, "block_user_error");
+      return;
+    }
+
+    HomeRefreshState().forceRefreshNow();
+    ToastReporting.successKey(context, "block_user_success");
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _createComplaint() async {
     if (widget.listingId == null) return;
 
@@ -3563,6 +3600,19 @@ class _ChatScreenState extends State<ChatScreen> {
           icon: CupertinoIcons.exclamationmark_circle_fill,
           textKey: "complain",
           onPressed: _createComplaint,
+          iconColor: Colors.red,
+          textColor: Colors.red,
+        ),
+      );
+    }
+
+    if (!_isGroupChat && otherUserId != null) {
+      items.add(
+        ActionMenuItem(
+          value: "block_user",
+          icon: Icons.block,
+          textKey: "block_user",
+          onPressed: () => unawaited(_blockUser(otherUserId)),
           iconColor: Colors.red,
           textColor: Colors.red,
         ),

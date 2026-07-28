@@ -121,7 +121,7 @@
   "map_update_my_location": "Joylashuvimni yangilash",
   "permission_location_title": "E'lonlarni xaritada ko‘ring",
   "permission_location_body": "UyDosh xarita tajribasini ochishi va yaqin e'lonlarga nisbatan qayerda ekaningizni ko‘rsatishi uchun joylashuvga ruxsat bering.",
-  "permission_location_cta": "Joylashuvga ruxsat berish",
+  "permission_location_cta": "Davom etish",
   "permission_location_denied_body": "Joylashuvga kirish Sozlamalarda o‘chirilgan. Xaritani yoqish uchun Sozlamalarni oching.",
   "show_district_layer": "Tumanlar qatlamini ko‘rsatish",
   "hide_district_layer": "Tumanlar qatlamini yashirish",
