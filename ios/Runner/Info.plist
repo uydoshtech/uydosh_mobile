@@ -117,5 +117,8 @@
 	<string>This app uses your location to show nearby listings and metro stations.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- PostHog: Dart PosthogBootstrap.setup() owns init (dart-define key). -->
+	<key>com.posthog.posthog.AUTO_INIT</key>
+	<false/>
 </dict>
 </plist>

@@ -38,6 +38,7 @@ import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/app_badge_service.dart";
 import "package:uy_dosh/base/services/deep_link_service.dart";
 import "package:uy_dosh/base/services/google_sign_in_warmup.dart";
+import "package:uy_dosh/base/services/posthog_bootstrap.dart";
 import "package:uy_dosh/base/services/reinstall_session_guard.dart";
 import "package:uy_dosh/base/services/remote_config_service.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -158,6 +159,11 @@ void main() async {
     // SharedPreferences cache or the compile-time default if Firebase RC is
     // unavailable, so this cannot break startup.
     await RemoteConfigService.initialize();
+
+    // PostHog product analytics (no-op when POSTHOG_API_KEY is unset).
+    // Manual Dart setup — native AUTO_INIT is false in AndroidManifest /
+    // Info.plist so the key can come from --dart-define.
+    await PosthogBootstrap.setup();
 
     // iOS: Firebase user can persist in Keychain after uninstall while prefs
     // are cleared — sign out so we do not treat the user as logged in without

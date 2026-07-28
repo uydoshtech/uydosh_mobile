@@ -106,6 +106,23 @@ abstract class EnvironmentUtil {
     defaultValue: "",
   );
 
+  /// PostHog project API key (public client write-only token). Safe to
+  /// ship in the app. Override with `--dart-define=POSTHOG_API_KEY=phc_…`
+  /// if needed. Not rotated via Remote Config because the SDK must
+  /// initialize before the first RC fetch completes.
+  static const compileTimePosthogApiKey = String.fromEnvironment(
+    "POSTHOG_API_KEY",
+    defaultValue: "phc_vYYZWxsrWzjCoRFWHARtED33eyQm7NHZcZorQwMreQTY",
+  );
+
+  /// PostHog ingest host. Defaults to US cloud; override with
+  /// `--dart-define=POSTHOG_HOST=https://eu.i.posthog.com` (or a
+  /// self-hosted URL).
+  static const compileTimePosthogHost = String.fromEnvironment(
+    "POSTHOG_HOST",
+    defaultValue: "https://us.i.posthog.com",
+  );
+
   /// Compile-time default for the max number of photos a user may attach
   /// to a single listing. Mirrors the Remote Config default — keep in
   /// sync with `_kDefaultMaxPhotosPerListing` in [RemoteConfigService] and

@@ -502,8 +502,23 @@ Open `ios/Runner.xcworkspace` in Xcode.
 
 ### Analytics
 
-`AppAnalyticsService` wraps Firebase Analytics with named events for app
-open, listing view, search, signup, listing creation, and achievement unlock.
+`AppAnalyticsService` dual-writes named events (app open, listing view,
+search, signup, listing creation, achievement unlock, …) to **Firebase
+Analytics** and **PostHog**.
+
+PostHog is initialized in `PosthogBootstrap.setup()` using the project
+API key baked into `EnvironmentUtil` (US Cloud). Override at build time if
+needed:
+
+```bash
+flutter run \
+  --dart-define=POSTHOG_API_KEY=phc_… \
+  --dart-define=POSTHOG_HOST=https://us.i.posthog.com
+```
+
+Native `AUTO_INIT` is disabled so the Dart bootstrap owns configuration.
+Web uses the same token in `web/index.html` (`posthogApiKey`) —
+`posthog_flutter` attaches to the JS SDK initialized there.
 
 ---
 
