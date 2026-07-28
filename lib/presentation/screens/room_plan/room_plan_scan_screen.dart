@@ -551,6 +551,11 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
                         ? L10n.get("room_scan_success")
                         : progress.phase == PhotogrammetryUploadPhase.failed
                         ? L10n.get("room_scan_error")
+                        : progress.phase == PhotogrammetryUploadPhase.uploading
+                        ? L10n.getWithParams(
+                            "room_scan_photogrammetry_upload",
+                            params: {"percent": "${progress.percentage}"},
+                          )
                         : L10n.get("room_scan_uploading"),
                     textAlign: TextAlign.center,
                   ),

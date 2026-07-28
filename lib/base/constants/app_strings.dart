@@ -597,6 +597,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Photogrammetry",
       "room_scan_photogrammetry_subtitle":
           "Create a textured 3D model after scanning",
+      "room_scan_photogrammetry_upload":
+          "Uploading photogrammetry archive: {percent}%",
       "room_scan_quality_overlay": "Scan Quality Overlay",
       "room_scan_scan_quality": "Scan Quality: %d%%",
       "room_3d_structure": "Structure",
@@ -809,7 +811,8 @@ class AppStrings {
           "UyDosh has zero tolerance for objectionable content and abusive users. By continuing, you agree to UyDosh's Terms of Use and Privacy Policy. You can report content and block abusive users in the app.",
       "auth_terms_accept_checkbox":
           "I agree to the Terms of Use and confirm there is no tolerance for objectionable content or abusive users.",
-      "auth_terms_accept_required": "Please agree to the Terms of Use to continue.",
+      "auth_terms_accept_required":
+          "Please agree to the Terms of Use to continue.",
       "view_terms_of_service": "View Terms of Use",
       "could_not_open_terms_of_service":
           "Could not open the Terms of Use. Please try again.",
@@ -817,7 +820,8 @@ class AppStrings {
       "block_user_confirm_title": "Block this user?",
       "block_user_confirm_body":
           "Their listings will be removed from your feed immediately. We will be notified so we can review their content.",
-      "block_user_success": "User blocked. Their content was removed from your feed.",
+      "block_user_success":
+          "User blocked. Their content was removed from your feed.",
       "block_user_error": "Could not block this user. Please try again.",
       "chat_safety_sheet_block": "Block user",
 
@@ -2985,6 +2989,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Фотограмметрия",
       "room_scan_photogrammetry_subtitle":
           "Создать текстурированную 3D-модель после сканирования",
+      "room_scan_photogrammetry_upload":
+          "Загрузка архива фотограмметрии: {percent}%",
       "room_scan_quality_overlay": "Карта качества скана",
       "room_scan_scan_quality": "Качество скана: %d%%",
       "room_3d_structure": "Геометрия",
@@ -5432,6 +5438,8 @@ class AppStrings {
       "room_scan_photogrammetry_title": "Fotogrammetriya",
       "room_scan_photogrammetry_subtitle":
           "Skanlashdan so‘ng teksturali 3D model yarating",
+      "room_scan_photogrammetry_upload":
+          "Fotogrammetriya arxivi yuklanmoqda: {percent}%",
       "room_scan_quality_overlay": "Skan sifati xaritasi",
       "room_scan_scan_quality": "Skan sifati: %d%%",
       "room_3d_structure": "Geometriya",

@@ -992,6 +992,43 @@ post_install do |installer|
         "            guard let self else { return }\n            guard self.uydoshPhotogrammetryEnabled else { return }"
       )
     end
+    unless src.include?('public var uydoshPhotogrammetryPackageFailed: ((Error) -> Void)?')
+      src = src.sub(
+        '    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?',
+        "    public var uydoshPhotogrammetryPackageReady: ((URL) -> Void)?\n    public var uydoshPhotogrammetryPackageFailed: ((Error) -> Void)?"
+      )
+    end
+    ready_channel = <<~SWIFT.chomp
+                if let root = self.view.window?.rootViewController,
+                   let flutter = Self.uydoshFindFlutterViewController(in: root) {
+                    FlutterMethodChannel(
+                        name: "room_scan_kit/photogrammetry",
+                        binaryMessenger: flutter.binaryMessenger
+                    ).invokeMethod("onPackageReady", arguments: package.archiveURL.path)
+                }
+    SWIFT
+    src = src.sub(ready_channel, '')
+    failed_channel = <<~SWIFT.chomp
+                if let root = self.view.window?.rootViewController,
+                   let flutter = Self.uydoshFindFlutterViewController(in: root) {
+                    FlutterMethodChannel(
+                        name: "room_scan_kit/photogrammetry",
+                        binaryMessenger: flutter.binaryMessenger
+                    ).invokeMethod("onPackageFailed", arguments: String(describing: error))
+                }
+    SWIFT
+    src = src.sub(
+      failed_channel,
+      '                self.uydoshPhotogrammetryPackageFailed?(error)'
+    )
+    src = src.gsub(
+      /\n\s*if let root = self\.view\.window\?\.rootViewController,\n\s*let flutter = Self\.uydoshFindFlutterViewController\(in: root\) \{\n\s*FlutterMethodChannel\(\n\s*name: "room_scan_kit\/photogrammetry",\n\s*binaryMessenger: flutter\.binaryMessenger\n\s*\)\.invokeMethod\("onPackageReady", arguments: package\.archiveURL\.path\)\n\s*\}/,
+      ''
+    )
+    src = src.gsub(
+      /\n\s*if let root = self\.view\.window\?\.rootViewController,\n\s*let flutter = Self\.uydoshFindFlutterViewController\(in: root\) \{\n\s*FlutterMethodChannel\(\n\s*name: "room_scan_kit\/photogrammetry",\n\s*binaryMessenger: flutter\.binaryMessenger\n\s*\)\.invokeMethod\("onPackageFailed", arguments: String\(describing: error\)\)\n\s*\}/,
+      "\n                self.uydoshPhotogrammetryPackageFailed?(error)"
+    )
     old_start = "        try? uydoshPhotogrammetryCapture.start(\n            arSession: roomCaptureView.captureSession.arSession\n        )"
     unless src.include?("        if uydoshPhotogrammetryEnabled {\n#{old_start}")
       src = src.sub(old_start, "        if uydoshPhotogrammetryEnabled {\n#{old_start}\n        }")
@@ -1003,6 +1040,48 @@ post_install do |installer|
       )
     end
     File.write(room_capture_file, src)
+  end
+
+  # Capture the Flutter channel while the Flutter view is still attached.
+  # ZIP creation can finish after RoomPlan is dismissed, when view.window is nil.
+  if File.exist?(flutter_roomplan_plugin_file)
+    src = File.read(flutter_roomplan_plugin_file)
+    unless src.include?('private var uydoshPhotogrammetryChannel: FlutterMethodChannel?')
+      src = src.sub(
+        'public class FlutterRoomplanPlugin: NSObject, FlutterPlugin {',
+        "public class FlutterRoomplanPlugin: NSObject, FlutterPlugin {\n  private var uydoshPhotogrammetryChannel: FlutterMethodChannel?"
+      )
+      src = src.sub(
+        '    let instance = FlutterRoomplanPlugin()',
+        "    let instance = FlutterRoomplanPlugin()\n    instance.uydoshPhotogrammetryChannel = FlutterMethodChannel(name: \"room_scan_kit/photogrammetry\", binaryMessenger: registrar.messenger())"
+      )
+    end
+    marker = '/* uydosh: persistent photogrammetry channel */'
+    unless src.include?(marker)
+      assignment = '        roomVC.uydoshPhotogrammetryEnabled = arguments?["enablePhotogrammetry"] as? Bool ?? false'
+      callback_setup = [
+        assignment,
+        "        #{marker}",
+        '        if let photogrammetryChannel = self.uydoshPhotogrammetryChannel {',
+        '          roomVC.uydoshPhotogrammetryPackageReady = { archiveURL in',
+        '            DispatchQueue.main.async {',
+        '              photogrammetryChannel.invokeMethod("onPackageReady", arguments: archiveURL.path)',
+        '            }',
+        '          }',
+        '          roomVC.uydoshPhotogrammetryPackageFailed = { error in',
+        '            DispatchQueue.main.async {',
+        '              photogrammetryChannel.invokeMethod("onPackageFailed", arguments: String(describing: error))',
+        '            }',
+        '          }',
+        '        }',
+      ].join("\n")
+      src = src.sub(assignment, callback_setup)
+    end
+    src = src.gsub(
+      /if let flutter = FlutterRoomplanPlugin\.uydoshFindFlutterViewController\(in: rootVC\) \{\n\s*let photogrammetryChannel = FlutterMethodChannel\(\n\s*name: "room_scan_kit\/photogrammetry",\n\s*binaryMessenger: flutter\.binaryMessenger\n\s*\)/,
+      'if let photogrammetryChannel = self.uydoshPhotogrammetryChannel {'
+    )
+    File.write(flutter_roomplan_plugin_file, src)
   end
 
   # Ensure the live heatmap cannot leak into RoomPlan's processed-result view,
