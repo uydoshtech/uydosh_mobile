@@ -130,6 +130,15 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
   }
 
   Future<void> _uploadPhotogrammetryPackage(String path) async {
+    await PhotogrammetryLocalPackageStore.instance.save(
+      PhotogrammetryLocalPackage(
+        packagePath: path,
+        targetType: "listing",
+        targetId: widget.listingId,
+        savedAt: DateTime.now().toUtc(),
+        state: "pending",
+      ),
+    );
     try {
       await PhotogrammetryUpload.instance.submit(
         packagePath: path,
@@ -144,6 +153,12 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
       _finishFlowIfReady();
     } catch (error, stack) {
       logger.d("Photogrammetry upload failed: $error\n$stack");
+      if (mounted) {
+        ToastTheme.showError(
+          context,
+          message: L10n.get("room_scan_photogrammetry_retry_failed"),
+        );
+      }
       _photogrammetryQueued = true;
       _finishFlowIfReady();
     }
@@ -151,6 +166,7 @@ class _RoomPlanScanScreenState extends State<RoomPlanScanScreen>
 
   void _handlePhotogrammetryPackageFailure(String error) {
     logger.d("Photogrammetry package failed: $error");
+    // No zip was produced — nothing to keep for retry.
     _photogrammetryQueued = true;
     _finishFlowIfReady();
   }

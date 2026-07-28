@@ -599,6 +599,12 @@ class AppStrings {
           "Create a textured 3D model after scanning",
       "room_scan_photogrammetry_upload":
           "Uploading photogrammetry archive: {percent}%",
+      "room_scan_photogrammetry_retry": "Retry photogrammetry upload",
+      "room_scan_photogrammetry_retry_ok": "Photogrammetry upload queued",
+      "room_scan_photogrammetry_retry_missing":
+          "No local photogrammetry archive on this device",
+      "room_scan_photogrammetry_retry_failed":
+          "Photogrammetry upload failed — archive kept for retry",
       "room_scan_quality_overlay": "Scan Quality Overlay",
       "room_scan_scan_quality": "Scan Quality: %d%%",
       "room_3d_structure": "Structure",
@@ -2991,6 +2997,12 @@ class AppStrings {
           "Создать текстурированную 3D-модель после сканирования",
       "room_scan_photogrammetry_upload":
           "Загрузка архива фотограмметрии: {percent}%",
+      "room_scan_photogrammetry_retry": "Повторить загрузку фотограмметрии",
+      "room_scan_photogrammetry_retry_ok": "Фотограмметрия поставлена в очередь",
+      "room_scan_photogrammetry_retry_missing":
+          "Локальный архив фотограмметрии не найден",
+      "room_scan_photogrammetry_retry_failed":
+          "Ошибка загрузки — архив сохранён для повтора",
       "room_scan_quality_overlay": "Карта качества скана",
       "room_scan_scan_quality": "Качество скана: %d%%",
       "room_3d_structure": "Геометрия",
@@ -5440,6 +5452,12 @@ class AppStrings {
           "Skanlashdan so‘ng teksturali 3D model yarating",
       "room_scan_photogrammetry_upload":
           "Fotogrammetriya arxivi yuklanmoqda: {percent}%",
+      "room_scan_photogrammetry_retry": "Fotogrammetriyani qayta yuklash",
+      "room_scan_photogrammetry_retry_ok": "Fotogrammetriya navbatga qo‘yildi",
+      "room_scan_photogrammetry_retry_missing":
+          "Qurilmada fotogrammetriya arxivi topilmadi",
+      "room_scan_photogrammetry_retry_failed":
+          "Yuklash xatosi — arxiv qayta urinish uchun saqlandi",
       "room_scan_quality_overlay": "Skan sifati xaritasi",
       "room_scan_scan_quality": "Skan sifati: %d%%",
       "room_3d_structure": "Geometriya",
