@@ -286,6 +286,54 @@ post_install do |installer|
       )
       File.write(room_capture_file, src)
     end
+    custom_session_marker = '/* uydosh: shared scene-reconstruction ARSession */'
+    unless src.include?(custom_session_marker)
+      src = src.sub(
+        '    private var roomCaptureView: RoomCaptureView!',
+        "    private var roomCaptureView: RoomCaptureView!\n    #{custom_session_marker}\n    private let uydoshSceneReconstructionSession = ARSession()"
+      )
+      src = src.sub(
+        '        roomCaptureView = RoomCaptureView(frame: .zero)',
+        [
+          "        #{custom_session_marker}",
+          '        let worldConfiguration = ARWorldTrackingConfiguration()',
+          '        worldConfiguration.planeDetection = [.horizontal, .vertical]',
+          '        if uydoshPhotogrammetryEnabled {',
+          '        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {',
+          '            worldConfiguration.sceneReconstruction = .meshWithClassification',
+          '        } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {',
+          '            worldConfiguration.sceneReconstruction = .mesh',
+          '        }',
+          '        var semantics: ARConfiguration.FrameSemantics = []',
+          '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {',
+          '            semantics.insert(.sceneDepth)',
+          '        }',
+          '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.smoothedSceneDepth) {',
+          '            semantics.insert(.smoothedSceneDepth)',
+          '        }',
+          '        worldConfiguration.frameSemantics = semantics',
+          '        }',
+          '        uydoshSceneReconstructionSession.run(worldConfiguration)',
+          '        print("[Photogrammetry] shared ARSession started sceneReconstruction=\\(worldConfiguration.sceneReconstruction.rawValue)")',
+          '        roomCaptureView = RoomCaptureView(',
+          '            frame: .zero,',
+          '            arSession: uydoshSceneReconstructionSession',
+          '        )',
+        ].join("\n")
+      )
+      File.write(room_capture_file, src)
+    end
+    unless src.include?("        if uydoshPhotogrammetryEnabled {\n        if ARWorldTrackingConfiguration.supportsSceneReconstruction")
+      src = src.sub(
+        '        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {',
+        "        if uydoshPhotogrammetryEnabled {\n        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {"
+      )
+      src = src.sub(
+        "        worldConfiguration.frameSemantics = semantics\n        uydoshSceneReconstructionSession.run(worldConfiguration)",
+        "        worldConfiguration.frameSemantics = semantics\n        }\n        uydoshSceneReconstructionSession.run(worldConfiguration)"
+      )
+      File.write(room_capture_file, src)
+    end
   end
 
   # Notify Flutter when the user dismisses the native RoomCaptureViewController
