@@ -287,6 +287,7 @@ post_install do |installer|
       File.write(room_capture_file, src)
     end
     custom_session_marker = '/* uydosh: shared scene-reconstruction ARSession */'
+    heatmap_mesh_marker = '/* uydosh: mesh always for heatmap */'
     unless src.include?(custom_session_marker)
       src = src.sub(
         '    private var roomCaptureView: RoomCaptureView!',
@@ -298,7 +299,7 @@ post_install do |installer|
           "        #{custom_session_marker}",
           '        let worldConfiguration = ARWorldTrackingConfiguration()',
           '        worldConfiguration.planeDetection = [.horizontal, .vertical]',
-          '        if uydoshPhotogrammetryEnabled {',
+          "        #{heatmap_mesh_marker}",
           '        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {',
           '            worldConfiguration.sceneReconstruction = .meshWithClassification',
           '        } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {',
@@ -312,9 +313,8 @@ post_install do |installer|
           '            semantics.insert(.smoothedSceneDepth)',
           '        }',
           '        worldConfiguration.frameSemantics = semantics',
-          '        }',
           '        uydoshSceneReconstructionSession.run(worldConfiguration)',
-          '        print("[Photogrammetry] shared ARSession started sceneReconstruction=\\(worldConfiguration.sceneReconstruction.rawValue)")',
+          '        print("[RoomScan] shared ARSession started sceneReconstruction=\\(worldConfiguration.sceneReconstruction.rawValue)")',
           '        roomCaptureView = RoomCaptureView(',
           '            frame: .zero,',
           '            arSession: uydoshSceneReconstructionSession',
@@ -323,16 +323,50 @@ post_install do |installer|
       )
       File.write(room_capture_file, src)
     end
-    unless src.include?("        if uydoshPhotogrammetryEnabled {\n        if ARWorldTrackingConfiguration.supportsSceneReconstruction")
-      src = src.sub(
+    # Existing installs gated mesh behind photogrammetry — ungating gives the
+    # dense ARMeshAnchor heatmap without requiring the photo toggle.
+    if src.include?(custom_session_marker) && !src.include?(heatmap_mesh_marker)
+      gated = [
+        '        if uydoshPhotogrammetryEnabled {',
         '        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {',
-        "        if uydoshPhotogrammetryEnabled {\n        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {"
-      )
-      src = src.sub(
-        "        worldConfiguration.frameSemantics = semantics\n        uydoshSceneReconstructionSession.run(worldConfiguration)",
-        "        worldConfiguration.frameSemantics = semantics\n        }\n        uydoshSceneReconstructionSession.run(worldConfiguration)"
-      )
-      File.write(room_capture_file, src)
+        '            worldConfiguration.sceneReconstruction = .meshWithClassification',
+        '        } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {',
+        '            worldConfiguration.sceneReconstruction = .mesh',
+        '        }',
+        '        var semantics: ARConfiguration.FrameSemantics = []',
+        '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {',
+        '            semantics.insert(.sceneDepth)',
+        '        }',
+        '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.smoothedSceneDepth) {',
+        '            semantics.insert(.smoothedSceneDepth)',
+        '        }',
+        '        worldConfiguration.frameSemantics = semantics',
+        '        }',
+      ].join("\n")
+      ungated = [
+        "        #{heatmap_mesh_marker}",
+        '        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {',
+        '            worldConfiguration.sceneReconstruction = .meshWithClassification',
+        '        } else if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {',
+        '            worldConfiguration.sceneReconstruction = .mesh',
+        '        }',
+        '        var semantics: ARConfiguration.FrameSemantics = []',
+        '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {',
+        '            semantics.insert(.sceneDepth)',
+        '        }',
+        '        if ARWorldTrackingConfiguration.supportsFrameSemantics(.smoothedSceneDepth) {',
+        '            semantics.insert(.smoothedSceneDepth)',
+        '        }',
+        '        worldConfiguration.frameSemantics = semantics',
+      ].join("\n")
+      if src.include?(gated)
+        src = src.sub(gated, ungated)
+        src = src.sub(
+          'print("[Photogrammetry] shared ARSession started sceneReconstruction=',
+          'print("[RoomScan] shared ARSession started sceneReconstruction='
+        )
+        File.write(room_capture_file, src)
+      end
     end
   end
 
