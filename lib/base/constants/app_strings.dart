@@ -605,6 +605,9 @@ class AppStrings {
           "No local photogrammetry archive on this device",
       "room_scan_photogrammetry_retry_failed":
           "Photogrammetry upload failed — archive kept for retry",
+      "room_scan_photogrammetry_share": "Share photogrammetry archive",
+      "room_scan_photogrammetry_share_failed":
+          "Could not share photogrammetry archive",
       "room_scan_quality_overlay": "Scan Quality Overlay",
       "room_scan_scan_quality": "Scan Quality: %d%%",
       "room_3d_structure": "Structure",
@@ -3003,6 +3006,9 @@ class AppStrings {
           "Локальный архив фотограмметрии не найден",
       "room_scan_photogrammetry_retry_failed":
           "Ошибка загрузки — архив сохранён для повтора",
+      "room_scan_photogrammetry_share": "Поделиться архивом фотограмметрии",
+      "room_scan_photogrammetry_share_failed":
+          "Не удалось поделиться архивом фотограмметрии",
       "room_scan_quality_overlay": "Карта качества скана",
       "room_scan_scan_quality": "Качество скана: %d%%",
       "room_3d_structure": "Геометрия",
@@ -5458,6 +5464,9 @@ class AppStrings {
           "Qurilmada fotogrammetriya arxivi topilmadi",
       "room_scan_photogrammetry_retry_failed":
           "Yuklash xatosi — arxiv qayta urinish uchun saqlandi",
+      "room_scan_photogrammetry_share": "Fotogrammetriya arxivini ulashish",
+      "room_scan_photogrammetry_share_failed":
+          "Fotogrammetriya arxivini ulashib bo‘lmadi",
       "room_scan_quality_overlay": "Skan sifati xaritasi",
       "room_scan_scan_quality": "Skan sifati: %d%%",
       "room_3d_structure": "Geometriya",
