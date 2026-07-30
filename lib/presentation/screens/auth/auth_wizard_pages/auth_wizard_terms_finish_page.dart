@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/constants/app_colors.dart" show BlueThemeColors;
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -116,7 +116,7 @@ class AuthWizardTermsFinishPage extends StatelessWidget {
                             value: termsAccepted,
                             activeColor: isLightTheme
                                 ? Colors.black
-                                : AppColors.primary,
+                                : BlueThemeColors.primaryLight,
                             checkColor: isLightTheme ? Colors.white : null,
                             fillColor: checkboxFillColor,
                             side: checkboxSide,

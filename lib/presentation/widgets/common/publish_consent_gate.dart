@@ -90,8 +90,9 @@ class _PublishConsentDialogState extends State<_PublishConsentDialog> {
                 children: [
                   Checkbox(
                     value: _agreed,
-                    activeColor:
-                        isLightTheme ? Colors.black : AppColors.primary,
+                    activeColor: isLightTheme
+                        ? Colors.black
+                        : BlueThemeColors.primaryLight,
                     checkColor: isLightTheme ? Colors.white : null,
                     fillColor: checkboxFillColor,
                     side: checkboxSide,
