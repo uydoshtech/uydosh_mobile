@@ -1177,73 +1177,6 @@ post_install do |installer|
     end
   end
 
-  # Real-time scan quality heatmap. This is a transparent renderer over the
-  # RoomCaptureView; RoomPlan keeps ownership of ARSession and its semantic
-  # wall/object/door/window outlines remain enabled.
-  if File.exist?(room_capture_file)
-    ensure_roomplan_quality_heatmap!
-
-    src = File.read(room_capture_file)
-    marker = '/* uydosh: scan quality heatmap */'
-    unless src.include?(marker)
-      src = src.sub(
-        '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
-        "    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?\n\n    #{marker}\n    private var uydoshQualityHeatmap: RoomScanQualityHeatmap?"
-      )
-
-      src = src.sub(
-        "        setupRoomCaptureView()\n",
-        "        setupRoomCaptureView()\n        uydoshAddQualityHeatmap()\n"
-      )
-
-      src = src.sub(
-        '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
-        [
-          '        uydoshQualityHeatmap?.reset()',
-          '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
-          '        uydoshQualityHeatmap?.start(session: roomCaptureView.captureSession.arSession)',
-        ].join("\n")
-      )
-
-      src = src.sub(
-        "    private func stopSession() {\n        isScanning = false",
-        "    private func stopSession() {\n        isScanning = false\n        uydoshQualityHeatmap?.stop()"
-      )
-
-      helper = [
-        '',
-        "    #{marker}",
-        '    private func uydoshAddQualityHeatmap() {',
-        '        let heatmap = RoomScanQualityHeatmap(',
-        '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
-        '        )',
-        '        heatmap.attach(to: roomCaptureView)',
-        '        uydoshQualityHeatmap = heatmap',
-        '    }',
-      ].join("\n")
-      src = src.sub(
-        '    private func resetScanningSession() {',
-        "#{helper}\n    private func resetScanningSession() {"
-      )
-
-      File.write(room_capture_file, src)
-    end
-
-    # Upgrade-safe: pass Flutter startScan strings into the quality overlay HUD.
-    src = File.read(room_capture_file)
-    old_heatmap_init = "        let heatmap = RoomScanQualityHeatmap()\n        heatmap.attach(to: roomCaptureView)"
-    new_heatmap_init = [
-      '        let heatmap = RoomScanQualityHeatmap(',
-      '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
-      '        )',
-      '        heatmap.attach(to: roomCaptureView)',
-    ].join("\n")
-    if src.include?(old_heatmap_init)
-      src = src.sub(old_heatmap_init, new_heatmap_init)
-      File.write(room_capture_file, src)
-    end
-  end
-
   # Live detection feed + stats HUD during RoomPlan capture.
   # Source: room_scan_kit RoomScanLiveDetectionOverlay.swift (synced above).
   if File.exist?(room_capture_file)
@@ -1363,6 +1296,99 @@ post_install do |installer|
         src = src.sub(oldWithStats, replacement)
         File.write(room_capture_file, src)
       end
+    end
+  end
+
+  # Real-time scan quality heatmap. This is a transparent renderer over the
+  # RoomCaptureView; RoomPlan keeps ownership of ARSession and its semantic
+  # wall/object/door/window outlines remain enabled.
+  if File.exist?(room_capture_file)
+    ensure_roomplan_quality_heatmap!
+
+    src = File.read(room_capture_file)
+    marker = '/* uydosh: scan quality heatmap */'
+    unless src.include?(marker)
+      src = src.sub(
+        '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
+        "    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?\n\n    #{marker}\n    private var uydoshQualityHeatmap: RoomScanQualityHeatmap?"
+      )
+
+      src = src.sub(
+        "        setupRoomCaptureView()\n",
+        "        setupRoomCaptureView()\n        uydoshAddQualityHeatmap()\n"
+      )
+
+      src = src.sub(
+        '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
+        [
+          '        uydoshQualityHeatmap?.reset()',
+          '        roomCaptureView.captureSession.run(configuration: roomCaptureSessionConfig)',
+          '        uydoshQualityHeatmap?.start(session: roomCaptureView.captureSession.arSession)',
+        ].join("\n")
+      )
+
+      src = src.sub(
+        "    private func stopSession() {\n        isScanning = false",
+        "    private func stopSession() {\n        isScanning = false\n        uydoshQualityHeatmap?.stop()"
+      )
+
+      helper = [
+        '',
+        "    #{marker}",
+        '    private func uydoshAddQualityHeatmap() {',
+        '        let heatmap = RoomScanQualityHeatmap(',
+        '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
+        '        )',
+        '        heatmap.attach(to: roomCaptureView)',
+        '        uydoshQualityHeatmap = heatmap',
+        '    }',
+      ].join("\n")
+      src = src.sub(
+        '    private func resetScanningSession() {',
+        "#{helper}\n    private func resetScanningSession() {"
+      )
+
+      File.write(room_capture_file, src)
+    end
+
+    # Upgrade-safe: pass Flutter startScan strings into the quality overlay HUD.
+    src = File.read(room_capture_file)
+    old_heatmap_init = "        let heatmap = RoomScanQualityHeatmap()\n        heatmap.attach(to: roomCaptureView)"
+    new_heatmap_init = [
+      '        let heatmap = RoomScanQualityHeatmap(',
+      '            stringOverrides: uydoshLiveDetectionStringOverrides ?? [:]',
+      '        )',
+      '        heatmap.attach(to: roomCaptureView)',
+    ].join("\n")
+    if src.include?(old_heatmap_init)
+      src = src.sub(old_heatmap_init, new_heatmap_init)
+      File.write(room_capture_file, src)
+    end
+  end
+
+
+  # Repair clean-CI / upgrade installs where heatmap usages were patched in but the
+  # property declaration was skipped (old Podfile applied heatmap before live detection).
+  if File.exist?(room_capture_file)
+    src = File.read(room_capture_file)
+    if src.include?('uydoshQualityHeatmap') && !src.include?('private var uydoshQualityHeatmap:')
+      ensure_roomplan_quality_heatmap!
+      inserted = false
+      if src.include?('    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?')
+        src = src.sub(
+          '    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?',
+          "    private var uydoshLiveDetectionOverlay: RoomScanLiveDetectionOverlay?\n\n    /* uydosh: scan quality heatmap */\n    private var uydoshQualityHeatmap: RoomScanQualityHeatmap?"
+        )
+        inserted = true
+      elsif src.include?('    public var uydoshScanOtherRoomsTitle: String?')
+        src = src.sub(
+          '    public var uydoshScanOtherRoomsTitle: String?',
+          "    public var uydoshScanOtherRoomsTitle: String?\n\n    /* uydosh: scan quality heatmap */\n    private var uydoshQualityHeatmap: RoomScanQualityHeatmap?"
+        )
+        inserted = true
+      end
+      File.write(room_capture_file, src) if inserted
+      Pod::UI.puts 'Repaired missing uydoshQualityHeatmap property in RoomCaptureViewController' if inserted
     end
   end
 
