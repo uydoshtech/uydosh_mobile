@@ -2538,14 +2538,18 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
       reason: "Blocked from listing ${listingDetail.id}",
     );
     if (!mounted) return;
-    if (result == null || !result.isBlocked) {
+    if (result == null) {
       ToastReporting.errorKey(context, "block_user_error");
       return;
     }
 
     HomeRefreshState().forceRefreshNow();
-    ToastReporting.successKey(context, "block_user_success");
-    Navigator.of(context).pop();
+    if (result.isBlocked) {
+      ToastReporting.successKey(context, "block_user_success");
+      Navigator.of(context).pop();
+    } else {
+      ToastReporting.successKey(context, "unblock_user_success");
+    }
   }
 
   Future<void> _createComplaint(ListingDetail listingDetail) async {

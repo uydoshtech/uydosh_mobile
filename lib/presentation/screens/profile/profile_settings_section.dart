@@ -8,6 +8,7 @@ import "package:uy_dosh/presentation/blocs/current_user_profile_bloc.dart";
 import "package:uy_dosh/presentation/screens/admin/admin_panel_screen.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_tile_shell.dart";
 import "package:uy_dosh/presentation/screens/messages/pushed_messages_inbox_scaffold.dart";
+import "package:uy_dosh/presentation/screens/profile/blocked_users_screen.dart";
 import "package:uy_dosh/presentation/screens/profile/notifications_screen.dart";
 import "package:uy_dosh/presentation/screens/user_listings/user_listings_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/action_dropdown_menu.dart";
@@ -263,6 +264,18 @@ List<ActionMenuItem> buildProfileActionMenuItems({
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => const UserListingsScreen(),
+          ),
+        );
+      },
+    ),
+    ActionMenuItem(
+      value: "blocked_users",
+      icon: Icons.block,
+      textKey: "menu_blocked_users",
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const BlockedUsersScreen(),
           ),
         );
       },

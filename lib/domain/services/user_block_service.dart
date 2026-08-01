@@ -37,10 +37,43 @@ class UserBlockToggleResult {
   final String action;
 }
 
+class BlockedUserSummary {
+  const BlockedUserSummary({
+    required this.userId,
+    this.name,
+    this.avatarUrl,
+    this.reason,
+    this.blockedAt,
+  });
+
+  factory BlockedUserSummary.fromJson(Map<String, dynamic> json) {
+    DateTime? blockedAt;
+    final rawBlockedAt = json["blockedAt"];
+    if (rawBlockedAt is String && rawBlockedAt.isNotEmpty) {
+      blockedAt = DateTime.tryParse(rawBlockedAt);
+    }
+
+    return BlockedUserSummary(
+      userId: (json["userId"] as num?)?.toInt() ?? 0,
+      name: json["name"] as String?,
+      avatarUrl: json["avatarUrl"] as String?,
+      reason: json["reason"] as String?,
+      blockedAt: blockedAt,
+    );
+  }
+
+  final int userId;
+  final String? name;
+  final String? avatarUrl;
+  final String? reason;
+  final DateTime? blockedAt;
+}
+
 abstract class IUserBlockService {
   Future<bool> checkIfBlocked(int userId);
   Future<UserBlockToggleResult?> toggleBlock(int userId, {String? reason});
   Future<List<int>> getBlockedUserIds();
+  Future<List<BlockedUserSummary>> getBlockedUsers();
 }
 
 class UserBlockService implements IUserBlockService {
@@ -118,6 +151,36 @@ class UserBlockService implements IUserBlockService {
     } catch (e) {
       logger.d("UserBlockService: getBlockedUserIds error: $e");
       return const [];
+    }
+  }
+
+  @override
+  Future<List<BlockedUserSummary>> getBlockedUsers() async {
+    try {
+      final response = await _oauthApiClient.get<Map<String, dynamic>>(
+        "/blocks",
+        (data) => data as Map<String, dynamic>,
+      );
+      final raw = response["users"];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map>()
+          .map(
+            (e) => BlockedUserSummary.fromJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
+          .where((u) => u.userId > 0)
+          .toList(growable: false);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _handleUnauthorized();
+      }
+      logger.d("UserBlockService: getBlockedUsers error: ${e.message}");
+      rethrow;
+    } catch (e) {
+      logger.d("UserBlockService: getBlockedUsers error: $e");
+      rethrow;
     }
   }
 }

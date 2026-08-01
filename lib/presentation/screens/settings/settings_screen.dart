@@ -19,6 +19,8 @@ import "package:uy_dosh/base/state/tooltips_state.dart";
 import "package:uy_dosh/base/util/environment_util.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/base/utils/ui_performance_policy.dart";
+import "package:uy_dosh/base/state/authentication_state.dart";
+import "package:uy_dosh/presentation/screens/profile/blocked_users_screen.dart";
 import "package:uy_dosh/presentation/widgets/common/common_app_bar.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/toast_theme.dart";
@@ -283,6 +285,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.only(top: 8),
           children: [
+            if (AuthenticationState().isAuthenticated) ...[
+              _buildSectionHeader("settings_section_account"),
+              _buildSectionCard(
+                context,
+                [
+                  _buildMenuItem(
+                    icon: Icons.block,
+                    titleKey: "menu_blocked_users",
+                    onTap: () {
+                      HapticFeedbackUtils.impact();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const BlockedUsersScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+
             // PREFERENCES
             _buildSectionHeader("settings_section_preferences"),
             _buildSectionCard(

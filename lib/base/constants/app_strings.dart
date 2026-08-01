@@ -833,6 +833,15 @@ class AppStrings {
           "User blocked. Their content was removed from your feed.",
       "block_user_error": "Could not block this user. Please try again.",
       "chat_safety_sheet_block": "Block user",
+      "menu_blocked_users": "Blocked users",
+      "blocked_users_title": "Blocked users",
+      "blocked_users_empty": "You haven’t blocked anyone yet.",
+      "unblock_user": "Unblock",
+      "unblock_user_confirm_title": "Unblock this user?",
+      "unblock_user_confirm_body":
+          "Their listings and chats can appear for you again.",
+      "unblock_user_success": "User unblocked.",
+      "unblock_user_error": "Could not unblock this user. Please try again.",
 
       "successfully_signed_in_google": "Successfully signed in with Google!",
       "successfully_signed_in_apple": "Successfully signed in with Apple!",
@@ -3237,6 +3246,16 @@ class AppStrings {
       "block_user_error":
           "Не удалось заблокировать пользователя. Попробуйте ещё раз.",
       "chat_safety_sheet_block": "Заблокировать",
+      "menu_blocked_users": "Заблокированные",
+      "blocked_users_title": "Заблокированные",
+      "blocked_users_empty": "Вы ещё никого не заблокировали.",
+      "unblock_user": "Разблокировать",
+      "unblock_user_confirm_title": "Разблокировать пользователя?",
+      "unblock_user_confirm_body":
+          "Его объявления и чаты снова могут появиться у вас.",
+      "unblock_user_success": "Пользователь разблокирован.",
+      "unblock_user_error":
+          "Не удалось разблокировать пользователя. Попробуйте ещё раз.",
 
       "successfully_signed_in_google": "Успешный вход через Google!",
       "successfully_signed_in_apple": "Успешный вход через Apple!",
@@ -5696,6 +5715,16 @@ class AppStrings {
       "block_user_error":
           "Foydalanuvchini bloklab bo‘lmadi. Qayta urinib ko‘ring.",
       "chat_safety_sheet_block": "Bloklash",
+      "menu_blocked_users": "Bloklanganlar",
+      "blocked_users_title": "Bloklanganlar",
+      "blocked_users_empty": "Siz hali hech kimni bloklamagansiz.",
+      "unblock_user": "Blokdan chiqarish",
+      "unblock_user_confirm_title": "Bu foydalanuvchini blokdan chiqarasizmi?",
+      "unblock_user_confirm_body":
+          "Uning e’lonlari va chatlari sizda yana ko‘rinishi mumkin.",
+      "unblock_user_success": "Foydalanuvchi blokdan chiqarildi.",
+      "unblock_user_error":
+          "Foydalanuvchini blokdan chiqarib bo‘lmadi. Qayta urinib ko‘ring.",
 
       "successfully_signed_in_google":
           "Google orqali muvaffaqiyatli kirdingiz!",
