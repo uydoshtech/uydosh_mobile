@@ -144,7 +144,9 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   /// underlying value is still empty / unselected. The country field is
   /// excluded because it always has a default (Uzbekistan).
   bool get _nameMissing =>
-      _showValidationErrors && _nameController.text.trim().isEmpty;
+      _showValidationErrors &&
+      !_appleProvidedName &&
+      _nameController.text.trim().isEmpty;
   bool get _genderMissing => _showValidationErrors && _selectedGender == null;
   bool get _regionMissing => _showValidationErrors && _selectedRegionId == null;
   bool get _roleMissing => _showValidationErrors && _selectedRole == null;
@@ -174,6 +176,16 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   /// Backend profile photo ([UserProfile.avatarUrl], resolved). Matches the
   /// profile tab when Firebase has no `photoURL` (typical for Apple sign-in).
   String? _oauthSummaryAvatarUrl;
+
+  /// When Sign in with Apple returned a name on this authorization (or
+  /// Firebase already has a display name from a prior Apple capture), we
+  /// must not ask the user to type it again (App Review Guideline 4.0).
+  /// The profile form hides the name field and uses this value.
+  bool _appleProvidedName = false;
+
+  /// Name captured from Apple / Firebase during SIWA — kept even if the
+  /// profile form hides the text field so profile creation still has it.
+  String? _appleResolvedDisplayName;
 
   /// Returning users used to jump straight home while "Signing in…" was still
   /// visible; hold briefly so the success layout + avatar read clearly first.
@@ -724,25 +736,34 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         return;
       }
 
-      final user = appleResult.userCredential.user!;
+      // Prefer the live Firebase user after AppleAuthService's
+      // updateDisplayName + reload; [UserCredential.user] can be stale.
+      final user = _auth.currentUser ?? appleResult.userCredential.user!;
+
+      // Guideline 4.0: use Apple's name when provided — do not require the
+      // user to re-enter it on the profile form. Prefer the credential
+      // values (only present on first SIWA), then Firebase displayName.
+      final appleDisplayName = appleResult.displayName?.trim();
+      final firebaseDisplayName = (user.displayName ?? "").trim();
+      final resolvedName =
+          (appleDisplayName != null && appleDisplayName.isNotEmpty)
+              ? appleDisplayName
+              : (firebaseDisplayName.isNotEmpty ? firebaseDisplayName : null);
 
       setStateIfMounted(() {
         _isGoogleSignedIn = true; // shared "is authenticated" gate
         _currentUser = user;
+        if (resolvedName != null) {
+          _appleProvidedName = true;
+          _appleResolvedDisplayName = resolvedName;
+          if (_nameController.text.trim().isEmpty) {
+            _nameController.text = resolvedName;
+          }
+        }
       });
 
-      // Pre-fill the profile name from Apple if Firebase now has it
-      // (AppleAuthService writes `givenName + familyName` to the
-      // Firebase user on first sign-in only).
-      final displayName = user.displayName;
-      if (displayName != null &&
-          displayName.trim().isNotEmpty &&
-          _nameController.text.isEmpty) {
-        _nameController.text = displayName.trim();
-      }
-
       await SessionManager.storeGoogleProfile(
-        displayName: user.displayName,
+        displayName: resolvedName ?? user.displayName,
         photoUrl: user.photoURL,
       );
 
@@ -1786,9 +1807,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
   Future<void> _completeProfile() async {
     HapticFeedbackUtils.impact();
-    // Profile setup - require name, gender, city, role, student status, and
-    // university if student.
-    final missingBaseField = _nameController.text.trim().isEmpty ||
+    // Profile setup - require name (unless Apple already provided it),
+    // gender, city, role, student status, and university if student.
+    // Guideline 4.0: never require re-entry of SIWA name/email.
+    final missingName =
+        !_appleProvidedName && _nameController.text.trim().isEmpty;
+    final missingBaseField = missingName ||
         _selectedGender == null ||
         _selectedRegionId == null ||
         _selectedRole == null ||
@@ -1797,7 +1821,6 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
         (_isStudent ?? false) && _selectedUniversity == null;
 
     if (missingBaseField || missingUniversity) {
-      final missingName = _nameController.text.trim().isEmpty;
       final missingGender = _selectedGender == null;
       final missingRegion = _selectedRegionId == null;
       final missingRole = _selectedRole == null;
@@ -1977,9 +2000,12 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
 
       // Create profile request (include Google profile photo URL when available)
       final googleAvatarUrl = await SessionManager.getGooglePhotoUrl();
+      final profileName = _nameController.text.trim().isNotEmpty
+          ? _nameController.text.trim()
+          : (_appleResolvedDisplayName?.trim() ?? "");
       final request = CreateProfileRequest(
         userId: backendUserId,
-        name: _nameController.text.trim(),
+        name: profileName,
         gender: _selectedGender!,
         universityId: _isStudent! ? _selectedUniversity!.id : null,
         regionId: _selectedRegionId,
@@ -2376,6 +2402,7 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
                           roleMissing: _roleMissing,
                           studentMissing: _studentMissing,
                           universityMissing: _universityMissing,
+                          hideNameField: _appleProvidedName,
                         ),
                         AuthWizardProfileOfferPage(
                           onCompleteNow: _openEditProfileFromOffer,

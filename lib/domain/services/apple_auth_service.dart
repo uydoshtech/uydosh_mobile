@@ -16,10 +16,19 @@ import "package:uy_dosh/base/logger/logger.dart";
 /// App Review Guideline 5.1.1(v)). It is short-lived (~5 min) and
 /// single-use, so the caller MUST forward it to the server immediately
 /// — there is no second chance.
+///
+/// [givenName] / [familyName] / [email] are the values Apple returned on
+/// this authorization (often only on the first Sign in with Apple for
+/// this Apple ID + app). Callers must use them for profile setup and
+/// must not ask the user to re-enter name/email when they are present
+/// (App Review Guideline 4.0).
 class AppleSignInResult {
   AppleSignInResult({
     required this.userCredential,
     required this.authorizationCode,
+    this.givenName,
+    this.familyName,
+    this.email,
   });
 
   final UserCredential userCredential;
@@ -30,6 +39,27 @@ class AppleSignInResult {
   /// credential without one and we don't want to crash the auth flow
   /// over it.
   final String? authorizationCode;
+
+  /// Apple-provided given name (first authorization only, typically).
+  final String? givenName;
+
+  /// Apple-provided family name (first authorization only, typically).
+  final String? familyName;
+
+  /// Apple-provided email or private relay address when shared.
+  final String? email;
+
+  /// Composed display name from Apple's given/family name, or null if
+  /// Apple did not return a name on this authorization.
+  String? get displayName {
+    final parts = <String>[
+      if (givenName != null && givenName!.trim().isNotEmpty) givenName!.trim(),
+      if (familyName != null && familyName!.trim().isNotEmpty)
+        familyName!.trim(),
+    ];
+    if (parts.isEmpty) return null;
+    return parts.join(" ");
+  }
 }
 
 /// Sign in with Apple wrapper that mirrors [GoogleAuthService] in shape:
@@ -215,28 +245,36 @@ class AppleAuthService {
         // there is no way to re-fetch it later. Push it onto the Firebase
         // user so `currentUser.displayName` continues to work everywhere
         // that already trusts Firebase as the name source.
-        final user = userCredential.user;
-        if (user != null) {
-          final newDisplayName = _composeDisplayName(
-            appleCredential.givenName,
-            appleCredential.familyName,
-          );
-          if (newDisplayName != null && (user.displayName ?? "").trim().isEmpty) {
-            try {
-              await user.updateDisplayName(newDisplayName);
-              await user.reload();
-            } catch (e) {
-              // Don't fail the whole sign-in just because we couldn't
-              // persist a nicer display name — the user can fill it in on
-              // the profile page.
-              logger.d("Apple sign-in: updateDisplayName failed: $e");
-            }
+        //
+        // After [User.reload], read [FirebaseAuth.currentUser] again —
+        // the [UserCredential.user] instance may still hold a stale
+        // displayName.
+        var user = userCredential.user;
+        final newDisplayName = _composeDisplayName(
+          appleCredential.givenName,
+          appleCredential.familyName,
+        );
+        if (user != null &&
+            newDisplayName != null &&
+            (user.displayName ?? "").trim().isEmpty) {
+          try {
+            await user.updateDisplayName(newDisplayName);
+            await user.reload();
+            user = _auth.currentUser ?? user;
+          } catch (e) {
+            // Don't fail the whole sign-in just because we couldn't
+            // persist a nicer display name — the credential values are
+            // still returned on [AppleSignInResult] for the wizard.
+            logger.d("Apple sign-in: updateDisplayName failed: $e");
           }
         }
 
         return AppleSignInResult(
           userCredential: userCredential,
           authorizationCode: authorizationCode,
+          givenName: appleCredential.givenName,
+          familyName: appleCredential.familyName,
+          email: appleCredential.email ?? user?.email,
         );
       } on FirebaseAuthException catch (e, st) {
         // Surface more detail than the UI toast; this is the common failure

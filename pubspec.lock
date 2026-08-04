@@ -1667,7 +1667,7 @@ packages:
       path: "../room_scan_kit"
       relative: true
     source: path
-    version: "0.6.32"
+    version: "0.6.33"
   rxdart:
     dependency: transitive
     description:

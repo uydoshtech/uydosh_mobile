@@ -48,6 +48,7 @@ class AuthWizardProfilePage extends StatelessWidget {
     this.roleMissing = false,
     this.studentMissing = false,
     this.universityMissing = false,
+    this.hideNameField = false,
   });
 
   final ScrollController profileScrollController;
@@ -92,6 +93,12 @@ class AuthWizardProfilePage extends StatelessWidget {
   final bool roleMissing;
   final bool studentMissing;
   final bool universityMissing;
+
+  /// When true, the full-name field is omitted because Sign in with Apple
+  /// (or another auth provider) already supplied the name. App Review
+  /// Guideline 4.0 forbids requiring users to re-enter name/email after
+  /// SIWA when Authentication Services already provided them.
+  final bool hideNameField;
 
   Color _getOnboardingTextColor(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
@@ -184,28 +191,30 @@ class AuthWizardProfilePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              L10n.text(
-                "full_name",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: _getOnboardingTextColor(context),
+              if (!hideNameField) ...[
+                L10n.text(
+                  "full_name",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: _getOnboardingTextColor(context),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              KeyedSubtree(
-                key: nameSectionKey,
-                child: UydoshPlateTextFormField(
-                  hintText: L10n.get("full_name_hint"),
-                  showErrorBorder: nameMissing,
-                  controller: nameController,
-                  maxLines: 1,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  onTap: () => UiFeedbackUtils.tap(),
+                const SizedBox(height: 16),
+                KeyedSubtree(
+                  key: nameSectionKey,
+                  child: UydoshPlateTextFormField(
+                    hintText: L10n.get("full_name_hint"),
+                    showErrorBorder: nameMissing,
+                    controller: nameController,
+                    maxLines: 1,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    onTap: () => UiFeedbackUtils.tap(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               KeyedSubtree(
                 key: genderSectionKey,
                 child: Row(
