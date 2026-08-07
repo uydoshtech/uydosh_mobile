@@ -368,6 +368,14 @@ class RoomUsdzViewerService {
           L10n.getForLanguage("room_3d_floor_plan_object_television", languageCode),
       "floorPlanObjectFixture":
           L10n.getForLanguage("room_3d_floor_plan_object_fixture", languageCode),
+      "floorPlanPlumbing":
+          L10n.getForLanguage("room_3d_floor_plan_plumbing", languageCode),
+      "floorPlanObjectBathtub":
+          L10n.getForLanguage("room_3d_floor_plan_object_bathtub", languageCode),
+      "floorPlanObjectToilet":
+          L10n.getForLanguage("room_3d_floor_plan_object_toilet", languageCode),
+      "floorPlanObjectSink":
+          L10n.getForLanguage("room_3d_floor_plan_object_sink", languageCode),
       "floorPlanObjectDoor":
           L10n.getForLanguage("room_3d_floor_plan_object_door", languageCode),
       "floorPlanObjectWindow":

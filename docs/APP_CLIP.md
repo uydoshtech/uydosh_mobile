@@ -300,9 +300,9 @@ header get the `appclips` association (`TEAM.com.uydosh.app.Clip` plus
 `/s/*` applinks for the full app); any other host (api.uydosh.com) keeps the
 existing listing universal links. The backend also serves a human-readable
 fallback page at `/s/:token` (session status + return-to-Telegram button);
-once `APPLE_APP_STORE_ID` is set (plain env var, `/etc/uydosh/uydosh.env` in
-production), that page emits the `apple-itunes-app` meta tag so Safari shows
-the App Clip card.
+the page emits the `apple-itunes-app` meta tag (UyDosh App Store id
+`6767800712` via `scanSessionConfig` / deploy upsert into
+`/etc/uydosh/uydosh.env`) so Safari can show the App Clip card.
 
 Infra still needed: point `scan.uydosh.com` DNS at the backend and terminate
 TLS for it (nginx server block proxying to the same Express app). The AASA
@@ -340,8 +340,9 @@ Experience and a live AASA. Two mechanisms work instead:
 3. Point `scan.uydosh.com` DNS at the backend + TLS + proxy (see AASA above).
 4. Upload a build; add a Beta App Clip Experience for TestFlight testing.
 5. For production: Advanced App Clip Experience with URL prefix
-   `https://scan.uydosh.com/s/`, title, and image; set `APPLE_APP_STORE_ID`
-   on the backend so the `/s/:token` page shows the Safari App Clip card.
+   `https://scan.uydosh.com/s/`, title, and image. Backend already defaults
+   `APPLE_APP_STORE_ID=6767800712` so `/s/:token` emits the Safari App Clip
+   meta tag after deploy.
 
 ## Implementation status
 
