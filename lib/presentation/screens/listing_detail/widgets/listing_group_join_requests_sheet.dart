@@ -4,6 +4,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
 import "package:uy_dosh/base/utils/avatar_url_utils.dart";
 import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
@@ -108,7 +109,11 @@ class _ListingGroupJoinRequestsSheetState
       await _load();
     } catch (e) {
       if (!mounted) return;
-      ToastTheme.showError(context, message: e.toString());
+      ToastTheme.showError(
+        context,
+        message: groupMembershipLimitUserMessage(e, forApplicant: true) ??
+            throwableUserMessage(e),
+      );
     }
   }
 

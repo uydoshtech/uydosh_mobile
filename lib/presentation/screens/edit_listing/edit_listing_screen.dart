@@ -14,6 +14,7 @@ import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/state/home_refresh_state.dart";
 import "package:uy_dosh/base/state/theme_state.dart";
 import "package:uy_dosh/base/util/theme_helper.dart";
@@ -2727,10 +2728,11 @@ class _EditListingScreenState extends State<EditListingScreen>
         Navigator.of(context).pop(true); // true indicates listing was updated
       });
     } catch (e) {
-      var errorMessage = L10n.get("error_updating_listing");
+      final limitMessage = groupMembershipLimitUserMessage(e);
+      var errorMessage = limitMessage ?? L10n.get("error_updating_listing");
 
       // Check if it"s an authentication error
-      if (e.toString().contains("401")) {
+      if (limitMessage == null && e.toString().contains("401")) {
         errorMessage = L10n.get("authentication_required");
       }
 

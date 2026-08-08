@@ -739,6 +739,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen>
       _reloadListingDetail();
     } catch (e) {
       if (!mounted) return;
+      final limitMessage = groupMembershipLimitUserMessage(e);
+      if (limitMessage != null) {
+        ToastReporting.errorMessage(context, limitMessage);
+        return;
+      }
       final message = throwableUserMessage(e);
       if (_isAlreadyInAnotherGroupMessage(message)) {
         ToastReporting.warningKey(

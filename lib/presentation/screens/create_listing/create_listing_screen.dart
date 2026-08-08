@@ -15,6 +15,7 @@ import "package:uy_dosh/base/constants/app_colors.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
+import "package:uy_dosh/base/util/dio_api_error_message.dart";
 import "package:uy_dosh/base/services/app_analytics_service.dart";
 import "package:uy_dosh/base/services/room_plan_capability.dart";
 import "package:uy_dosh/base/services/session_manager.dart";
@@ -3989,10 +3990,11 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       }
     } catch (e) {
       logger.d("Error creating listing: $e");
-      var errorMessage = L10n.get("error_creating_listing");
+      final limitMessage = groupMembershipLimitUserMessage(e);
+      var errorMessage = limitMessage ?? L10n.get("error_creating_listing");
 
       // Check if it"s an authentication error
-      if (e.toString().contains("401")) {
+      if (limitMessage == null && e.toString().contains("401")) {
         errorMessage = L10n.get("authentication_required");
       }
 

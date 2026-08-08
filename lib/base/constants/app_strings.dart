@@ -85,6 +85,10 @@ class AppStrings {
       "group_join_request_withdrawn": "Request withdrawn",
       "group_join_request_approved": "Member added to the group",
       "group_join_request_rejected": "Request rejected",
+      "group_membership_limit_reached":
+          "You cannot participate in more than {count} groups",
+      "group_membership_limit_reached_applicant":
+          "This person cannot participate in more than {count} groups",
       "group_no_pending_requests": "No pending requests",
       "group_new_request_pill": "New request",
       "group_approve_member": "Approve",
@@ -2492,6 +2496,10 @@ class AppStrings {
       "group_join_request_withdrawn": "Заявка отозвана",
       "group_join_request_approved": "Участник добавлен в группу",
       "group_join_request_rejected": "Заявка отклонена",
+      "group_membership_limit_reached":
+          "Вы не можете участвовать более чем в {count} группах",
+      "group_membership_limit_reached_applicant":
+          "Этот пользователь не может участвовать более чем в {count} группах",
       "group_no_pending_requests": "Нет новых заявок",
       "group_new_request_pill": "Новая заявка",
       "group_approve_member": "Принять",
@@ -4954,6 +4962,10 @@ class AppStrings {
       "group_join_request_withdrawn": "So'rov bekor qilindi",
       "group_join_request_approved": "A'zo guruhga qo'shildi",
       "group_join_request_rejected": "So'rov rad etildi",
+      "group_membership_limit_reached":
+          "Siz {count} dan ortiq guruhda ishtirok eta olmaysiz",
+      "group_membership_limit_reached_applicant":
+          "Bu shaxs {count} dan ortiq guruhda ishtirok eta olmaydi",
       "group_no_pending_requests": "Yangi so'rovlar yo'q",
       "group_new_request_pill": "Yangi so'rov",
       "group_approve_member": "Qabul qilish",
