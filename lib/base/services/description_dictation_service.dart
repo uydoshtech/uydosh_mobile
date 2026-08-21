@@ -18,7 +18,10 @@ class DescriptionDictationResult {
   final String? errorMessage;
 
   bool get isSuccess =>
-      text != null && text!.trim().isNotEmpty && !authRequired && !notConfigured;
+      text != null &&
+      text!.trim().isNotEmpty &&
+      !authRequired &&
+      !notConfigured;
 }
 
 class DescriptionDictationService {
@@ -29,6 +32,7 @@ class DescriptionDictationService {
   Future<DescriptionDictationResult> transcribeRecording({
     required String filePath,
     required String languageCode,
+    String? context,
   }) async {
     final base = EnvironmentUtil.basePath;
     final uri = base.endsWith("/")
@@ -41,6 +45,7 @@ class DescriptionDictationService {
         filename: "recording.m4a",
       ),
       "language": languageCode,
+      "context": ?context,
     });
 
     try {
@@ -62,11 +67,7 @@ class DescriptionDictationService {
       if (status == 503) {
         return const DescriptionDictationResult(notConfigured: true);
       }
-      logger.w(
-        "Dictation transcribe failed: $e",
-        error: e,
-        stackTrace: st,
-      );
+      logger.w("Dictation transcribe failed: $e", error: e, stackTrace: st);
       return DescriptionDictationResult(errorMessage: e.message);
     } catch (e, st) {
       logger.w("Dictation transcribe error", error: e, stackTrace: st);

@@ -1441,17 +1441,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final targetHeight = _feedTopSpacerVisualHeight(
       trailingSpacing: trailingSpacing,
     );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const AiSearchBar(),
-        const SizedBox(height: 8),
-        AnimatedContainer(
-          duration: _homeRibbonAnimationDuration(context),
-          curve: Curves.easeOutCubic,
-          height: targetHeight,
-        ),
-      ],
+    return AnimatedContainer(
+      duration: _homeRibbonAnimationDuration(context),
+      curve: Curves.easeOutCubic,
+      height: targetHeight,
     );
   }
 

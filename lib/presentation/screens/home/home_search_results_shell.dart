@@ -58,7 +58,8 @@ class _SearchResultsShell extends StatefulWidget {
     BuildContext context,
     SearchBottomSheetResult result, {
     bool mapFilterRibbonDismissed,
-  }) onOpenFeedFromMap;
+  })
+  onOpenFeedFromMap;
   final VoidCallback? onDismissMapFilterRibbon;
 
   @override
@@ -112,6 +113,13 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             top: widget.inlineRibbonTop,
             child: widget.inlineFiltersRibbonBuilder(context),
           ),
+        Positioned(
+          right: 16,
+          top: widget.isSearchMode
+              ? widget.searchRibbonHeight + 8
+              : widget.inlineRibbonTop + 56 + 8,
+          child: const AiSearchFloatingButton(),
+        ),
       ],
     );
 
@@ -192,13 +200,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
       );
     }
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: paddedMapView,
-        ),
-      ],
-    );
+    return Stack(children: [Positioned.fill(child: paddedMapView)]);
   }
 }
 
@@ -220,7 +222,10 @@ class _SearchResultsFabStack extends StatelessWidget {
   static const double compactButtonHeight = 44.2;
   static const double compactButtonIconSize = 22.5;
   static const _feedOverlayPanelColor = Colors.white;
-  static const _feedOverlayButtonBorder = BorderSide(color: Colors.black, width: 1);
+  static const _feedOverlayButtonBorder = BorderSide(
+    color: Colors.black,
+    width: 1,
+  );
 
   final bool inSearchContext;
   final double bottom;
@@ -254,13 +259,15 @@ class _SearchResultsFabStack extends StatelessWidget {
                 width: compactButtonWidth,
                 height: compactButtonHeight,
                 iconSize: compactButtonIconSize,
-                backgroundColor:
-                    useLightFeedOverlayStyle ? _feedOverlayPanelColor : null,
+                backgroundColor: useLightFeedOverlayStyle
+                    ? _feedOverlayPanelColor
+                    : null,
                 foregroundColor: useLightFeedOverlayStyle
                     ? Colors.black
                     : (ThemeState().isBlueTheme ? Colors.white : null),
-                borderSide:
-                    useLightFeedOverlayStyle ? _feedOverlayButtonBorder : null,
+                borderSide: useLightFeedOverlayStyle
+                    ? _feedOverlayButtonBorder
+                    : null,
                 mapOverlay: useLightFeedOverlayStyle,
                 elevation: ThemeState().isBlueTheme ? null : 8,
               ),
@@ -285,13 +292,14 @@ class _SearchResultsFabStack extends StatelessWidget {
                       iconSize: compactButtonIconSize,
                       replaceCurrentRoute: isSearchMode,
                       openedFromHomeScreen: isHomeTabActive,
-                      backgroundColor:
-                          useLightFeedOverlayStyle ? _feedOverlayPanelColor : null,
+                      backgroundColor: useLightFeedOverlayStyle
+                          ? _feedOverlayPanelColor
+                          : null,
                       foregroundColor: useLightFeedOverlayStyle
                           ? Colors.black
                           : (ThemeState().isBlueTheme && showViewToggle
-                              ? Colors.white
-                              : null),
+                                ? Colors.white
+                                : null),
                       borderSide: useLightFeedOverlayStyle
                           ? _feedOverlayButtonBorder
                           : null,

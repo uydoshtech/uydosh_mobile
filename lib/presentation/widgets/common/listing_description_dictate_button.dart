@@ -27,6 +27,7 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     this.maxDescriptionLength = 1000,
     this.dictationMeter,
     this.onTranscriptInserted,
+    this.transcriptionContext,
   });
 
   final TextEditingController controller;
@@ -49,6 +50,9 @@ class ListingDescriptionDictateButton extends StatefulWidget {
   /// Called after a transcript is inserted programmatically so parent field
   /// chrome/layout can rebuild even when the field itself is not focused.
   final VoidCallback? onTranscriptInserted;
+
+  /// Optional server-recognized vocabulary context (e.g. `ai_search`).
+  final String? transcriptionContext;
 
   @override
   State<ListingDescriptionDictateButton> createState() =>
@@ -131,9 +135,9 @@ class _ListingDescriptionDictateButtonState
     _amplitudeSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 72))
         .listen((amp) {
-      if (!_recording || !mounted) return;
-      meter.pushLevel(_normalizeDbToLevel(amp.current));
-    });
+          if (!_recording || !mounted) return;
+          meter.pushLevel(_normalizeDbToLevel(amp.current));
+        });
   }
 
   Future<void> _stopDueToMaxDuration() async {
@@ -241,7 +245,11 @@ class _ListingDescriptionDictateButtonState
 
     final lang = LanguageState().currentLanguage;
     final result = await getIt<DescriptionDictationService>()
-        .transcribeRecording(filePath: filePath, languageCode: lang);
+        .transcribeRecording(
+          filePath: filePath,
+          languageCode: lang,
+          context: widget.transcriptionContext,
+        );
 
     try {
       final f = File(filePath);
@@ -325,17 +333,15 @@ class _ListingDescriptionDictateButtonState
     }
 
     final labelStyle =
-        (Theme.of(context).textTheme.labelLarge ?? const TextStyle())
-            .copyWith(color: accent);
+        (Theme.of(context).textTheme.labelLarge ?? const TextStyle()).copyWith(
+          color: accent,
+        );
 
     final child = Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 1),
-          child: icon,
-        ),
+        Padding(padding: const EdgeInsets.only(top: 1), child: icon),
         const SizedBox(width: 6),
         Text(L10n.get("listing_description_dictate"), style: labelStyle),
       ],

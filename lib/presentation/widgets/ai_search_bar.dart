@@ -2,33 +2,32 @@ import "package:flutter/material.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/ai_search_service.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
-/// Entry point for the AI concierge. Results deliberately reuse [ListingTile]
-/// so visual behavior and navigation remain identical to the normal feed.
-class AiSearchBar extends StatelessWidget {
-  const AiSearchBar({super.key});
+/// Persistent Feed action for the AI concierge. Results deliberately reuse
+/// [ListingTile] so visual behavior and navigation remain identical to feed.
+class AiSearchFloatingButton extends StatelessWidget {
+  const AiSearchFloatingButton({super.key});
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-    borderRadius: BorderRadius.circular(16),
-    child: InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => const _AiSearchSheet(),
-      ),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Icon(Icons.auto_awesome_rounded),
-            SizedBox(width: 10),
-            Expanded(child: Text("Опиши, какое жильё ты ищешь…")),
-            Icon(Icons.arrow_upward_rounded),
-          ],
+  Widget build(BuildContext context) => Tooltip(
+    message: "AI-поиск",
+    child: Material(
+      elevation: 6,
+      shadowColor: Colors.black38,
+      color: Theme.of(context).colorScheme.primary,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => const _AiSearchSheet(),
+        ),
+        child: const SizedBox.square(
+          dimension: 52,
+          child: Icon(Icons.auto_awesome_rounded, color: Colors.white),
         ),
       ),
     ),
@@ -101,9 +100,16 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
             maxLines: 4,
             textInputAction: TextInputAction.send,
             onSubmitted: (_) => _submit(),
-            decoration: const InputDecoration(
-              hintText: "Где и как ты хочешь жить?",
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: "Скажи, где и как ты хочешь жить…",
+              border: const OutlineInputBorder(),
+              suffixIcon: ListingDescriptionDictateButton(
+                controller: _controller,
+                iconOnly: true,
+                enabled: !_loading,
+                maxDescriptionLength: 1000,
+                transcriptionContext: "ai_search",
+              ),
             ),
           ),
           const SizedBox(height: 8),
