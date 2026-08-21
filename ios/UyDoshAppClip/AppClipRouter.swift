@@ -100,8 +100,7 @@ final class AppClipRouter: ObservableObject {
     /// invocation for the same session while a flow is in progress is ignored.
     func handleInvocationURL(_ url: URL) {
         guard let sessionId = ScanInvocation.sessionId(from: url) else {
-            // Only fail if we don't already have a valid flow going.
-            if scanSessionId == nil {
+            if scanSessionId == nil, ScanInvocation.isAssociatedScanPath(url) {
                 state = .invalidSession
             }
             return

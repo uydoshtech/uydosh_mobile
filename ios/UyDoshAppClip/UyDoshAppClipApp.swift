@@ -12,6 +12,11 @@ struct UyDoshAppClipApp: App {
                     guard let url = activity.webpageURL else { return }
                     router.handleInvocationURL(url)
                 }
+                // Default App Clip links are sometimes delivered as openURL
+                // instead of a browsing-web user activity.
+                .onOpenURL { url in
+                    router.handleInvocationURL(url)
+                }
                 .task {
                     #if DEBUG
                     // Xcode's debugger turns the _XCAppClipURL scheme variable
