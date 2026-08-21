@@ -12,6 +12,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
 import "package:uy_dosh/presentation/widgets/common/theme_icon.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_assistant.dart";
+import "package:uy_dosh/presentation/widgets/common/dictation_trigger_controller.dart";
 import "package:uy_dosh/presentation/widgets/language_switcher.dart";
 
 /// Mic control for listing description: records audio, uploads to Whisper via backend.
@@ -28,6 +29,7 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     this.dictationMeter,
     this.onTranscriptInserted,
     this.transcriptionContext,
+    this.triggerController,
   });
 
   final TextEditingController controller;
@@ -54,6 +56,9 @@ class ListingDescriptionDictateButton extends StatefulWidget {
   /// Optional server-recognized vocabulary context (e.g. `ai_search`).
   final String? transcriptionContext;
 
+  /// Lets a parent start the same recording flow from a larger primary CTA.
+  final DictationTriggerController? triggerController;
+
   @override
   State<ListingDescriptionDictateButton> createState() =>
       _ListingDescriptionDictateButtonState();
@@ -66,13 +71,23 @@ class _ListingDescriptionDictateButtonState
   bool _uploading = false;
   bool _toggleInProgress = false;
   Timer? _maxDurationTimer;
+  Timer? _silenceTimer;
   Timer? _meterElapsedTimer;
   StreamSubscription<Amplitude>? _amplitudeSub;
   final Stopwatch _recordStopwatch = Stopwatch();
 
   static const Duration _maxRecordDuration = Duration(minutes: 1);
+  static const Duration _silenceStopDuration = Duration(seconds: 5);
+  static const double _speechLevelThreshold = 0.14;
+  bool _heardSpeech = false;
   static const double _inlineIconSlotSize = 18;
   static const double _iconOnlySlotSize = 22;
+
+  @override
+  void initState() {
+    super.initState();
+    _bindTriggerController();
+  }
 
   static double _normalizeDbToLevel(double db) {
     const minDb = -52.0;
@@ -89,6 +104,10 @@ class _ListingDescriptionDictateButtonState
   @override
   void didUpdateWidget(ListingDescriptionDictateButton oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.triggerController != widget.triggerController) {
+      oldWidget.triggerController?.attach(null);
+      _bindTriggerController();
+    }
     if (oldWidget.dictationMeter != null && widget.dictationMeter == null) {
       _meterElapsedTimer?.cancel();
       _meterElapsedTimer = null;
@@ -101,13 +120,21 @@ class _ListingDescriptionDictateButtonState
 
   @override
   void dispose() {
+    widget.triggerController?.attach(null);
     _maxDurationTimer?.cancel();
+    _silenceTimer?.cancel();
     _stopMeterUpdates();
     if (_recording) {
       unawaited(_recorder.cancel());
     }
     unawaited(_recorder.dispose());
     super.dispose();
+  }
+
+  void _bindTriggerController() {
+    widget.triggerController?.attach(() {
+      if (!_recording && !_uploading) unawaited(_toggleRecording());
+    });
   }
 
   void _stopMeterUpdates() {
@@ -117,31 +144,59 @@ class _ListingDescriptionDictateButtonState
     _amplitudeSub = null;
     _recordStopwatch.stop();
     _recordStopwatch.reset();
+    _silenceTimer?.cancel();
+    _silenceTimer = null;
+    _heardSpeech = false;
     widget.dictationMeter?.end();
   }
 
   void _startMeterUpdates() {
     final meter = widget.dictationMeter;
-    if (meter == null) return;
-    meter.begin();
-    _recordStopwatch.reset();
-    _recordStopwatch.start();
-    _meterElapsedTimer?.cancel();
-    _meterElapsedTimer = Timer.periodic(const Duration(milliseconds: 120), (_) {
-      if (!_recording || !mounted) return;
-      meter.setElapsed(_recordStopwatch.elapsed);
-    });
+    if (meter != null) {
+      meter.begin();
+      _recordStopwatch.reset();
+      _recordStopwatch.start();
+      _meterElapsedTimer?.cancel();
+      _meterElapsedTimer = Timer.periodic(const Duration(milliseconds: 120), (
+        _,
+      ) {
+        if (!_recording || !mounted) return;
+        meter.setElapsed(_recordStopwatch.elapsed);
+      });
+    }
     unawaited(_amplitudeSub?.cancel());
     _amplitudeSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 72))
         .listen((amp) {
           if (!_recording || !mounted) return;
-          meter.pushLevel(_normalizeDbToLevel(amp.current));
+          final level = _normalizeDbToLevel(amp.current);
+          meter?.pushLevel(level);
+          _updateSilenceDetection(level);
         });
+  }
+
+  void _updateSilenceDetection(double level) {
+    if (level >= _speechLevelThreshold) {
+      _heardSpeech = true;
+      _silenceTimer?.cancel();
+      _silenceTimer = null;
+      return;
+    }
+    // Don't stop before the person has had a chance to start speaking.
+    if (!_heardSpeech || _silenceTimer != null) return;
+    _silenceTimer = Timer(_silenceStopDuration, () {
+      if (_recording) unawaited(_stopDueToSilence());
+    });
   }
 
   Future<void> _stopDueToMaxDuration() async {
     if (!_recording) return;
+    await _stopRecordingAndTranscribe();
+  }
+
+  Future<void> _stopDueToSilence() async {
+    if (!_recording) return;
+    HapticFeedbackUtils.lightImpact();
     await _stopRecordingAndTranscribe();
   }
 

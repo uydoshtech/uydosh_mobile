@@ -1,8 +1,11 @@
 import "package:flutter/material.dart";
+import "package:uy_dosh/base/config/client_listing_dictation_meter_config.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/services/ai_search_service.dart";
 import "package:uy_dosh/presentation/widgets/common/listing_description_dictate_button.dart";
+import "package:uy_dosh/presentation/widgets/common/listing_description_dictation_meter.dart";
+import "package:uy_dosh/presentation/widgets/common/dictation_trigger_controller.dart";
 import "package:uy_dosh/presentation/widgets/listing_tile.dart";
 
 /// Persistent Feed action for the AI concierge. Results deliberately reuse
@@ -42,6 +45,8 @@ class _AiSearchSheet extends StatefulWidget {
 
 class _AiSearchSheetState extends State<_AiSearchSheet> {
   final _controller = TextEditingController();
+  final _dictationMeter = DictationMeterController();
+  final _dictationTrigger = DictationTriggerController();
   bool _loading = false;
   String? _text;
   List<Listing> _listings = const [];
@@ -49,6 +54,7 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
   @override
   void dispose() {
     _controller.dispose();
+    _dictationMeter.dispose();
     super.dispose();
   }
 
@@ -74,6 +80,14 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
     }
   }
 
+  void _startVoiceSearchOrSubmit() {
+    if (_controller.text.trim().isEmpty) {
+      _dictationTrigger.start();
+      return;
+    }
+    _submit();
+  }
+
   @override
   Widget build(BuildContext context) => DraggableScrollableSheet(
     expand: false,
@@ -89,9 +103,21 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
       ),
       child: Column(
         children: [
-          const Text(
-            "✨ Ask UyDosh",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "Ask UyDosh",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           TextField(
@@ -109,29 +135,27 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
                 enabled: !_loading,
                 maxDescriptionLength: 1000,
                 transcriptionContext: "ai_search",
+                dictationMeter: _dictationMeter,
+                triggerController: _dictationTrigger,
+                onTranscriptInserted: _submit,
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children:
-                [
-                      "До \$300 около WIUT",
-                      "Найди мне соседа",
-                      "Ищу двушку в Чиланзаре до \$450 рядом с метро",
-                    ]
-                    .map(
-                      (e) => ActionChip(
-                        label: Text(e),
-                        onPressed: () => _submit(e),
-                      ),
-                    )
-                    .toList(),
+          ValueListenableBuilder<bool>(
+            valueListenable:
+                ClientListingDictationMeterConfig.dictationMeterDisabled,
+            builder: (context, disabled, _) => ListenableBuilder(
+              listenable: _dictationMeter,
+              builder: (context, _) => disabled || !_dictationMeter.active
+                  ? const SizedBox.shrink()
+                  : ListingDescriptionDictationMeterRow(
+                      controller: _dictationMeter,
+                    ),
+            ),
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: _loading ? null : _submit,
+            onPressed: _loading ? null : _startVoiceSearchOrSubmit,
             icon: const Icon(Icons.auto_awesome),
             label: const Text("Найти"),
           ),
@@ -140,7 +164,9 @@ class _AiSearchSheetState extends State<_AiSearchSheet> {
               padding: EdgeInsets.all(12),
               child: CircularProgressIndicator(),
             ),
-          if (_text != null)
+          // Listing cards are the result UI. Hide any legacy model prose
+          // (especially numbered duplicates) whenever real cards exist.
+          if (_text != null && _listings.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(_text!),
