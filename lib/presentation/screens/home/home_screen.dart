@@ -58,6 +58,7 @@ import "package:uy_dosh/presentation/widgets/search_bottom_sheet.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/alert_bell_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/search_tutorial_overlay.dart";
 import "package:uy_dosh/presentation/widgets/tutorial/tutorial_overlay_manager.dart";
+import "package:uy_dosh/presentation/widgets/ai_search_bar.dart";
 
 part "home_search_results_shell.dart";
 part "home_map_view_state.dart";
@@ -227,10 +228,10 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     // Create optimized scroll listener with throttling and reset capability
     final scrollListenerData =
         ScrollUtils.createThrottledScrollListenerWithReset(
-      scrollController: _scrollController,
-      onLoadMore: _loadMoreListings,
-      shouldLoadMore: _shouldLoadMore,
-    );
+          scrollController: _scrollController,
+          onLoadMore: _loadMoreListings,
+          shouldLoadMore: _shouldLoadMore,
+        );
 
     _throttledScrollListener = scrollListenerData.listener;
     _resetScrollLoadingState = scrollListenerData.resetLoadingState;
@@ -569,7 +570,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     });
   }
 
-  void _showGuestInlineSearchRibbon({bool keepStaleWhileRibbonAnimates = false}) {
+  void _showGuestInlineSearchRibbon({
+    bool keepStaleWhileRibbonAnimates = false,
+  }) {
     if (!mounted) return;
     _syncEmbeddedMapResultFromCurrentFilters();
     setState(() {
@@ -966,11 +969,11 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     }
     if (!mounted) return;
     context.read<ListingsBloc>().add(
-          ListingsEvent.searchListings(
-            isRefresh: true,
-            keepStaleWhileRefreshing: keepStaleWhileRefreshing,
-          ),
-        );
+      ListingsEvent.searchListings(
+        isRefresh: true,
+        keepStaleWhileRefreshing: keepStaleWhileRefreshing,
+      ),
+    );
   }
 
   Future<void> _onFeedPullRefresh() async {
@@ -1016,26 +1019,34 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       _searchFiltersState,
       explicitListingTypeId: widget.useExplicitFiltersOnly
           ? (explicitNullFallsBackToState
-              ? (widget.listingTypeId ??
-                  _searchFiltersState.searchListingTypeId)
-              : widget.listingTypeId)
+                ? (widget.listingTypeId ??
+                      _searchFiltersState.searchListingTypeId)
+                : widget.listingTypeId)
           : null,
-      explicitLocationId:
-          widget.useExplicitFiltersOnly ? widget.locationId : null,
-      explicitSubwayStationId:
-          widget.useExplicitFiltersOnly ? widget.subwayStationId : null,
-      explicitSubwayStationIds:
-          widget.useExplicitFiltersOnly ? widget.subwayStationIds : null,
-      explicitSubwayLineId:
-          widget.useExplicitFiltersOnly ? widget.subwayLineId : null,
+      explicitLocationId: widget.useExplicitFiltersOnly
+          ? widget.locationId
+          : null,
+      explicitSubwayStationId: widget.useExplicitFiltersOnly
+          ? widget.subwayStationId
+          : null,
+      explicitSubwayStationIds: widget.useExplicitFiltersOnly
+          ? widget.subwayStationIds
+          : null,
+      explicitSubwayLineId: widget.useExplicitFiltersOnly
+          ? widget.subwayLineId
+          : null,
       explicitGender: widget.useExplicitFiltersOnly ? widget.gender : null,
       explicitMinPrice: widget.useExplicitFiltersOnly ? widget.minPrice : null,
       explicitMaxPrice: widget.useExplicitFiltersOnly ? widget.maxPrice : null,
-      explicitPrivateRoom:
-          widget.useExplicitFiltersOnly ? widget.privateRoom : null,
-      explicitWithPhoto: widget.useExplicitFiltersOnly ? widget.withPhoto : null,
-      explicitHas3dTour:
-          widget.useExplicitFiltersOnly ? widget.has3dTour : null,
+      explicitPrivateRoom: widget.useExplicitFiltersOnly
+          ? widget.privateRoom
+          : null,
+      explicitWithPhoto: widget.useExplicitFiltersOnly
+          ? widget.withPhoto
+          : null,
+      explicitHas3dTour: widget.useExplicitFiltersOnly
+          ? widget.has3dTour
+          : null,
       useExplicitFiltersOnly: widget.useExplicitFiltersOnly,
       includeSafeFallbacks: includeSafeFallbacks,
       explicitNullFallsBackToState: explicitNullFallsBackToState,
@@ -1044,7 +1055,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final inSearchContext = widget.isSearchMode ||
+    final inSearchContext =
+        widget.isSearchMode ||
         _inlineSearchActive ||
         _mapViewState.view == _SearchResultsView.map;
     final isShowingEmbeddedMap =
@@ -1080,7 +1092,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                   }
                 });
               }
-              final shouldUpdateSearchFlags = _searchRefreshInFlight ||
+              final shouldUpdateSearchFlags =
+                  _searchRefreshInFlight ||
                   (widget.isSearchMode && !_searchResultsReady);
               if (shouldUpdateSearchFlags && mounted) {
                 setState(() {
@@ -1194,7 +1207,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final initialMapTotal = context.select<ListingsBloc, int?>(
       (bloc) => bloc.state.maybeMap(
         loaded: (state) => state.total,
-        orElse: () => isShowingEmbeddedMap ? _mapViewState.initialMapTotal : null,
+        orElse: () =>
+            isShowingEmbeddedMap ? _mapViewState.initialMapTotal : null,
       ),
     );
     final feedListingsRevision = context.select<ListingsBloc, int>(
@@ -1228,8 +1242,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       onOpenInlineSearch: _openInlineSearchFromFab,
       onOpenMapSearch: _openSearchFromEmbeddedMap,
       onOpenFeedFromMap: _returnToFeedFromMap,
-      onDismissMapFilterRibbon:
-          widget.isSearchMode ? null : _dismissInlineSearchFromMap,
+      onDismissMapFilterRibbon: widget.isSearchMode
+          ? null
+          : _dismissInlineSearchFromMap,
     );
 
     return Scaffold(
@@ -1254,7 +1269,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
           onPressed: _openSearchModeFiltersSheet,
           listingTypeId:
               filters.listingTypeId ?? _searchFiltersState.searchListingTypeId,
-          listingTypeIds: filters.listingTypeIds ??
+          listingTypeIds:
+              filters.listingTypeIds ??
               _searchFiltersState.searchListingTypeIds,
           gender: filters.gender,
           locationId: (filters.locationId != null && filters.locationId! > 0)
@@ -1262,13 +1278,13 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
               : null,
           subwayStationId:
               (filters.subwayStationId != null && filters.subwayStationId! > 0)
-                  ? filters.subwayStationId
-                  : null,
+              ? filters.subwayStationId
+              : null,
           subwayStationIds: filters.subwayStationIds,
           subwayLineId:
               (filters.subwayLineId != null && filters.subwayLineId! > 0)
-                  ? filters.subwayLineId
-                  : null,
+              ? filters.subwayLineId
+              : null,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
           privateRoom: filters.privateRoom,
@@ -1296,23 +1312,24 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
         : null;
     final subwayStationId =
         filters.subwayStationId != null && filters.subwayStationId! > 0
-            ? filters.subwayStationId
-            : null;
+        ? filters.subwayStationId
+        : null;
     final subwayLineId =
         filters.subwayLineId != null && filters.subwayLineId! > 0
-            ? filters.subwayLineId
-            : null;
+        ? filters.subwayLineId
+        : null;
 
     return SearchBottomSheetResult(
       listingTypeId: listingTypeId,
-      listingTypeIds: filters.listingTypeIds ??
-          _searchFiltersState.searchListingTypeIds,
+      listingTypeIds:
+          filters.listingTypeIds ?? _searchFiltersState.searchListingTypeIds,
       locationId: locationId,
       subwayStationId: subwayStationId,
       subwayStationIds: filters.subwayStationIds ?? const [],
       subwayLineId: subwayLineId,
-      gender:
-          filters.gender != null && filters.gender! > 0 ? filters.gender : null,
+      gender: filters.gender != null && filters.gender! > 0
+          ? filters.gender
+          : null,
       minPrice: filters.minPrice ?? _searchFiltersState.minPrice,
       maxPrice: filters.maxPrice ?? _searchFiltersState.maxPrice,
       privateRoom: filters.privateRoom ?? _searchFiltersState.privateRoom,
@@ -1330,8 +1347,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Duration _homeRibbonAnimationDuration(BuildContext context) =>
       _homeRibbonAnimationsEnabled(context)
-          ? const Duration(milliseconds: 1000)
-          : Duration.zero;
+      ? const Duration(milliseconds: 1000)
+      : Duration.zero;
 
   /// Base top padding for home list content when embedded under the main shell
   /// glass header (body draws behind the toolbar). Search mode uses a route
@@ -1424,10 +1441,17 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final targetHeight = _feedTopSpacerVisualHeight(
       trailingSpacing: trailingSpacing,
     );
-    return AnimatedContainer(
-      duration: _homeRibbonAnimationDuration(context),
-      curve: Curves.easeOutCubic,
-      height: targetHeight,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AiSearchBar(),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: _homeRibbonAnimationDuration(context),
+          curve: Curves.easeOutCubic,
+          height: targetHeight,
+        ),
+      ],
     );
   }
 
@@ -1460,18 +1484,18 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                   child: _buildInlineFiltersRibbon(),
                 )
               : _inlineSearchClosing
-                  ? const SizedBox(
-                      key: ValueKey("inline_filters_ribbon_placeholder"),
-                      height: _inlineSearchRibbonHeight,
-                    )
-                  : _defaultFeedFilterRibbonEnabled
-                      ? KeyedSubtree(
-                          key: const ValueKey("default_filters_ribbon"),
-                          child: _buildDefaultFiltersRibbon(),
-                        )
-                      : const SizedBox.shrink(
-                          key: ValueKey("inline_filters_ribbon_empty"),
-                        ),
+              ? const SizedBox(
+                  key: ValueKey("inline_filters_ribbon_placeholder"),
+                  height: _inlineSearchRibbonHeight,
+                )
+              : _defaultFeedFilterRibbonEnabled
+              ? KeyedSubtree(
+                  key: const ValueKey("default_filters_ribbon"),
+                  child: _buildDefaultFiltersRibbon(),
+                )
+              : const SizedBox.shrink(
+                  key: ValueKey("inline_filters_ribbon_empty"),
+                ),
         );
       },
     );
@@ -1609,11 +1633,12 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                   // Shrink the centering region by the reserved bottom space
                   // (FAB stack + notify tooltip) so empty/welcome content sits
                   // higher and never overlaps the floating buttons.
-                  height: (constraints.maxHeight -
-                          baseTopPad -
-                          topSpacerHeight -
-                          bottomPadding)
-                      .clamp(0.0, constraints.maxHeight),
+                  height:
+                      (constraints.maxHeight -
+                              baseTopPad -
+                              topSpacerHeight -
+                              bottomPadding)
+                          .clamp(0.0, constraints.maxHeight),
                   child: Center(child: child),
                 ),
               ],
@@ -1705,7 +1730,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildInlineFiltersChips() {
     final selectedStationIds = _searchFiltersState.selectedStationIdsList;
-    final effectiveSubwayLineId = selectedStationIds.isNotEmpty &&
+    final effectiveSubwayLineId =
+        selectedStationIds.isNotEmpty &&
             _searchFiltersState.selectedSubwayLine > 0
         ? _searchFiltersState.selectedSubwayLine
         : null;
@@ -1820,9 +1846,9 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final alertStationIds = filters.subwayStationIds ?? const <int>[];
     final hasAnyLocationConstraint =
         (filters.locationId != null && filters.locationId! > 0) ||
-            (filters.subwayLineId != null && filters.subwayLineId! > 0) ||
-            alertStationIds.isNotEmpty ||
-            (filters.subwayStationId != null && filters.subwayStationId! > 0);
+        (filters.subwayLineId != null && filters.subwayLineId! > 0) ||
+        alertStationIds.isNotEmpty ||
+        (filters.subwayStationId != null && filters.subwayStationId! > 0);
     if (!hasAnyLocationConstraint) {
       ToastTheme.showError(context, message: L10n.get("search_alert_too_wide"));
       return;
@@ -1834,21 +1860,25 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       // already covering this station) is now resolved server-side so the
       // backend can merge against price ranges. The server returns the
       // existing alert when the new request is fully redundant.
-      final err =
-          await getIt<ISearchAlertService>().createAlertForCurrentSearch(
-        listingTypeId:
-            filters.listingTypeId ?? _searchFiltersState.selectedListingTypeId,
-        locationId: filters.locationId,
-        subwayStationId:
-            alertStationIds.length > 1 ? null : filters.subwayStationId,
-        subwayStationIds: alertStationIds.length > 1 ? alertStationIds : null,
-        subwayLineId: filters.subwayLineId,
-        gender: filters.gender,
-        minPrice: filters.minPrice ?? 0.0,
-        maxPrice: filters.maxPrice ?? 1000.0,
-        privateRoomOnly: filters.privateRoom ?? false,
-        withPhotoOnly: filters.withPhoto ?? false,
-      );
+      final err = await getIt<ISearchAlertService>()
+          .createAlertForCurrentSearch(
+            listingTypeId:
+                filters.listingTypeId ??
+                _searchFiltersState.selectedListingTypeId,
+            locationId: filters.locationId,
+            subwayStationId: alertStationIds.length > 1
+                ? null
+                : filters.subwayStationId,
+            subwayStationIds: alertStationIds.length > 1
+                ? alertStationIds
+                : null,
+            subwayLineId: filters.subwayLineId,
+            gender: filters.gender,
+            minPrice: filters.minPrice ?? 0.0,
+            maxPrice: filters.maxPrice ?? 1000.0,
+            privateRoomOnly: filters.privateRoom ?? false,
+            withPhotoOnly: filters.withPhoto ?? false,
+          );
 
       if (!mounted) return;
 
@@ -2188,8 +2218,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     final stationIds = _searchFiltersState.selectedStationIdsList;
     final lineId =
         stationIds.isNotEmpty && _searchFiltersState.selectedSubwayLine > 0
-            ? _searchFiltersState.selectedSubwayLine
-            : null;
+        ? _searchFiltersState.selectedSubwayLine
+        : null;
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -2257,15 +2287,17 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
           final count = (_searchCountReady)
               ? state.maybeMap(loaded: (s) => s.total, orElse: () => null)
               : null;
-          final titleText =
-              (count == null || count <= 0) ? baseTitle : "$baseTitle ($count)";
+          final titleText = (count == null || count <= 0)
+              ? baseTitle
+              : "$baseTitle ($count)";
           return Text(
             titleText,
             style: Theme.of(context).appBarTheme.titleTextStyle,
           );
         },
       ),
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
+      backgroundColor:
+          Theme.of(context).appBarTheme.backgroundColor ??
           (ThemeState().isBlueTheme
               ? BlueThemeColors.surface
               : Theme.of(context).colorScheme.primary),
@@ -2452,7 +2484,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
     if (isRefresh && mounted) {
       setState(() {
         _searchCountReady = false;
-        final inSearchContext = widget.isSearchMode ||
+        final inSearchContext =
+            widget.isSearchMode ||
             _inlineSearchActive ||
             _inlineSearchClosing ||
             HomeInlineSearchState().isActive;

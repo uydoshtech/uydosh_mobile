@@ -35,6 +35,7 @@ import "package:uy_dosh/domain/services/listing_moderation_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_parser_review_admin_service.dart";
 import "package:uy_dosh/domain/services/listing_group_service.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/ai_search_service.dart";
 import "package:uy_dosh/domain/services/location_service.dart";
 import "package:uy_dosh/domain/services/messaging_service.dart";
 import "package:uy_dosh/domain/services/admin_listing_conversations_service.dart";
@@ -87,9 +88,7 @@ Future<void> configureDependencies() async {
     () => DescriptionDictationService(getIt<IOAuthApiClient>()),
   );
 
-  getIt.registerLazySingleton<ILocationService>(
-    () => LocationService(),
-  );
+  getIt.registerLazySingleton<ILocationService>(() => LocationService());
 
   getIt.registerLazySingleton<ISubwayStationService>(
     () => SubwayStationService(getIt<IPublicApiClient>()),
@@ -103,6 +102,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<IListingService>(
     () => ListingService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
+  );
+  getIt.registerLazySingleton<IAiSearchService>(
+    () => AiSearchService(getIt<IOAuthApiClient>()),
   );
 
   getIt.registerLazySingleton<IListingGroupService>(
@@ -137,13 +139,9 @@ Future<void> configureDependencies() async {
     () => AmenityService(getIt<IPublicApiClient>()),
   );
 
-  getIt.registerLazySingleton<IUniversityService>(
-    () => UniversityService(),
-  );
+  getIt.registerLazySingleton<IUniversityService>(() => UniversityService());
 
-  getIt.registerLazySingleton<IRegionService>(
-    () => RegionService(),
-  );
+  getIt.registerLazySingleton<IRegionService>(() => RegionService());
 
   getIt.registerLazySingleton<ICountryService>(
     () => CountryService(getIt<IPublicApiClient>()),
