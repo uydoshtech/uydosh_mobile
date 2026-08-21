@@ -103,7 +103,7 @@ dependencies:
   yandex_mapkit: ^4.1.0
 
   # Audio
-  audioplayers: ^6.0.0
+  audioplayers: ^6.8.1
 
   # Celebrations
   # Fireworks are rendered by an in-house [SimpleFireworksDisplay] CustomPainter
