@@ -23,6 +23,7 @@ class AiSearchFilters {
     this.maxPrice,
     this.gender,
     this.privateRoom,
+    this.amenityCodes,
   });
 
   factory AiSearchFilters.fromJson(Map<String, dynamic> json) =>
@@ -33,6 +34,9 @@ class AiSearchFilters {
         maxPrice: (json["maxPrice"] as num?)?.toDouble(),
         gender: json["gender"] as int?,
         privateRoom: json["privateRoom"] as bool?,
+        amenityCodes: (json["amenityCodes"] as List<dynamic>?)
+            ?.whereType<String>()
+            .toList(),
       );
 
   final int? listingTypeId;
@@ -41,6 +45,7 @@ class AiSearchFilters {
   final double? maxPrice;
   final int? gender;
   final bool? privateRoom;
+  final List<String>? amenityCodes;
 }
 
 abstract class IAiSearchService {

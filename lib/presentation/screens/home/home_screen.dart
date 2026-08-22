@@ -6,6 +6,7 @@ import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "package:uy_dosh/base/constants/app_colors.dart";
+import "package:uy_dosh/base/cache/amenities_cache.dart";
 import "package:uy_dosh/base/injection/injection.dart";
 import "package:uy_dosh/base/localization/l10n.dart";
 import "package:uy_dosh/base/logger/logger.dart";
@@ -1569,10 +1570,34 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
                       ),
                     ),
             ),
+            if (hasFilters)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.all(6),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                tooltip: L10n.get("clear_filters"),
+                onPressed: _clearDefaultRibbonFilters,
+                icon: DecoratedBox(
+                  decoration: orbDecoration,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(Icons.close, size: 16, color: orbIconColor),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  /// The default Feed ribbon is also used after an AI Concierge search. Its
+  /// close affordance must reset the shared filters, not merely hide the AI
+  /// result cards, otherwise the next regular search remains silently scoped.
+  void _clearDefaultRibbonFilters() {
+    HapticFeedbackUtils.impact();
+    unawaited(_searchFiltersState.clearAllFilters());
+    _searchFiltersState.clearPersistedFiltersDismissed();
   }
 
   double _fabColumnHeight({required bool includeBellFab}) {

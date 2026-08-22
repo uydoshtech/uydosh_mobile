@@ -70,6 +70,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
   late bool _mapHasBeenShown;
   List<Listing>? _aiListings;
   String? _aiQuery;
+  AiSearchFilters? _aiFilters;
   AiSearchActivity? _aiSearchActivity;
 
   @override
@@ -103,6 +104,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
     setState(() {
       _aiQuery = query;
       _aiListings = result.listings;
+      _aiFilters = result.filters;
       _aiSearchActivity = null;
     });
   }
@@ -136,6 +138,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
     setState(() {
       _aiQuery = null;
       _aiListings = null;
+      _aiFilters = null;
     });
   }
 
@@ -154,6 +157,7 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             : _AiSearchResultsFeed(
                 query: _aiQuery ?? "",
                 listings: _aiListings!,
+                amenityCodes: _aiFilters?.amenityCodes ?? const [],
                 onClear: _clearAiResults,
                 topInset: widget.isSearchMode
                     ? widget.searchRibbonHeight + 12
@@ -304,12 +308,14 @@ class _AiSearchResultsFeed extends StatelessWidget {
   const _AiSearchResultsFeed({
     required this.query,
     required this.listings,
+    required this.amenityCodes,
     required this.onClear,
     required this.topInset,
   });
 
   final String query;
   final List<Listing> listings;
+  final List<String> amenityCodes;
   final VoidCallback onClear;
   final double topInset;
 
@@ -344,6 +350,24 @@ class _AiSearchResultsFeed extends StatelessWidget {
                         if (query.isNotEmpty)
                           Text(
                             query,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        if (amenityCodes.isNotEmpty)
+                          Text(
+                            amenityCodes
+                                .map((code) {
+                                  final amenity =
+                                      AmenitiesCache.getAmenityByCode(code);
+                                  if (amenity == null) return code;
+                                  return switch (L10n.currentLanguage) {
+                                    "uz" => amenity.nameUz,
+                                    "en" => amenity.nameEn,
+                                    _ => amenity.nameRu,
+                                  };
+                                })
+                                .join(" · "),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodySmall,
