@@ -7,10 +7,40 @@ class AiSearchResponse {
     required this.text,
     required this.listings,
     required this.total,
+    this.filters,
   });
   final String text;
   final List<Listing> listings;
   final int total;
+  final AiSearchFilters? filters;
+}
+
+class AiSearchFilters {
+  const AiSearchFilters({
+    this.listingTypeId,
+    this.locationId,
+    this.minPrice,
+    this.maxPrice,
+    this.gender,
+    this.privateRoom,
+  });
+
+  factory AiSearchFilters.fromJson(Map<String, dynamic> json) =>
+      AiSearchFilters(
+        listingTypeId: json["listingTypeId"] as int?,
+        locationId: json["locationId"] as int?,
+        minPrice: (json["minPrice"] as num?)?.toDouble(),
+        maxPrice: (json["maxPrice"] as num?)?.toDouble(),
+        gender: json["gender"] as int?,
+        privateRoom: json["privateRoom"] as bool?,
+      );
+
+  final int? listingTypeId;
+  final int? locationId;
+  final double? minPrice;
+  final double? maxPrice;
+  final int? gender;
+  final bool? privateRoom;
 }
 
 abstract class IAiSearchService {
@@ -35,6 +65,9 @@ class AiSearchService implements IAiSearchService {
       text: body["text"] as String? ?? "",
       listings: listings,
       total: body["total"] as int? ?? listings.length,
+      filters: body["filters"] is Map<String, dynamic>
+          ? AiSearchFilters.fromJson(body["filters"] as Map<String, dynamic>)
+          : null,
     );
   }
 }

@@ -28,6 +28,7 @@ class ListingDescriptionDictateButton extends StatefulWidget {
     this.maxDescriptionLength = 1000,
     this.dictationMeter,
     this.onTranscriptInserted,
+    this.onTranscriptionChanged,
     this.transcriptionContext,
     this.triggerController,
   });
@@ -52,6 +53,9 @@ class ListingDescriptionDictateButton extends StatefulWidget {
   /// Called after a transcript is inserted programmatically so parent field
   /// chrome/layout can rebuild even when the field itself is not focused.
   final VoidCallback? onTranscriptInserted;
+
+  /// Signals the network transcription phase after recording has stopped.
+  final ValueChanged<bool>? onTranscriptionChanged;
 
   /// Optional server-recognized vocabulary context (e.g. `ai_search`).
   final String? transcriptionContext;
@@ -133,7 +137,7 @@ class _ListingDescriptionDictateButtonState
 
   void _bindTriggerController() {
     widget.triggerController?.attach(() {
-      if (!_recording && !_uploading) unawaited(_toggleRecording());
+      if (!_uploading) unawaited(_toggleRecording());
     });
   }
 
@@ -282,6 +286,7 @@ class _ListingDescriptionDictateButtonState
       _recording = false;
       _uploading = true;
     });
+    widget.onTranscriptionChanged?.call(true);
 
     String? filePath;
     try {
@@ -293,6 +298,7 @@ class _ListingDescriptionDictateButtonState
     if (filePath == null || filePath.isEmpty) {
       if (mounted) {
         setState(() => _uploading = false);
+        widget.onTranscriptionChanged?.call(false);
         ListingDescriptionAssistant.toastDictateFailed(context);
       }
       return;
@@ -316,6 +322,7 @@ class _ListingDescriptionDictateButtonState
     if (!mounted) return;
 
     setState(() => _uploading = false);
+    widget.onTranscriptionChanged?.call(false);
 
     if (result.authRequired) {
       ListingDescriptionAssistant.toastSignInRequired(context);
@@ -365,6 +372,7 @@ class _ListingDescriptionDictateButtonState
                 _recording ? Icons.stop_circle : Icons.mic_none_outlined,
                 size: _iconSlotSize,
                 color: _recording ? Colors.redAccent : accent,
+                useThemeColor: false,
               ),
       ),
     );

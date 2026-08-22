@@ -68,6 +68,9 @@ class _SearchResultsShell extends StatefulWidget {
 
 class _SearchResultsShellState extends State<_SearchResultsShell> {
   late bool _mapHasBeenShown;
+  List<Listing>? _aiListings;
+  String? _aiQuery;
+  AiSearchActivity? _aiSearchActivity;
 
   @override
   void initState() {
@@ -92,12 +95,70 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
         shell.searchResultsView == _SearchResultsView.map;
   }
 
+  void _showAiResults(String query, AiSearchResponse result) {
+    final filters = result.filters;
+    if (filters != null) {
+      _applyAiFilters(filters);
+    }
+    setState(() {
+      _aiQuery = query;
+      _aiListings = result.listings;
+      _aiSearchActivity = null;
+    });
+  }
+
+  void _applyAiFilters(AiSearchFilters filters) {
+    final state = widget.searchFiltersState;
+    state.clearPersistedFiltersDismissed();
+    if (filters.listingTypeId != null) {
+      unawaited(state.setListingTypeId(filters.listingTypeId!));
+    }
+    if (filters.locationId != null) {
+      unawaited(state.setLocationIndex(filters.locationId!));
+    }
+    if (filters.minPrice != null || filters.maxPrice != null) {
+      unawaited(
+        state.setPriceRange(
+          filters.minPrice ?? state.minPrice,
+          filters.maxPrice ?? state.maxPrice,
+        ),
+      );
+    }
+    if (filters.gender != null) {
+      unawaited(state.setGender(filters.gender!));
+    }
+    if (filters.privateRoom == true) {
+      unawaited(state.setPrivateRoom(true));
+    }
+  }
+
+  void _clearAiResults() {
+    setState(() {
+      _aiQuery = null;
+      _aiListings = null;
+    });
+  }
+
+  void _setAiSearchActivity(AiSearchActivity? value) {
+    if (!mounted || _aiSearchActivity == value) return;
+    setState(() => _aiSearchActivity = value);
+  }
+
   @override
   Widget build(BuildContext context) {
     final listView = Stack(
       clipBehavior: Clip.none,
       children: [
-        widget.listContent,
+        _aiListings == null
+            ? widget.listContent
+            : _AiSearchResultsFeed(
+                query: _aiQuery ?? "",
+                listings: _aiListings!,
+                onClear: _clearAiResults,
+                topInset: widget.isSearchMode
+                    ? widget.searchRibbonHeight + 12
+                    : widget.inlineRibbonTop + 68,
+              ),
         if (widget.isSearchMode)
           Positioned(
             left: 12,
@@ -113,13 +174,48 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
             top: widget.inlineRibbonTop,
             child: widget.inlineFiltersRibbonBuilder(context),
           ),
-        Positioned(
-          right: 16,
-          top: widget.isSearchMode
-              ? widget.searchRibbonHeight + 8
-              : widget.inlineRibbonTop + 56 + 8,
-          child: const AiSearchFloatingButton(),
-        ),
+        if (_aiListings == null)
+          Positioned(
+            right: 16,
+            top: widget.isSearchMode
+                ? widget.searchRibbonHeight + 8
+                : widget.inlineRibbonTop + 56 + 8,
+            child: AiSearchFloatingButton(
+              onResults: _showAiResults,
+              onSearchStateChanged: _setAiSearchActivity,
+            ),
+          ),
+        if (_aiSearchActivity != null)
+          Positioned(
+            left: 24,
+            right: 24,
+            top: widget.isSearchMode
+                ? widget.searchRibbonHeight + 76
+                : widget.inlineRibbonTop + 132,
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(16),
+              elevation: 4,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.2),
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      _aiSearchActivity == AiSearchActivity.transcribing
+                          ? "Распознаю речь…"
+                          : "Ищу подходящие варианты…",
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
 
@@ -202,6 +298,86 @@ class _SearchResultsShellState extends State<_SearchResultsShell> {
 
     return Stack(children: [Positioned.fill(child: paddedMapView)]);
   }
+}
+
+class _AiSearchResultsFeed extends StatelessWidget {
+  const _AiSearchResultsFeed({
+    required this.query,
+    required this.listings,
+    required this.onClear,
+    required this.topInset,
+  });
+
+  final String query;
+  final List<Listing> listings;
+  final VoidCallback onClear;
+  final double topInset;
+
+  @override
+  Widget build(BuildContext context) => ListView.builder(
+    padding: EdgeInsets.fromLTRB(12, topInset, 12, 96),
+    itemCount: listings.length + 1,
+    itemBuilder: (context, index) {
+      if (index == 0) {
+        final resultLabel = listings.isEmpty
+            ? "AI-поиск: ничего не найдено"
+            : "AI-поиск · ${listings.length} вариантов";
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Material(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome_rounded, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          resultLabel,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        if (query.isNotEmpty)
+                          Text(
+                            query,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onClear,
+                    icon: const Icon(Icons.close),
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: ListingTile(
+          listing: listings[index - 1],
+          feedOptimized: true,
+          forceFavorite: false,
+          showHeartIcon: false,
+          showFavoriteIndicator: true,
+          onFavoriteRemoved: null,
+        ),
+      );
+    },
+  );
 }
 
 class _SearchResultsFabStack extends StatelessWidget {

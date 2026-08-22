@@ -31,6 +31,7 @@ import "package:uy_dosh/base/utils/haptic_feedback_utils.dart";
 import "package:uy_dosh/domain/models/listing.dart";
 import "package:uy_dosh/domain/search/resolved_listing_search_params.dart";
 import "package:uy_dosh/domain/services/listing_service.dart";
+import "package:uy_dosh/domain/services/ai_search_service.dart";
 import "package:uy_dosh/domain/services/push_notification_service.dart";
 import "package:uy_dosh/domain/services/search_alert_service.dart";
 import "package:uy_dosh/main.dart";
@@ -726,6 +727,12 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
       } else {
         setState(() {});
       }
+    } else if (_defaultFeedFilterRibbonEnabled) {
+      // AI search applies its interpreted filters directly to the shared
+      // state while the regular Feed remains open. Rebuild the default ribbon
+      // as well, so it immediately renders the applied district/price chips
+      // instead of retaining the generic "Filters" label.
+      setState(() {});
     }
 
     // Auto-activate the inline ribbon if the filter change happened within
@@ -1522,9 +1529,8 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
             boxShadow: ThreeDSurfaceStyle.elevatedShadows(context),
           );
     final orbIconColor = isBlue ? Colors.white : scheme.onSurface;
-    final label = _searchFiltersState.hasAnyExplicitFilter
-        ? L10n.get("filters_bar_label")
-        : L10n.get("choose_filters");
+    final hasFilters = _searchFiltersState.hasAnyExplicitFilter;
+    final label = L10n.get("choose_filters");
 
     return LiquidGlassPlate(
       height: _inlineSearchRibbonHeight,
@@ -1546,20 +1552,22 @@ class HomeScreenState extends State<HomeScreen> with RouteAware {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: scheme.onSurface,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    height: 1.0,
-                  ),
-                ),
-              ),
+              child: hasFilters
+                  ? _buildInlineFiltersChips()
+                  : Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: scheme.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),

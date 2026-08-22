@@ -1085,6 +1085,10 @@ class AppStrings {
       "listing_ai_enhance_unavailable":
           "AI enhancement isn’t available on this device.",
       "listing_ai_enhance_error": "Couldn’t improve the text. Try again.",
+      "ai_search_title": "Ask UyDosh",
+      "ai_search_voice_cta": "Say what you need",
+      "ai_search_find_cta": "Find options",
+      "ai_search_listening_cta": "Listening…",
       "listing_description_dictate": "Dictate",
       "listing_description_character_count": "Characters: ",
       "listing_description_dictate_mic_denied":
@@ -3022,7 +3026,8 @@ class AppStrings {
       "room_scan_photogrammetry_upload":
           "Загрузка архива фотограмметрии: {percent}%",
       "room_scan_photogrammetry_retry": "Повторить загрузку фотограмметрии",
-      "room_scan_photogrammetry_retry_ok": "Фотограмметрия поставлена в очередь",
+      "room_scan_photogrammetry_retry_ok":
+          "Фотограмметрия поставлена в очередь",
       "room_scan_photogrammetry_retry_missing":
           "Локальный архив фотограмметрии не найден",
       "room_scan_photogrammetry_retry_failed":
@@ -3512,6 +3517,10 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "Улучшение с AI недоступно.",
       "listing_ai_enhance_error":
           "Не удалось улучшить текст. Попробуйте снова.",
+      "ai_search_title": "Спроси UyDosh",
+      "ai_search_voice_cta": "Сказать запрос",
+      "ai_search_find_cta": "Найти варианты",
+      "ai_search_listening_cta": "Говорите…",
       "listing_description_dictate": "Диктовка",
       "listing_description_character_count": "Символов: ",
       "listing_description_dictate_mic_denied":
@@ -5986,6 +5995,10 @@ class AppStrings {
       "listing_ai_enhance_unavailable": "AI yaxshilash mavjud emas.",
       "listing_ai_enhance_error":
           "Matnni yaxshilab bo‘lmadi. Qayta urinib ko‘ring.",
+      "ai_search_title": "UyDoshdan so‘rang",
+      "ai_search_voice_cta": "Nima kerakligini ayting",
+      "ai_search_find_cta": "Variantlarni topish",
+      "ai_search_listening_cta": "Gapiring…",
       "listing_description_dictate": "Diktat",
       "listing_description_character_count": "Belgilar: ",
       "listing_description_dictate_mic_denied":
