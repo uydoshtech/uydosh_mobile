@@ -133,6 +133,28 @@ void main() {
       },
     );
 
+    test("preference matrix is built for a two-person group", () {
+      final profiles = [
+        _profile(userId: 1, cleanliness: 4, noiseLevel: 2),
+        _profile(userId: 2, cleanliness: 4, noiseLevel: 5),
+      ];
+
+      final matrix =
+          ListingDetailGroupCompatibilityHelper.buildPreferenceMatrix(
+        profiles,
+      );
+
+      expect(matrix, isNotEmpty);
+      final cleanliness = matrix.firstWhere((r) => r.labelKey == "cleanliness");
+      expect(cleanliness.cells, hasLength(2));
+      expect(
+        cleanliness.cells.every(
+          (c) => c.status == GroupPreferenceMatrixCellStatus.fullMatch,
+        ),
+        isTrue,
+      );
+    });
+
     test("overall percent is capped when a pair hits a dealbreaker", () {
       final profiles = [
         _profile(

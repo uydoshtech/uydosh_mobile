@@ -1359,7 +1359,7 @@ class _ListingDetailCompatibilitySectionState
   }
 
   Widget _buildGroupPreferenceMatrix() {
-    if (widget.groupMembers.length < 3 ||
+    if (widget.groupMembers.length < 2 ||
         widget.groupPreferenceMatrix.isEmpty) {
       return const SizedBox.shrink();
     }

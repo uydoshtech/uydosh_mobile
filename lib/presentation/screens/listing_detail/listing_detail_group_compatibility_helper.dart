@@ -170,7 +170,7 @@ class ListingDetailGroupCompatibilityHelper {
   static List<GroupPreferenceMatrixRow> buildPreferenceMatrix(
     List<UserProfile> participants,
   ) {
-    if (participants.length < 3) return const [];
+    if (participants.length < 2) return const [];
 
     final specs = _fieldSpecs();
     return specs
