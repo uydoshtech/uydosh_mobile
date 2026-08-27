@@ -59,7 +59,8 @@ class ListingDescriptionTranslation extends StatefulWidget {
 }
 
 class _ListingDescriptionTranslationState
-    extends State<ListingDescriptionTranslation> {
+    extends State<ListingDescriptionTranslation>
+    with AutomaticKeepAliveClientMixin {
   final GeminiService _gemini = getIt<GeminiService>();
   _TranslationTarget _target = _TranslationTarget.original;
   final Map<String, String> _cache = {};
@@ -72,6 +73,9 @@ class _ListingDescriptionTranslationState
     super.initState();
     _mergeDbIntoCache();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -462,6 +466,7 @@ class _ListingDescriptionTranslationState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return ValueListenableBuilder<bool>(
       valueListenable: ClientGeminiListingUiConfig.hideGeminiListingUi,
       builder: (context, hideGeminiUi, _) {

@@ -3426,18 +3426,23 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
           ),
         ];
 
+        // Keep the description card out of [SliverList] so requesting a
+        // translation and then scrolling does not dispose the widget State
+        // (which would drop the in-memory translation cache and reset the
+        // text back to the original language).
+        final contentCard = ListingDetailContentCard(
+          listingDetail: listingDetail,
+          currentLanguage: currentLanguage,
+          formattedMoveInDate: formattedMoveIn,
+          formattedPublicationDate: formattedPub,
+          getLocalizedName: _getLocalizedName,
+          ownerName: pageState.ownerName,
+          ownerAvatarUrl: pageState.ownerAvatarUrl,
+          onOpenInYandexMaps: _openHomeMapView,
+          onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
+        );
+
         final sectionsAfter3d = <Widget>[
-          ListingDetailContentCard(
-            listingDetail: listingDetail,
-            currentLanguage: currentLanguage,
-            formattedMoveInDate: formattedMoveIn,
-            formattedPublicationDate: formattedPub,
-            getLocalizedName: _getLocalizedName,
-            ownerName: pageState.ownerName,
-            ownerAvatarUrl: pageState.ownerAvatarUrl,
-            onOpenInYandexMaps: _openHomeMapView,
-            onAuthorTap: () => _navigateToProfile(listingDetail.user.id),
-          ),
           if (listingDetail.listingType.code == "roommate_needed" &&
               (listingDetail.nearbyStores?.isNotEmpty ?? false))
             Padding(
@@ -3638,6 +3643,17 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
                       ),
                     ),
                   ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: KeyedSubtree(
+                      key: ValueKey<String>(
+                        "listing-detail-content-${listingDetail.id}",
+                      ),
+                      child: contentCard,
+                    ),
+                  ),
+                ),
                 SliverPadding(
                   padding: EdgeInsets.fromLTRB(12.0, 0, 12.0, bottomPad),
                   sliver: SliverList(
