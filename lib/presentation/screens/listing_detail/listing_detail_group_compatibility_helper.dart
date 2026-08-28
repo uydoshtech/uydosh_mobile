@@ -87,13 +87,11 @@ class GroupPreferenceMatrixRow {
   const GroupPreferenceMatrixRow({
     required this.labelKey,
     required this.label,
-    required this.alignmentSummary,
     required this.cells,
   });
 
   final String labelKey;
   final String label;
-  final String? alignmentSummary;
   final List<GroupPreferenceMatrixCell> cells;
 
   @override
@@ -101,7 +99,6 @@ class GroupPreferenceMatrixRow {
     return other is GroupPreferenceMatrixRow &&
         other.labelKey == labelKey &&
         other.label == label &&
-        other.alignmentSummary == alignmentSummary &&
         _listEquals(other.cells, cells);
   }
 
@@ -109,7 +106,6 @@ class GroupPreferenceMatrixRow {
   int get hashCode => Object.hash(
         labelKey,
         label,
-        alignmentSummary,
         Object.hashAll(cells),
       );
 }
@@ -178,7 +174,6 @@ class ListingDetailGroupCompatibilityHelper {
           (spec) => GroupPreferenceMatrixRow(
             labelKey: spec.labelKey,
             label: L10n.get(spec.labelKey),
-            alignmentSummary: _preferenceAlignmentSummary(participants, spec),
             cells: _preferenceMatrixCells(participants, spec),
           ),
         )
@@ -241,30 +236,6 @@ class ListingDetailGroupCompatibilityHelper {
     return isInLargestCluster
         ? GroupPreferenceMatrixCellStatus.partialMatch
         : GroupPreferenceMatrixCellStatus.mismatch;
-  }
-
-  static String? _preferenceAlignmentSummary(
-    List<UserProfile> participants,
-    _GroupFieldSpec spec,
-  ) {
-    final active = participants
-        .where((p) => spec.displayText(p) != null)
-        .toList(growable: false);
-    if (active.length < 2) return null;
-
-    final clusters = _buildClusters(active, spec);
-    if (clusters.isEmpty) return null;
-
-    final sortedClusters = clusters.toList()
-      ..sort((a, b) => b.length.compareTo(a.length));
-    final largest = sortedClusters.first;
-    final countPrefix = "${largest.length}/${participants.length}";
-
-    if (sortedClusters.length == 1 && largest.length == active.length) {
-      return "$countPrefix · ${_dominantDisplay(largest, spec)}";
-    }
-
-    return "$countPrefix · ${_clusterSummary(sortedClusters, spec)}";
   }
 
   static GroupCompatibilityResult calculate(List<UserProfile> participants) {

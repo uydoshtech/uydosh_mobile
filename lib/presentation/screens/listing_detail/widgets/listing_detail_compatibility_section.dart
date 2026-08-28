@@ -861,6 +861,29 @@ class _ListingDetailCompatibilitySectionState
   static IconData _getLifestyleIcon(String labelKey) =>
       ProfileCompatibilityFieldIcons.iconFor(labelKey);
 
+  static Widget _withDealbreakerMark(
+    Widget child,
+    GroupPreferenceMatrixCellStatus status,
+  ) {
+    if (status != GroupPreferenceMatrixCellStatus.conflict) return child;
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        child,
+        const Positioned(
+          top: -2,
+          right: -2,
+          child: Icon(
+            CupertinoIcons.exclamationmark_circle_fill,
+            size: 12,
+            color: AppColors.error,
+          ),
+        ),
+      ],
+    );
+  }
+
   static Widget? _buildMatrixValueIcon(
     String iconKey, {
     required Color color,
@@ -1586,16 +1609,6 @@ class _ListingDetailCompatibilitySectionState
       );
     }
 
-    Color matrixRowAlignmentSummaryColor(Color? accentColor) {
-      final base = accentColor ?? textColor;
-      // Light surfaces wash out faded accent tints — keep subtitle at full
-      // accent strength (warningDark / successDark) for readable contrast.
-      if (isLightTheme && accentColor != null) {
-        return accentColor;
-      }
-      return base.withValues(alpha: 0.75);
-    }
-
     Widget matrixRowHeader(GroupPreferenceMatrixRow row) {
       final accentColor = statusColor(rowStatus(row));
 
@@ -1622,33 +1635,15 @@ class _ListingDetailCompatibilitySectionState
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    row.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: accentColor ?? textColor,
-                    ),
-                  ),
-                  if (row.alignmentSummary != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      row.alignmentSummary!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: matrixRowAlignmentSummaryColor(accentColor),
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                row.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: accentColor ?? textColor,
+                ),
               ),
             ),
           ],
@@ -1666,7 +1661,10 @@ class _ListingDetailCompatibilitySectionState
       return tableCell(
         isLast: index == orderedUserIds.length - 1,
         fillColor: matrixCellFillColor(row, cell),
-        child: iconValueCell(row, userId, cell: cell),
+        child: _withDealbreakerMark(
+          iconValueCell(row, userId, cell: cell),
+          cell?.status ?? GroupPreferenceMatrixCellStatus.missing,
+        ),
       );
     }
 
