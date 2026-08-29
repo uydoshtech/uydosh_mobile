@@ -54,6 +54,7 @@ import "package:uy_dosh/domain/services/university_service.dart";
 import "package:uy_dosh/domain/services/user_profile_service.dart";
 import "package:uy_dosh/domain/services/user_price_display_currency_service.dart";
 import "package:uy_dosh/domain/services/user_search_filters_service.dart";
+import "package:uy_dosh/domain/services/hostel_service.dart";
 
 final getIt = GetIt.instance;
 
@@ -99,6 +100,7 @@ Future<void> configureDependencies() async {
       configurator: OAuthDioConfigurator(tokenRepo: AuthTokenRepository()),
     ),
   );
+  getIt.registerLazySingleton<IHostelService>(() => HostelService(getIt<IOAuthApiClient>()));
 
   getIt.registerLazySingleton<IListingService>(
     () => ListingService(getIt<IPublicApiClient>(), getIt<IOAuthApiClient>()),
