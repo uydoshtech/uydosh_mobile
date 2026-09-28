@@ -122,6 +122,7 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
   late final VoidCallback _throttledListingsScrollListener;
   late final VoidCallback _resetListingsScrollLoadingState;
 
+  int _listingsRevision = 0;
   int? _userId;
   bool _loadingUserId = true;
   bool _didAutoSelectInitialTab = false;
@@ -164,6 +165,8 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
     super.initState();
     getIt<AppAnalyticsService>().logScreenView(screenName: "user_listings");
     _tabController = TabController(length: 3, vsync: this);
+    _listingsRevision = UserListingState().listingsRevision;
+    UserListingState().addListener(_onListingsChanged);
 
     final scrollListenerData =
         ScrollUtils.createThrottledScrollListenerWithReset(
@@ -186,6 +189,14 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
     unawaited(_loadUserIdAndGigs());
   }
 
+  void _onListingsChanged() {
+    final revision = UserListingState().listingsRevision;
+    if (mounted && revision != _listingsRevision) {
+      _listingsRevision = revision;
+      unawaited(_refreshListings());
+    }
+  }
+
   Future<void> _loadUserIdAndGigs() async {
     final id = await SessionManager.getUserId();
     if (!mounted) return;
@@ -200,6 +211,7 @@ class _UserListingsScreenBodyState extends State<_UserListingsScreenBody>
 
   @override
   void dispose() {
+    UserListingState().removeListener(_onListingsChanged);
     getIt<GigHubFeedsRefreshNotifier>()
         .removeListener(_onHubFeedsRefreshSignal);
     _resetListingsScrollLoadingState();

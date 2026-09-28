@@ -1298,5 +1298,20 @@
       }
     }
   },
-  "no_listing_complaints": "Жалоб по этому объявлению пока нет"
+  "no_listing_complaints": "Жалоб по этому объявлению пока нет",
+  "listing_claim_title": "Это ваше объявление?",
+  "listing_claim_subtitle": "Это объявление связано с вашим Telegram-аккаунтом. Добавьте его в свой профиль UyDosh, чтобы редактировать его и управлять публикацией.",
+  "listing_claim_button": "Добавить в мои объявления",
+  "listing_claim_pending": "Добавляем…",
+  "listing_claim_success": "Объявление теперь в вашем профиле. Вы можете его редактировать.",
+  "listing_claim_error": "Не удалось добавить объявление. Попробуйте ещё раз.",
+  "listing_claim_later": "Позже",
+  "listing_claim_account": "В объявлении указан ваш Telegram-аккаунт {username}. Добавьте объявление в свой профиль UyDosh, чтобы редактировать его и управлять публикацией.",
+  "@listing_claim_account": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  }
 }

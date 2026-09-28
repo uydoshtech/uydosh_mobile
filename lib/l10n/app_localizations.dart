@@ -5868,6 +5868,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No complaints for this listing yet'**
   String get no_listing_complaints;
+
+  /// No description provided for @listing_claim_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Is this your listing?'**
+  String get listing_claim_title;
+
+  /// No description provided for @listing_claim_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This listing is linked to your Telegram account. Add it to your UyDosh profile to edit and manage it.'**
+  String get listing_claim_subtitle;
+
+  /// No description provided for @listing_claim_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to my listings'**
+  String get listing_claim_button;
+
+  /// No description provided for @listing_claim_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get listing_claim_pending;
+
+  /// No description provided for @listing_claim_success.
+  ///
+  /// In en, this message translates to:
+  /// **'The listing is now in your profile. You can edit it.'**
+  String get listing_claim_success;
+
+  /// No description provided for @listing_claim_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the listing. Please try again.'**
+  String get listing_claim_error;
+
+  /// No description provided for @listing_claim_later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get listing_claim_later;
+
+  /// No description provided for @listing_claim_account.
+  ///
+  /// In en, this message translates to:
+  /// **'This listing includes your Telegram account {username}. Add it to your UyDosh profile to edit and manage it.'**
+  String listing_claim_account(String username);
 }
 
 class _AppLocalizationsDelegate

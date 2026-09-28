@@ -3141,4 +3141,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get no_listing_complaints => 'No complaints for this listing yet';
+
+  @override
+  String get listing_claim_title => 'Is this your listing?';
+
+  @override
+  String get listing_claim_subtitle =>
+      'This listing is linked to your Telegram account. Add it to your UyDosh profile to edit and manage it.';
+
+  @override
+  String get listing_claim_button => 'Add to my listings';
+
+  @override
+  String get listing_claim_pending => 'Adding…';
+
+  @override
+  String get listing_claim_success =>
+      'The listing is now in your profile. You can edit it.';
+
+  @override
+  String get listing_claim_error =>
+      'Could not add the listing. Please try again.';
+
+  @override
+  String get listing_claim_later => 'Later';
+
+  @override
+  String listing_claim_account(String username) {
+    return 'This listing includes your Telegram account $username. Add it to your UyDosh profile to edit and manage it.';
+  }
 }

@@ -71,8 +71,10 @@ class AuthWizardScreen extends StatefulWidget {
     super.key,
     this.initialPage = 0,
     this.skipExistingSessionCheck = false,
+    this.returnToPreviousRoute = false,
   });
 
+  final bool returnToPreviousRoute;
   final int initialPage;
   final bool skipExistingSessionCheck;
 
@@ -367,6 +369,10 @@ class _AuthWizardScreenState extends State<AuthWizardScreen> {
   }
 
   void _navigateToMainNavigation({int? tabIndex}) {
+    if (widget.returnToPreviousRoute && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
     if (mainNavigationKey.currentState != null) {
       Navigator.of(context).popUntil((route) => route.isFirst);
       if (tabIndex != null) {

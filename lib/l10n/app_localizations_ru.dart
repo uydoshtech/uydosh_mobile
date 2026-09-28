@@ -3158,4 +3158,33 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get no_listing_complaints => 'Жалоб по этому объявлению пока нет';
+
+  @override
+  String get listing_claim_title => 'Это ваше объявление?';
+
+  @override
+  String get listing_claim_subtitle =>
+      'Это объявление связано с вашим Telegram-аккаунтом. Добавьте его в свой профиль UyDosh, чтобы редактировать его и управлять публикацией.';
+
+  @override
+  String get listing_claim_button => 'Добавить в мои объявления';
+
+  @override
+  String get listing_claim_pending => 'Добавляем…';
+
+  @override
+  String get listing_claim_success =>
+      'Объявление теперь в вашем профиле. Вы можете его редактировать.';
+
+  @override
+  String get listing_claim_error =>
+      'Не удалось добавить объявление. Попробуйте ещё раз.';
+
+  @override
+  String get listing_claim_later => 'Позже';
+
+  @override
+  String listing_claim_account(String username) {
+    return 'В объявлении указан ваш Telegram-аккаунт $username. Добавьте объявление в свой профиль UyDosh, чтобы редактировать его и управлять публикацией.';
+  }
 }

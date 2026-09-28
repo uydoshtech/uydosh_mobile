@@ -62,11 +62,13 @@ extension NavigatorExtensions on BuildContext {
   Future<void> pushAuthWizard({
     int initialPage = 0,
     bool skipExistingSessionCheck = false,
+    bool returnToPreviousRoute = false,
   }) {
     return Navigator.of(this).push(
       MaterialPageRoute<void>(
         builder: (_) => AuthWizardScreen(
           initialPage: initialPage,
+          returnToPreviousRoute: returnToPreviousRoute,
           skipExistingSessionCheck: skipExistingSessionCheck,
         ),
       ),

@@ -8,6 +8,14 @@ class UserListingState extends ChangeNotifier {
   UserListingState._internal();
   static final UserListingState _instance = UserListingState._internal();
 
+  int _listingsRevision = 0;
+  int get listingsRevision => _listingsRevision;
+
+  void notifyListingsChanged() {
+    _listingsRevision++;
+    notifyListeners();
+  }
+
   int? _currentUserId;
   bool _isInitialized = false;
 

@@ -1270,5 +1270,20 @@
       }
     }
   },
-  "no_listing_complaints": "Bu e'lon bo'yicha hali shikoyatlar yo'q"
+  "no_listing_complaints": "Bu e'lon bo'yicha hali shikoyatlar yo'q",
+  "listing_claim_title": "Bu sizning e’loningizmi?",
+  "listing_claim_subtitle": "Bu e’lon Telegram hisobingiz bilan bog‘langan. Uni tahrirlash va boshqarish uchun UyDosh profilingizga qo‘shing.",
+  "listing_claim_button": "E’lonlarimga qo‘shish",
+  "listing_claim_pending": "Qo‘shilmoqda…",
+  "listing_claim_success": "E’lon endi profilingizda. Uni tahrirlashingiz mumkin.",
+  "listing_claim_error": "E’lonni qo‘shib bo‘lmadi. Qayta urinib ko‘ring.",
+  "listing_claim_later": "Keyinroq",
+  "listing_claim_account": "Bu e’londa sizning {username} Telegram hisobingiz ko‘rsatilgan. Uni tahrirlash va boshqarish uchun UyDosh profilingizga qo‘shing.",
+  "@listing_claim_account": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  }
 }

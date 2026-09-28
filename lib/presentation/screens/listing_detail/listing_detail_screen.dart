@@ -100,6 +100,7 @@ import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_date_
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_page_bloc.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/listing_detail_pending_action.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/room_glb_viewer_screen.dart";
+import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_claim_banner.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_admin_contact_info.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_meta_and_price_tile.dart";
 import "package:uy_dosh/presentation/screens/listing_detail/widgets/listing_detail_compatibility_section.dart";
@@ -2141,7 +2142,15 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
     ToastReporting.errorMessage(context, message);
   }
 
-  void _navigateToSignIn() => AuthFlow.openSignIn(context);
+  Future<void> _navigateToSignIn() async {
+    await context.pushAuthWizard(returnToPreviousRoute: true);
+    if (!mounted) return;
+    await _hydrateSessionUserId();
+    if (!mounted) return;
+    context.read<ListingDetailBloc>().add(
+      ListingDetailEvent.fetchListingDetail(id: widget.listingId),
+    );
+  }
 
   void _editListing() {
     // Get the current listing detail from the bloc state
@@ -3386,6 +3395,19 @@ ${description.isNotEmpty ? "$description\n" : ""}💰 ${PriceRangeHelper.formatS
         // Split around the 3D tile so it can live in a [SliverToBoxAdapter]
         // (not recycled by [SliverList] — PlatformViews reload when disposed).
         final sectionsBefore3d = <Widget>[
+          if (!isOwner)
+            ListingClaimBanner(
+              key: ValueKey("claim-${listingDetail.id}"),
+              listingId: listingDetail.id,
+              onClaimed: () {
+                HomeRefreshState().markForRefresh();
+                UserListingState().notifyListingsChanged();
+                UserListingState().refreshUserId();
+                context.read<ListingDetailBloc>().add(
+                  ListingDetailEvent.fetchListingDetail(id: listingDetail.id),
+                );
+              },
+            ),
           if (isOwner)
             BlocSelector<
               ListingDetailPageBloc,

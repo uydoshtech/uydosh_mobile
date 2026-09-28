@@ -3191,4 +3191,33 @@ class AppLocalizationsUz extends AppLocalizations {
   @override
   String get no_listing_complaints =>
       'Bu e\'lon bo\'yicha hali shikoyatlar yo\'q';
+
+  @override
+  String get listing_claim_title => 'Bu sizning e’loningizmi?';
+
+  @override
+  String get listing_claim_subtitle =>
+      'Bu e’lon Telegram hisobingiz bilan bog‘langan. Uni tahrirlash va boshqarish uchun UyDosh profilingizga qo‘shing.';
+
+  @override
+  String get listing_claim_button => 'E’lonlarimga qo‘shish';
+
+  @override
+  String get listing_claim_pending => 'Qo‘shilmoqda…';
+
+  @override
+  String get listing_claim_success =>
+      'E’lon endi profilingizda. Uni tahrirlashingiz mumkin.';
+
+  @override
+  String get listing_claim_error =>
+      'E’lonni qo‘shib bo‘lmadi. Qayta urinib ko‘ring.';
+
+  @override
+  String get listing_claim_later => 'Keyinroq';
+
+  @override
+  String listing_claim_account(String username) {
+    return 'Bu e’londa sizning $username Telegram hisobingiz ko‘rsatilgan. Uni tahrirlash va boshqarish uchun UyDosh profilingizga qo‘shing.';
+  }
 }
