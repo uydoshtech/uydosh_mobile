@@ -152,6 +152,11 @@ class ListingTypeHelper {
         "room_needed" => _lightRoomNeeded,
         "roommate_needed" => _lightRoommateNeeded,
         "group_forming" => _lightGroupForming,
+        "apartment_rent" => const ListingTypeBadgeStyle(
+          foreground: Color(0xFF0F766E),
+          border: Color(0xFF0F766E),
+          background: Color(0xFFCCFBF1),
+        ),
         _ => const ListingTypeBadgeStyle(
           foreground: Colors.grey,
           border: Colors.grey,
@@ -165,6 +170,11 @@ class ListingTypeHelper {
         "room_needed" => _blueRoomNeeded,
         "roommate_needed" => _blueRoommateNeeded,
         "group_forming" => _blueGroupForming,
+        "apartment_rent" => const ListingTypeBadgeStyle(
+          foreground: Color(0xFF2DD4BF),
+          border: Color(0xFF2DD4BF),
+          background: Color(0x1A2DD4BF),
+        ),
         _ => _fallbackBadge,
       };
     }
@@ -173,6 +183,11 @@ class ListingTypeHelper {
       "room_needed" => _darkRoomNeeded,
       "roommate_needed" => _darkRoommateNeeded,
       "group_forming" => _darkGroupForming,
+      "apartment_rent" => const ListingTypeBadgeStyle(
+        foreground: Color(0xFF2DD4BF),
+        border: Color(0xFF2DD4BF),
+        background: Color(0x1A2DD4BF),
+      ),
       _ => _fallbackBadge,
     };
   }
@@ -193,6 +208,8 @@ class ListingTypeHelper {
             : roommateResidentIcon;
       case "group_forming":
         return Icons.groups_2_outlined;
+      case "apartment_rent":
+        return Icons.apartment;
       default:
         return Icons.help_outline;
     }
@@ -219,6 +236,7 @@ class ListingTypeHelper {
   /// All bitmap keys used for listing-type map pins (incl. host variants).
   static List<String> getAllMapIconCacheKeys() => [
         ...getAllCodes(),
+        ListingTypeCodes.apartmentRent,
         roommateAbsentHostMapIconKey,
       ];
 
@@ -257,6 +275,8 @@ class ListingTypeHelper {
         return AppStrings.get("listing_type_roommate_needed", currentLanguage);
       case "group_forming":
         return AppStrings.get("listing_type_group_forming", currentLanguage);
+      case "apartment_rent":
+        return AppStrings.get("listing_type_apartment_rent", currentLanguage);
       default:
         return "Unknown";
     }
@@ -276,6 +296,11 @@ class ListingTypeHelper {
           "listing_type_short_group_forming",
           currentLanguage,
         );
+      case "apartment_rent":
+        return AppStrings.get(
+          "listing_type_short_apartment_rent",
+          currentLanguage,
+        );
       default:
         return getText(context, code);
     }
@@ -290,6 +315,8 @@ class ListingTypeHelper {
         return ListingTypeIds.roommateNeeded;
       case "group_forming":
         return ListingTypeIds.groupForming;
+      case "apartment_rent":
+        return ListingTypeIds.apartmentRent;
       default:
         return 0;
     }
@@ -304,6 +331,8 @@ class ListingTypeHelper {
         return "roommate_needed";
       case ListingTypeIds.groupForming:
         return "group_forming";
+      case ListingTypeIds.apartmentRent:
+        return "apartment_rent";
       default:
         return "unknown";
     }
