@@ -65,7 +65,7 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
 
   static const _baseListingTypeOptions = [
     ListingTypeIds.roommateNeeded,
-    ListingTypeIds.roomNeeded,
+    ListingTypeIds.apartmentRent,
     ListingTypeIds.groupForming,
   ];
 
@@ -191,6 +191,8 @@ class _ListingTypePickerState extends State<ListingTypePicker> {
         return "listing_type_short_group_forming";
       case ListingTypeIds.roomNeeded:
         return "listing_type_room_needed";
+      case ListingTypeIds.apartmentRent:
+        return "listing_type_short_apartment_rent";
       default:
         return widget.unselectedLabelKey;
     }

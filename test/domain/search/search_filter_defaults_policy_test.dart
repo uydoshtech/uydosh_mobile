@@ -14,10 +14,10 @@ void main() {
       }
     });
 
-    test("landlord-like roles default to room_needed + group_forming bundle", () {
+    test("landlord-like roles default to roommate and apartment listings", () {
       for (final role in ["landlord", "service_provider"]) {
         final defaults = SearchFilterDefaultsPolicy.forRole(role);
-        expect(defaults.uiListingTypeId, ListingTypeIds.roomNeeded);
+        expect(defaults.uiListingTypeId, ListingTypeIds.roommateNeeded);
         expect(
           defaults.searchListingTypeIds,
           ListingTypeIds.landlordDemandListingTypeIds,

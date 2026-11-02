@@ -5,10 +5,10 @@ abstract final class ListingTypeIds {
   static const int groupForming = 3;
   static const int apartmentRent = 5;
 
-  /// Demand-side types shown together in the landlord home feed by default.
+  /// Places a landlord browses: a room that needs a roommate, or a whole apartment.
   static const List<int> landlordDemandListingTypeIds = [
-    roomNeeded,
-    groupForming,
+    roommateNeeded,
+    apartmentRent,
   ];
 }
 

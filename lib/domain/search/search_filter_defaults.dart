@@ -68,7 +68,7 @@ abstract final class SearchFilterDefaultsPolicy {
 
   static SearchFilterDefaults _landlordLike(int? profileGender) {
     return SearchFilterDefaults(
-      uiListingTypeId: ListingTypeIds.roomNeeded,
+      uiListingTypeId: ListingTypeIds.roommateNeeded,
       searchListingTypeIds: List<int>.from(
         ListingTypeIds.landlordDemandListingTypeIds,
       ),

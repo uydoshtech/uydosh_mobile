@@ -65,19 +65,6 @@ Future<void> showCreateChoiceSheet(BuildContext context) {
                 ),
                 const SizedBox(height: 12),
                 CreateChoiceTile(
-                  emoji: "🏠",
-                  iconColor: const Color(0xFFB9DCEC),
-                  title: L10n.get("create_choice_room_needed"),
-                  subtitle: L10n.get("create_choice_room_needed_subtitle"),
-                  onTap: () {
-                    HapticFeedbackUtils.impact();
-                    Navigator.of(sheetContext).pop();
-                    if (!context.mounted) return;
-                    context.pushCreateListing(listingTypeId: 1);
-                  },
-                ),
-                const SizedBox(height: 12),
-                CreateChoiceTile(
                   emoji: "🤝",
                   iconColor: const Color(0xFFF6C966),
                   title: L10n.get("create_choice_group_forming"),
